@@ -63,14 +63,25 @@ drafts is kept in the run record so a model that needs three tries is visibly wo
 
 ## Models and auth
 
-Both are OpenAI-compatible chat/completions with tool calling, so one client class covers both.
+All five are OpenAI-compatible chat/completions with tool calling, so one client class covers the lot.
+(The roster was seven for one afternoon, 2026-07-31: `poolside/laguna-s-2.1:free` and
+`google/gemini-3.5-flash-lite` each burned a probe's full 16 model calls without ever submitting a valid
+tour, and were removed the same day on the maintainer's call. Their failed run records stay in `runs/` as
+the evidence, and their `pricing.json` rows stay so those records still render.)
 Credentials are read from the repo `.env` (untracked; the loader also checks sibling git worktrees, or set
 `TOUR_LAB_ENV_FILE`). Keys never reach the browser, the logs, or a run record.
 
-| model | key | base URL | model override |
-| --- | --- | --- | --- |
-| `deepseek/deepseek-v4-flash-0731` | `DEEPSEEK_API_KEY` | `DEEPSEEK_BASE_URL` | `DEEPSEEK_MODEL` |
-| `openai/gpt-5.6-luna` | `OPENAI_API_KEY` | `OPENAI_BASE_URL` | `OPENAI_MODEL` |
+| model | key | base URL | model override | effort override |
+| --- | --- | --- | --- | --- |
+| `deepseek/deepseek-v4-flash-0731` | `DEEPSEEK_API_KEY` | `DEEPSEEK_BASE_URL` | `DEEPSEEK_MODEL` | `DEEPSEEK_REASONING` |
+| `openai/gpt-5.6-luna` | `OPENAI_API_KEY` | `OPENAI_BASE_URL` | `LUNA_MODEL` | `LUNA_REASONING` |
+| `x-ai/grok-4.5` | `OPENAI_API_KEY` | `OPENAI_BASE_URL` | `GROK_MODEL` | `GROK_REASONING` |
+| `inclusionai/ling-3.0-flash:free` | `OPENAI_API_KEY` | `OPENAI_BASE_URL` | `LING_MODEL` | `LING_REASONING` |
+| `openai/gpt-5.6-luna-pro` | `OPENAI_API_KEY` | `OPENAI_BASE_URL` | `LUNA_PRO_MODEL` | `LUNA_PRO_REASONING` |
+
+Four of the five ride one OpenRouter credential, and **the sharing stops at the key**. Every model owns a
+distinct model-override slot, so no single variable can quietly repoint the whole roster at one slug —
+`OPENAI_MODEL` is read by nothing, and each override names the model it belongs to.
 
 The requested slug is what we ask for; what the endpoint accepts is resolved at runtime. The base URL's
 host decides the form to try first — a vendor's own endpoint wants the bare name, an aggregator wants
@@ -79,11 +90,23 @@ requested build is not published, the lab falls back to the same family without 
 so loudly: in the run record, in the panel header, and in a banner above the tour. A model with no key
 is disabled in the UI with the env var it needs, and a keyless run returns one sentence, not a stack trace.
 
-As configured today: `DEEPSEEK_BASE_URL=https://api.deepseek.com` is a direct vendor endpoint, publishes
-only `deepseek-v4-flash` and `deepseek-v4-pro`, and rejects both `deepseek/deepseek-v4-flash-0731` and
-`deepseek-v4-flash-0731` outright — so runs land on `deepseek-v4-flash` via the family-prefix fallback and
-every record says so. `OPENAI_BASE_URL=https://openrouter.ai/api/v1` is an aggregator and publishes
-`openai/gpt-5.6-luna` exactly, so that side resolves clean and reports its own cost.
+As configured today every base URL is `https://openrouter.ai/api/v1`, which publishes all five slugs
+verbatim — including the `:free` one — so all five resolve exact via the models list and report
+their own accounted cost. (The fallback path is not dead code: pointed at `https://api.deepseek.com`,
+which publishes only `deepseek-v4-flash` and `deepseek-v4-pro`, the DeepSeek row lands on the undated
+build through the family-prefix fallback and every record says so.)
+
+### Reasoning effort
+
+`<MODEL>_REASONING`, then the model's own pinned default, then shared `TOUR_REASONING` — first one set
+wins, and `low|medium|high|xhigh|max` are all passed through to the aggregator's unified `reasoning`
+field. Only Grok 4.5 pins a default (`high`, as asked for); the other four inherit `TOUR_REASONING`,
+currently `max`. Unset everywhere leaves the vendor's own default. A direct vendor endpoint has no
+unified field to carry an effort, so the header strikes it through rather than implying it was sent.
+
+**Every run record says which effort ran and where it came from**, in `model.reasoning`, alongside the
+resolved slug — and so does the ledger, which counts runs per effort rather than pretending one number
+covers a model's whole row.
 
 ## Cost
 
@@ -91,16 +114,36 @@ Every model call records prompt/completion/reasoning/cached tokens, latency and 
 record in `runs/<timestamp>-<model>.json` carries per-call detail and per-run totals next to the tour.
 `runs/ledger.json` sums spend per model across all runs.
 
-Cost comes from `pricing.json` (per-million input/output rates, **marked EDIT ME — both models postdate
-anything the code's author knew, so the rates are placeholders**), *except* where the endpoint reports its
-own accounted cost, which always wins. Each run says which basis was used: `provider`, `price-table`, or
-`unpriced`. Price-table figures are tinted in the UI to keep the distinction visible.
+Cost comes from `pricing.json` (per-million input/output rates, **marked EDIT ME — every model here
+postdates anything the code's author knew, so every rate is a placeholder**), *except* where the endpoint
+reports its own accounted cost, which always wins. Each run says which basis was used: `provider`,
+`price-table`, or `unpriced`. Price-table figures are tinted in the UI to keep the distinction visible.
+
+The two `:free` rows carry zeros because their slugs carry OpenRouter's `:free` suffix, and that is all
+those zeros assert — nobody verified a tier. Both models resolve through an endpoint that accounts its own
+spend, so the `provider` figure in the run record is the only one to trust; a free tier that starts
+charging, or a run that lands on the paid twin, shows up there and not in the table.
 
 ## Bench set
 
 `fixtures.json` — eight prompts spanning the modes a real user arrives in: two doctrinal (one contested),
 two pastoral (grief, doubt), one named text, one topic, one narrow word study, one whole-book orientation.
-Running both models over the same eight makes the run records into a fair table.
+Running every model over the same eight makes the run records into a fair table.
+
+## The page
+
+A responsive grid of model panels — one column on a phone, two from 900px, three from 1500px, and never
+more, because a panel carrying a player and eight steps stops being readable much narrower than that.
+Each panel owns its label, its requested-and-resolved slug, its effort chip, an exact-or-fallback banner,
+its own **Run** button, its tour with the seeking player, and its cost/latency/tool-call strip.
+
+**Send to All** puts the current prompt through every configured model at once. `POST /api/tour` takes
+`models: [...]` as readily as `model:`, fires them all with `Promise.allSettled`, and multiplexes their
+progress down one SSE connection with every frame tagged by model key, so each panel fills in as its own
+model lands and a model that thinks for three minutes delays nothing but itself. One stream rather than
+seven EventSources, because seven would sit on the browser's ~6-connection-per-origin limit and the
+seventh panel would wait on a socket. A missing key, a rejected slug or a provider 500 resolves inside
+its own panel; the other six keep going, and every one of them still writes its run record.
 
 ## What the first six runs said
 

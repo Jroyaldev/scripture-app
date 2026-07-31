@@ -1,0 +1,463 @@
+{
+  "runId": "2026-07-31T19-09-12-866-gpt-5.6-luna",
+  "startedAt": "2026-07-31T19:09:12.866Z",
+  "promptId": null,
+  "prompt": "how to use chiasms, reversal of expectation and other literary tools?",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Reading the Bible’s Literary Design",
+    "intro": "This tour moves from the basic posture—read the Bible as carefully designed literature—to practical tools you can use: genre, structure, repetition, hyperlinks, chiasms, parallel scenes, and reversal. The clips repeatedly show not just what these tools are called, but what to do when you notice one and how to test whether it is really there.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:applying-paradigm-movements-and-links",
+        "startSec": 1560,
+        "endSec": 1630,
+        "why": "Begin here because the speakers establish the governing principle: form and meaning belong together. They say that biblical books have different “literary styles or literary genres,” and that “form and function are related”—a necessary guard against treating literary patterns as decoration.",
+        "episodeTitle": "Applying the Paradigm – Movements and Links",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/f3c3ad0c-3f65-4ed1-9840-fa96a715a151/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=f3c3ad0c-3f65-4ed1-9840-fa96a715a151",
+        "durationSec": 3474,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:design-patterns-bible-live-milpitas-part-1",
+        "startSec": 3155,
+        "endSec": 3235,
+        "why": "This gives you the first hands-on move: track repetition. The speaker calls it “the most basic thing to human communication” and says, “if it matters, I’m gonna keep saying it,” then applies that especially to biblical narrative as a way to notice emphasis.",
+        "episodeTitle": "Design Patterns in the Bible - Live from Milpitas! Part 1",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/07eef7e7-e57b-47cb-8702-0dd483acee2f/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=07eef7e7-e57b-47cb-8702-0dd483acee2f",
+        "durationSec": 4613,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:when-do-words-become-blessing",
+        "startSec": 240,
+        "endSec": 390,
+        "why": "Now learn how repetition can function as a hyperlink between passages. The clip explains that repeated “words or ideas” can send your mind back to an earlier story so you can “compare and contrast,” while also warning against forcing a connection: creative repetition may involve wordplay, puns, or a whole network of words, not merely one accidental match.",
+        "episodeTitle": "When Do Words Become A Blessing? – Torah Q+R",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/2a374bff-c9e7-4c20-bca1-bd7238a0401b/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=2a374bff-c9e7-4c20-bca1-bd7238a0401b",
+        "durationSec": 3796,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:literature-lifetime",
+        "startSec": 1080,
+        "endSec": 1180,
+        "why": "This is the clearest practical explanation of a chiasm. The speakers describe a later story recalling an earlier one, then say the intervening material is arranged so “a sequence of things happened… and then it reverses that sequence.” Their instruction is concrete: pull the two stories together, reread them “as if they’re next to each other,” and look for what the mirrored arrangement reveals.",
+        "episodeTitle": "Literature for a Lifetime – Paradigm E6",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/81335037-a445-4684-b1ba-0fea3e090caf/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=81335037-a445-4684-b1ba-0fea3e090caf",
+        "durationSec": 3311,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:why-couldnt-moses-enter-promised-land",
+        "startSec": 740,
+        "endSec": 900,
+        "why": "This clip shows how to use literary parallelism rather than merely label it. The speaker says symmetrical design invites you to compare narratives, hold them “as if they’re next to each other,” and notice how “little puzzles or little riddles” in one story are clarified by its matching story.",
+        "episodeTitle": "Numbers E6: Why Couldn’t Moses Enter the Promised Land?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/d416a013-bfd4-4336-9e44-348bbbed96a1/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=d416a013-bfd4-4336-9e44-348bbbed96a1",
+        "durationSec": 3308,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:73ef95e1-531b-43fd-bf76-f660e7101fe6",
+        "startSec": 820,
+        "endSec": 1000,
+        "why": "Finish with reversal of expectation in action. Reading Ruth’s famine against Abraham’s earlier famine creates an expectation that the family will return “full”; the narrator then emphasizes the reversal—Naomi returns “empty.” This models the method: identify the expectation created by earlier narrative patterns, then watch carefully for where the new story repeats, alters, or overturns it.",
+        "episodeTitle": "Ruth 1:1-18 (Episode 220)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_min_ep_220.mp3?dest-id=245197",
+        "durationSec": 2558,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "As you practice, start small: mark repeated words, note where scenes or stories resemble one another, write down what the earlier pattern makes you expect, and then ask what the differences mean. The point is not to discover clever shapes everywhere; it is to let the text’s patterns train your attention and make you reread passages alongside one another.",
+    "totalSeconds": 740
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3329,
+      "promptTokens": 1130,
+      "completionTokens": 49,
+      "reasoningTokens": 33,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00004407500000000001
+    },
+    {
+      "i": 1,
+      "latencyMs": 1671,
+      "promptTokens": 1425,
+      "completionTokens": 126,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 1127,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000124045
+    },
+    {
+      "i": 2,
+      "latencyMs": 3536,
+      "promptTokens": 9119,
+      "completionTokens": 339,
+      "reasoningTokens": 68,
+      "cachedPromptTokens": 1422,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0011796700000000003
+    },
+    {
+      "i": 3,
+      "latencyMs": 5923,
+      "promptTokens": 13006,
+      "completionTokens": 179,
+      "reasoningTokens": 35,
+      "cachedPromptTokens": 9116,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0006847350000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 2957,
+      "promptTokens": 20465,
+      "completionTokens": 242,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 13003,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012079050000000002
+    },
+    {
+      "i": 5,
+      "latencyMs": 5508,
+      "promptTokens": 24145,
+      "completionTokens": 495,
+      "reasoningTokens": 359,
+      "cachedPromptTokens": 20462,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009619200000000001
+    },
+    {
+      "i": 6,
+      "latencyMs": 8962,
+      "promptTokens": 25963,
+      "completionTokens": 1032,
+      "reasoningTokens": 252,
+      "cachedPromptTokens": 24142,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00108817
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "chiasm chiastic structure",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 102,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "reversal expectations literary",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 67,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "literary design pattern structure repetition",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 112,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "how to read narrative irony surprise",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 75,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:applying-paradigm-movements-and-links",
+        "fromSec": 1450,
+        "toSec": 1800
+      },
+      "ms": 5,
+      "summary": "1450s–1630s of Applying the Paradigm – Movements and Links"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:design-patterns-bible-live-milpitas-part-1",
+        "fromSec": 3000,
+        "toSec": 3450
+      },
+      "ms": 0,
+      "summary": "3000s–3180s of Design Patterns in the Bible - Live from Milpitas! Part 1"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:b4eb4192-dfc0-11ee-bfef-8777c8532f4c",
+        "fromSec": 2020,
+        "toSec": 2400
+      },
+      "ms": 4,
+      "summary": "2020s–2200s of Lamentations Overview: What is a Lament?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:73ef95e1-531b-43fd-bf76-f660e7101fe6",
+        "fromSec": 650,
+        "toSec": 1020
+      },
+      "ms": 3,
+      "summary": "650s–830s of Ruth 1:1-18 (Episode 220)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:seven-women-who-rescued-mosesand-israel",
+        "fromSec": 300,
+        "toSec": 700
+      },
+      "ms": 3,
+      "summary": "300s–480s of The Exodus Way E13: The Seven Women Who Rescued Moses—and Israel"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "center mirror chiasm how to identify",
+        "sourceId": "bibleproject",
+        "limit": 10
+      },
+      "ms": 141,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "repetition repeated words look for author emphasis",
+        "sourceId": "bibleproject",
+        "limit": 10
+      },
+      "ms": 110,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "literary tool framing inclusio bookends",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 97,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "expectation reversal reader narrative author",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 89,
+      "summary": "10 hits"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:literature-lifetime",
+        "fromSec": 1000,
+        "toSec": 1250
+      },
+      "ms": 4,
+      "summary": "1000s–1180s of Literature for a Lifetime – Paradigm E6"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:c9c6aa3e-acba-4d24-b3f6-0e0039773195",
+        "fromSec": 3300,
+        "toSec": 3500
+      },
+      "ms": 0,
+      "summary": "3300s–3480s of Genesis 12-21: Abraham"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:why-couldnt-moses-enter-promised-land",
+        "fromSec": 740,
+        "toSec": 930
+      },
+      "ms": 0,
+      "summary": "740s–920s of Numbers E6: Why Couldn’t Moses Enter the Promised Land?"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:design-patterns-bible-live-milpitas-part-2",
+        "fromSec": 150,
+        "toSec": 380
+      },
+      "ms": 0,
+      "summary": "150s–330s of Biblical Narrative and Design Patterns - Live from Milpitas! Part 2"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:when-do-words-become-blessing",
+        "fromSec": 240,
+        "toSec": 430
+      },
+      "ms": 3,
+      "summary": "240s–420s of When Do Words Become A Blessing? – Torah Q+R"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:73ef95e1-531b-43fd-bf76-f660e7101fe6",
+        "fromSec": 820,
+        "toSec": 1030
+      },
+      "ms": 7,
+      "summary": "820s–1000s of Ruth 1:1-18 (Episode 220)"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:b543ecba-6b76-4633-9483-3e1bd6165a6e",
+        "fromSec": 1580,
+        "toSec": 1810
+      },
+      "ms": 0,
+      "summary": "1580s–1760s of Esther 4-8 Part 1: Ironic Reversals"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 7,
+    "toolCalls": 22,
+    "promptTokens": 95253,
+    "completionTokens": 2462,
+    "reasoningTokens": 747,
+    "cachedPromptTokens": 70372,
+    "wallMs": 32712,
+    "modelLatencyMs": 31886,
+    "toolMs": 823
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.005291,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T19:09:45.578Z"
+}

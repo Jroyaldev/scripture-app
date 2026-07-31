@@ -1,0 +1,745 @@
+{
+  "runId": "2026-07-31T19-27-56-289-gpt-5.6-luna",
+  "startedAt": "2026-07-31T19:27:56.289Z",
+  "promptId": "pastoral-grief",
+  "prompt": "My mother died three weeks ago and I cannot pray. I don't want tidy answers — I want to hear people talk honestly about grief and where God is in it.",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "error",
+  "error": {
+    "code": "NO_TOUR",
+    "message": "ran out of model calls (16) without a valid tour; last rejection: title: required non-empty string; intro: required, at least 40 characters; closing: required, at least 30 characters; steps: required array"
+  },
+  "tour": null,
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2267,
+      "promptTokens": 1148,
+      "completionTokens": 133,
+      "reasoningTokens": 117,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00009672500000000002
+    },
+    {
+      "i": 1,
+      "latencyMs": 4008,
+      "promptTokens": 1443,
+      "completionTokens": 305,
+      "reasoningTokens": 127,
+      "cachedPromptTokens": 1145,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00023162500000000003
+    },
+    {
+      "i": 2,
+      "latencyMs": 6544,
+      "promptTokens": 13608,
+      "completionTokens": 677,
+      "reasoningTokens": 490,
+      "cachedPromptTokens": 1440,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0019415250000000004
+    },
+    {
+      "i": 3,
+      "latencyMs": 8640,
+      "promptTokens": 31849,
+      "completionTokens": 1152,
+      "reasoningTokens": 753,
+      "cachedPromptTokens": 13605,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0031076750000000003
+    },
+    {
+      "i": 4,
+      "latencyMs": 11609,
+      "promptTokens": 40037,
+      "completionTokens": 1368,
+      "reasoningTokens": 876,
+      "cachedPromptTokens": 31846,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0021630600000000005
+    },
+    {
+      "i": 5,
+      "latencyMs": 7970,
+      "promptTokens": 46414,
+      "completionTokens": 869,
+      "reasoningTokens": 694,
+      "cachedPromptTokens": 40034,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0017191650000000001
+    },
+    {
+      "i": 6,
+      "latencyMs": 18059,
+      "promptTokens": 64481,
+      "completionTokens": 1901,
+      "reasoningTokens": 1858,
+      "cachedPromptTokens": 46411,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0038633850000000004
+    },
+    {
+      "i": 7,
+      "latencyMs": 7532,
+      "promptTokens": 65611,
+      "completionTokens": 897,
+      "reasoningTokens": 552,
+      "cachedPromptTokens": 64478,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0013245300000000002
+    },
+    {
+      "i": 8,
+      "latencyMs": 11894,
+      "promptTokens": 70276,
+      "completionTokens": 1313,
+      "reasoningTokens": 1053,
+      "cachedPromptTokens": 65608,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.002027305
+    },
+    {
+      "i": 9,
+      "latencyMs": 48554,
+      "promptTokens": 72596,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 70273,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": 0.0045930300000000005
+    },
+    {
+      "i": 10,
+      "latencyMs": 51967,
+      "promptTokens": 72631,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 72593,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": 0.004330605
+    },
+    {
+      "i": 11,
+      "latencyMs": 53678,
+      "promptTokens": 72666,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 72628,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": 0.004330955000000001
+    },
+    {
+      "i": 12,
+      "latencyMs": 52734,
+      "promptTokens": 72701,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 72663,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": 0.004331305000000001
+    },
+    {
+      "i": 13,
+      "latencyMs": 53130,
+      "promptTokens": 72736,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 72698,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": 0.004331655
+    },
+    {
+      "i": 14,
+      "latencyMs": 52440,
+      "promptTokens": 72771,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 72733,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": 0.004332005000000001
+    },
+    {
+      "i": 15,
+      "latencyMs": 49371,
+      "promptTokens": 72806,
+      "completionTokens": 6000,
+      "reasoningTokens": 5142,
+      "cachedPromptTokens": 72768,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.004332355
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "grief mourning death loss",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 82,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "cannot pray prayer grief lament",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 44,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "where is God suffering death",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 62,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "mother died bereavement",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 50,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Jesus wept Lazarus grief",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 46,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "lament pain silence God",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 58,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "funeral loved one grief comfort",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 91,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "prayer when no words groans Spirit",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 55,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "grief honest answers why God",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 60,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "death of someone you love grieve",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 62,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "God does not explain suffering grief",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 58,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "grief love not tidy Christian",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 59,
+      "summary": "15 hits"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658"
+      },
+      "ms": 2,
+      "summary": "Some Things I Wish Everyone Knew About Grief (3241s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01"
+      },
+      "ms": 0,
+      "summary": "#196 Pain and suffering Part 2 (Classic) (1455s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:b4eb4192-dfc0-11ee-bfef-8777c8532f4c"
+      },
+      "ms": 8,
+      "summary": "Lamentations Overview: What is a Lament? (3323s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:aa93fe68-dfc1-11ee-8d8c-1b5a7e037e3d"
+      },
+      "ms": 6,
+      "summary": "Lamentations Overview: Mercy Every Morning (3616s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a1a084d1-com-06ada9f3-4c3f-3851-9ba5-35f817a4ee6f"
+      },
+      "ms": 4,
+      "summary": "John 11:1-54 (2212s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8f69bf0a-com-59af7369-e75d-395e-85a6-34ac29b8e25e"
+      },
+      "ms": 2,
+      "summary": "Romans 8:26-39 (1393s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:9e4f152c-com-c13413cf-7101-3c3e-bd46-89e56b4127f2"
+      },
+      "ms": 2,
+      "summary": "#105 The theology of death (1350s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "radically-christian:podcast:5bbd952f-https-radicallychristian-com-p-7303"
+      },
+      "ms": 1,
+      "summary": "Dealing with Grief – CrossTalk S2E25 (2051s)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "fromSec": 1010,
+        "toSec": 1500
+      },
+      "ms": 0,
+      "summary": "1010s–1190s of Some Things I Wish Everyone Knew About Grief"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "fromSec": 80,
+        "toSec": 660
+      },
+      "ms": 0,
+      "summary": "80s–260s of #196 Pain and suffering Part 2 (Classic)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "fromSec": 930,
+        "toSec": 1300
+      },
+      "ms": 0,
+      "summary": "930s–1110s of #196 Pain and suffering Part 2 (Classic)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8f69bf0a-com-59af7369-e75d-395e-85a6-34ac29b8e25e",
+        "fromSec": 210,
+        "toSec": 560
+      },
+      "ms": 0,
+      "summary": "210s–390s of Romans 8:26-39"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a1a084d1-com-06ada9f3-4c3f-3851-9ba5-35f817a4ee6f",
+        "fromSec": 1240,
+        "toSec": 1535
+      },
+      "ms": 0,
+      "summary": "1240s–1420s of John 11:1-54"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:b4eb4192-dfc0-11ee-bfef-8777c8532f4c",
+        "fromSec": 2700,
+        "toSec": 3130
+      },
+      "ms": 0,
+      "summary": "2700s–2880s of Lamentations Overview: What is a Lament?"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:aa93fe68-dfc1-11ee-8d8c-1b5a7e037e3d",
+        "fromSec": 2700,
+        "toSec": 3160
+      },
+      "ms": 0,
+      "summary": "2700s–2880s of Lamentations Overview: Mercy Every Morning"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:9e4f152c-com-c13413cf-7101-3c3e-bd46-89e56b4127f2",
+        "fromSec": 240,
+        "toSec": 520
+      },
+      "ms": 0,
+      "summary": "240s–420s of #105 The theology of death"
+    },
+    {
+      "at": 5,
+      "name": "search_corpus",
+      "args": {
+        "query": "my wife died grief",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 100,
+      "summary": "15 hits"
+    },
+    {
+      "at": 5,
+      "name": "search_corpus",
+      "args": {
+        "query": "lost my wife grief sorrow",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 48,
+      "summary": "15 hits"
+    },
+    {
+      "at": 5,
+      "name": "search_corpus",
+      "args": {
+        "query": "my son died grief",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 49,
+      "summary": "15 hits"
+    },
+    {
+      "at": 5,
+      "name": "search_corpus",
+      "args": {
+        "query": "my daughter died grief",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 49,
+      "summary": "15 hits"
+    },
+    {
+      "at": 5,
+      "name": "search_corpus",
+      "args": {
+        "query": "my father died grief prayer",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 42,
+      "summary": "15 hits"
+    },
+    {
+      "at": 5,
+      "name": "search_corpus",
+      "args": {
+        "query": "my mother died grief prayer",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 44,
+      "summary": "15 hits"
+    },
+    {
+      "at": 6,
+      "name": "search_corpus",
+      "args": {
+        "query": "mother ninety one died a month ago presence room grieving",
+        "sourceId": "ask-nt-wright",
+        "limit": 5
+      },
+      "ms": 42,
+      "summary": "5 hits"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "fromSec": 220,
+        "toSec": 430
+      },
+      "ms": 0,
+      "summary": "220s–400s of #196 Pain and suffering Part 2 (Classic)"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "fromSec": 330,
+        "toSec": 540
+      },
+      "ms": 0,
+      "summary": "330s–510s of #196 Pain and suffering Part 2 (Classic)"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "fromSec": 900,
+        "toSec": 1090
+      },
+      "ms": 8,
+      "summary": "900s–1080s of Some Things I Wish Everyone Knew About Grief"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "fromSec": 1160,
+        "toSec": 1370
+      },
+      "ms": 0,
+      "summary": "1160s–1340s of Some Things I Wish Everyone Knew About Grief"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:5bbd952f-https-radicallychristian-com-p-7303",
+        "fromSec": 1280,
+        "toSec": 1510
+      },
+      "ms": 0,
+      "summary": "1280s–1460s of Dealing with Grief – CrossTalk S2E25"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:89790eba-com-60cb56b1-0faf-3ae5-9cd4-6bd39d3326bf",
+        "fromSec": 1120,
+        "toSec": 1320
+      },
+      "ms": 0,
+      "summary": "1120s–1300s of #63 Facebook Qs Pt. 2: Bereavement, other faiths & atonement"
+    },
+    {
+      "at": 8,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "fromSec": 680,
+        "toSec": 860
+      },
+      "ms": 0,
+      "summary": "680s–860s of Some Things I Wish Everyone Knew About Grief"
+    },
+    {
+      "at": 8,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "fromSec": 1340,
+        "toSec": 1520
+      },
+      "ms": 0,
+      "summary": "1340s–1520s of Some Things I Wish Everyone Knew About Grief"
+    },
+    {
+      "at": 8,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "fromSec": 1580,
+        "toSec": 1760
+      },
+      "ms": 0,
+      "summary": "1580s–1760s of Some Things I Wish Everyone Knew About Grief"
+    }
+  ],
+  "rejections": [
+    {
+      "at": 15,
+      "errors": [
+        "title: required non-empty string",
+        "intro: required, at least 40 characters",
+        "closing: required, at least 30 characters",
+        "steps: required array"
+      ],
+      "submitted": {}
+    }
+  ],
+  "totals": {
+    "modelCalls": 16,
+    "toolCalls": 48,
+    "promptTokens": 843774,
+    "completionTokens": 50615,
+    "reasoningTokens": 47662,
+    "cachedPromptTokens": 772023,
+    "wallMs": 441549,
+    "modelLatencyMs": 440397,
+    "toolMs": 1136
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.047057,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T19:35:17.838Z"
+}

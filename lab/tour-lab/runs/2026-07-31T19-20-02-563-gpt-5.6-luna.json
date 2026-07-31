@@ -1,0 +1,323 @@
+{
+  "runId": "2026-07-31T19-20-02-563-gpt-5.6-luna",
+  "startedAt": "2026-07-31T19:20:02.564Z",
+  "promptId": null,
+  "prompt": "the three titles of Jesus in Revelation 1",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Jesus in Revelation 1: Witness, Firstborn, King",
+    "intro": "This tour starts with Revelation 1:5 itself, then slows down over “firstborn” and resurrection before returning to the chapter’s claim about Jesus’ rule. You’ll hear how the three descriptions—faithful witness, firstborn from the dead, and ruler of the kings—work together, including their force for Revelation’s first hearers living under Rome.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:33ac7cf4-com-a16412d9-1281-3664-b0a3-f7637d157ed4",
+        "startSec": 675,
+        "endSec": 855,
+        "why": "Begin here because the teacher reads and explains all three titles in their immediate setting: Jesus is “the faithful witness,” the one who “testified to the truth about God,” the first to rise never to die again, and “the ruler of the kings of the earth.” This gives you the basic map before the tour deepens each claim.",
+        "episodeTitle": "Revelation 1:1-8",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/g2bje5sw3qnx58mc/revelation_11-88z0zq.mp3",
+        "durationSec": 1208,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:gods-response-human-power-structures",
+        "startSec": 3670,
+        "endSec": 3850,
+        "why": "This clip opens up the title “firstborn” as a claim about “authority and power,” responsibility, and representation—not merely birth order. It also frames Jesus as the legitimate firstborn whose humble life, death, and resurrection overturn ordinary human status systems, helping you hear why Revelation pairs “firstborn” with rule.",
+        "episodeTitle": "Firstborn: God's Response to Human Power Structures",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/a24763ae-4a86-4715-970b-6f3e9f8ec154/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=a24763ae-4a86-4715-970b-6f3e9f8ec154",
+        "durationSec": 4174,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:6c2d7a78-com-857189b5-f81e-57f0-bb3a-ee0f68ade8b1",
+        "startSec": 650,
+        "endSec": 820,
+        "why": "Now focus on “firstborn from the dead.” The teacher explains that Jesus is “the very first one to be raised from the dead, never to die again,” the forerunner of his people’s resurrection and the beginning of new creation. That makes the title more than a rank: it names the source and guarantee of resurrection life.",
+        "episodeTitle": "Colossians 1:15-23",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/3j8tqp/1_15-23.mp3",
+        "durationSec": 1490,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:2954",
+        "startSec": 1110,
+        "endSec": 1290,
+        "why": "Finish by hearing the three titles reappear as the doorway into the rest of Revelation: Jesus is “the ruler of the kings,” the one who loves and frees his people, and the one who comes with the clouds. The teacher then connects Revelation 1’s portrait to Daniel 7 and notes that John applies even Ancient-of-Days imagery to Jesus, showing the chapter’s larger claim about his identity and authority.",
+        "episodeTitle": "Naked Bible 355: Revelation 1:7-20",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2020/12/NakedBible355_Revelation1_7_20.mp3",
+        "durationSec": 4328,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips present Revelation 1:5 as a compact portrait: Jesus speaks and lives as God’s faithful witness, emerges from death as the firstborn of new creation, and stands above every earthly ruler. As you continue reading Revelation 1, listen for those three themes to expand in its images of resurrection, kingship, and divine glory.",
+    "totalSeconds": 710
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3472,
+      "promptTokens": 1124,
+      "completionTokens": 210,
+      "reasoningTokens": 70,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00013992500000000003
+    },
+    {
+      "i": 1,
+      "latencyMs": 2837,
+      "promptTokens": 8666,
+      "completionTokens": 274,
+      "reasoningTokens": 41,
+      "cachedPromptTokens": 1121,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0011186600000000003
+    },
+    {
+      "i": 2,
+      "latencyMs": 22820,
+      "promptTokens": 12443,
+      "completionTokens": 463,
+      "reasoningTokens": 240,
+      "cachedPromptTokens": 8663,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008368550000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 7684,
+      "promptTokens": 15422,
+      "completionTokens": 899,
+      "reasoningTokens": 260,
+      "cachedPromptTokens": 12440,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010364750000000002
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Revelation",
+        "chapter": 1,
+        "verse": 5,
+        "limit": 20
+      },
+      "ms": 90,
+      "summary": "20 of 95 moments"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "faithful witness firstborn dead ruler kings Revelation 1",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 86,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "three titles Jesus Revelation one",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 47,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Jesus faithful witness firstborn ruler kings",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 61,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:33ac7cf4-com-a16412d9-1281-3664-b0a3-f7637d157ed4",
+        "fromSec": 610,
+        "toSec": 920
+      },
+      "ms": 0,
+      "summary": "610s–790s of Revelation 1:1-8"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-response-human-power-structures",
+        "fromSec": 3500,
+        "toSec": 3900
+      },
+      "ms": 0,
+      "summary": "3500s–3680s of Firstborn: God's Response to Human Power Structures"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2943",
+        "fromSec": 3250,
+        "toSec": 3830
+      },
+      "ms": 0,
+      "summary": "3250s–3430s of Naked Bible 354: Revelation 1:4-6"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2954",
+        "fromSec": 1040,
+        "toSec": 1390
+      },
+      "ms": 0,
+      "summary": "1040s–1220s of Naked Bible 355: Revelation 1:7-20"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2058",
+        "fromSec": 1300,
+        "toSec": 1600
+      },
+      "ms": 0,
+      "summary": "1300s–1480s of Naked Bible 227: Colossians 1:13-20"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:33ac7cf4-com-a16412d9-1281-3664-b0a3-f7637d157ed4",
+        "fromSec": 675,
+        "toSec": 855
+      },
+      "ms": 0,
+      "summary": "675s–855s of Revelation 1:1-8"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-response-human-power-structures",
+        "fromSec": 3670,
+        "toSec": 3850
+      },
+      "ms": 0,
+      "summary": "3670s–3850s of Firstborn: God's Response to Human Power Structures"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2954",
+        "fromSec": 1110,
+        "toSec": 1290
+      },
+      "ms": 0,
+      "summary": "1110s–1290s of Naked Bible 355: Revelation 1:7-20"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6c2d7a78-com-857189b5-f81e-57f0-bb3a-ee0f68ade8b1",
+        "fromSec": 650,
+        "toSec": 820
+      },
+      "ms": 0,
+      "summary": "650s–820s of Colossians 1:15-23"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 4,
+    "toolCalls": 14,
+    "promptTokens": 37655,
+    "completionTokens": 1846,
+    "reasoningTokens": 611,
+    "cachedPromptTokens": 23324,
+    "wallMs": 37097,
+    "modelLatencyMs": 36813,
+    "toolMs": 284
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003132,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T19:20:39.662Z"
+}

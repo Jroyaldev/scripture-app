@@ -70,7 +70,8 @@ textarea:focus, select:focus, button:focus-visible { outline: 2px solid var(--ac
 .spacer { flex: 1 1 auto; }
 select { border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; background: #fff; max-width: 340px; }
 
-.run-buttons { display: flex; gap: 8px; flex-wrap: wrap; }
+.send-all { padding: 9px 18px; }
+.batch-status { font: 12px/1.5 var(--mono); color: var(--ink-soft); }
 button {
   border: 1px solid var(--line);
   background: #fff;
@@ -89,24 +90,52 @@ button.primary .why { color: #dbe4fb; }
 
 /* ---------------------------------------------------------------- panels */
 
+/* Seven models do not fit side by side. One column on a phone, two from a
+   laptop, three on a wide desktop — and never more, because a tour panel with
+   a player and eight steps in it stops being readable much narrower than this. */
 .panels {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 16px;
   margin: 18px 0 26px;
   align-items: start;
 }
+@media (min-width: 900px) {
+  .panels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (min-width: 1500px) {
+  .panels { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
 .panel { background: var(--card); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-.panel-head { display: flex; gap: 10px; align-items: baseline; padding: 12px 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.panel-head {
+  display: flex;
+  gap: 8px 12px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 14px;
+  border-bottom: 1px solid var(--line);
+  flex-wrap: wrap;
+}
 .panel-head b { font-size: 15px; }
-.slug { font: 12px/1.4 var(--mono); color: var(--ink-faint); }
+.panel-id { display: flex; flex-direction: column; min-width: 0; }
+.panel-tags { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.panel-tags .run { padding: 5px 14px; font-size: 13px; }
+.slug { display: block; font: 12px/1.4 var(--mono); color: var(--ink-faint); overflow-wrap: anywhere; }
+.effort { font: 11px/1.4 var(--mono); color: var(--ink-soft); background: #f1f3f8; border-radius: 999px; padding: 2px 8px; white-space: nowrap; }
+.effort.default { color: var(--ink-faint); }
+.effort.inert { text-decoration: line-through; color: var(--ink-faint); }
+.banner { margin: 12px 14px 0; }
+.note.exact { border-left-color: #bfe3ce; background: #f4faf6; color: var(--good); }
 .badge { font-size: 11px; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--line); color: var(--ink-soft); }
 .badge.run { background: var(--accent-soft); border-color: #cddafa; color: var(--accent); }
 .badge.ok { background: #e9f6ef; border-color: #bfe3ce; color: var(--good); }
 .badge.bad { background: #fdeceb; border-color: #f3c8c4; color: var(--bad); }
 .badge.warn { background: #fdf3e6; border-color: #f0d9b6; color: var(--warn); }
 
-.panel-body { padding: 14px; }
+/* Panels sit in a grid now, so an eight-step tour scrolls inside its own card
+   instead of stretching its row and leaving the other two columns as air. The
+   player is sticky against the bottom of this scroller, not the viewport. */
+.panel-body { padding: 14px; max-height: 62vh; overflow-y: auto; }
 
 .note { border-left: 3px solid #f0d9b6; background: #fdf9f2; padding: 8px 12px; margin: 0 0 12px; font-size: 13px; color: var(--warn); border-radius: 0 6px 6px 0; }
 .error { border-left: 3px solid #f3c8c4; background: #fdf1f0; padding: 10px 12px; margin: 0; border-radius: 0 6px 6px 0; color: var(--bad); }
@@ -118,7 +147,7 @@ button.primary .why { color: #dbe4fb; }
 .strip .v { font: 600 14px/1.3 var(--mono); }
 .strip .v.est { color: var(--warn); }
 
-.trace { margin: 0; padding: 0; list-style: none; font: 12px/1.6 var(--mono); color: var(--ink-soft); max-height: 190px; overflow: auto; }
+.trace { margin: 0; padding: 0; list-style: none; font: 12px/1.6 var(--mono); color: var(--ink-soft); max-height: 160px; overflow: auto; }
 .trace li { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .trace .tname { color: var(--accent); }
 .trace .tfail { color: var(--bad); }
@@ -152,7 +181,7 @@ button.primary .why { color: #dbe4fb; }
 .history-list { display: flex; flex-direction: column; gap: 4px; max-height: 320px; overflow: auto; }
 .history-row {
   display: grid;
-  grid-template-columns: 150px 130px 1fr 92px 62px;
+  grid-template-columns: 150px 190px 1fr 92px 62px;
   gap: 12px;
   align-items: baseline;
   padding: 7px 10px;
@@ -179,5 +208,4 @@ code { font: 12px var(--mono); background: #eef0f5; padding: 1px 5px; border-rad
 
 @media (max-width: 720px) {
   .history-row { grid-template-columns: 1fr; gap: 2px; }
-  .panels { grid-template-columns: 1fr; }
 }

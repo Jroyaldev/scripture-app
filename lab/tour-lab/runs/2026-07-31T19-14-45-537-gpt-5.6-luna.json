@@ -1,0 +1,422 @@
+{
+  "runId": "2026-07-31T19-14-45-537-gpt-5.6-luna",
+  "startedAt": "2026-07-31T19:14:45.538Z",
+  "promptId": "doctrinal-resurrection-body",
+  "prompt": "If Jesus rose bodily, what happens to my body when I die? I want to understand what the New Testament actually claims about resurrection versus 'going to heaven'.",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "From Heaven to Resurrection: What Happens to the Body?",
+    "intro": "This tour follows the New Testament’s sequence rather than collapsing everything into the phrase “going to heaven.” It starts by clarifying what resurrection means, then considers the interval after death, the character of the resurrected body, and the New Testament’s larger hope for creation. The teachers are broadly aligned, though they acknowledge mystery and some interpretive questions along the way.",
+    "steps": [
+      {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "startSec": 670,
+        "endSec": 790,
+        "why": "Begin here because it names the central distinction in your question. N.T. Wright says, “Resurrection is not about somebody going into a glorious angelic state” and that the word does not mean “going to heaven”; he then connects Jesus’ empty tomb and recognizable wounds to the hope for our bodies.",
+        "episodeTitle": "#164 Easter questions on the resurrection of Jesus",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR6878813537.mp3?updated=1749655811",
+        "durationSec": 2012,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "startSec": 220,
+        "endSec": 400,
+        "why": "This clip handles the in-between question without making it the final destination. The commentator notes that 2 Corinthians 5 has “a lack of precise timeline,” but reads it alongside Paul’s other letters as “life, death, being with the Lord, and resurrection,” explaining the present body as an “earthly tent” that is temporary.",
+        "episodeTitle": "2 Corinthians 5:1-10",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/jckmzx/2_corinthians_51-10816em.mp3",
+        "durationSec": 1584,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:ade907de-com-c0dd0b4b-3d8e-3388-83cf-7b219a3bf918",
+        "startSec": 450,
+        "endSec": 630,
+        "why": "Listen next for a careful answer to what death is like before resurrection. Wright argues that the interval with Christ will be conscious—“surrounded by and bathed in love”—while still saying that bodily death followed by bodily life is such a sharp contrast that “sleep and wake” remains a useful image.",
+        "episodeTitle": "#106 Is cremation or burial best?",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR1327536790.mp3?updated=1749817404",
+        "durationSec": 1488,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "startSec": 900,
+        "endSec": 1190,
+        "why": "Now turn to Paul’s description of the resurrected body in 1 Corinthians 15. The commentator explains that the body is sown perishable but raised imperishable, and that “spiritual body” does not mean immaterial or disembodied: it is still a body, empowered and fitted for “supernatural life in the world to come.”",
+        "episodeTitle": "1 Corinthians 15:29-58",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/d8ngn3/1_corinthians_1529-589yhwk.mp3",
+        "durationSec": 2010,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:heaven-earth-q-r",
+        "startSec": 1560,
+        "endSec": 1740,
+        "why": "End by widening the horizon beyond an individual soul’s destination. BibleProject traces the New Testament hope toward “the complete reunion of heaven and earth,” culminating in Jesus’ return, so resurrection belongs to the restoration of creation rather than escape from it.",
+        "episodeTitle": "Heaven & Earth Question & Response",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e377fa21-f15c-4ec8-b498-507f52e60c14/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e377fa21-f15c-4ec8-b498-507f52e60c14",
+        "durationSec": 2671,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips present a clear New Testament pattern: death is not treated as the completion of salvation; believers may be with Christ in an intermediate state, but the ultimate hope is resurrection—bodily, transformed, imperishable life when God renews creation. The details remain mysterious, but the direction is not: Jesus’ empty tomb and risen body are the pattern and promise.",
+    "totalSeconds": 950
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2856,
+      "promptTokens": 1147,
+      "completionTokens": 63,
+      "reasoningTokens": 47,
+      "cachedPromptTokens": 1144,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000049540000000000003
+    },
+    {
+      "i": 1,
+      "latencyMs": 2887,
+      "promptTokens": 1442,
+      "completionTokens": 325,
+      "reasoningTokens": 55,
+      "cachedPromptTokens": 1144,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00024361500000000003
+    },
+    {
+      "i": 2,
+      "latencyMs": 3482,
+      "promptTokens": 12838,
+      "completionTokens": 371,
+      "reasoningTokens": 59,
+      "cachedPromptTokens": 1439,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0016617900000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 2470,
+      "promptTokens": 16672,
+      "completionTokens": 288,
+      "reasoningTokens": 22,
+      "cachedPromptTokens": 12835,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007807000000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 4124,
+      "promptTokens": 19511,
+      "completionTokens": 323,
+      "reasoningTokens": 254,
+      "cachedPromptTokens": 16669,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007156650000000001
+    },
+    {
+      "i": 5,
+      "latencyMs": 12477,
+      "promptTokens": 20286,
+      "completionTokens": 1106,
+      "reasoningTokens": 355,
+      "cachedPromptTokens": 19508,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009558550000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 72,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "resurrection body bodily resurrection what happens when we die",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 98,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "going to heaven resurrection new heavens new earth",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 48,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "absent from the body present with the Lord resurrection",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 46,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "1 Corinthians 15 resurrection body raised imperishable",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 43,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "1 Corinthians",
+        "chapter": 15,
+        "verse": 0,
+        "limit": 20
+      },
+      "ms": 53,
+      "summary": "20 of 259 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "1 Thessalonians",
+        "chapter": 4,
+        "verse": 0,
+        "limit": 15
+      },
+      "ms": 0,
+      "summary": "5 of 64 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Philippians",
+        "chapter": 3,
+        "verse": 0,
+        "limit": 15
+      },
+      "ms": 0,
+      "summary": "7 of 70 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "2 Corinthians",
+        "chapter": 5,
+        "verse": 0,
+        "limit": 15
+      },
+      "ms": 0,
+      "summary": "5 of 143 moments"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "fromSec": 610,
+        "toSec": 850
+      },
+      "ms": 0,
+      "summary": "610s–790s of #164 Easter questions on the resurrection of Jesus"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 900,
+        "toSec": 1200
+      },
+      "ms": 0,
+      "summary": "900s–1080s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 220,
+        "toSec": 520
+      },
+      "ms": 0,
+      "summary": "220s–400s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-q-r",
+        "fromSec": 1560,
+        "toSec": 1830
+      },
+      "ms": 0,
+      "summary": "1560s–1740s of Heaven & Earth Question & Response"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:ade907de-com-c0dd0b4b-3d8e-3388-83cf-7b219a3bf918",
+        "fromSec": 450,
+        "toSec": 750
+      },
+      "ms": 4,
+      "summary": "450s–630s of #106 Is cremation or burial best?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "fromSec": 670,
+        "toSec": 790
+      },
+      "ms": 0,
+      "summary": "670s–790s of #164 Easter questions on the resurrection of Jesus"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 1040,
+        "toSec": 1190
+      },
+      "ms": 0,
+      "summary": "1040s–1190s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:901a0482-com-79e0bee1-9b9a-365b-8796-2f8d34debedf",
+        "fromSec": 780,
+        "toSec": 1000
+      },
+      "ms": 0,
+      "summary": "780s–960s of #145 Should I use the word ’heaven’? Will we know everything in the new creation?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:920f7f45-https-radicallychristian-com-p-9747",
+        "fromSec": 1230,
+        "toSec": 1450
+      },
+      "ms": 0,
+      "summary": "1230s–1410s of New Heavens and New Earth (Part One)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 0,
+        "toSec": 220
+      },
+      "ms": 0,
+      "summary": "0s–180s of 2 Corinthians 5:1-10"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 6,
+    "toolCalls": 20,
+    "promptTokens": 71896,
+    "completionTokens": 2476,
+    "reasoningTokens": 792,
+    "cachedPromptTokens": 52739,
+    "wallMs": 28804,
+    "modelLatencyMs": 28296,
+    "toolMs": 364
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004407,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T19:15:14.342Z"
+}

@@ -12,8 +12,8 @@
         <h1>Tour Lab</h1>
         <p class="sub">
           A question or a text goes in. A tool-using model reads around the podcast corpus and comes back
-          with an ordered set of clips it can justify. Benchmarked across two models, with the real cost of
-          each run.
+          with an ordered set of clips it can justify. Benchmarked across seven models — run one, or send
+          the prompt to all of them at once and watch the panels land — with the real cost of each run.
         </p>
       </div>
       <dl class="corpus" id="corpus-stats"></dl>
@@ -28,8 +28,12 @@
         <select id="fixtures" aria-label="Bench set">
           <option value="">Bench set…</option>
         </select>
+        <span class="batch-status" id="batch-status"></span>
         <div class="spacer"></div>
-        <div id="run-buttons" class="run-buttons"></div>
+        <button id="send-all" class="primary send-all" disabled>
+          <span>Send to All</span>
+          <span class="why"></span>
+        </button>
       </div>
       <p class="hint" id="hint"></p>
     </section>

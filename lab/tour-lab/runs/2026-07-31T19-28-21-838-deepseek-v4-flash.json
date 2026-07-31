@@ -1,0 +1,392 @@
+{
+  "runId": "2026-07-31T19-28-21-838-deepseek-v4-flash",
+  "startedAt": "2026-07-31T19:28:21.838Z",
+  "promptId": null,
+  "prompt": "write a commentary on genesis 1",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolution": {
+      "slug": "deepseek/deepseek-v4-flash-0731",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek/deepseek-v4-flash-0731",
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash-0731"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Commentary on Genesis 1: Structure, Image, Rest, and the \"Something from Nothing\" God",
+    "intro": "You asked for a commentary on Genesis 1, so this tour treats it the way a good commentary should: it first gives you the architecture that holds the whole chapter together, then walks you verse by verse through the six days, then slows down on the two places where the chapter does its most important work — the creation of humans as the image of God, and the seventh day of rest — and finally faces the honest interpretive questions: how \"literal\" is this account, and what does it actually claim about God. You'll hear three distinct voices, and where they disagree, I'll say so plainly.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:4115d249-com-d21c89a6-dc42-301f-a389-af61511332ea",
+        "startSec": 119,
+        "endSec": 360,
+        "why": "Before any verse, you need the chapter's skeleton, and this clip gives it: the earth starts 'formless and empty' and the six days are arranged as three forming days (1,2,3) and three filling days (4,5,6) that pair up. The speaker names the structure plainly: 'the first three days of creation are about forming things, and the next three days are about filling them... Days one and four go together, days two and five go together, days three and six go together.' That frame is what makes the rest of the chapter intelligible.",
+        "episodeTitle": "Genesis 1:1-2:3",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/whbgtb54jm47282d/genesis_11-238ad37.mp3",
+        "durationSec": 1416,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:4115d249-com-d21c89a6-dc42-301f-a389-af61511332ea",
+        "startSec": 620,
+        "endSec": 980,
+        "why": "This is the heart of the commentary: the sixth-day creation of humanity. The speaker walks the actual verses of Genesis 1:24-28, then slows down on the phrase 'image of God.' In the ancient world, images of gods stood in temples and kings planted images of themselves across their realms; the clip says creation is 'God's kingdom and God's temple, and we human beings are the image.' It lands the twin points that the image means we are the 'representative presence of God on earth' and that it comes with a vocation to 'extend the Creator's reign and rule throughout the world.'",
+        "episodeTitle": "Genesis 1:1-2:3",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/whbgtb54jm47282d/genesis_11-238ad37.mp3",
+        "durationSec": 1416,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:image-god-part-1",
+        "startSec": 122,
+        "endSec": 302,
+        "why": "A second voice on the same central idea, and it adds the cultural shock that makes 'image of God' radical. In Egypt and Babylon, the clip explains, kings alone were called 'the image of God' — the phrase meant a deified ruler. Genesis 1 takes that exact royal vocabulary and gives it to every human being: 'they record their creation account and say all humans are the image of God.' It frames Genesis 1 as Israel innovating within its cultural environment rather than merely copying its neighbors.",
+        "episodeTitle": "Humans as Middle Management",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/4710f24f-4a83-410a-a518-54e07183307b/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=4710f24f-4a83-410a-a518-54e07183307b",
+        "durationSec": 2693,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:greatest-elohim",
+        "startSec": 575,
+        "endSec": 755,
+        "why": "Now you get the opening lines, verse 1-2, treated with translation-level care. The clip wrestles with whether 'In the beginning God created the heavens and the earth' is a complete sentence or a summary ('the beginning of God's creating the skies and the land'), and argues the 'heavens and the earth' means everything — so that the seven-day structure that follows is the working out of what that opening line announces. It sets up the prologue-and-seven-days design of the whole chapter.",
+        "episodeTitle": "The Greatest Elohim – Ancient Cosmology E3",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/223637c2-2502-4378-bdc4-89d23bdbbee0/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=223637c2-2502-4378-bdc4-89d23bdbbee0",
+        "durationSec": 4072,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:4115d249-com-d21c89a6-dc42-301f-a389-af61511332ea",
+        "startSec": 1030,
+        "endSec": 1210,
+        "why": "This closes the commentary unit by reading Genesis 2:1-3, the seventh day. The key move is reinterpreting 'rest' as king-and-temple language: it 'presents God as a king resting from all his work of bringing order to his realm.' The clip ends by tying the whole chapter to a biblical worldview — the earth is 'not the result of a cosmic battle between various gods,' nor a self-organizing accident, but the work of one all-powerful creator who forms, fills, and gives purpose.",
+        "episodeTitle": "Genesis 1:1-2:3",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/whbgtb54jm47282d/genesis_11-238ad37.mp3",
+        "durationSec": 1416,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:timelines-dinosaurs-and-purpose-creation",
+        "startSec": 1730,
+        "endSec": 1910,
+        "why": "Finally, the honest question many readers bring: how literally true is all this? BibleProject addresses a listener raised on a literal reading of Genesis 1-3 who worries about 'how much of it is quote unquote true.' The answer here is that what seems new is really a recovery of 'the ancient understanding of these narratives the way the biblical authors intended them,' and that the pressure came historically from modern geology, paleontology, and physics. This is where the teachers in the corpus do not all sound the same, and the clip owns that tension rather than flattening it.",
+        "episodeTitle": "Timelines, Dinosaurs, and the Purpose of Creation – Ancient Cosmology Q+R",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/abfa20d8-1053-4dcf-aad7-be5888746530/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=abfa20d8-1053-4dcf-aad7-be5888746530",
+        "durationSec": 3531,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "That, in six moves, is what a commentary on Genesis 1 has to do. You leave with the form of the chapter in your hands — formless and empty, then formed and filled, then the king's rest on the seventh day. You leave knowing that \"image of God\" was the loaded royal claim of the ancient world that Genesis quietly hands to every human being. And you leave with the honest tension intact: this text was written to subvert its neighbors' creation myths and to declare that everything came from one God who spoke it into being out of nothing — which is not the same claim as a modern science textbook, and the teachers here are unafraid to say so. Walk through it again sometime with your own Bible open; the architecture you now have will make every verse land differently.",
+    "totalSeconds": 1321
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2239,
+      "promptTokens": 1653,
+      "completionTokens": 201,
+      "reasoningTokens": 60,
+      "cachedPromptTokens": 1536,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0000769608
+    },
+    {
+      "i": 1,
+      "latencyMs": 4740,
+      "promptTokens": 5464,
+      "completionTokens": 505,
+      "reasoningTokens": 312,
+      "cachedPromptTokens": 1536,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0006956208
+    },
+    {
+      "i": 2,
+      "latencyMs": 4206,
+      "promptTokens": 6854,
+      "completionTokens": 495,
+      "reasoningTokens": 244,
+      "cachedPromptTokens": 5376,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0003605728
+    },
+    {
+      "i": 3,
+      "latencyMs": 2192,
+      "promptTokens": 8423,
+      "completionTokens": 225,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 6784,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0003114552
+    },
+    {
+      "i": 4,
+      "latencyMs": 2547,
+      "promptTokens": 10132,
+      "completionTokens": 275,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 8576,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0003188528
+    },
+    {
+      "i": 5,
+      "latencyMs": 2884,
+      "promptTokens": 12007,
+      "completionTokens": 277,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 10368,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0003360504
+    },
+    {
+      "i": 6,
+      "latencyMs": 2410,
+      "promptTokens": 13925,
+      "completionTokens": 204,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 12160,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000338268
+    },
+    {
+      "i": 7,
+      "latencyMs": 16260,
+      "promptTokens": 14775,
+      "completionTokens": 1521,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 14080,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000562604
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 1
+      },
+      "ms": 1,
+      "summary": "25 of 922 moments"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Genesis 1 creation days"
+      },
+      "ms": 115,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:4115d249-com-d21c89a6-dc42-301f-a389-af61511332ea"
+      },
+      "ms": 2,
+      "summary": "Genesis 1:1-2:3 (1416s)"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:4115d249-com-d21c89a6-dc42-301f-a389-af61511332ea",
+        "fromSec": 0,
+        "toSec": 300
+      },
+      "ms": 0,
+      "summary": "0s–180s of Genesis 1:1-2:3"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:4115d249-com-d21c89a6-dc42-301f-a389-af61511332ea",
+        "fromSec": 180,
+        "toSec": 360
+      },
+      "ms": 0,
+      "summary": "180s–360s of Genesis 1:1-2:3"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:4115d249-com-d21c89a6-dc42-301f-a389-af61511332ea",
+        "fromSec": 620,
+        "toSec": 1100
+      },
+      "ms": 0,
+      "summary": "620s–800s of Genesis 1:1-2:3"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:image-god-part-1",
+        "fromSec": 122,
+        "toSec": 302
+      },
+      "ms": 0,
+      "summary": "122s–302s of Humans as Middle Management"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:greatest-elohim",
+        "fromSec": 575,
+        "toSec": 760
+      },
+      "ms": 0,
+      "summary": "575s–755s of The Greatest Elohim – Ancient Cosmology E3"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:836d43d2-68e3-4fad-8117-4c00af086325",
+        "fromSec": 60,
+        "toSec": 300
+      },
+      "ms": 8,
+      "summary": "60s–240s of Genesis 1-2: Creation"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:timelines-dinosaurs-and-purpose-creation",
+        "fromSec": 1730,
+        "toSec": 1910
+      },
+      "ms": 0,
+      "summary": "1730s–1910s of Timelines, Dinosaurs, and the Purpose of Creation – Ancient Cosmology Q+R"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:4115d249-com-d21c89a6-dc42-301f-a389-af61511332ea",
+        "fromSec": 1030,
+        "toSec": 1320
+      },
+      "ms": 0,
+      "summary": "1030s–1210s of Genesis 1:1-2:3"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:836d43d2-68e3-4fad-8117-4c00af086325",
+        "fromSec": 1100,
+        "toSec": 1300
+      },
+      "ms": 0,
+      "summary": "1100s–1280s of Genesis 1-2: Creation"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:4115d249-com-d21c89a6-dc42-301f-a389-af61511332ea",
+        "fromSec": 800,
+        "toSec": 1030
+      },
+      "ms": 0,
+      "summary": "800s–980s of Genesis 1:1-2:3"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 8,
+    "toolCalls": 15,
+    "promptTokens": 73233,
+    "completionTokens": 3703,
+    "reasoningTokens": 616,
+    "cachedPromptTokens": 60416,
+    "wallMs": 37609,
+    "modelLatencyMs": 37478,
+    "toolMs": 128
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T19:28:59.447Z"
+}

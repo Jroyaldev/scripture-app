@@ -1,0 +1,381 @@
+{
+  "runId": "2026-07-31T19-25-14-058-deepseek-v4-flash",
+  "startedAt": "2026-07-31T19:25:14.059Z",
+  "promptId": null,
+  "prompt": "the three titles of Jesus in Revelation 1",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolution": {
+      "slug": "deepseek/deepseek-v4-flash-0731",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek/deepseek-v4-flash-0731",
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash-0731"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "The Three Titles of Jesus in Revelation 1: Faithful Witness, Firstborn of the Dead, Ruler of Kings",
+    "intro": "In the opening greeting of Revelation, John greets the seven churches with grace and peace from Jesus Christ, whom he names with three short titles: the faithful witness, the firstborn from the dead, and the ruler of the kings of the earth. They read like a quick trinity of honors, but each one is loaded, and together they tell you exactly who is speaking in the visions that follow and what his death accomplished. This tour walks you through all three titles, one at a time, and then shows how they lock into the courtroom and throne imagery that runs through the whole book.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:33ac7cf4-com-a16412d9-1281-3664-b0a3-f7637d157ed4",
+        "startSec": 640,
+        "endSec": 820,
+        "why": "The tour's home base. This clip walks verse by verse through the entire greeting and reads all three titles together: Jesus is 'the faithful witness' who 'faithfully testified to the truth about God and from God,' 'the firstborn from the dead' as 'the prototype of all who will be raised,' and 'the ruler of the kings of the earth.' Crucially it sets up the political sting: 'for the original audience, it may look as if Rome was in charge,' but John declares Jesus is the ruler of all the kings. It closes with the doxology, noting that he loves us in the present tense, not just the past.",
+        "episodeTitle": "Revelation 1:1-8",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/g2bje5sw3qnx58mc/revelation_11-88z0zq.mp3",
+        "durationSec": 1208,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:can-i-get-witness",
+        "startSec": 3100,
+        "endSec": 3280,
+        "why": "Now the first title, faithful witness, gets its full weight. This clip connects the word witness to the Greek martus, the root of our word martyr, and shows Jesus as 'the chief witness' whose witness literally got him killed — 'his death as a witness.' It links that directly to Revelation: 'In the revelation, Jesus calls himself the faithful witness.' Bearing witness means staking your life on the truth of what you represent, which is exactly what the faithful witness did and what his followers are called into.",
+        "episodeTitle": "Can I Get a Witness?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/12813c84-937e-45e2-ae92-f4eb10419f21/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=12813c84-937e-45e2-ae92-f4eb10419f21",
+        "durationSec": 3859,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:1911",
+        "startSec": 430,
+        "endSec": 610,
+        "why": "A different angle on the same title, worth hearing after the BibleProject clip. Dr. Alan Bandy explains that all the witness language in Revelation comes out of a law-court, covenant-lawsuit setting — Jesus is called 'my faithful witness' the way Antipas of Pergamum is, one who 'did not deny his name' while on trial. This reframes Revelation 1's titles as courtroom claims: faithful witness names Jesus as the one who testifies truthfully even to death, and the judgments that follow are a fair trial, not arbitrary wrath.",
+        "episodeTitle": "Naked Bible 207: Revelation 4-5 with Dr. Alan Bandy",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2018/03/NakedBible207_AlanBandy.mp3",
+        "durationSec": 4112,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:gods-response-human-power-structures",
+        "startSec": 3540,
+        "endSec": 3720,
+        "why": "The middle title, firstborn, is the deepest one, and this clip explains why it means far more than 'first to rise.' BibleProject traces firstborn as a title of status, honor, and authority across Hebrews and the Old Testament — 'the church of the firstborn' as a title for Jesus — and then lands on Revelation 1:5, where being faithful witness is 'equated to having the status of the firstborn, and then that's equated to being the ruler of the kings of the land.' It also frames the striking twist: God keeps giving firstborn status not by birth order but to the one who faithfully serves.",
+        "episodeTitle": "Firstborn: God's Response to Human Power Structures",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/a24763ae-4a86-4715-970b-6f3e9f8ec154/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=a24763ae-4a86-4715-970b-6f3e9f8ec154",
+        "durationSec": 4174,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:81850694-e548-11ed-b811-e3e88fc378bc",
+        "startSec": 277,
+        "endSec": 457,
+        "why": "This clip takes the doxology that follows the three titles and shows it as the book's central theme: Jesus 'has freed us from our sins by his blood, and made us a kingdom and priests.' The punch is that in Revelation, conquering and ruling happen through death, not force — 'they have conquered him by the blood of the Lamb and by the word of their testimony.' That is precisely the logic of calling the crucified one ruler of the kings of the earth: he rules because he was the faithful witness who died and rose.",
+        "episodeTitle": "Revelation Overview: We Conquer Through Death",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG5476090763.mp3?updated=1682633809",
+        "durationSec": 2600,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "naked-bible:podcast:2954",
+        "startSec": 1080,
+        "endSec": 1260,
+        "why": "The final title, ruler of the kings of the earth, resolves into high Christology. Mike Heiser shows that in Revelation 1:12-15 John takes the 'ancient of days' description from Daniel 7 — the seated God of Israel with hair white like wool — and applies it to the Son of Man, Jesus, deliberately 'blurring the distinction between them.' The one who rules the kings is not merely a human king but is being portrayed with the attributes of Yahweh himself. This closes the arc: all three titles point to who this Jesus actually is.",
+        "episodeTitle": "Naked Bible 355: Revelation 1:7-20",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2020/12/NakedBible355_Revelation1_7_20.mp3",
+        "durationSec": 4328,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, the three titles are not a polite stack of honorifics. The faithful witness is the one who told the truth about God at the cost of his own life — and martus, witness, is where we get martyr. The firstborn from the dead is the one who holds the place of firstborn status, the prototype and guarantee of resurrection for everyone joined to him. And the ruler of the kings of the earth is a direct, courageous rebuttal to Caesar's claim — John is telling churches under Rome that the true king is the one who was faithful to death and rose. The visions of Revelation unfold from these three claims, and the book's central logic is in them: this ruler conquers not by force but by the blood of the Lamb and the word of his testimony. When you hear the three titles again, you'll hear who is speaking to the churches.",
+    "totalSeconds": 1080
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3065,
+      "promptTokens": 1655,
+      "completionTokens": 320,
+      "reasoningTokens": 194,
+      "cachedPromptTokens": 0,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0003213
+    },
+    {
+      "i": 1,
+      "latencyMs": 4198,
+      "promptTokens": 5808,
+      "completionTokens": 463,
+      "reasoningTokens": 191,
+      "cachedPromptTokens": 1536,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007320208
+    },
+    {
+      "i": 2,
+      "latencyMs": 4117,
+      "promptTokens": 8332,
+      "completionTokens": 447,
+      "reasoningTokens": 192,
+      "cachedPromptTokens": 5760,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000501368
+    },
+    {
+      "i": 3,
+      "latencyMs": 1559,
+      "promptTokens": 10804,
+      "completionTokens": 89,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 8320,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000395976
+    },
+    {
+      "i": 4,
+      "latencyMs": 11031,
+      "promptTokens": 11646,
+      "completionTokens": 1022,
+      "reasoningTokens": 899,
+      "cachedPromptTokens": 10880,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000423864
+    },
+    {
+      "i": 5,
+      "latencyMs": 4704,
+      "promptTokens": 14099,
+      "completionTokens": 442,
+      "reasoningTokens": 274,
+      "cachedPromptTokens": 11520,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000517076
+    },
+    {
+      "i": 6,
+      "latencyMs": 14391,
+      "promptTokens": 15649,
+      "completionTokens": 1430,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 14080,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000659484
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Revelation",
+        "chapter": 1
+      },
+      "ms": 0,
+      "summary": "25 of 95 moments"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "faithful witness firstborn from the dead ruler of the kings of the earth"
+      },
+      "ms": 76,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:33ac7cf4-com-a16412d9-1281-3664-b0a3-f7637d157ed4",
+        "fromSec": 640,
+        "toSec": 820
+      },
+      "ms": 0,
+      "summary": "640s–820s of Revelation 1:1-8"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2943",
+        "fromSec": 150,
+        "toSec": 450
+      },
+      "ms": 0,
+      "summary": "150s–330s of Naked Bible 354: Revelation 1:4-6"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-response-human-power-structures",
+        "fromSec": 3540,
+        "toSec": 3720
+      },
+      "ms": 0,
+      "summary": "3540s–3720s of Firstborn: God's Response to Human Power Structures"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2943",
+        "fromSec": 380,
+        "toSec": 560
+      },
+      "ms": 0,
+      "summary": "380s–560s of Naked Bible 354: Revelation 1:4-6"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2954",
+        "fromSec": 1080,
+        "toSec": 1260
+      },
+      "ms": 0,
+      "summary": "1080s–1260s of Naked Bible 355: Revelation 1:7-20"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:81850694-e548-11ed-b811-e3e88fc378bc",
+        "fromSec": 277,
+        "toSec": 457
+      },
+      "ms": 7,
+      "summary": "277s–457s of Revelation Overview: We Conquer Through Death"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2943",
+        "fromSec": 560,
+        "toSec": 740
+      },
+      "ms": 0,
+      "summary": "560s–740s of Naked Bible 354: Revelation 1:4-6"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "faithful witness"
+      },
+      "ms": 80,
+      "summary": "8 hits"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2943",
+        "fromSec": 740,
+        "toSec": 920
+      },
+      "ms": 0,
+      "summary": "740s–920s of Naked Bible 354: Revelation 1:4-6"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:can-i-get-witness",
+        "fromSec": 3100,
+        "toSec": 3300
+      },
+      "ms": 0,
+      "summary": "3100s–3280s of Can I Get a Witness?"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:1911",
+        "fromSec": 430,
+        "toSec": 620
+      },
+      "ms": 0,
+      "summary": "430s–610s of Naked Bible 207: Revelation 4-5 with Dr. Alan Bandy"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 7,
+    "toolCalls": 15,
+    "promptTokens": 67993,
+    "completionTokens": 4213,
+    "reasoningTokens": 1750,
+    "cachedPromptTokens": 52096,
+    "wallMs": 43328,
+    "modelLatencyMs": 43065,
+    "toolMs": 165
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003551,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T19:25:57.387Z"
+}

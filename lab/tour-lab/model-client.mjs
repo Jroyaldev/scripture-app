@@ -13,6 +13,15 @@ const REPO_ROOT = path.resolve(LAB_DIR, '..', '..');
 
 // The models the maintainer named, verbatim. `requestedSlug` is what we are
 // asked for; what the endpoint actually accepts is resolved at runtime.
+//
+// Six of the seven ride the same OpenRouter credentials (OPENAI_API_KEY /
+// OPENAI_BASE_URL), and that sharing stops at the key. Every spec owns a
+// DISTINCT `model` and `reasoning` env slot, so nothing anyone exports can
+// quietly repoint a roster of six at one slug: `OPENAI_MODEL` is not read by
+// anything, and each override says out loud which model it is for.
+const OPENROUTER = { key: 'OPENAI_API_KEY', baseUrl: 'OPENAI_BASE_URL' };
+const OPENROUTER_URL = 'https://openrouter.ai/api/v1';
+
 export const MODELS = [
   {
     key: 'deepseek-v4-flash',
@@ -25,8 +34,37 @@ export const MODELS = [
     key: 'gpt-5.6-luna',
     requestedSlug: 'openai/gpt-5.6-luna',
     label: 'GPT-5.6 Luna',
-    env: { key: 'OPENAI_API_KEY', baseUrl: 'OPENAI_BASE_URL', model: 'OPENAI_MODEL', reasoning: 'OPENAI_REASONING' },
+    env: { ...OPENROUTER, model: 'LUNA_MODEL', reasoning: 'LUNA_REASONING' },
     defaultBaseUrl: 'https://api.openai.com/v1',
+  },
+  {
+    key: 'grok-4.5',
+    requestedSlug: 'x-ai/grok-4.5',
+    label: 'Grok 4.5',
+    env: { ...OPENROUTER, model: 'GROK_MODEL', reasoning: 'GROK_REASONING' },
+    defaultBaseUrl: OPENROUTER_URL,
+    // The maintainer asked for "grok 4.5 high" specifically, so this one does
+    // not inherit the shared TOUR_REASONING; GROK_REASONING still overrides.
+    defaultReasoning: 'high',
+  },
+  {
+    key: 'ling-3.0-flash-free',
+    requestedSlug: 'inclusionai/ling-3.0-flash:free',
+    label: 'Ling 3.0 Flash (free)',
+    env: { ...OPENROUTER, model: 'LING_MODEL', reasoning: 'LING_REASONING' },
+    defaultBaseUrl: OPENROUTER_URL,
+  },
+/* Laguna S 2.1 (free) and Gemini 3.5 Flash Lite were on this roster for one
+   probe each, 2026-07-31, and removed the same day on the maintainer's call:
+   both burned all 16 model calls without ever submitting a valid tour
+   (NO_TOUR), while Ling — also free — passed. Their failed run records stay
+   in runs/ as the evidence. Capable of chat, not of driving this tool loop. */
+  {
+    key: 'gpt-5.6-luna-pro',
+    requestedSlug: 'openai/gpt-5.6-luna-pro',
+    label: 'GPT-5.6 Luna Pro',
+    env: { ...OPENROUTER, model: 'LUNA_PRO_MODEL', reasoning: 'LUNA_PRO_REASONING' },
+    defaultBaseUrl: OPENROUTER_URL,
   },
 ];
 
@@ -83,9 +121,11 @@ export function labEnv() {
   }
   // Real process env always wins over a dotfile.
   for (const k of Object.keys(merged)) if (process.env[k]) merged[k] = process.env[k];
-  for (const k of ['DEEPSEEK_API_KEY', 'DEEPSEEK_BASE_URL', 'DEEPSEEK_MODEL', 'OPENAI_API_KEY', 'OPENAI_BASE_URL', 'OPENAI_MODEL']) {
-    if (process.env[k]) merged[k] = process.env[k];
-  }
+  // …including slots no dotfile mentioned. Derived from the roster so a new
+  // model's env vars are honoured the moment it is added, never separately.
+  const known = new Set(['TOUR_REASONING']);
+  for (const m of MODELS) for (const v of Object.values(m.env)) known.add(v);
+  for (const k of known) if (process.env[k]) merged[k] = process.env[k];
   ENV_CACHE = { vars: merged, sources };
   return ENV_CACHE;
 }
@@ -212,6 +252,38 @@ export async function resolveModelSlug(spec, { baseUrl, apiKey }) {
   };
 }
 
+// -------------------------------------------------------- reasoning effort
+
+/* 'max' and 'xhigh' pass through verbatim — newer models advertise tiers above
+   'high', the aggregator forwards unknown efforts to the provider, and a
+   provider that rejects one returns a 400 the run record keeps. */
+const EFFORTS = ['low', 'medium', 'high', 'xhigh', 'max'];
+
+/**
+ * Which thinking budget this spec runs at, and where that came from.
+ *
+ * Precedence, highest first:
+ *   1. the spec's OWN env slot        (<MODEL>_REASONING — always the last word)
+ *   2. the spec's per-model default   (grok is pinned high because it was asked for that way)
+ *   3. the shared TOUR_REASONING      (the roster-wide dial)
+ *   4. nothing — the vendor's default, as before
+ */
+export function resolveReasoning(spec) {
+  const pinnedVar = spec.env.reasoning || '';
+  const candidates = [
+    [readEnv(pinnedVar), pinnedVar || 'env'],
+    [spec.defaultReasoning || null, `per-model default for ${spec.key}`],
+    [readEnv('TOUR_REASONING'), 'TOUR_REASONING'],
+  ];
+  for (const [value, source] of candidates) {
+    if (!value) continue;
+    const effort = String(value).toLowerCase();
+    if (EFFORTS.includes(effort)) return { effort, source };
+    return { effort: null, source, rejected: String(value) };
+  }
+  return { effort: null, source: 'vendor default (nothing pinned)' };
+}
+
 // ------------------------------------------------------------------- client
 
 export class ModelClient {
@@ -223,15 +295,12 @@ export class ModelClient {
        both models at their vendor DEFAULTS, and the run records show what that
        meant: DeepSeek spent 9-18K reasoning tokens per tour, luna 0.3-1.6K -
        the "speed gap" was mostly an uncontrolled thinking-budget gap. Set
-       <PREFIX>_REASONING (or shared TOUR_REASONING) to low|medium|high to pin
-       it; sent only to aggregator endpoints, whose unified `reasoning` field
-       maps to each vendor's own control. Unset = vendor default, as before,
-       and the run record says which. */
-    const effort = (readEnv(spec.env.reasoning || '') || readEnv('TOUR_REASONING') || '').toLowerCase();
-    /* 'max' and 'xhigh' pass through verbatim — newer models advertise tiers
-       above 'high', the aggregator forwards unknown efforts to the provider,
-       and a provider that rejects one returns a 400 the run record keeps. */
-    this.reasoningEffort = ['low', 'medium', 'high', 'xhigh', 'max'].includes(effort) ? effort : null;
+       <MODEL>_REASONING (or shared TOUR_REASONING) to low|medium|high|xhigh|max
+       to pin it; sent only to aggregator endpoints, whose unified `reasoning`
+       field maps to each vendor's own control. Unset = vendor default, as
+       before, and every run record says which effort and which slug ran. */
+    this.reasoning = resolveReasoning(spec);
+    this.reasoningEffort = this.reasoning.effort;
     this.resolution = null;
   }
 
@@ -249,9 +318,17 @@ export class ModelClient {
       keyEnvVar: this.spec.env.key,
       baseUrlEnvVar: this.spec.env.baseUrl,
       modelEnvVar: this.spec.env.model,
+      reasoningEnvVar: this.spec.env.reasoning,
       baseUrl: this.configured ? this.baseUrl : null,
       endpointStyle: style,
       endpointHost: this.configured ? host : null,
+      // What effort this model will actually run at, and why. `applied` is
+      // false on a direct vendor endpoint, which has no unified field to carry
+      // it — so the header never promises an effort that is not being sent.
+      reasoning: {
+        ...this.reasoning,
+        applied: Boolean(this.reasoning.effort) && style === 'aggregator',
+      },
       reason: this.configured ? null : `no key configured — set ${this.spec.env.key} (and optionally ${this.spec.env.baseUrl}) in the repo .env`,
     };
   }

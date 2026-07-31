@@ -1,0 +1,403 @@
+{
+  "runId": "2026-07-31T19-51-12-639-gemini-3.5-flash-lite",
+  "startedAt": "2026-07-31T19:51:12.640Z",
+  "promptId": "text-genesis-6",
+  "prompt": "Walk me through Genesis 6:1-4. Who are the sons of God and the Nephilim, and why is this passage there right before the flood?",
+  "model": {
+    "key": "gemini-3.5-flash-lite",
+    "label": "Gemini 3.5 Flash Lite",
+    "requestedSlug": "google/gemini-3.5-flash-lite",
+    "resolvedSlug": "google/gemini-3.5-flash-lite",
+    "resolution": {
+      "slug": "google/gemini-3.5-flash-lite",
+      "requested": "google/gemini-3.5-flash-lite",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "google/gemini-3.5-flash-lite",
+        "gemini-3.5-flash-lite"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "GEMINI_REASONING",
+      "applied": true
+    }
+  },
+  "status": "error",
+  "error": {
+    "code": "NO_TOUR",
+    "message": "ran out of model calls (16) without a valid tour"
+  },
+  "tour": null,
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 1003,
+      "promptTokens": 1452,
+      "completionTokens": 177,
+      "reasoningTokens": 154,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008781
+    },
+    {
+      "i": 1,
+      "latencyMs": 1770,
+      "promptTokens": 3964,
+      "completionTokens": 572,
+      "reasoningTokens": 497,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0026192
+    },
+    {
+      "i": 2,
+      "latencyMs": 713,
+      "promptTokens": 4835,
+      "completionTokens": 122,
+      "reasoningTokens": 47,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0017555
+    },
+    {
+      "i": 3,
+      "latencyMs": 1145,
+      "promptTokens": 5692,
+      "completionTokens": 272,
+      "reasoningTokens": 248,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0023876
+    },
+    {
+      "i": 4,
+      "latencyMs": 1265,
+      "promptTokens": 7501,
+      "completionTokens": 341,
+      "reasoningTokens": 293,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0031028
+    },
+    {
+      "i": 5,
+      "latencyMs": 987,
+      "promptTokens": 8294,
+      "completionTokens": 164,
+      "reasoningTokens": 115,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0028982
+    },
+    {
+      "i": 6,
+      "latencyMs": 1457,
+      "promptTokens": 0,
+      "completionTokens": 0,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 0,
+      "toolCalls": 0,
+      "finishReason": "error",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 7,
+      "latencyMs": 1751,
+      "promptTokens": 9178,
+      "completionTokens": 403,
+      "reasoningTokens": 354,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0037609
+    },
+    {
+      "i": 8,
+      "latencyMs": 1741,
+      "promptTokens": 9959,
+      "completionTokens": 415,
+      "reasoningTokens": 366,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0040252
+    },
+    {
+      "i": 9,
+      "latencyMs": 1688,
+      "promptTokens": 10736,
+      "completionTokens": 403,
+      "reasoningTokens": 357,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0042283
+    },
+    {
+      "i": 10,
+      "latencyMs": 1588,
+      "promptTokens": 0,
+      "completionTokens": 0,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 0,
+      "toolCalls": 0,
+      "finishReason": "error",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 11,
+      "latencyMs": 1470,
+      "promptTokens": 11502,
+      "completionTokens": 340,
+      "reasoningTokens": 311,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0043006
+    },
+    {
+      "i": 12,
+      "latencyMs": 2458,
+      "promptTokens": 13280,
+      "completionTokens": 648,
+      "reasoningTokens": 599,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.005604
+    },
+    {
+      "i": 13,
+      "latencyMs": 1270,
+      "promptTokens": 14071,
+      "completionTokens": 246,
+      "reasoningTokens": 197,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0048363
+    },
+    {
+      "i": 14,
+      "latencyMs": 2157,
+      "promptTokens": 14853,
+      "completionTokens": 564,
+      "reasoningTokens": 489,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0058659
+    },
+    {
+      "i": 15,
+      "latencyMs": 3609,
+      "promptTokens": 0,
+      "completionTokens": 0,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 0,
+      "toolCalls": 0,
+      "finishReason": "error",
+      "providerCostUsd": 0
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "chapter": 6,
+        "book": "Genesis"
+      },
+      "ms": 79,
+      "summary": "25 of 281 moments"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "toSec": 1350,
+        "fromSec": 1130,
+        "recordId": "ask-nt-wright:podcast:168c311c-5d5c-11f0-8252-7f9ec715a664"
+      },
+      "ms": 2,
+      "summary": "1130s–1310s of Who were \"the sons of God\" in Genesis 6?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "toSec": 1490,
+        "recordId": "ask-nt-wright:podcast:168c311c-5d5c-11f0-8252-7f9ec715a664",
+        "fromSec": 1310
+      },
+      "ms": 0,
+      "summary": "1310s–1490s of Who were \"the sons of God\" in Genesis 6?"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "sons of God Genesis 6 Nephilim"
+      },
+      "ms": 135,
+      "summary": "8 hits"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "toSec": 220,
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 45
+      },
+      "ms": 7,
+      "summary": "45s–220s of God Question & Response 1"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "toSec": 400,
+        "fromSec": 220,
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1"
+      },
+      "ms": 0,
+      "summary": "220s–400s of God Question & Response 1"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "toSec": 580,
+        "fromSec": 400,
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1"
+      },
+      "ms": 0,
+      "summary": "400s–580s of God Question & Response 1"
+    },
+    {
+      "at": 8,
+      "name": "transcript_window",
+      "args": {
+        "toSec": 760,
+        "fromSec": 580,
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1"
+      },
+      "ms": 0,
+      "summary": "580s–760s of God Question & Response 1"
+    },
+    {
+      "at": 9,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1600,
+        "recordId": "bibleproject:podcast:warnings-from-ancient-rebellions",
+        "toSec": 1780
+      },
+      "ms": 0,
+      "summary": "1600s–1780s of The Letter of Jude E3: Warnings From Ancient Rebellions"
+    },
+    {
+      "at": 11,
+      "name": "search_corpus",
+      "args": {
+        "query": "why is Genesis 6:1-4 there right before the flood"
+      },
+      "ms": 97,
+      "summary": "8 hits"
+    },
+    {
+      "at": 12,
+      "name": "transcript_window",
+      "args": {
+        "toSec": 500,
+        "fromSec": 320,
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1"
+      },
+      "ms": 0,
+      "summary": "320s–500s of God Question & Response 1"
+    },
+    {
+      "at": 13,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 330,
+        "toSec": 510
+      },
+      "ms": 0,
+      "summary": "330s–510s of God Question & Response 1"
+    },
+    {
+      "at": 14,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1140,
+        "toSec": 1320,
+        "recordId": "ask-nt-wright:podcast:168c311c-5d5c-11f0-8252-7f9ec715a664"
+      },
+      "ms": 0,
+      "summary": "1140s–1320s of Who were \"the sons of God\" in Genesis 6?"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 16,
+    "toolCalls": 13,
+    "promptTokens": 115317,
+    "completionTokens": 4667,
+    "reasoningTokens": 4027,
+    "cachedPromptTokens": 0,
+    "wallMs": 26505,
+    "modelLatencyMs": 26072,
+    "toolMs": 320
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.046263,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "google/gemini-3.5-flash-lite",
+      "inputPerMTokensUsd": 0.1,
+      "outputPerMTokensUsd": 0.4,
+      "cachedInputPerMTokensUsd": 0.025,
+      "_note": "PLACEHOLDER — guessed from the Gemini 2.5 Flash Lite tier, which is two versions back and may be nothing like this one. Verify at https://ai.google.dev/pricing before quoting."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T19:51:39.145Z"
+}

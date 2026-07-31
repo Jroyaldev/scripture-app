@@ -1,0 +1,515 @@
+{
+  "runId": "2026-07-31T19-10-51-757-deepseek-v4-flash",
+  "startedAt": "2026-07-31T19:10:51.757Z",
+  "promptId": "pastoral-doubt",
+  "prompt": "I'm losing my faith and I'm frightened of it. Is doubt a failure? I want to hear people who take doubt seriously rather than scolding it.",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek-v4-flash",
+    "resolution": {
+      "slug": "deepseek-v4-flash",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek-v4-flash",
+      "endpointStyle": "direct",
+      "endpointHost": "api.deepseek.com",
+      "form": "bare",
+      "via": "models-list",
+      "exact": false,
+      "tried": [
+        "deepseek-v4-flash-0731",
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash",
+        "deepseek/deepseek-v4-flash"
+      ],
+      "note": "endpoint does not publish \"deepseek/deepseek-v4-flash-0731\"; fell back to \"deepseek-v4-flash\" (nearest configured/available model). Results are NOT from the exact requested build.",
+      "availableSample": [
+        "deepseek-v4-flash",
+        "deepseek-v4-pro"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Is Doubt a Failure? Company for the Frightened Heart",
+    "intro": "You asked whether doubt is a failure, and the fear under that question is the real subject of this tour. I built it so that first you hear people who sound like you — someone who wrote almost exactly your letter — then teachers who take doubt seriously enough to give it room: a man confessing the doubt that ate his own assurance, a gospel scene where Jesus is gentle with the doubter, a biblical text that tells the church to have mercy on the wavering, and a book of the Bible that treats God's silence as something that honors rather than scolds. It ends where it began, with the person who said doubt is a stage on the way to something stronger. Nothing here will talk you out of your questions. It will, I hope, take the shame off them.",
+    "steps": [
+      {
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "startSec": 300,
+        "endSec": 700,
+        "why": "Start here because a teenager named Elijah wrote NT Wright almost exactly the letter you might have written: new ideas have uprooted foundational beliefs, and he finds himself 'doubt[ing] everything I knew,' with God feeling 'cold and distant,' 'seemingly abandoned.' Wright does not scold him. He says the intellectual inquiry is 'a necessary part of the growing up process,' and that the critical task is 'to tell the difference between the things that make a difference and the things that don't make a difference' — many things treated as core doctrines, he says from his own fifty years, 'don't mean exactly what different later Christian traditions have imagined they mean.' He closes this stretch telling Elijah not to be afraid of studying Scripture deeply. That permission — questions are part of growing, not failing — is the ground the whole tour stands on.",
+        "episodeTitle": "#131 Help! I’m on the brink of atheism... Deconstruction and suffering",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR6100001449.mp3?updated=1749725746",
+        "durationSec": 1357,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:ab2546caed73c0af0361b22c3d12ef96",
+        "startSec": 1010,
+        "endSec": 1160,
+        "why": "A teacher in the 40 Minutes in the Old Testament show confesses his own version of the fear you named. He remembers thinking it was up to him to be sincere enough when he decided to be a Christian, and says, 'I lived in constant doubt. Well, what if I wasn't really sincere?' He describes being 'plagued by this doubt' and unable to 'rest in the assurance that I was a Christian' because he kept 'put something back on myself.' This is the specific terror that doubt means you don't qualify. He reports what freed him: realizing God had 'done all the work on my behalf in Christ... he saved me, he called me to faith, granted me the gift of faith, and has kept me in that faith.' Hear it as one doubter's testimony, not a doctrine to memorize.",
+        "episodeTitle": "40 Minutes In The Old Testament: Episode 12",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_Min_EP_12_final.mp3?dest-id=245197",
+        "durationSec": 2853,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:5219bc40531dfcc3a5c25973d6f6792d",
+        "startSec": 1423,
+        "endSec": 1560,
+        "why": "This is the theological underpinning for the previous confession, from the same show: assurance does not live in the strength of your believing. The teacher warns that talking too much about faith 'risk[s] making faith the object of faith itself,' and says of a family member wrestling with doubt over her salvation that 'our assurance of salvation is Christ. It's not our faith, it's not something within us, but it's something outside of us... that which is on the cross.' He lands it with a deliberately shocking line: 'Faith never saved anybody.' If doubt makes you feel like you're gripping too weakly, this clip relocates the grip: the object, not the strength of your holding, is what holds.",
+        "episodeTitle": "40 Minutes In The Old Testament: Episode 17",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_min_17_final.mp3?dest-id=245197",
+        "durationSec": 2376,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "startSec": 1280,
+        "endSec": 1500,
+        "why": "The gospel's own doubter, read slowly and without judgment. The Listener's Commentary walks through John 20 and notes that Thomas — absent, then demanding to see the nail prints with his own hand — 'wants some evidence... because resurrection, well, that's not something easy to believe.' The teacher observes that Jesus made Thomas wait a full week, then 'graciously humors him' and shows his wounds. Thomas's response, 'My Lord and my God,' is called 'the high point really of the Gospel of John.' Note what doesn't happen: no rebuke, no shame. The one who doubted is led, gently, into the confession the whole gospel is aiming at.",
+        "episodeTitle": "John 20:1-31",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/z8yyjpv9fmtit6hd/john_201-3185o5y.mp3",
+        "durationSec": 1726,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:final-instructions-and-soaring-doxology",
+        "startSec": 2035,
+        "endSec": 2240,
+        "why": "Here is the Bible's own instruction about doubters — and it is the opposite of what many of us were taught. Tim Mackie tells how Ukrainian pastors once quoted him Jude 22 as 'Rebuke those who are doubting,' and he replied, 'that's not what it says at all.' Working through the Greek manuscripts, he explains that the oldest readings of Jude 22-23 say to 'show mercy on those who are wavering,' and that the word behind mercy is the same loyal, overabundant love as the Hebrew hesed: 'Show an overabundant, kind of like the way a parent will show just a little more leniency towards their own kid.' His practical gloss for the wavering person in the pew: 'Be gentle. Be kind about it. That's step one.' Doubt, in this text, is not an offense to rebuke; it is a condition to meet with mercy.",
+        "episodeTitle": "The Letter of Jude E6: Final Instructions and a Soaring Doxology",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/6a7451a1-26cf-4fa8-9199-4c212f7a23d9/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=6a7451a1-26cf-4fa8-9199-4c212f7a23d9",
+        "durationSec": 4137,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:aa93fe68-dfc1-11ee-8d8c-1b5a7e037e3d",
+        "startSec": 2780,
+        "endSec": 2960,
+        "why": "For the part of your fear that is really about God feeling silent and far. On the book of Lamentations, the Spoken Gospel hosts note that unlike Job — who gets 'a very loud one' — God never answers in Lamentations, and they argue this is deliberate: 'God's silence isn't to show that he's uncaring... God's silence honors it by letting it stand as true, as painful, as real, and he doesn't try to sugarcoat it, undercut it, or explain it away.' The most moving claim comes at the end: by giving Israel a lament, God has 'included a lamentation in his word... he dignifies the suffering of his people to make this the words of his suffering people his own words.' Your doubt and your complaint, in this telling, are not outside God's vocabulary.",
+        "episodeTitle": "Lamentations Overview: Mercy Every Morning",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG8477051140.mp3?updated=1710173642",
+        "durationSec": 3616,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "startSec": 861,
+        "endSec": 960,
+        "why": "The tour returns to the conversation it opened with, to give you the ending Elijah was offered. Justin Brierley names what Elijah is going through as 'commonly these days called deconstruction... having it all pulled apart and it all seems to sort of fall into different pieces on the floor.' Then the reassurance: 'I know of so many people who've gone through that... they've gone through a similar process but have reconstructed and have actually come out with something stronger, more mature, deeper.' And Wright adds that the reframing often reveals that 'Christianity is bigger than my local expression of it was.' Doubt here is not the end of faith but the passage of faith from one size to a larger one — which is why it can feel like losing everything.",
+        "episodeTitle": "#131 Help! I’m on the brink of atheism... Deconstruction and suffering",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR6100001449.mp3?updated=1749725746",
+        "durationSec": 1357,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "Nothing in this tour promises you will believe the same things in the same way a year from now. The people you heard are honest that the process is frightening and that some things genuinely change. What they offer instead is this: your doubt does not disqualify you, the Bible's own voice is mercy toward the wavering, God's silence is not a verdict, and the one who met Thomas did not flinch at his questions. The fear you are carrying — that doubt makes you a failure — is precisely the lie none of them would let stand. Take the tour slowly, and let their company do its work.",
+    "totalSeconds": 1391
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3061,
+      "promptTokens": 1757,
+      "completionTokens": 342,
+      "reasoningTokens": 156,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 1,
+      "latencyMs": 4555,
+      "promptTokens": 8408,
+      "completionTokens": 461,
+      "reasoningTokens": 217,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 2,
+      "latencyMs": 9837,
+      "promptTokens": 17005,
+      "completionTokens": 1190,
+      "reasoningTokens": 968,
+      "cachedPromptTokens": 8832,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 3,
+      "latencyMs": 4115,
+      "promptTokens": 19872,
+      "completionTokens": 436,
+      "reasoningTokens": 129,
+      "cachedPromptTokens": 18176,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 4,
+      "latencyMs": 7902,
+      "promptTokens": 22519,
+      "completionTokens": 881,
+      "reasoningTokens": 457,
+      "cachedPromptTokens": 20224,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 5,
+      "latencyMs": 21335,
+      "promptTokens": 26227,
+      "completionTokens": 2322,
+      "reasoningTokens": 1866,
+      "cachedPromptTokens": 23296,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 6,
+      "latencyMs": 56676,
+      "promptTokens": 31542,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 28544,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": null
+    },
+    {
+      "i": 7,
+      "latencyMs": 27637,
+      "promptTokens": 27778,
+      "completionTokens": 2764,
+      "reasoningTokens": 2436,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 8,
+      "latencyMs": 31478,
+      "promptTokens": 32062,
+      "completionTokens": 3655,
+      "reasoningTokens": 1700,
+      "cachedPromptTokens": 30464,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 3,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "doubt is not the opposite of faith",
+        "limit": 10
+      },
+      "ms": 102,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "crisis of faith",
+        "limit": 10
+      },
+      "ms": 34,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "doubting Thomas",
+        "limit": 10
+      },
+      "ms": 40,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "dark night of the soul"
+      },
+      "ms": 74,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "deconstruction deconstructing faith"
+      },
+      "ms": 67,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "wrestling with God"
+      },
+      "ms": 56,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "God feels far away silence of God"
+      },
+      "ms": 58,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:final-instructions-and-soaring-doxology",
+        "fromSec": 2000,
+        "toSec": 2300
+      },
+      "ms": 6,
+      "summary": "2000s–2180s of The Letter of Jude E6: Final Instructions and a Soaring Doxology"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "fromSec": 300,
+        "toSec": 1357
+      },
+      "ms": 2,
+      "summary": "300s–480s of #131 Help! I’m on the brink of atheism... Deconstruction and suffering"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1900,
+        "recordId": "bibleproject:podcast:final-instructions-and-soaring-doxology",
+        "toSec": 2080
+      },
+      "ms": 0,
+      "summary": "1900s–2080s of The Letter of Jude E6: Final Instructions and a Soaring Doxology"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 780,
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "toSec": 960
+      },
+      "ms": 0,
+      "summary": "780s–960s of #131 Help! I’m on the brink of atheism... Deconstruction and suffering"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1100,
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "toSec": 1357
+      },
+      "ms": 0,
+      "summary": "1100s–1280s of #131 Help! I’m on the brink of atheism... Deconstruction and suffering"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 480,
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "toSec": 780
+      },
+      "ms": 0,
+      "summary": "480s–660s of #131 Help! I’m on the brink of atheism... Deconstruction and suffering"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2180,
+        "recordId": "bibleproject:podcast:final-instructions-and-soaring-doxology",
+        "toSec": 2340
+      },
+      "ms": 0,
+      "summary": "2180s–2340s of The Letter of Jude E6: Final Instructions and a Soaring Doxology"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1000,
+        "recordId": "forty-minutes-ot:podcast:ab2546caed73c0af0361b22c3d12ef96",
+        "toSec": 1250
+      },
+      "ms": 6,
+      "summary": "1000s–1180s of 40 Minutes In The Old Testament: Episode 12"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1250,
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "toSec": 1430
+      },
+      "ms": 4,
+      "summary": "1250s–1430s of John 20:1-31"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2780,
+        "recordId": "spoken-gospel:podcast:aa93fe68-dfc1-11ee-8d8c-1b5a7e037e3d",
+        "toSec": 2960
+      },
+      "ms": 0,
+      "summary": "2780s–2960s of Lamentations Overview: Mercy Every Morning"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1380,
+        "recordId": "forty-minutes-ot:podcast:5219bc40531dfcc3a5c25973d6f6792d",
+        "toSec": 1560
+      },
+      "ms": 7,
+      "summary": "1380s–1560s of 40 Minutes In The Old Testament: Episode 17"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 700,
+        "recordId": "ask-nt-wright:podcast:38b54c4-com-5281cdd4-eabf-34d6-95e2-fb5b338f5e4f",
+        "toSec": 880
+      },
+      "ms": 3,
+      "summary": "700s–880s of #86 Deconstructing faith and answering atheism"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1500,
+        "recordId": "ask-nt-wright:podcast:264f9f9f-r-faith-796f79acf9257233e62f80f5f6ee5daf",
+        "toSec": 1700
+      },
+      "ms": 5,
+      "summary": "1500s–1680s of #25 When Christians lose their faith"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 655,
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "toSec": 790
+      },
+      "ms": 0,
+      "summary": "655s–790s of #131 Help! I’m on the brink of atheism... Deconstruction and suffering"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1425,
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "toSec": 1560
+      },
+      "ms": 0,
+      "summary": "1425s–1560s of John 20:1-31"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1080,
+        "recordId": "forty-minutes-ot:podcast:ab2546caed73c0af0361b22c3d12ef96",
+        "toSec": 1165
+      },
+      "ms": 0,
+      "summary": "1080s–1165s of 40 Minutes In The Old Testament: Episode 12"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 9,
+    "toolCalls": 25,
+    "promptTokens": 187170,
+    "completionTokens": 18051,
+    "reasoningTokens": 13929,
+    "cachedPromptTokens": 134528,
+    "wallMs": 167071,
+    "modelLatencyMs": 166596,
+    "toolMs": 467
+  },
+  "cost": {
+    "source": "price-table",
+    "inputUsd": 0.018507,
+    "outputUsd": 0.007581,
+    "totalUsd": 0.026088,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported no cost field; cost = tokens x pricing.json (rates are UNVERIFIED placeholders)"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T19:13:38.828Z"
+}

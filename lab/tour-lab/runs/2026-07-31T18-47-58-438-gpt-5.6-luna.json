@@ -1,0 +1,551 @@
+{
+  "runId": "2026-07-31T18-47-58-438-gpt-5.6-luna",
+  "startedAt": "2026-07-31T18:47:58.438Z",
+  "promptId": null,
+  "prompt": "i want a verse by verse commentary of john 1",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "John 1, verse by verse",
+    "intro": "This tour gives you a sustained, verse-by-verse walk through the whole first chapter of John. It follows one commentary series from the prologue, through John the Baptist’s testimony, to the calling of the first disciples, so the chapter’s themes and narrative build naturally rather than being scattered across unrelated episodes.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:a1cd8b7d-com-e1f728ab-5907-3251-86aa-e81b39158b47",
+        "startSec": 0,
+        "endSec": 890,
+        "why": "Begin with John 1:1-13, where the commentator calls the prologue the Gospel’s “grand opening” and traces its echoes of Genesis. The clip introduces the Word, creation, life, light, rejection, and belief, then explains how the world failed to “know” its maker and how receiving Jesus means believing in his name.",
+        "episodeTitle": "John 1:1-18, pt. 1",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/9q3853byvexkctm2/john_11-18_pt_16id3j.mp3",
+        "durationSec": 1215,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:a1cd8b7d-com-e1f728ab-5907-3251-86aa-e81b39158b47",
+        "startSec": 890,
+        "endSec": 1210,
+        "why": "Stay with John 1:1-13 for the prologue’s conclusion. This portion explains that those who receive the light “have been given the right to become children of God,” not through physical descent or human power, but through being “born of God.”",
+        "episodeTitle": "John 1:1-18, pt. 1",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/9q3853byvexkctm2/john_11-18_pt_16id3j.mp3",
+        "durationSec": 1215,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:46911acf-com-76e05d84-120b-3b9c-bd57-daafe1bd5d6c",
+        "startSec": 0,
+        "endSec": 850,
+        "why": "Continue with John 1:14-18. The commentator explains “the word became flesh and dwelt among us,” emphasizing that this was an eyewitness reality, not merely an idea, and explores Jesus as the incarnate Word, full of “grace and truth.”",
+        "episodeTitle": "John 1:1-18, pt. 2",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/wpc9zwsug3wf9md5/john_11-18_pt_278tf9.mp3",
+        "durationSec": 1158,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:46911acf-com-76e05d84-120b-3b9c-bd57-daafe1bd5d6c",
+        "startSec": 850,
+        "endSec": 1150,
+        "why": "Complete the prologue by hearing how Jesus makes the Father known. The clip describes him as the unique Son who shows us “exactly who God is and what God is like,” then closes by inviting you to “savor him as God come near, pitching his tent right here among us.”",
+        "episodeTitle": "John 1:1-18, pt. 2",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/wpc9zwsug3wf9md5/john_11-18_pt_278tf9.mp3",
+        "durationSec": 1158,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:f83aa8e4-com-8cde1d54-c3fb-325d-a564-3b63eca8d908",
+        "startSec": 0,
+        "endSec": 800,
+        "why": "Move into John 1:19-28, the beginning of the Gospel’s main narrative. This section explains the authorities’ investigation of John the Baptist, his refusal to claim the titles of Messiah or prophet, and his identification with Isaiah’s “voice crying in the wilderness.”",
+        "episodeTitle": "John 1:19-34",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/8faz7caqk7x4x224/john_119-348udw1.mp3",
+        "durationSec": 1385,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:f83aa8e4-com-8cde1d54-c3fb-325d-a564-3b63eca8d908",
+        "startSec": 800,
+        "endSec": 1380,
+        "why": "Finish John 1:19-34 with John’s testimony about Jesus. The commentator unfolds “the Lamb of God who takes away the sins of the world,” Jesus’ superiority, and the Spirit’s descent, concluding that John is “simply a forerunner” whose role is to point to the Son of God.",
+        "episodeTitle": "John 1:19-34",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/8faz7caqk7x4x224/john_119-348udw1.mp3",
+        "durationSec": 1385,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:e24dbd35-com-10650806-d2dc-3365-81bd-15092f12c69d",
+        "startSec": 0,
+        "endSec": 850,
+        "why": "Turn to John 1:35-51 as the story shifts from John the Baptist to Jesus. You’ll hear the first disciples follow Jesus, his invitation to “come and see,” Andrew bring Simon Peter, and Philip begin to gather others around Jesus.",
+        "episodeTitle": "John 1:35-51",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/jmena3inwpzfyjy2/john_135-51aokuz.mp3",
+        "durationSec": 1075,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:e24dbd35-com-10650806-d2dc-3365-81bd-15092f12c69d",
+        "startSec": 850,
+        "endSec": 1070,
+        "why": "Conclude with Nathanael’s encounter and Jesus’ promise that they will “see greater things than these.” The commentator connects “the Son of Man” to Daniel 7 and the ascending and descending angels to Jacob’s vision, then lands the chapter on the invitation to “come and see” Jesus for yourself.",
+        "episodeTitle": "John 1:35-51",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/jmena3inwpzfyjy2/john_135-51aokuz.mp3",
+        "durationSec": 1075,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these recordings cover John 1 in sequence and give you the chapter’s verse-by-verse movement: the eternal Word becomes flesh, the light is received or rejected, John points away from himself to the Lamb, and people begin to follow Jesus. Read the chapter alongside the tour, pausing whenever you want to sit with a verse before continuing.",
+    "totalSeconds": 4810
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2905,
+      "promptTokens": 1126,
+      "completionTokens": 72,
+      "reasoningTokens": 36,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000057375000000000005
+    },
+    {
+      "i": 1,
+      "latencyMs": 3191,
+      "promptTokens": 4558,
+      "completionTokens": 309,
+      "reasoningTokens": 67,
+      "cachedPromptTokens": 1123,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0006259300000000001
+    },
+    {
+      "i": 2,
+      "latencyMs": 6145,
+      "promptTokens": 17626,
+      "completionTokens": 527,
+      "reasoningTokens": 65,
+      "cachedPromptTokens": 4555,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0019955500000000004
+    },
+    {
+      "i": 3,
+      "latencyMs": 4520,
+      "promptTokens": 23632,
+      "completionTokens": 434,
+      "reasoningTokens": 166,
+      "cachedPromptTokens": 17623,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0011876800000000002
+    },
+    {
+      "i": 4,
+      "latencyMs": 7376,
+      "promptTokens": 26643,
+      "completionTokens": 549,
+      "reasoningTokens": 347,
+      "cachedPromptTokens": 23629,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009423650000000001
+    },
+    {
+      "i": 5,
+      "latencyMs": 9513,
+      "promptTokens": 28981,
+      "completionTokens": 861,
+      "reasoningTokens": 159,
+      "cachedPromptTokens": 26640,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010755500000000002
+    },
+    {
+      "i": 6,
+      "latencyMs": 9419,
+      "promptTokens": 29813,
+      "completionTokens": 1145,
+      "reasoningTokens": 85,
+      "cachedPromptTokens": 28978,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00108108
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 1,
+        "verse": 1,
+        "limit": 40
+      },
+      "ms": 91,
+      "summary": "40 of 308 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 1,
+        "verse": 19,
+        "limit": 20
+      },
+      "ms": 1,
+      "summary": "20 of 308 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 1,
+        "verse": 29,
+        "limit": 20
+      },
+      "ms": 0,
+      "summary": "20 of 308 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 1,
+        "verse": 35,
+        "limit": 20
+      },
+      "ms": 0,
+      "summary": "20 of 308 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 1,
+        "verse": 43,
+        "limit": 20
+      },
+      "ms": 0,
+      "summary": "20 of 308 moments"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "John chapter 1 verse by verse commentary John the Baptist Lamb of God disciples",
+        "sourceId": "listeners-commentary",
+        "limit": 10
+      },
+      "ms": 76,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "John 1 come and see Nathanael Philip",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 35,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "John 1 Word became flesh grace truth",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 69,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a1cd8b7d-com-e1f728ab-5907-3251-86aa-e81b39158b47",
+        "fromSec": 0,
+        "toSec": 180
+      },
+      "ms": 6,
+      "summary": "0s–180s of John 1:1-18, pt. 1"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:46911acf-com-76e05d84-120b-3b9c-bd57-daafe1bd5d6c",
+        "fromSec": 0,
+        "toSec": 180
+      },
+      "ms": 0,
+      "summary": "0s–180s of John 1:1-18, pt. 2"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:f83aa8e4-com-8cde1d54-c3fb-325d-a564-3b63eca8d908",
+        "fromSec": 0,
+        "toSec": 180
+      },
+      "ms": 3,
+      "summary": "0s–180s of John 1:19-34"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:e24dbd35-com-10650806-d2dc-3365-81bd-15092f12c69d",
+        "fromSec": 0,
+        "toSec": 180
+      },
+      "ms": 0,
+      "summary": "0s–180s of John 1:35-51"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a1cd8b7d-com-e1f728ab-5907-3251-86aa-e81b39158b47"
+      },
+      "ms": 1,
+      "summary": "John 1:1-18, pt. 1 (1215s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:46911acf-com-76e05d84-120b-3b9c-bd57-daafe1bd5d6c"
+      },
+      "ms": 1,
+      "summary": "John 1:1-18, pt. 2 (1158s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:f83aa8e4-com-8cde1d54-c3fb-325d-a564-3b63eca8d908"
+      },
+      "ms": 0,
+      "summary": "John 1:19-34 (1385s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:e24dbd35-com-10650806-d2dc-3365-81bd-15092f12c69d"
+      },
+      "ms": 1,
+      "summary": "John 1:35-51 (1075s)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a1cd8b7d-com-e1f728ab-5907-3251-86aa-e81b39158b47",
+        "fromSec": 1040,
+        "toSec": 1215
+      },
+      "ms": 0,
+      "summary": "1040s–1215s of John 1:1-18, pt. 1"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:46911acf-com-76e05d84-120b-3b9c-bd57-daafe1bd5d6c",
+        "fromSec": 990,
+        "toSec": 1158
+      },
+      "ms": 0,
+      "summary": "990s–1158s of John 1:1-18, pt. 2"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:f83aa8e4-com-8cde1d54-c3fb-325d-a564-3b63eca8d908",
+        "fromSec": 1190,
+        "toSec": 1385
+      },
+      "ms": 0,
+      "summary": "1190s–1370s of John 1:19-34"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:e24dbd35-com-10650806-d2dc-3365-81bd-15092f12c69d",
+        "fromSec": 930,
+        "toSec": 1075
+      },
+      "ms": 0,
+      "summary": "930s–1075s of John 1:35-51"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a1cd8b7d-com-e1f728ab-5907-3251-86aa-e81b39158b47",
+        "fromSec": 820,
+        "toSec": 1020
+      },
+      "ms": 0,
+      "summary": "820s–1000s of John 1:1-18, pt. 1"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:f83aa8e4-com-8cde1d54-c3fb-325d-a564-3b63eca8d908",
+        "fromSec": 780,
+        "toSec": 980
+      },
+      "ms": 0,
+      "summary": "780s–960s of John 1:19-34"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:e24dbd35-com-10650806-d2dc-3365-81bd-15092f12c69d",
+        "fromSec": 780,
+        "toSec": 950
+      },
+      "ms": 0,
+      "summary": "780s–950s of John 1:35-51"
+    }
+  ],
+  "rejections": [
+    {
+      "at": 5,
+      "errors": [
+        "steps[0]: clip is 1210s, maximum is 900s (15 min)",
+        "steps[1]: clip is 1150s, maximum is 900s (15 min)",
+        "steps[2]: clip is 1380s, maximum is 900s (15 min)",
+        "steps[3]: clip is 1070s, maximum is 900s (15 min)"
+      ],
+      "submitted": {
+        "title": "John 1, verse by verse",
+        "intro": "This tour gives you a sustained, verse-by-verse walk through the whole first chapter of John. It follows one commentary series from the prologue, through John the Baptist’s testimony, to the calling of the first disciples, so the chapter’s themes and narrative build naturally rather than being scattered across unrelated episodes.",
+        "steps": [
+          {
+            "recordId": "listeners-commentary:podcast:a1cd8b7d-com-e1f728ab-5907-3251-86aa-e81b39158b47",
+            "startSec": 0,
+            "endSec": 1210,
+            "why": "Begin with John 1:1-13, where the commentator identifies the passage as the Gospel’s “grand opening” and traces its echoes of Genesis, introducing the Word, creation, life, light, rejection, belief, and becoming children of God. The clip lands on the explanation that those who receive Jesus “have been given the right to become children of God.”"
+          },
+          {
+            "recordId": "listeners-commentary:podcast:46911acf-com-76e05d84-120b-3b9c-bd57-daafe1bd5d6c",
+            "startSec": 0,
+            "endSec": 1150,
+            "why": "Continue immediately with John 1:14-18. This section explains “the word became flesh and dwelt among us,” treats the incarnation as an eyewitness reality, and develops “grace and truth” and Jesus as the one who shows us exactly what God is like. It closes by inviting you to “savor him as God come near, pitching his tent right here among us.”"
+          },
+          {
+            "recordId": "listeners-commentary:podcast:f83aa8e4-com-8cde1d54-c3fb-325d-a564-3b63eca8d908",
+            "startSec": 0,
+            "endSec": 1380,
+            "why": "Now move into John 1:19-34, the beginning of the Gospel’s main narrative. The commentator walks through the authorities’ questions to John, his identification as the wilderness voice, and his testimony that Jesus is “the Lamb of God who takes away the sins of the world.” The conclusion gathers the section around John’s humble role as “simply a forerunner” and Jesus as the Son of God who gives the Spirit."
+          },
+          {
+            "recordId": "listeners-commentary:podcast:e24dbd35-com-10650806-d2dc-3365-81bd-15092f12c69d",
+            "startSec": 0,
+            "endSec": 1070,
+            "why": "Finish with John 1:35-51, where the chapter turns from John the Baptist to Jesus calling disciples. You’ll hear the “come and see” invitations, Philip’s introduction of Nathanael, Nathanael’s recognition of Jesus, and Jesus’ promise that they will “see greater things than these,” including the Son of Man imagery drawn from Daniel and Jacob’s vision."
+          }
+        ],
+        "closing": "Taken together, these four recordings cover John 1 in sequence and give you the chapter’s verse-by-verse movement: the eternal Word becomes flesh, the light is received or rejected, John points away from himself to the Lamb, and people begin to follow Jesus. Read the chapter alongside the tour, pausing whenever you want to sit with a verse before continuing."
+      }
+    }
+  ],
+  "totals": {
+    "modelCalls": 7,
+    "toolCalls": 25,
+    "promptTokens": 132379,
+    "completionTokens": 3897,
+    "reasoningTokens": 925,
+    "cachedPromptTokens": 103648,
+    "wallMs": 43458,
+    "modelLatencyMs": 43069,
+    "toolMs": 284
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.006966,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T18:48:41.896Z"
+}

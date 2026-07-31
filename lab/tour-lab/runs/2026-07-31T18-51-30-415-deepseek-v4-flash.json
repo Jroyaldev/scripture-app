@@ -1,0 +1,470 @@
+{
+  "runId": "2026-07-31T18-51-30-415-deepseek-v4-flash",
+  "startedAt": "2026-07-31T18:51:30.415Z",
+  "promptId": "doctrinal-resurrection-body",
+  "prompt": "If Jesus rose bodily, what happens to my body when I die? I want to understand what the New Testament actually claims about resurrection versus 'going to heaven'.",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek-v4-flash",
+    "resolution": {
+      "slug": "deepseek-v4-flash",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek-v4-flash",
+      "endpointStyle": "direct",
+      "endpointHost": "api.deepseek.com",
+      "form": "bare",
+      "via": "models-list",
+      "exact": false,
+      "tried": [
+        "deepseek-v4-flash-0731",
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash",
+        "deepseek/deepseek-v4-flash"
+      ],
+      "note": "endpoint does not publish \"deepseek/deepseek-v4-flash-0731\"; fell back to \"deepseek-v4-flash\" (nearest configured/available model). Results are NOT from the exact requested build.",
+      "availableSample": [
+        "deepseek-v4-flash",
+        "deepseek-v4-pro"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Your Body Is Not Left Behind: What the New Testament Says About Death and Resurrection",
+    "intro": "You asked a question that gets at the exact confusion most of us inherit: if Jesus rose bodily, then what happens to my body when I die — and is \"going to heaven\" actually the Christian hope? This tour moves from what the word \"resurrection\" meant in the first century, to what Paul says our resurrection body is, to what the New Testament actually teaches about the time between your death and that day, and it ends with how this should shape the way we talk at funerals. By the end you'll have the distinction you're after: resurrection is not going to heaven; resurrection is what happens when heaven comes to your body.",
+    "steps": [
+      {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "startSec": 640,
+        "endSec": 770,
+        "why": "N.T. Wright sets the terms before anything else: in the first century, 'anastasis in Greek and its cognates and the equivalent in Hebrew Aramaic, they simply aren't about going to heaven.' He walks through why the earliest Christians needed both an empty tomb and appearances of a living man to use the word resurrection — an appearance without the empty tomb would have been called a vision, not resurrection. He closes with the wounds: Jesus is recognized by the marks of the nails, and he suggests that 'the things that we have suffered out of love for others will be part of our glory.' This grounds everything that follows in what resurrection actually meant.",
+        "episodeTitle": "#164 Easter questions on the resurrection of Jesus",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR6878813537.mp3?updated=1749655811",
+        "durationSec": 2012,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "radically-christian:podcast:920f7f45-https-radicallychristian-com-p-9747",
+        "startSec": 1297,
+        "endSec": 1430,
+        "why": "A clear, plain-spoken definition of resurrection as bodily restoration rather than escape: 'Resurrection means your body dies, is buried, and then comes to life again.' The speaker insists your risen body is different (immortal, imperishable) yet connected to this body — otherwise it wouldn't be resurrection but possession. His restored-car illustration makes the point stick: if you scrapped the old car and bought a new one, you can't call it a restoration. This is the step where you feel the stakes of the word.",
+        "episodeTitle": "New Heavens and New Earth (Part One)",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682217/c4e7cab7-25e4-42aa-8533-9490dbde7514/transcoded.mp3?post_id=148682217&relation=podcast&Expires=1785438056&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=LE6IMlZGZ34wY30Pj5yi~AT5ze2tLwycdU5RHKsxDyV6kWnp7op3Hi8GCMLqPWxdDU2ozndDAKCXmlevx5ySU~f1q-u72m5KDhrkGbX4tEQ1wjfTtWxS2PmgvbT5ijUrvUrxD3tWLWCW4fDah-d8spOCKyfGLC0PckzJ8uUSNa-ioBoZq8igCCZq8ItcvrBUlG4UdYt6rRgHcvbNBOb5i6-0wcXC0qfpjpgx0LECaVuSsPkZyGtJ3OcuRblQqAIWwYFHFofyXJkg-d1wdQOvR8IA~7it4hWBGNfDnhMk5c3wWFMdIqfbtks1qY7mcgSnrQQFL9ZIa1IQkHG2K0O4gg__",
+        "durationSec": 1689,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:719",
+        "startSec": 1800,
+        "endSec": 1980,
+        "why": "Now the hard passage, 1 Corinthians 15, with the phrase people stumble on: 'spiritual body.' Heber and his guest show Paul is not saying you trade a body for a spirit — 'You don't go from a body to a non body when you're in heaven. You go from one kind of embodiment to another kind of embodiment.' They work through Paul's seed-and-grain analogy and the different glories of sun, moon, and stars: 'Things are embodied,' even Moses and Elijah at the transfiguration appear as embodied, not wisps of smoke. Your body is not dissolved; it is traded for another kind of embodiment, characterized by incorruptibility, glory, and power.",
+        "episodeTitle": "Naked Bible 88: What is the “spiritual body” Paul talks about in 1 Cor 15?",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2016/02/NakedBible88_spiritualbody_1Cor15.mp3",
+        "durationSec": 2975,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "startSec": 700,
+        "endSec": 880,
+        "why": "A close read of 2 Corinthians 5, where Paul groans not to be freed from his body but to be clothed with a new one. The teacher points out that Greek philosophers used the word 'naked' for a soul finally released from the body — 'but for Christians, that's not our goal.' Paul's longing is 'to be clothed with our dwelling from heaven,' and the Holy Spirit is given now as the pledge, the arrabon, the down payment guaranteeing that body. This clip answers the actual shape of your grief: the New Testament hope is not nakedness, it's being dressed again.",
+        "episodeTitle": "2 Corinthians 5:1-10",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/jckmzx/2_corinthians_51-10816em.mp3",
+        "durationSec": 1584,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "startSec": 1060,
+        "endSec": 1240,
+        "why": "The same 2 Corinthians 5 passage, a few minutes later, answers your question directly: what happens if I die before Jesus returns? 'Our ultimate hope is resurrection, but our immediate hope is of dying and getting to be with the Lord.' The teacher reads verses 6–8 closely: being at home in the body means being absent from the Lord, and Paul is of good courage because if death comes first, 'he will get to go and be with the Lord. And that's preferable' — what Paul calls 'better by far' in Philippians 1. This is where 'going to heaven' gets its true, modest place: a real and good intermediate comfort, but not the goal.",
+        "episodeTitle": "2 Corinthians 5:1-10",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/jckmzx/2_corinthians_51-10816em.mp3",
+        "durationSec": 1584,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:61fea544-com-fbfc585e-18f3-3e09-8729-7190089a2dbf",
+        "startSec": 540,
+        "endSec": 720,
+        "why": "Paul's own grief-care passage, 1 Thessalonians 4, shows that those who die in Christ 'don't go to sleep... they go and they are with him,' so that when Jesus returns 'God will bring with him those who have fallen asleep.' The teacher unpacks the royal word parousia — the coming of a king to his own city — so you can picture the return as Jesus coming to this world he owns. The dead are not left behind; they are with him and will not be preceded by the living. This is the ground for Christian grief that 'grieves differently.'",
+        "episodeTitle": "1 Thessalonians 4:13-18",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/8pb6cz/1_thess_413-189tacb.mp3",
+        "durationSec": 1603,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:a1b97879b7216b0aeed665fa00ac8e1e",
+        "startSec": 1980,
+        "endSec": 2145,
+        "why": "A pastoral moment from an Old Testament episode on Abraham buying a burial plot, and it earns its place by connecting the body's dignity to burial: 'your body's not not unimportant. It's not a mere shell in which the real you is located.' The hosts walk through why the disciples cared for Jesus' mangled body and put it in a tomb — because his resurrection is promised to us. And they name your exact question with the image of Holy Saturday: 'if I die today and I'm buried, I will be in kind of the holy Saturday state that Christ was in... I will be with him... But I will still be waiting.' The intermediate state is real, with Christ, and still not the end.",
+        "episodeTitle": "40 Minutes In The Old Testament: Episode 33",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_Min_OT_33_Final.mp3?dest-id=245197",
+        "durationSec": 2245,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "radically-christian:podcast:1414c919-https-radicallychristian-com-p-9765",
+        "startSec": 1468,
+        "endSec": 1580,
+        "why": "The tour lands where this question always lands: at the funeral. The speakers talk about what Christians actually say when someone dies, and they push back hard on well-meaning lines like 'now they've finally reached their reward' — 'I've even heard people say, now they've got their new body, and I want to say, whoa, no, they don't have their new body. They don't have a body at all.' Quoting Paul's word from 2 Corinthians, the dead are 'unclothed' spirits, and 'that's not our hope. Our hope is not to be an unclothed spirit, it's to be further clothed.' This is how the whole distinction you asked about becomes something you can say out loud with accuracy and comfort.",
+        "episodeTitle": "Questions About Death: Where Do We Go and Is Cremation Wrong?",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682215/e6894693-d7a0-42e7-80df-02ef93ae9763/transcoded.mp3?post_id=148682215&relation=podcast&Expires=1785438045&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=CpQevhv5~N2AdCx~Voixg2aUA8xq21EqJgLRAc95TzZVFKDUAskP3urLaVEYjuIFa2NkX4H0pZ4KWrMQ9lmdMoSr~ecA16rLHm-QxaPZMOYIJeWVuLyEqS9NURq~ZgmShx58br8qiKJIf28H6WFomjJ2EYt2B1BC1DlyOUnfx7WdpDOoLObySvxQJxPQuAmyFWdKBFCcwrWcaosWDcgcZWwdL4E6aXFGLpi-29dPcDQAQ5TtK1rrQKA71VnB2G071BcZ-WKIo3GZRC8ZkupGvoUmrnStuibm9SIzXgH2rXNaZ4UShfPuYFJbk469e-1Kk7iuN3whUjY5EGBuSMPXqA__",
+        "durationSec": 1825,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "The short answer to your question, once the New Testament is allowed to speak in its own words, is that your body is not discarded and 'heaven' is not the destination. When you die you are with Christ — really, and better than now — but you are unclothed, waiting, in what one teacher here called the holy Saturday state. The Christian hope is the morning after that Saturday: resurrection, when this perishable body puts on imperishable and death is swallowed up in victory, on a renewed earth where God dwells with his people. That is why the empty tomb matters, and why your body — even now, even broken — is part of the good news rather than a problem to be escaped.",
+    "totalSeconds": 1260
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3812,
+      "promptTokens": 1757,
+      "completionTokens": 312,
+      "reasoningTokens": 227,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 1,
+      "latencyMs": 6412,
+      "promptTokens": 4391,
+      "completionTokens": 694,
+      "reasoningTokens": 405,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 2,
+      "latencyMs": 16406,
+      "promptTokens": 10324,
+      "completionTokens": 1912,
+      "reasoningTokens": 1591,
+      "cachedPromptTokens": 4992,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 3,
+      "latencyMs": 20714,
+      "promptTokens": 14542,
+      "completionTokens": 2246,
+      "reasoningTokens": 1908,
+      "cachedPromptTokens": 12160,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 4,
+      "latencyMs": 12939,
+      "promptTokens": 19022,
+      "completionTokens": 1372,
+      "reasoningTokens": 959,
+      "cachedPromptTokens": 16768,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 5,
+      "latencyMs": 26641,
+      "promptTokens": 23068,
+      "completionTokens": 2837,
+      "reasoningTokens": 2498,
+      "cachedPromptTokens": 20352,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 6,
+      "latencyMs": 57370,
+      "promptTokens": 29364,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 23040,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": null
+    },
+    {
+      "i": 7,
+      "latencyMs": 29283,
+      "promptTokens": 21805,
+      "completionTokens": 2791,
+      "reasoningTokens": 866,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 35,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "resurrection of the body not going to heaven",
+        "limit": 10
+      },
+      "ms": 65,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "intermediate state between death and resurrection"
+      },
+      "ms": 83,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "life after life after death"
+      },
+      "ms": 0,
+      "summary": "0 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 8,
+        "query": "going to heaven when you die is not the Christian hope"
+      },
+      "ms": 46,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 8,
+        "query": "dead in Christ will rise first"
+      },
+      "ms": 56,
+      "summary": "8 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "fromSec": 590,
+        "toSec": 770
+      },
+      "ms": 4,
+      "summary": "590s–770s of #164 Easter questions on the resurrection of Jesus"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:719",
+        "fromSec": 1800,
+        "toSec": 1980
+      },
+      "ms": 6,
+      "summary": "1800s–1980s of Naked Bible 88: What is the “spiritual body” Paul talks about in 1 Cor 15?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 700,
+        "toSec": 880
+      },
+      "ms": 0,
+      "summary": "700s–880s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 880,
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "toSec": 1130
+      },
+      "ms": 0,
+      "summary": "880s–1060s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 850,
+        "recordId": "listeners-commentary:podcast:61fea544-com-fbfc585e-18f3-3e09-8729-7190089a2dbf",
+        "toSec": 1100
+      },
+      "ms": 0,
+      "summary": "850s–1030s of 1 Thessalonians 4:13-18"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2040,
+        "recordId": "forty-minutes-ot:podcast:a1b97879b7216b0aeed665fa00ac8e1e",
+        "toSec": 2245
+      },
+      "ms": 5,
+      "summary": "2040s–2220s of 40 Minutes In The Old Testament: Episode 33"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1060,
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "toSec": 1240
+      },
+      "ms": 0,
+      "summary": "1060s–1240s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 700,
+        "recordId": "listeners-commentary:podcast:61fea544-com-fbfc585e-18f3-3e09-8729-7190089a2dbf",
+        "toSec": 870
+      },
+      "ms": 0,
+      "summary": "700s–870s of 1 Thessalonians 4:13-18"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1980,
+        "recordId": "forty-minutes-ot:podcast:a1b97879b7216b0aeed665fa00ac8e1e",
+        "toSec": 2060
+      },
+      "ms": 0,
+      "summary": "1980s–2060s of 40 Minutes In The Old Testament: Episode 33"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1250,
+        "recordId": "radically-christian:podcast:920f7f45-https-radicallychristian-com-p-9747",
+        "toSec": 1430
+      },
+      "ms": 5,
+      "summary": "1250s–1430s of New Heavens and New Earth (Part One)"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 540,
+        "recordId": "listeners-commentary:podcast:61fea544-com-fbfc585e-18f3-3e09-8729-7190089a2dbf",
+        "toSec": 720
+      },
+      "ms": 0,
+      "summary": "540s–720s of 1 Thessalonians 4:13-18"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1400,
+        "recordId": "radically-christian:podcast:1414c919-https-radicallychristian-com-p-9765",
+        "toSec": 1620
+      },
+      "ms": 1,
+      "summary": "1400s–1580s of Questions About Death: Where Do We Go and Is Cremation Wrong?"
+    },
+    {
+      "at": 5,
+      "name": "episode_info",
+      "args": {
+        "recordId": "naked-bible:podcast:719"
+      },
+      "ms": 2,
+      "summary": "Naked Bible 88: What is the “spiritual body” Paul talks about in 1 Cor 15? (2975s)"
+    },
+    {
+      "at": 5,
+      "name": "episode_info",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a1b97879b7216b0aeed665fa00ac8e1e"
+      },
+      "ms": 1,
+      "summary": "40 Minutes In The Old Testament: Episode 33 (2245s)"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 8,
+    "toolCalls": 21,
+    "promptTokens": 124273,
+    "completionTokens": 18164,
+    "reasoningTokens": 14454,
+    "cachedPromptTokens": 82304,
+    "wallMs": 174268,
+    "modelLatencyMs": 173577,
+    "toolMs": 309
+  },
+  "cost": {
+    "source": "price-table",
+    "inputUsd": 0.014056,
+    "outputUsd": 0.007629,
+    "totalUsd": 0.021685,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported no cost field; cost = tokens x pricing.json (rates are UNVERIFIED placeholders)"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T18:54:24.683Z"
+}

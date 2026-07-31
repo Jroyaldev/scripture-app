@@ -1,5 +1,5 @@
 {
-  "_README": "EDIT ME. These rates are USD per 1,000,000 tokens and are NOT authoritative. Both models here are newer than any pricing knowledge bundled with the code that wrote this file, so the numbers below are placeholders until a human checks the vendor's price page and replaces them. Cost = tokens x rate, EXCEPT where the endpoint reports its own accounted cost (OpenRouter-style `usage.cost`), which is always preferred and is labelled 'provider' in the run record.",
+  "_README": "EDIT ME. These rates are USD per 1,000,000 tokens and are NOT authoritative. Every model here is newer than any pricing knowledge bundled with the code that wrote this file, so the numbers below are placeholders until a human checks the vendor's price page and replaces them. Cost = tokens x rate, EXCEPT where the endpoint reports its own accounted cost (OpenRouter-style `usage.cost`), which is always preferred and is labelled 'provider' in the run record. Six of the seven models route through OpenRouter today, so in practice the table below is a fallback that rarely fires.",
   "_verifiedBy": null,
   "_verifiedAt": null,
   "models": {
@@ -16,6 +16,41 @@
       "outputPerMTokensUsd": 10.0,
       "cachedInputPerMTokensUsd": 0.125,
       "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "grok-4.5": {
+      "requestedSlug": "x-ai/grok-4.5",
+      "inputPerMTokensUsd": 3.0,
+      "outputPerMTokensUsd": 15.0,
+      "cachedInputPerMTokensUsd": 0.75,
+      "_note": "PLACEHOLDER — guessed from the Grok 4 frontier tier and NOT checked against xAI's page. This model runs at reasoning effort high by default, so output tokens (which include reasoning tokens) drive the bill; treat any price-table figure for it as fiction until verified."
+    },
+    "ling-3.0-flash-free": {
+      "requestedSlug": "inclusionai/ling-3.0-flash:free",
+      "inputPerMTokensUsd": 0.0,
+      "outputPerMTokensUsd": 0.0,
+      "cachedInputPerMTokensUsd": 0.0,
+      "_note": "PLACEHOLDER — zeros because the slug carries OpenRouter's `:free` suffix, not because anyone verified the tier. This asserts nothing: the provider accounts its own cost and the run record's 'provider' figure is the only one to trust. A free tier that starts charging, or a run that silently lands on the paid `inclusionai/ling-3.0-flash`, would show up there and not here."
+    },
+    "laguna-s-2.1-free": {
+      "requestedSlug": "poolside/laguna-s-2.1:free",
+      "inputPerMTokensUsd": 0.0,
+      "outputPerMTokensUsd": 0.0,
+      "cachedInputPerMTokensUsd": 0.0,
+      "_note": "PLACEHOLDER — zeros for the `:free` suffix only, unverified. The paid twin `poolside/laguna-s-2.1` is also published, so if the resolver ever falls back to it the price basis in the run record is what will say so. Trust the provider-reported cost, not this row."
+    },
+    "gemini-3.5-flash-lite": {
+      "requestedSlug": "google/gemini-3.5-flash-lite",
+      "inputPerMTokensUsd": 0.1,
+      "outputPerMTokensUsd": 0.4,
+      "cachedInputPerMTokensUsd": 0.025,
+      "_note": "PLACEHOLDER — guessed from the Gemini 2.5 Flash Lite tier, which is two versions back and may be nothing like this one. Verify at https://ai.google.dev/pricing before quoting."
+    },
+    "gpt-5.6-luna-pro": {
+      "requestedSlug": "openai/gpt-5.6-luna-pro",
+      "inputPerMTokensUsd": 15.0,
+      "outputPerMTokensUsd": 120.0,
+      "cachedInputPerMTokensUsd": 1.5,
+      "_note": "PLACEHOLDER — a guess at a 'pro' multiple over the luna row above, itself a guess. The most expensive row in this file is the least verified one in it. OpenRouter accounts this model's spend itself, so the run record's 'provider' basis is what the ledger actually sums."
     }
   }
 }

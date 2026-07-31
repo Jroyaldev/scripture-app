@@ -1,0 +1,396 @@
+{
+  "runId": "2026-07-31T18-58-53-888-deepseek-v4-flash",
+  "startedAt": "2026-07-31T18:58:53.888Z",
+  "promptId": null,
+  "prompt": "how does babylon and rome and empire language relate to each other?",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek-v4-flash",
+    "resolution": {
+      "slug": "deepseek-v4-flash",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek-v4-flash",
+      "endpointStyle": "direct",
+      "endpointHost": "api.deepseek.com",
+      "form": "bare",
+      "via": "models-list",
+      "exact": false,
+      "tried": [
+        "deepseek-v4-flash-0731",
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash",
+        "deepseek/deepseek-v4-flash"
+      ],
+      "note": "endpoint does not publish \"deepseek/deepseek-v4-flash-0731\"; fell back to \"deepseek-v4-flash\" (nearest configured/available model). Results are NOT from the exact requested build.",
+      "availableSample": [
+        "deepseek-v4-flash",
+        "deepseek-v4-pro"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Babylon, Rome, and Empire: How Biblical Authors Speak",
+    "intro": "You've asked a question the biblical authors answer by code. The short version: Babylon is a real fallen empire, and it is also the Bible's name for every empire that sets itself against God — which is why the book of Revelation can describe Rome without ever saying \"Rome.\" This tour walks you through how that code works: the figural way biblical authors reuse the language of one empire to describe another, what Babylon's \"harlot\" imagery does in Revelation 17–18, and what it means for you to live inside Babylon while belonging to another city. Seven clips, each standing on the last.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:day-lord-part-1-whats-deal-babylon",
+        "startSec": 1040,
+        "endSec": 1220,
+        "why": "Start here for the interpretive key: the biblical authors read history 'figurally,' fixing a clear act of God like the rise and fall of Babylon and reusing its language for later events that rhyme with it. The hosts make the payoff explicit — 'John in the book of Revelation talks about the rise and fall of Rome. But he never says Rome anywhere in the book of Revelation. He only uses the word Babylon.' This tells you why the word Babylon can do so much work.",
+        "episodeTitle": "What's the Deal With Babylon?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/c3471202-004c-4aee-b05c-698ea3ca89a9/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=c3471202-004c-4aee-b05c-698ea3ca89a9",
+        "durationSec": 3879,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:the-blood-cries-out",
+        "startSec": 1480,
+        "endSec": 1660,
+        "why": "This clip shows the method at work in one verse, Revelation 11:8, where John names the great city 'Sodom and Egypt... where their Lord was crucified' — three different cities at once. The hosts call it the interpretive key: 'when you put on your apocalyptic glasses... you're seeing the same dark powers surface.' Once you see how one city can be many cities, John describing Rome as Babylon stops being a puzzle.",
+        "episodeTitle": "The Blood Cries Out",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/7da7a8b0-24c3-429a-bcb5-7fed7280cb15/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=7da7a8b0-24c3-429a-bcb5-7fed7280cb15",
+        "durationSec": 3149,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:day-lord-part-4-evil-behind-babylon",
+        "startSec": 2190,
+        "endSec": 2370,
+        "why": "Now the underlying claim about empire: Isaiah 14 is a satire in which the king of Babylon imagines himself as a god, retold from Babylon's own Marduk mythology. The hosts read it as the prophets getting 'inside of the mind of the king of Babylon' to expose the 'delusions of grandeur' at the heart of world empire — the same refusal to acknowledge Yahweh they found in Pharaoh and in Solomon. This is the spiritual engine under the Babylon symbol.",
+        "episodeTitle": "The Evil Behind Babylon",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/759f025b-681b-4c27-869f-2a1e83e077cc/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=759f025b-681b-4c27-869f-2a1e83e077cc",
+        "durationSec": 3888,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:ab7677ef-com-3166a062-7802-37ba-be40-6e0e6f984370",
+        "startSec": 440,
+        "endSec": 620,
+        "why": "Having seen the principle, hear it applied to Revelation 17. The teacher traces the harlot image back through Nineveh in Nahum 3 and Tyre in Isaiah 23, then lands the point: 'Babylon had become the archetype for the archenemy of God's people... and that meant for the original readers, who's Babylon? The great city for them was Rome.' He names the contrast that structures the whole book: Babylon, the city of man, against the New Jerusalem, the bride of the Lamb.",
+        "episodeTitle": "Revelation 17:1-18",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/wtjgj9ixuyupwauu/revelation_171-18bmv4o.mp3",
+        "durationSec": 1471,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:3125",
+        "startSec": 2420,
+        "endSec": 2560,
+        "why": "Now the Naked Bible Podcast sharpens what 'Babylon' names: a system, not a single city. He points out that Revelation 17:18 ('the great city that has dominion over the kings of the earth') cannot fit Jerusalem — 'you could say that about Babylon. You could say that about Rome' — and concludes that chapters 15–18 set up 'a final conflict between God and the Babel system,' not between God and Jerusalem. This is where Rome's identity as Babylon becomes a category, not just a label.",
+        "episodeTitle": "Naked Bible 390: Revelation 17-18",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2021/08/NakedBible390_Revelation17_18.mp3",
+        "durationSec": 3937,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:c1ebb76c-com-aef0354b-6975-3457-b09d-cc858aa87f14",
+        "startSec": 900,
+        "endSec": 1080,
+        "why": "Empire language turns out to be economics language. Walking through Revelation 18, the teacher calls Babylon's fall 'a stinging critique of the economics of grandiosity' — trade in luxuries and in human persons, wealth extracted across an empire: 'It was true of Rome and her whole empire... It's been true for every empire on every continent throughout history.' He ends on the hope the lament stirs up: Rome is not the eternal city; another city is coming in chapters 21–22.",
+        "episodeTitle": "Revelation 18:1-24",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/yq954yz2qbs9wfek/revelation_181-24bjjzg.mp3",
+        "durationSec": 1553,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:ethic-exile",
+        "startSec": 60,
+        "endSec": 240,
+        "why": "Finish where the language becomes your address. Babylon, the hosts argue, has been turned 'into an existential identity that you can embrace no matter where you live,' and Jesus in the Roman Empire lived Jeremiah and Daniel's 'loyal subversion' — no violent aggression, extravagant generosity, seeking the well-being of people you like and don't like. The closing line is the whole tour's question: 'How do we live in two kingdoms at one time? What is the ethic of an exile?'",
+        "episodeTitle": "The Ethic of an Exile",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/6ccc9f96-1952-4620-b924-a13cd51be0c2/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=6ccc9f96-1952-4620-b924-a13cd51be0c2",
+        "durationSec": 2457,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "That's the whole chain: Babylon began as a real empire that exiled Israel, became the Bible's fixed figure for every civilization that rebels against God, was re-applied to Rome (which the first readers of Revelation heard instantly — the seven hills, the goddess on the coins, the empire that killed their witnesses), and finally became a name for the system you and I still live inside. The point of the code was never to decode a single empire. It was to teach you to recognize the pattern wherever it appears, and to show you which city is actually eternal.",
+    "totalSeconds": 1220
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2789,
+      "promptTokens": 1740,
+      "completionTokens": 309,
+      "reasoningTokens": 122,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 1,
+      "latencyMs": 12555,
+      "promptTokens": 8223,
+      "completionTokens": 1485,
+      "reasoningTokens": 1086,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 2,
+      "latencyMs": 4693,
+      "promptTokens": 12504,
+      "completionTokens": 608,
+      "reasoningTokens": 171,
+      "cachedPromptTokens": 9600,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 3,
+      "latencyMs": 18011,
+      "promptTokens": 15763,
+      "completionTokens": 1997,
+      "reasoningTokens": 1627,
+      "cachedPromptTokens": 13056,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 4,
+      "latencyMs": 53767,
+      "promptTokens": 20491,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 17664,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": null
+    },
+    {
+      "i": 5,
+      "latencyMs": 13655,
+      "promptTokens": 17514,
+      "completionTokens": 1629,
+      "reasoningTokens": 253,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Babylon is Rome Revelation",
+        "limit": 10
+      },
+      "ms": 87,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Babylon the great harlot",
+        "limit": 10
+      },
+      "ms": 61,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "empire language Babylon Rome",
+        "limit": 10
+      },
+      "ms": 56,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:day-lord-part-1-whats-deal-babylon",
+        "fromSec": 1040,
+        "toSec": 1220
+      },
+      "ms": 0,
+      "summary": "1040s–1220s of What's the Deal With Babylon?"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:the-blood-cries-out",
+        "fromSec": 1480,
+        "toSec": 1660
+      },
+      "ms": 0,
+      "summary": "1480s–1660s of The Blood Cries Out"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:3125",
+        "fromSec": 340,
+        "toSec": 520
+      },
+      "ms": 1,
+      "summary": "340s–520s of Naked Bible 390: Revelation 17-18"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:ab7677ef-com-3166a062-7802-37ba-be40-6e0e6f984370",
+        "fromSec": 440,
+        "toSec": 620
+      },
+      "ms": 0,
+      "summary": "440s–620s of Revelation 17:1-18"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1100,
+        "recordId": "listeners-commentary:podcast:ab7677ef-com-3166a062-7802-37ba-be40-6e0e6f984370",
+        "toSec": 1280
+      },
+      "ms": 0,
+      "summary": "1100s–1280s of Revelation 17:1-18"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 900,
+        "recordId": "listeners-commentary:podcast:c1ebb76c-com-aef0354b-6975-3457-b09d-cc858aa87f14",
+        "toSec": 1080
+      },
+      "ms": 0,
+      "summary": "900s–1080s of Revelation 18:1-24"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1100,
+        "recordId": "radically-christian:podcast:4e01d465-https-radicallychristian-com-p-11193",
+        "toSec": 1280
+      },
+      "ms": 1,
+      "summary": "1100s–1280s of Reading and Understanding the Book of Revelation with Garrett Best"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 60,
+        "recordId": "bibleproject:podcast:ethic-exile",
+        "toSec": 240
+      },
+      "ms": 0,
+      "summary": "60s–240s of The Ethic of an Exile"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2420,
+        "recordId": "naked-bible:podcast:3125",
+        "toSec": 2560
+      },
+      "ms": 0,
+      "summary": "2420s–2560s of Naked Bible 390: Revelation 17-18"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2190,
+        "recordId": "bibleproject:podcast:day-lord-part-4-evil-behind-babylon",
+        "toSec": 2370
+      },
+      "ms": 0,
+      "summary": "2190s–2370s of The Evil Behind Babylon"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 20,
+        "recordId": "bibleproject:podcast:day-lord-part-6-revelation-and-jesus-modern-politics",
+        "toSec": 200
+      },
+      "ms": 0,
+      "summary": "20s–200s of Revelation and Jesus in Modern Politics"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:day-lord-part-1-whats-deal-babylon"
+      },
+      "ms": 2,
+      "summary": "What's the Deal With Babylon? (3879s)"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 6,
+    "toolCalls": 17,
+    "promptTokens": 76235,
+    "completionTokens": 12028,
+    "reasoningTokens": 9259,
+    "cachedPromptTokens": 45312,
+    "wallMs": 105681,
+    "modelLatencyMs": 105470,
+    "toolMs": 209
+  },
+  "cost": {
+    "source": "price-table",
+    "inputUsd": 0.009927,
+    "outputUsd": 0.005052,
+    "totalUsd": 0.014979,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported no cost field; cost = tokens x pricing.json (rates are UNVERIFIED placeholders)"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T19:00:39.569Z"
+}

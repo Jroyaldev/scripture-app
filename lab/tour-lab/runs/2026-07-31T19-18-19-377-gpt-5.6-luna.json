@@ -1,0 +1,441 @@
+{
+  "runId": "2026-07-31T19-18-19-377-gpt-5.6-luna",
+  "startedAt": "2026-07-31T19:18:19.377Z",
+  "promptId": null,
+  "prompt": "chesed",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Chesed: Loyal Love That Acts",
+    "intro": "This tour starts with the Hebrew word itself, then follows chesed through God’s covenant-renewal after Israel’s failure, David’s treatment of an enemy’s family, Rahab’s appeal for belonging, and Jesus’ summons to mercy. Listen for the combination of commitment, affection, generosity, and concrete action—not just a single English translation.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "startSec": 700,
+        "endSec": 900,
+        "why": "Begin here for a working definition rather than a one-word gloss. The teachers describe chesed as love shown while “keeping a promise,” where loyalty leads someone to go “above and beyond and be super generous,” and they illustrate it through an elderly husband’s concrete care for his sick wife.",
+        "episodeTitle": "The Loyal Love of God",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e530ba3f-428a-4ef5-828c-34800da4963f/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e530ba3f-428a-4ef5-828c-34800da4963f",
+        "durationSec": 4105,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:2693",
+        "startSec": 1900,
+        "endSec": 2080,
+        "why": "Now hear the word applied to God in its covenant setting. After the golden-calf failure, the episode says the emphasis is on “mercy and grace,” so the reader knows that “God has forgiven” and that the covenant will be renewed; it then explains chesed as including “acts of beneficence” and obligations flowing from relationship.",
+        "episodeTitle": "Naked Bible 310: Exodus 33-34",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2020/02/NakedBible310_Exodus33_34.mp3",
+        "durationSec": 4477,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:478e6896-2d24-4806-ac5f-4db234766229",
+        "startSec": 1570,
+        "endSec": 1740,
+        "why": "This makes chesed visible in human action. David asks whether he can show “the kindness of God” to someone from Saul’s house, and the teachers stress that David is trying to be “the instrument of Yahweh” by showing covenant loyalty to a vulnerable former enemy.",
+        "episodeTitle": "2 Samuel 8:9-9:13 (Episode 267)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_Min_ep_667.mp3?dest-id=245197",
+        "durationSec": 2471,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:0e01a154-fdd5-478a-aa04-a438fda4bc4c",
+        "startSec": 2405,
+        "endSec": 2580,
+        "why": "Rahab shows the relational and boundary-crossing side of chesed. The teachers explain her request—“as I have dealt kindly with you, you will also deal kindly with my father’s house”—as a plea to be welcomed into the covenant, grounded in God’s faithfulness despite human sinfulness.",
+        "episodeTitle": "Joshua 1-2: Be Strong and Courageous! And Rahab's Scarlet Thread",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG4806203994.mp3?updated=1664486105",
+        "durationSec": 3508,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "bibleproject:podcast:type-people-god-forming-beatitudes-pt-3",
+        "startSec": 1600,
+        "endSec": 1785,
+        "why": "Finish with the shape chesed takes in Jesus’ ministry and in his people. The episode explains that “have mercy” can mean “treat me like family” and “go above and beyond,” then connects that familial loyalty to loving God and neighbor and to the recurring refrain, “His chesed endures forever.”",
+        "episodeTitle": "Sermon on the Mount E6: The Type of People God Is Forming",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/45ccdb38-cdb7-4fcb-95f5-76bd4588bb9c/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=45ccdb38-cdb7-4fcb-95f5-76bd4588bb9c",
+        "durationSec": 2808,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips present chesed less as a tidy synonym than as a covenant-shaped way of loving: affection expressed through dependable, generous action. The translations may vary—mercy, kindness, steadfast love, loyal love—but the tour gives you the biblical scenes that make the word audible and concrete.",
+    "totalSeconds": 910
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2957,
+      "promptTokens": 1117,
+      "completionTokens": 52,
+      "reasoningTokens": 36,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000044250000000000005
+    },
+    {
+      "i": 1,
+      "latencyMs": 2542,
+      "promptTokens": 1412,
+      "completionTokens": 179,
+      "reasoningTokens": 31,
+      "cachedPromptTokens": 1114,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00015571500000000004
+    },
+    {
+      "i": 2,
+      "latencyMs": 2976,
+      "promptTokens": 11252,
+      "completionTokens": 344,
+      "reasoningTokens": 49,
+      "cachedPromptTokens": 1409,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014507900000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 3896,
+      "promptTokens": 15884,
+      "completionTokens": 440,
+      "reasoningTokens": 166,
+      "cachedPromptTokens": 11249,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009557900000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 2900,
+      "promptTokens": 23646,
+      "completionTokens": 189,
+      "reasoningTokens": 146,
+      "cachedPromptTokens": 15881,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00124276
+    },
+    {
+      "i": 5,
+      "latencyMs": 3055,
+      "promptTokens": 24348,
+      "completionTokens": 106,
+      "reasoningTokens": 63,
+      "cachedPromptTokens": 23643,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00038808
+    },
+    {
+      "i": 6,
+      "latencyMs": 13650,
+      "promptTokens": 25054,
+      "completionTokens": 1012,
+      "reasoningTokens": 336,
+      "cachedPromptTokens": 24345,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009392000000000002
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "hesed",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 89,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "chesed",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 57,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "steadfast love lovingkindness",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 31,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "covenant loyalty loyal love",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 57,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "mercy kindness Hebrew word",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 63,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 700,
+        "toSec": 1100
+      },
+      "ms": 0,
+      "summary": "700s–880s of The Loyal Love of God"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 2820,
+        "toSec": 3150
+      },
+      "ms": 1,
+      "summary": "2820s–3000s of The Loyal Love of God"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2693",
+        "fromSec": 1900,
+        "toSec": 2250
+      },
+      "ms": 0,
+      "summary": "1900s–2080s of Naked Bible 310: Exodus 33-34"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:0e01a154-fdd5-478a-aa04-a438fda4bc4c",
+        "fromSec": 2380,
+        "toSec": 2700
+      },
+      "ms": 7,
+      "summary": "2380s–2560s of Joshua 1-2: Be Strong and Courageous! And Rahab's Scarlet Thread"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:478e6896-2d24-4806-ac5f-4db234766229",
+        "fromSec": 1500,
+        "toSec": 1780
+      },
+      "ms": 4,
+      "summary": "1500s–1680s of 2 Samuel 8:9-9:13 (Episode 267)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:type-people-god-forming-beatitudes-pt-3",
+        "fromSec": 1600,
+        "toSec": 1930
+      },
+      "ms": 0,
+      "summary": "1600s–1780s of Sermon on the Mount E6: The Type of People God Is Forming"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 820,
+        "toSec": 1020
+      },
+      "ms": 0,
+      "summary": "820s–1000s of The Loyal Love of God"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 1020,
+        "toSec": 1200
+      },
+      "ms": 0,
+      "summary": "1020s–1200s of The Loyal Love of God"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god"
+      },
+      "ms": 3,
+      "summary": "The Loyal Love of God (4105s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "naked-bible:podcast:2693"
+      },
+      "ms": 1,
+      "summary": "Naked Bible 310: Exodus 33-34 (4477s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:0e01a154-fdd5-478a-aa04-a438fda4bc4c"
+      },
+      "ms": 0,
+      "summary": "Joshua 1-2: Be Strong and Courageous! And Rahab's Scarlet Thread (3508s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:478e6896-2d24-4806-ac5f-4db234766229"
+      },
+      "ms": 1,
+      "summary": "2 Samuel 8:9-9:13 (Episode 267) (2471s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:type-people-god-forming-beatitudes-pt-3"
+      },
+      "ms": 0,
+      "summary": "Sermon on the Mount E6: The Type of People God Is Forming (2808s)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 500,
+        "toSec": 720
+      },
+      "ms": 0,
+      "summary": "500s–680s of The Loyal Love of God"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 600,
+        "toSec": 840
+      },
+      "ms": 0,
+      "summary": "600s–780s of The Loyal Love of God"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 7,
+    "toolCalls": 22,
+    "promptTokens": 102713,
+    "completionTokens": 2322,
+    "reasoningTokens": 827,
+    "cachedPromptTokens": 78741,
+    "wallMs": 32294,
+    "modelLatencyMs": 31976,
+    "toolMs": 316
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.005177,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T19:18:51.671Z"
+}

@@ -1,0 +1,450 @@
+{
+  "runId": "2026-07-31T18-47-26-525-gpt-5.6-luna",
+  "startedAt": "2026-07-31T18:47:26.525Z",
+  "promptId": "doctrinal-resurrection-body",
+  "prompt": "If Jesus rose bodily, what happens to my body when I die? I want to understand what the New Testament actually claims about resurrection versus 'going to heaven'.",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Resurrection, Heaven, and What Happens to Your Body",
+    "intro": "This tour follows the New Testament’s own sequence: Jesus’s bodily resurrection as the pattern, the transformation—not abandonment—of your body, the intermediate hope of being with Christ after death, and the final horizon of resurrection and renewed creation. It distinguishes what the texts say clearly from what teachers acknowledge is less fully specified.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:resurrection-way-life-part-4-acorns-fire",
+        "startSec": 190,
+        "endSec": 370,
+        "why": "Begin with the central category: the speaker calls 1 Corinthians 15 “the only chapter in the entire Bible whose topic from beginning to end is the resurrection from the dead,” setting bodily resurrection—not a vague afterlife—as the New Testament’s controlling question.",
+        "episodeTitle": "Acorns of Fire",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/e5d85dd4-a616-4860-846c-fc4d57e11252/episodes/c2774234-47e5-4281-a3bc-72c252ed1861/audio/128/default.mp3?awCollectionId=e5d85dd4-a616-4860-846c-fc4d57e11252&awEpisodeId=c2774234-47e5-4281-a3bc-72c252ed1861",
+        "durationSec": 2953,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "startSec": 920,
+        "endSec": 1100,
+        "why": "This clip works through Paul’s contrast between the present and future body: “It is sown a perishable body, but it’s raised an imperishable body.” It also explains that “spiritual body” does not mean immaterial, helping you hear what 1 Corinthians 15 actually claims about bodily transformation.",
+        "episodeTitle": "1 Corinthians 15:29-58",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/d8ngn3/1_corinthians_1529-589yhwk.mp3",
+        "durationSec": 2010,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "startSec": 540,
+        "endSec": 720,
+        "why": "Now the tour addresses the timing question in 2 Corinthians 5. The teacher connects Paul’s “earthy tent” with the future “new resurrection body,” while emphasizing that if death comes before Christ returns, “that’s not the end of existence” and believers still await bodily renewal.",
+        "episodeTitle": "2 Corinthians 5:1-10",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/jckmzx/2_corinthians_51-10816em.mp3",
+        "durationSec": 1584,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:heaven-earth-part-3",
+        "startSec": 2080,
+        "endSec": 2240,
+        "why": "This is the clearest answer to the phrase “going to heaven.” The speaker surveys the New Testament glimpses of the dead being “with Jesus,” but stresses that this is not the permanent endpoint: believers are “awaiting their full redemption and recreation,” the New Testament’s larger hope.",
+        "episodeTitle": "Jesus, The Ultimate Heaven & Earth Meeting Place",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/9327a394-42a0-4eaf-a203-09e63e82aacd/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=9327a394-42a0-4eaf-a203-09e63e82aacd",
+        "durationSec": 2514,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:0b05ab32-76e9-11f1-8e22-7347bbf0d105",
+        "startSec": 400,
+        "endSec": 580,
+        "why": "Finish with Philippians 3:20–21 and the destination of resurrection. Wright says, “Resurrection bodies belong on a renewed earth,” and explains that heavenly citizenship means awaiting Jesus to come and renew creation, not leaving earth permanently for a disembodied heaven.",
+        "episodeTitle": "What Did Jesus Mean By \"My Father's House\"? How should we think about euthanasia, and what are the rewards of Heaven?",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR4216842647.mp3",
+        "durationSec": 2036,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "The New Testament picture these clips assemble is neither “my body is discarded” nor simply “I go to heaven forever.” Death may mean being with Christ before the final resurrection, but the Christian hope is the resurrection of the body—transformed like Jesus’s—and life in God’s renewed creation.",
+    "totalSeconds": 880
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 4899,
+      "promptTokens": 1147,
+      "completionTokens": 280,
+      "reasoningTokens": 63,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00018480000000000002
+    },
+    {
+      "i": 1,
+      "latencyMs": 4017,
+      "promptTokens": 10274,
+      "completionTokens": 371,
+      "reasoningTokens": 56,
+      "cachedPromptTokens": 1144,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0013752150000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 5823,
+      "promptTokens": 14868,
+      "completionTokens": 508,
+      "reasoningTokens": 449,
+      "cachedPromptTokens": 10271,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00098206
+    },
+    {
+      "i": 3,
+      "latencyMs": 3601,
+      "promptTokens": 15556,
+      "completionTokens": 319,
+      "reasoningTokens": 106,
+      "cachedPromptTokens": 14865,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00042635000000000004
+    },
+    {
+      "i": 4,
+      "latencyMs": 3466,
+      "promptTokens": 22133,
+      "completionTokens": 337,
+      "reasoningTokens": 164,
+      "cachedPromptTokens": 15553,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0011801550000000002
+    },
+    {
+      "i": 5,
+      "latencyMs": 6976,
+      "promptTokens": 24447,
+      "completionTokens": 793,
+      "reasoningTokens": 125,
+      "cachedPromptTokens": 22130,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009866500000000002
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 40,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "resurrection body going to heaven when you die",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 64,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "buried raised imperishable body resurrection",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 54,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "absent from the body with the Lord resurrection",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 47,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "1 Corinthians",
+        "chapter": 15,
+        "verse": 0,
+        "limit": 20
+      },
+      "ms": 60,
+      "summary": "20 of 259 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "1 Thessalonians",
+        "chapter": 4,
+        "verse": 0,
+        "limit": 15
+      },
+      "ms": 0,
+      "summary": "5 of 64 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Philippians",
+        "chapter": 3,
+        "verse": 0,
+        "limit": 15
+      },
+      "ms": 0,
+      "summary": "7 of 70 moments"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:resurrection-way-life-part-4-acorns-fire",
+        "fromSec": 820,
+        "toSec": 1160
+      },
+      "ms": 0,
+      "summary": "820s–1000s of Acorns of Fire"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 540,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "540s–720s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-part-3",
+        "fromSec": 1900,
+        "toSec": 2240
+      },
+      "ms": 0,
+      "summary": "1900s–2080s of Jesus, The Ultimate Heaven & Earth Meeting Place"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:1414c919-https-radicallychristian-com-p-9765",
+        "fromSec": 1370,
+        "toSec": 1640
+      },
+      "ms": 0,
+      "summary": "1370s–1550s of Questions About Death: Where Do We Go and Is Cremation Wrong?"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:920f7f45-https-radicallychristian-com-p-9747",
+        "fromSec": 1190,
+        "toSec": 1510
+      },
+      "ms": 0,
+      "summary": "1190s–1370s of New Heavens and New Earth (Part One)"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:resurrection-way-life-part-4-acorns-fire",
+        "fromSec": 190,
+        "toSec": 520
+      },
+      "ms": 0,
+      "summary": "190s–370s of Acorns of Fire"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:920f7f45-https-radicallychristian-com-p-9747",
+        "fromSec": 1370,
+        "toSec": 1510
+      },
+      "ms": 0,
+      "summary": "1370s–1510s of New Heavens and New Earth (Part One)"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Philippians our citizenship heaven transform our lowly body",
+        "sourceId": "",
+        "limit": 8
+      },
+      "ms": 84,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "1 Thessalonians dead in Christ rise first trumpet caught up",
+        "sourceId": "",
+        "limit": 8
+      },
+      "ms": 50,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 920,
+        "toSec": 1160
+      },
+      "ms": 1,
+      "summary": "920s–1100s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-part-3"
+      },
+      "ms": 1,
+      "summary": "Jesus, The Ultimate Heaven & Earth Meeting Place (2514s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "radically-christian:podcast:1414c919-https-radicallychristian-com-p-9765"
+      },
+      "ms": 0,
+      "summary": "Questions About Death: Where Do We Go and Is Cremation Wrong? (1825s)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-part-3",
+        "fromSec": 2080,
+        "toSec": 2240
+      },
+      "ms": 0,
+      "summary": "2080s–2240s of Jesus, The Ultimate Heaven & Earth Meeting Place"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:14128a82-https-radicallychristian-com-p-9755",
+        "fromSec": 1290,
+        "toSec": 1480
+      },
+      "ms": 0,
+      "summary": "1290s–1470s of New Heavens and New Earth (Part Two)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:0b05ab32-76e9-11f1-8e22-7347bbf0d105",
+        "fromSec": 400,
+        "toSec": 580
+      },
+      "ms": 0,
+      "summary": "400s–580s of What Did Jesus Mean By \"My Father's House\"? How should we think about euthanasia, and what are the rewards of Heaven?"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 6,
+    "toolCalls": 23,
+    "promptTokens": 88425,
+    "completionTokens": 2608,
+    "reasoningTokens": 963,
+    "cachedPromptTokens": 65063,
+    "wallMs": 29303,
+    "modelLatencyMs": 28782,
+    "toolMs": 401
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.005135,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T18:47:55.828Z"
+}

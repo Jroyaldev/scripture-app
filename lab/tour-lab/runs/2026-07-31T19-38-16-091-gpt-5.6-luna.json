@@ -1,0 +1,794 @@
+{
+  "runId": "2026-07-31T19-38-16-091-gpt-5.6-luna",
+  "startedAt": "2026-07-31T19:38:16.091Z",
+  "promptId": "topic-divine-council",
+  "prompt": "Teach me the divine council worldview from scratch — what it is, where the Old Testament assumes it, and why it matters for reading the New Testament.",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "The Divine Council: From the Old Testament to Jesus and Paul",
+    "intro": "This tour starts with the basic vocabulary and picture: Yahweh as supreme King working with a heavenly staff. It then follows the Old Testament’s Babel, Deuteronomy 32, and Psalm 82 assumptions before showing how Jesus and Paul read that world and announce its reversal. The teachers are not perfectly uniform, so one clip also names an interpretive disagreement instead of hiding it.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "startSec": 0,
+        "endSec": 180,
+        "why": "Begin here for the simplest orientation. The speaker explains that Elohim can name a broad class of spiritual beings while Yahweh is uniquely supreme, then defines the council as God’s “staff team, with delegated authority.” It also tells you why this matters: Jesus and Paul use the vocabulary of “spiritual powers, rulers, authorities.”",
+        "episodeTitle": "Spiritual Warfare",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/b40c2f6a-4f0a-4552-a28b-ad3991133387/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=b40c2f6a-4f0a-4552-a28b-ad3991133387",
+        "durationSec": 4363,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "startSec": 360,
+        "endSec": 900,
+        "why": "This puts flesh on the definition through 1 Kings 22, Job, and the biblical titles “host of heaven” and “sons of Elohim.” Listen for the explanation that host means an army and for the clarification that “sons of Elohim” means members of a class, not necessarily biological offspring. The council becomes a scene of real delegated agency rather than a vague picture of angels.",
+        "episodeTitle": "Spiritual Warfare",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/b40c2f6a-4f0a-4552-a28b-ad3991133387/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=b40c2f6a-4f0a-4552-a28b-ad3991133387",
+        "durationSec": 4363,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:theme-god-e8-god-series-live-qr",
+        "startSec": 1930,
+        "endSec": 2110,
+        "why": "Now follow the Old Testament’s national framework. The speaker reads Deuteronomy 32 as recalling the Most High giving the nations their inheritance and fixing their boundaries “according to the number of the sons of Elohim.” The resulting claim is that Babel is not merely language confusion: God was “disinheriting humanity,” while choosing Israel as the line through which he would bring a new humanity.",
+        "episodeTitle": "God Question & Response 2 - Live!",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/15175b04-afcd-4819-aabd-3a474ce1c9cd/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=15175b04-afcd-4819-aabd-3a474ce1c9cd",
+        "durationSec": 2833,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "startSec": 2500,
+        "endSec": 3200,
+        "why": "This is the key Old Testament case study. It connects the Genesis 6 rebellion to Psalm 82, where God stands “in the council of El” and asks, “How long will you judge unjustly?” The clip explains how the speakers associate heavenly rulers with earthly injustice and delegated authority, ending with God’s judgment that these rulers’ “days are numbered.”",
+        "episodeTitle": "Origin of Spiritual Beings + Mini Question & Response",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/d7e45e15-6a73-4ddc-a3a7-42e0547ef789/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=d7e45e15-6a73-4ddc-a3a7-42e0547ef789",
+        "durationSec": 4082,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:ee2d4ff5-com-6e99511a-003e-300d-be0a-42d127b215f3",
+        "startSec": 650,
+        "endSec": 830,
+        "why": "Here you hear Jesus’ use of Psalm 82 in John 10. The commentator lays out both major readings—that the psalm addresses human rulers or supernatural beings—and says the divine-assembly reading “probably” fits the psalm’s scene. That makes the New Testament connection concrete without pretending every interpreter agrees.",
+        "episodeTitle": "John 10:22-42",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/y9bntfdedmsazpzr/john_1022-42929g5.mp3",
+        "durationSec": 1399,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:225",
+        "startSec": 133,
+        "endSec": 440,
+        "why": "This clip shows the worldview moving into Acts. It explains the link among Genesis 10–11, Deuteronomy 32, the nations’ subjection to lesser divine beings, and Pentecost as the beginning of their reclamation. The phrase to listen for is “the reversal of that, this whole situation, reclaiming the nations,” which gives the council theme a mission-shaped New Testament payoff.",
+        "episodeTitle": "Naked Bible 37: Acts 2:1-21",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2015/02/NakedBible37_Acts2_1_21.mp3",
+        "durationSec": 3857,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:2105",
+        "startSec": 2430,
+        "endSec": 2580,
+        "why": "Land on Paul’s interpretation of Christ’s victory in Colossians 2. The speaker distinguishes cancellation of the human “record of debt” from the rulers’ being “disarmed and put to shame,” then carefully says the powers are not destroyed yet but “displaced or removed from the authority they held over the Gentiles.” That is the tour’s final lens for reading New Testament claims about the cross, resurrection, and spiritual powers.",
+        "episodeTitle": "Naked Bible 232: Colossians 2:13-23",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2018/09/NakedBible232_Col2_13_23.mp3",
+        "durationSec": 3973,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "You should now be able to recognize the council as a recurring biblical picture: Yahweh alone is Creator and sovereign, yet he governs through heavenly beings with delegated authority; rebellion corrupts that arrangement and becomes entangled with earthly injustice and the nations. In the New Testament, Jesus’ identity, the mission to the nations, and Paul’s language about rulers and authorities all become sharper when read against that Old Testament backdrop.",
+    "totalSeconds": 2237
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2951,
+      "promptTokens": 1145,
+      "completionTokens": 115,
+      "reasoningTokens": 99,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00008555
+    },
+    {
+      "i": 1,
+      "latencyMs": 4364,
+      "promptTokens": 1440,
+      "completionTokens": 369,
+      "reasoningTokens": 185,
+      "cachedPromptTokens": 1142,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00026999500000000003
+    },
+    {
+      "i": 2,
+      "latencyMs": 7365,
+      "promptTokens": 18601,
+      "completionTokens": 796,
+      "reasoningTokens": 516,
+      "cachedPromptTokens": 1437,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0026373950000000003
+    },
+    {
+      "i": 3,
+      "latencyMs": 8415,
+      "promptTokens": 23049,
+      "completionTokens": 905,
+      "reasoningTokens": 630,
+      "cachedPromptTokens": 18598,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012852800000000002
+    },
+    {
+      "i": 4,
+      "latencyMs": 11389,
+      "promptTokens": 27105,
+      "completionTokens": 1272,
+      "reasoningTokens": 1033,
+      "cachedPromptTokens": 23046,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0015009600000000002
+    },
+    {
+      "i": 5,
+      "latencyMs": 9709,
+      "promptTokens": 39386,
+      "completionTokens": 1027,
+      "reasoningTokens": 723,
+      "cachedPromptTokens": 27102,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.002422645
+    },
+    {
+      "i": 6,
+      "latencyMs": 22219,
+      "promptTokens": 43701,
+      "completionTokens": 2489,
+      "reasoningTokens": 2212,
+      "cachedPromptTokens": 39383,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0024269050000000005
+    },
+    {
+      "i": 7,
+      "latencyMs": 2368,
+      "promptTokens": 48283,
+      "completionTokens": 259,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 43698,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00116543
+    },
+    {
+      "i": 8,
+      "latencyMs": 22983,
+      "promptTokens": 52801,
+      "completionTokens": 2738,
+      "reasoningTokens": 2399,
+      "cachedPromptTokens": 48280,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00269065
+    },
+    {
+      "i": 9,
+      "latencyMs": 51938,
+      "promptTokens": 54652,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 52798,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": 0.0043596550000000005
+    },
+    {
+      "i": 10,
+      "latencyMs": 48558,
+      "promptTokens": 54687,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 54649,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": 0.004151165000000001
+    },
+    {
+      "i": 11,
+      "latencyMs": 40540,
+      "promptTokens": 54722,
+      "completionTokens": 4936,
+      "reasoningTokens": 3955,
+      "cachedPromptTokens": 54684,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0035131150000000007
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "divine council",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 129,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "sons of God heavenly beings",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 122,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Psalm 82 gods",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 99,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Deuteronomy 32 sons of God nations",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 105,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "spiritual rulers powers principalities New Testament",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 89,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "heavenly host council Yahweh",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 118,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "fromSec": 250,
+        "toSec": 610
+      },
+      "ms": 0,
+      "summary": "250s–430s of Spiritual Warfare"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "fromSec": 610,
+        "toSec": 970
+      },
+      "ms": 0,
+      "summary": "610s–790s of Spiritual Warfare"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "fromSec": 1130,
+        "toSec": 1510
+      },
+      "ms": 0,
+      "summary": "1130s–1310s of Spiritual Warfare"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "fromSec": 2350,
+        "toSec": 2730
+      },
+      "ms": 0,
+      "summary": "2350s–2530s of Origin of Spiritual Beings + Mini Question & Response"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "fromSec": 2980,
+        "toSec": 3340
+      },
+      "ms": 0,
+      "summary": "2980s–3160s of Origin of Spiritual Beings + Mini Question & Response"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2563",
+        "fromSec": 700,
+        "toSec": 1090
+      },
+      "ms": 5,
+      "summary": "700s–880s of Naked Bible 286: Exodus 19"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "fromSec": 0,
+        "toSec": 180
+      },
+      "ms": 0,
+      "summary": "0s–180s of Spiritual Warfare"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "fromSec": 180,
+        "toSec": 360
+      },
+      "ms": 0,
+      "summary": "180s–360s of Spiritual Warfare"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "fromSec": 360,
+        "toSec": 540
+      },
+      "ms": 0,
+      "summary": "360s–540s of Spiritual Warfare"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "fromSec": 540,
+        "toSec": 720
+      },
+      "ms": 0,
+      "summary": "540s–720s of Spiritual Warfare"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "fromSec": 720,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "720s–900s of Spiritual Warfare"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "fromSec": 900,
+        "toSec": 1080
+      },
+      "ms": 0,
+      "summary": "900s–1080s of Spiritual Warfare"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "Most High divided the nations sons of Elohim Deuteronomy 32 worldview",
+        "sourceId": "bibleproject",
+        "limit": 10
+      },
+      "ms": 130,
+      "summary": "10 hits"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "Deuteronomy 32.8 9 Babel nations Israel inheritance",
+        "sourceId": "naked-bible",
+        "limit": 10
+      },
+      "ms": 67,
+      "summary": "10 hits"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "Psalm 82 divine beings appointed nations injustice",
+        "sourceId": "bibleproject",
+        "limit": 10
+      },
+      "ms": 89,
+      "summary": "10 hits"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "John 10 Psalm 82 you are gods divine council",
+        "sourceId": "bibleproject",
+        "limit": 10
+      },
+      "ms": 83,
+      "summary": "10 hits"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "Colossians 2 disarmed powers divine council gods nations",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 113,
+      "summary": "15 hits"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "Acts 2 nations Babel sons of God Pentecost",
+        "sourceId": "naked-bible",
+        "limit": 10
+      },
+      "ms": 60,
+      "summary": "10 hits"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "fromSec": 2140,
+        "toSec": 2320
+      },
+      "ms": 8,
+      "summary": "2140s–2320s of Origin of Spiritual Beings + Mini Question & Response"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "fromSec": 2320,
+        "toSec": 2500
+      },
+      "ms": 0,
+      "summary": "2320s–2500s of Origin of Spiritual Beings + Mini Question & Response"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "fromSec": 2500,
+        "toSec": 2680
+      },
+      "ms": 0,
+      "summary": "2500s–2680s of Origin of Spiritual Beings + Mini Question & Response"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "fromSec": 2680,
+        "toSec": 2860
+      },
+      "ms": 0,
+      "summary": "2680s–2860s of Origin of Spiritual Beings + Mini Question & Response"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "fromSec": 2860,
+        "toSec": 3040
+      },
+      "ms": 0,
+      "summary": "2860s–3040s of Origin of Spiritual Beings + Mini Question & Response"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "fromSec": 3040,
+        "toSec": 3220
+      },
+      "ms": 0,
+      "summary": "3040s–3220s of Origin of Spiritual Beings + Mini Question & Response"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e8-god-series-live-qr",
+        "fromSec": 1750,
+        "toSec": 1930
+      },
+      "ms": 5,
+      "summary": "1750s–1930s of God Question & Response 2 - Live!"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e8-god-series-live-qr",
+        "fromSec": 1930,
+        "toSec": 2110
+      },
+      "ms": 0,
+      "summary": "1930s–2110s of God Question & Response 2 - Live!"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e8-god-series-live-qr",
+        "fromSec": 2110,
+        "toSec": 2290
+      },
+      "ms": 0,
+      "summary": "2110s–2290s of God Question & Response 2 - Live!"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 2530,
+        "toSec": 2710
+      },
+      "ms": 9,
+      "summary": "2530s–2710s of God Question & Response 1"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2105",
+        "fromSec": 2250,
+        "toSec": 2430
+      },
+      "ms": 6,
+      "summary": "2250s–2430s of Naked Bible 232: Colossians 2:13-23"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2105",
+        "fromSec": 2430,
+        "toSec": 2610
+      },
+      "ms": 0,
+      "summary": "2430s–2610s of Naked Bible 232: Colossians 2:13-23"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 2710,
+        "toSec": 2890
+      },
+      "ms": 0,
+      "summary": "2710s–2890s of God Question & Response 1"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 2890,
+        "toSec": 3070
+      },
+      "ms": 0,
+      "summary": "2890s–3070s of God Question & Response 1"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e8-god-series-live-qr",
+        "fromSec": 2230,
+        "toSec": 2410
+      },
+      "ms": 0,
+      "summary": "2230s–2410s of God Question & Response 2 - Live!"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:225",
+        "fromSec": 80,
+        "toSec": 260
+      },
+      "ms": 0,
+      "summary": "80s–260s of Naked Bible 37: Acts 2:1-21"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:225",
+        "fromSec": 260,
+        "toSec": 440
+      },
+      "ms": 0,
+      "summary": "260s–440s of Naked Bible 37: Acts 2:1-21"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:352",
+        "fromSec": 760,
+        "toSec": 940
+      },
+      "ms": 0,
+      "summary": "760s–940s of Naked Bible 50: Acts 14"
+    },
+    {
+      "at": 8,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:ee2d4ff5-com-6e99511a-003e-300d-be0a-42d127b215f3",
+        "fromSec": 650,
+        "toSec": 950
+      },
+      "ms": 3,
+      "summary": "650s–830s of John 10:22-42"
+    },
+    {
+      "at": 8,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:1177b6c5-com-186381a8-9c3b-5e93-ace0-a229bf2d5055",
+        "fromSec": 820,
+        "toSec": 1100
+      },
+      "ms": 3,
+      "summary": "820s–1000s of Colossians 2:6-15"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 12,
+    "toolCalls": 50,
+    "promptTokens": 419572,
+    "completionTokens": 26906,
+    "reasoningTokens": 23752,
+    "cachedPromptTokens": 365917,
+    "wallMs": 234057,
+    "modelLatencyMs": 232799,
+    "toolMs": 1244
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.026509,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T19:42:10.148Z"
+}

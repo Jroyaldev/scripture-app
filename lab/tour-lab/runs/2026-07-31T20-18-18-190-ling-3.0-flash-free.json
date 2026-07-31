@@ -1,0 +1,458 @@
+{
+  "runId": "2026-07-31T20-18-18-190-ling-3.0-flash-free",
+  "startedAt": "2026-07-31T20:18:18.191Z",
+  "promptId": null,
+  "prompt": "what does john mean by new creation; or genesis allusions?",
+  "model": {
+    "key": "ling-3.0-flash-free",
+    "label": "Ling 3.0 Flash (free)",
+    "requestedSlug": "inclusionai/ling-3.0-flash:free",
+    "resolvedSlug": "inclusionai/ling-3.0-flash:free",
+    "resolution": {
+      "slug": "inclusionai/ling-3.0-flash:free",
+      "requested": "inclusionai/ling-3.0-flash:free",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "inclusionai/ling-3.0-flash:free",
+        "ling-3.0-flash:free"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "LING_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "What John Means by New Creation and Genesis Allusions",
+    "intro": "John's Gospel is saturated with Genesis echoes, and when he talks about \"new creation,\" he's not inventing a new idea — he's inviting us to see Jesus as the agent of the original creation now being remade. This tour walks through how John opens his Gospel with Genesis 1, what \"new creation\" means theologically, how water and spirit carry the theme, and how the resurrection is the culminating sign of it all.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:a1cd8b7d-com-e1f728ab-5907-3251-86aa-e81b39158b47",
+        "startSec": 130,
+        "endSec": 310,
+        "why": "This clip lays the foundation: John's opening 'In the beginning' is a direct echo of Genesis 1:1, and the speaker explains that John is 'playing off of all of that' to show Jesus ushers in 'a very new creation, just like Genesis tells us the story of the original creation.' It also covers the Jewish and Greek background for the Word (Logos) concept, showing why John uses creation language to describe Jesus.",
+        "episodeTitle": "John 1:1-18, pt. 1",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/9q3853byvexkctm2/john_11-18_pt_16id3j.mp3",
+        "durationSec": 1215,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:why-are-there-4-gospels",
+        "startSec": 1988,
+        "endSec": 2100,
+        "why": "The speaker here says John 'comes out of the gate swinging' with 'In the beginning,' making clear that 'this is the beginning of the new creation story.' It highlights John 1:3 ('all things came to exist through him') as a direct Genesis 1 echo, and adds the less obvious layer of Proverbs 8 (Lady Wisdom co-creating with God), showing John is weaving together multiple Genesis threads.",
+        "episodeTitle": "Why Are There Four Accounts of the Gospel?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/5a781ce0-f80e-4a08-a13c-ca2ffb3d0c7a/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=5a781ce0-f80e-4a08-a13c-ca2ffb3d0c7a",
+        "durationSec": 4125,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:807d2da752ed662a0b6413e24f92a20b",
+        "startSec": 2060,
+        "endSec": 2200,
+        "why": "This clip answers the heart of the question theologically: 'redemption is God recreating. God is fixing creation.' The speaker explains that John uses 'light and darkness and in the beginning and the word' — 'very Genesis kinds of images and language' — to present Christ as bringing 'a new creation, a fixing of the old creation, but it's a better creation,' because in Christ 'we gain more than we lost in Adam.'",
+        "episodeTitle": "40 Minutes in the Old Testament: Episode 1",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_OT_EP_1.mp3?dest-id=245197",
+        "durationSec": 2527,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:f345efc2-5463-11f1-973c-33c8ab1ad718",
+        "startSec": 1960,
+        "endSec": 2100,
+        "why": "The speaker shows how John 'stacks the themes he's stacking on top of each other' because 'as soon as you talk about new creation, you have to talk about water. And as soon as you talk about water, you have to talk about the spirit.' This clip traces how John's mind was 'formed in the waters of the Torah,' connecting Genesis creation patterns (water, women, weddings at wells) to the new creation Jesus brings.",
+        "episodeTitle": "John Overview: Water in the Old Testament",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG4780983551.mp3",
+        "durationSec": 4850,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:303640f0-com-cf827cc1-6e97-304c-8a37-a938ff469245",
+        "startSec": 550,
+        "endSec": 670,
+        "why": "This clip explains how John structures his entire Gospel around the new creation theme: Jesus' resurrection is 'the beginning of an eighth day, a new creation,' and 'the creation account is like a final, culminating, eighth sign that begins the new creation into this world.' It shows John's whole narrative arc is designed to communicate that 'by his death and resurrection, he has ushered into this world the beginning of a new creation.'",
+        "episodeTitle": "Gospel of John Overview",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/gtpt38au8djj4anq/overview_of_john7mdjv.mp3",
+        "durationSec": 686,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:3c0fc244-3dc3-11f1-ab33-5f07c6c92de3",
+        "startSec": 3360,
+        "endSec": 3540,
+        "why": "The speaker equips listeners to read John with the same eye for Old Testament allusions as Revelation, since it's the same author. They trace how John's gospel is 'dripping with Old Testament' connections — water at the well, water turned to wine, water of the Holy Spirit making 'new creations' — and show that 'almost every line, almost every story is dripping with Old Testament' allusions, making the Genesis-new creation thread visible throughout the whole Gospel.",
+        "episodeTitle": "Gospel of John Overview: A Unique Eyewitness",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG5222140559.mp3",
+        "durationSec": 3787,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "John's 'new creation' isn't a brand-new universe scraped clean — it's the original creation project being restored and elevated through Jesus, the Word who was there in the beginning. From the opening 'In the beginning' echo, through the water and spirit patterns, to the resurrection as the eighth day, John presents Christ as the one in whom creation is being remade. The Genesis allusions aren't decorative; they're the structural backbone of his Gospel.",
+    "totalSeconds": 872
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 1039,
+      "promptTokens": 1758,
+      "completionTokens": 202,
+      "reasoningTokens": 122,
+      "cachedPromptTokens": 0,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 1,
+      "latencyMs": 2786,
+      "promptTokens": 8357,
+      "completionTokens": 798,
+      "reasoningTokens": 459,
+      "cachedPromptTokens": 1728,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 2,
+      "latencyMs": 1482,
+      "promptTokens": 10915,
+      "completionTokens": 137,
+      "reasoningTokens": 50,
+      "cachedPromptTokens": 8320,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 3,
+      "latencyMs": 2870,
+      "promptTokens": 17253,
+      "completionTokens": 731,
+      "reasoningTokens": 446,
+      "cachedPromptTokens": 10880,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 4,
+      "latencyMs": 12128,
+      "promptTokens": 20163,
+      "completionTokens": 3162,
+      "reasoningTokens": 1736,
+      "cachedPromptTokens": 17216,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 5,
+      "latencyMs": 3005,
+      "promptTokens": 21422,
+      "completionTokens": 84,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 6,
+      "latencyMs": 4226,
+      "promptTokens": 22020,
+      "completionTokens": 1174,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 21376,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "John new creation Genesis allusions",
+        "limit": 10
+      },
+      "ms": 105,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Gospel of John creation theme Genesis",
+        "limit": 10
+      },
+      "ms": 103,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "John Gospel new creation theology",
+        "limit": 10
+      },
+      "ms": 51,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:why-are-there-4-gospels",
+        "fromSec": 1970,
+        "toSec": 2100
+      },
+      "ms": 1,
+      "summary": "1970s–2100s of Why Are There Four Accounts of the Gospel?"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:f345efc2-5463-11f1-973c-33c8ab1ad718",
+        "fromSec": 1960,
+        "toSec": 2100
+      },
+      "ms": 0,
+      "summary": "1960s–2100s of John Overview: Water in the Old Testament"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:807d2da752ed662a0b6413e24f92a20b",
+        "fromSec": 2060,
+        "toSec": 2200
+      },
+      "ms": 5,
+      "summary": "2060s–2200s of 40 Minutes in the Old Testament: Episode 1"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:aec71fd9715129af804d8566bea8a37a",
+        "fromSec": 620,
+        "toSec": 780
+      },
+      "ms": 0,
+      "summary": "620s–780s of 40 Minutes In The Old Testament: Episode 2"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "John 1 beginning creation word became flesh Genesis allusion"
+      },
+      "ms": 57,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "BibleProject John Gospel overview creation new"
+      },
+      "ms": 75,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "John new creation baptism water spirit Genesis patterns"
+      },
+      "ms": 89,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a1cd8b7d-com-e1f728ab-5907-3251-86aa-e81b39158b47",
+        "fromSec": 130,
+        "toSec": 310
+      },
+      "ms": 0,
+      "summary": "130s–310s of John 1:1-18, pt. 1"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:303640f0-com-cf827cc1-6e97-304c-8a37-a938ff469245",
+        "fromSec": 550,
+        "toSec": 720
+      },
+      "ms": 1,
+      "summary": "550s–720s of Gospel of John Overview"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:design-patterns-bible-part-4-chaotic-waters-baptism",
+        "fromSec": 90,
+        "toSec": 260
+      },
+      "ms": 7,
+      "summary": "90s–260s of Chaotic Waters & Christian Baptism"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:3c0fc244-3dc3-11f1-ab33-5f07c6c92de3",
+        "fromSec": 3360,
+        "toSec": 3580
+      },
+      "ms": 6,
+      "summary": "3360s–3540s of Gospel of John Overview: A Unique Eyewitness"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:303640f0-com-cf827cc1-6e97-304c-8a37-a938ff469245",
+        "fromSec": 550,
+        "toSec": 670
+      },
+      "ms": 2,
+      "summary": "550s–670s of Gospel of John Overview"
+    }
+  ],
+  "rejections": [
+    {
+      "at": 4,
+      "errors": [
+        "steps[4].endSec 720 runs past the end of \"Gospel of John Overview\" (686s)"
+      ],
+      "submitted": {
+        "title": "What John Means by New Creation and Genesis Allusions",
+        "intro": "John's Gospel is saturated with Genesis echoes, and when he talks about \"new creation,\" he's not inventing a new idea — he's inviting us to see Jesus as the agent of the original creation now being remade. This tour walks through how John opens his Gospel with Genesis 1, what \"new creation\" means theologically, how water and spirit carry the theme, and how the resurrection is the culminating sign of it all.",
+        "steps": [
+          {
+            "recordId": "listeners-commentary:podcast:a1cd8b7d-com-e1f728ab-5907-3251-86aa-e81b39158b47",
+            "startSec": 130,
+            "endSec": 310,
+            "why": "This clip lays the foundation: John's opening 'In the beginning' is a direct echo of Genesis 1:1, and the speaker explains that John is 'playing off of all of that' to show Jesus ushers in 'a very new creation, just like Genesis tells us the story of the original creation.' It also covers the Jewish and Greek background for the Word (Logos) concept, showing why John uses creation language to describe Jesus."
+          },
+          {
+            "recordId": "bibleproject:podcast:why-are-there-4-gospels",
+            "startSec": 1988,
+            "endSec": 2100,
+            "why": "The speaker here says John 'comes out of the gate swinging' with 'In the beginning,' making clear that 'this is the beginning of the new creation story.' It highlights John 1:3 ('all things came to exist through him') as a direct Genesis 1 echo, and adds the less obvious layer of Proverbs 8 (Lady Wisdom co-creating with God), showing John is weaving together multiple Genesis threads."
+          },
+          {
+            "recordId": "forty-minutes-ot:podcast:807d2da752ed662a0b6413e24f92a20b",
+            "startSec": 2060,
+            "endSec": 2200,
+            "why": "This clip answers the heart of the question theologically: 'redemption is God recreating. God is fixing creation.' The speaker explains that John uses 'light and darkness and in the beginning and the word' — 'very Genesis kinds of images and language' — to present Christ as bringing 'a new creation, a fixing of the old creation, but it's a better creation,' because in Christ 'we gain more than we lost in Adam.'"
+          },
+          {
+            "recordId": "spoken-gospel:podcast:f345efc2-5463-11f1-973c-33c8ab1ad718",
+            "startSec": 1960,
+            "endSec": 2100,
+            "why": "The speaker shows how John 'stacks the themes he's stacking on top of each other' because 'as soon as you talk about new creation, you have to talk about water. And as soon as you talk about water, you have to talk about the spirit.' This clip traces how John's mind was 'formed in the waters of the Torah,' connecting Genesis creation patterns (water, women, weddings at wells) to the new creation Jesus brings."
+          },
+          {
+            "recordId": "listeners-commentary:podcast:303640f0-com-cf827cc1-6e97-304c-8a37-a938ff469245",
+            "startSec": 550,
+            "endSec": 720,
+            "why": "This clip explains how John structures his entire Gospel around the new creation theme: Jesus' resurrection is 'the beginning of an eighth day, a new creation,' and 'the creation account is like a final, culminating, eighth sign that begins the new creation into this world.' It shows John's whole narrative arc is designed to communicate that 'by his death and resurrection, he has ushered into this world the beginning of a new creation.'"
+          },
+          {
+            "recordId": "spoken-gospel:podcast:3c0fc244-3dc3-11f1-ab33-5f07c6c92de3",
+            "startSec": 3360,
+            "endSec": 3540,
+            "why": "The speaker equips listeners to read John with the same eye for Old Testament allusions as Revelation, since it's the same author. They trace how John's gospel is 'dripping with Old Testament' connections — water at the well, water turned to wine, water of the Holy Spirit making 'new creations' — and show that 'almost every line, almost every story is dripping with Old Testament' allusions, making the Genesis-new creation thread visible throughout the whole Gospel."
+          }
+        ],
+        "closing": "John's 'new creation' isn't a brand-new universe scraped clean — it's the original creation project being restored and elevated through Jesus, the Word who was there in the beginning. From the opening 'In the beginning' echo, through the water and spirit patterns, to the resurrection as the eighth day, John presents Christ as the one in whom creation is being remade. The Genesis allusions aren't decorative; they're the structural backbone of his Gospel."
+      }
+    }
+  ],
+  "totals": {
+    "modelCalls": 7,
+    "toolCalls": 18,
+    "promptTokens": 101888,
+    "completionTokens": 6288,
+    "reasoningTokens": 2813,
+    "cachedPromptTokens": 59520,
+    "wallMs": 28121,
+    "modelLatencyMs": 27536,
+    "toolMs": 504
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "inclusionai/ling-3.0-flash:free",
+      "inputPerMTokensUsd": 0,
+      "outputPerMTokensUsd": 0,
+      "cachedInputPerMTokensUsd": 0,
+      "_note": "PLACEHOLDER — zeros because the slug carries OpenRouter's `:free` suffix, not because anyone verified the tier. This asserts nothing: the provider accounts its own cost and the run record's 'provider' figure is the only one to trust. A free tier that starts charging, or a run that silently lands on the paid `inclusionai/ling-3.0-flash`, would show up there and not here."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T20:18:46.312Z"
+}

@@ -1,0 +1,386 @@
+{
+  "runId": "2026-07-31T18-50-42-262-gpt-5.6-luna",
+  "startedAt": "2026-07-31T18:50:42.262Z",
+  "promptId": "doctrinal-atonement",
+  "prompt": "Did God pour out wrath on Jesus at the cross? I want to hear the different ways teachers explain what the crucifixion accomplished, including where they disagree.",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Wrath, Sacrifice, and Victory at the Cross",
+    "intro": "This tour starts with the question you asked directly: whether God’s wrath was poured out on Jesus. It then widens the frame, letting you hear a classic propitiation-and-penalty explanation alongside teachers who stress cleansing, kingdom, liberation from the powers, and Jesus entering both divine judgment and human violence. The goal is not to force a single formula, but to let the agreements and real tensions remain audible.",
+    "steps": [
+      {
+        "recordId": "ask-nt-wright:podcast:27cf789c-f845-11f0-9b4f-5b44b2950008",
+        "startSec": 1540,
+        "endSec": 1720,
+        "why": "Begin here because Wright answers the exact question while distinguishing a biblical claim from a caricature. He says Romans 8 is “clearly penal and clearly substitutionary,” but rejects the picture of “an angry God wanting to punish somebody and fastening upon his own innocent son.” He then places substitution inside the larger story of victory over “the principalities and powers.”",
+        "episodeTitle": "Is Salvation fair?",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR6238019377.mp3?updated=1769164705",
+        "durationSec": 2033,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:bacb1fc2-com-e79bf8f7-6ab5-30f3-9e4f-46bbb41dd164",
+        "startSec": 1320,
+        "endSec": 1500,
+        "why": "Now hear the most explicit wrath-and-penalty account in the tour. The teacher connects Romans 3 to Leviticus 16, calling Jesus “the ultimate day of atonement” and the cross “the ultimate mercy seat.” He says God’s “just repayment for sin” was “poured out on Jesus Himself,” so that “the wrath of God that sin deserves” is satisfied and the penalty is finally dealt with.",
+        "episodeTitle": "Romans 3:21-26",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/zhvgac/romans_321-368t8hu.mp3",
+        "durationSec": 1954,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:87a86ffa-onement-29af66f7216540f290f77477f0edddef",
+        "startSec": 1050,
+        "endSec": 1230,
+        "why": "This clip gives you the sharpest disagreement with a familiar version of penal substitution. Wright says the standard picture—sin confessed over an animal, then the animal killed as punishment—is “simply, straightforwardly wrong.” He reframes sacrifice as purification for God’s presence, with blood functioning “as a kind of detergent to cleanse the pollution,” and asks us to see the biblical problem as how God comes to dwell with people.",
+        "episodeTitle": "#2 Qs on sacrifice, crucifixion and atonement",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR1330520307.mp3?updated=1743003359",
+        "durationSec": 1888,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "naked-bible:podcast:3016",
+        "startSec": 3140,
+        "endSec": 3320,
+        "why": "Having heard penalty and cleansing, listen for the Christus Victor account. The teacher describes Christ’s death as “conflict resulting in victory,” in which Christ triumphs over “all the evil powers” that hold humanity in bondage. Crucially, he resists the either-or: “I don’t see any reason that the atonement must be understood in only one perspective,” even while noting that some use other views to escape substitution.",
+        "episodeTitle": "Naked Bible 369: Revelation 5",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2021/03/NakedBible369_Revelation5.mp3",
+        "durationSec": 4088,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:4672a116-c64a-452d-a75d-0a0b1a8f85dc",
+        "startSec": 2220,
+        "endSec": 2400,
+        "why": "This adds a distinctive account of what it means for Jesus to bear wrath: he enters “the fire, the fury, the hot anger” of both God’s judgment and the nations’ brutality. The speakers say Jesus bears “the wrath of the guilty” and also absorbs “the unjust wrath of the nations,” after which the exiles walk out “vindicated…free.” It complicates a simple picture of wrath as only a divine transaction.",
+        "episodeTitle": "Daniel 3: A Raging Furnace",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG8840432987.mp3?updated=1664486071",
+        "durationSec": 3083,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:87a86ffa-onement-29af66f7216540f290f77477f0edddef",
+        "startSec": 180,
+        "endSec": 360,
+        "why": "End by zooming out to the result the teachers are arguing about: what the cross changes in the world. Wright says “Jesus died for me, so that I can go to heaven” is “a great place to start, but it’s not a great place to stop”; the death is when “history actually changes,” launching God’s kingdom and the mission of renewed human beings. This lets you hold the competing images together without reducing the cross to only private forgiveness or only punishment.",
+        "episodeTitle": "#2 Qs on sacrifice, crucifixion and atonement",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR1330520307.mp3?updated=1743003359",
+        "durationSec": 1888,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "You have heard genuine overlap—Jesus dies for sins, bears judgment, brings forgiveness and reconciliation—and genuine disagreement about what that language means. One teacher speaks directly of wrath and penalty poured onto Jesus; others challenge that as an incomplete or misleading center, emphasizing cleansing, kingdom, liberation from evil powers, and Jesus’ faithful solidarity with victims of violence. The tour leaves you with a layered question rather than a slogan: not only whether wrath is present, but what kind of judgment the cross reveals, what it accomplishes, and how its different biblical images belong together.",
+    "totalSeconds": 1080
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2787,
+      "promptTokens": 1147,
+      "completionTokens": 53,
+      "reasoningTokens": 37,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00004860000000000001
+    },
+    {
+      "i": 1,
+      "latencyMs": 3813,
+      "promptTokens": 1442,
+      "completionTokens": 192,
+      "reasoningTokens": 33,
+      "cachedPromptTokens": 1144,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00016381500000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 4381,
+      "promptTokens": 11572,
+      "completionTokens": 381,
+      "reasoningTokens": 38,
+      "cachedPromptTokens": 1439,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0015095400000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 2952,
+      "promptTokens": 16476,
+      "completionTokens": 276,
+      "reasoningTokens": 41,
+      "cachedPromptTokens": 11569,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008945900000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 10557,
+      "promptTokens": 19477,
+      "completionTokens": 1259,
+      "reasoningTokens": 218,
+      "cachedPromptTokens": 16473,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001295555
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "God's wrath Jesus cross poured out",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 85,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "penal substitution punishment Jesus",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 46,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "atonement cross victory powers ransom",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 53,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "crucifixion accomplished forgiveness sacrifice reconciliation",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 54,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Jesus became sin curse cross wrath",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 97,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:bacb1fc2-com-e79bf8f7-6ab5-30f3-9e4f-46bbb41dd164",
+        "fromSec": 1320,
+        "toSec": 1550
+      },
+      "ms": 4,
+      "summary": "1320s–1500s of Romans 3:21-26"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 820,
+        "toSec": 1100
+      },
+      "ms": 0,
+      "summary": "820s–1000s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 1650,
+        "toSec": 1950
+      },
+      "ms": 0,
+      "summary": "1650s–1830s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:27cf789c-f845-11f0-9b4f-5b44b2950008",
+        "fromSec": 1370,
+        "toSec": 1780
+      },
+      "ms": 4,
+      "summary": "1370s–1550s of Is Salvation fair?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:what-day-atonement",
+        "fromSec": 1980,
+        "toSec": 2300
+      },
+      "ms": 6,
+      "summary": "1980s–2160s of Leviticus E6: What Is the Day of Atonement?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:87a86ffa-onement-29af66f7216540f290f77477f0edddef",
+        "fromSec": 180,
+        "toSec": 600
+      },
+      "ms": 0,
+      "summary": "180s–360s of #2 Qs on sacrifice, crucifixion and atonement"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:27cf789c-f845-11f0-9b4f-5b44b2950008",
+        "fromSec": 1540,
+        "toSec": 1780
+      },
+      "ms": 0,
+      "summary": "1540s–1720s of Is Salvation fair?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:87a86ffa-onement-29af66f7216540f290f77477f0edddef",
+        "fromSec": 1050,
+        "toSec": 1370
+      },
+      "ms": 0,
+      "summary": "1050s–1230s of #2 Qs on sacrifice, crucifixion and atonement"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:3016",
+        "fromSec": 3140,
+        "toSec": 3420
+      },
+      "ms": 6,
+      "summary": "3140s–3320s of Naked Bible 369: Revelation 5"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4672a116-c64a-452d-a75d-0a0b1a8f85dc",
+        "fromSec": 2220,
+        "toSec": 2420
+      },
+      "ms": 0,
+      "summary": "2220s–2400s of Daniel 3: A Raging Furnace"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 17,
+    "promptTokens": 50114,
+    "completionTokens": 2161,
+    "reasoningTokens": 367,
+    "cachedPromptTokens": 31725,
+    "wallMs": 24848,
+    "modelLatencyMs": 24490,
+    "toolMs": 357
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003912,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T18:51:07.110Z"
+}

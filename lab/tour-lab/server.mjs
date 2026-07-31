@@ -84,28 +84,58 @@ const server = http.createServer(async (req, res) => {
     }
 
     // Streaming run: progress events while the model reads around the corpus.
+    //
+    // One model or seven, this is the same endpoint and the same stream. `model`
+    // runs one; `models: [...]` fires them ALL AT ONCE from here — Send to All —
+    // and multiplexes their events down a single connection, every frame tagged
+    // with the key of the model it belongs to so the page can route it to that
+    // model's panel and no other.
+    //
+    // Concurrency is server-side on purpose. Seven parallel EventSources would
+    // sit on the browser's ~6-connection-per-origin limit and the seventh panel
+    // would wait on a free socket; one multiplexed stream has no such ceiling,
+    // and the runs are genuinely simultaneous, so a model that thinks for three
+    // minutes delays nothing but its own panel.
     if (p === '/api/tour' && req.method === 'POST') {
       const body = await readBody(req);
       const prompt = String(body.prompt || '').trim();
-      const modelKey = String(body.model || '');
+      const modelKeys = (Array.isArray(body.models) && body.models.length
+        ? body.models
+        : [body.model]
+      )
+        .map((k) => String(k || '').trim())
+        .filter(Boolean);
       if (!prompt) return sendJson(res, 400, { error: 'prompt is required' });
+      if (!modelKeys.length) return sendJson(res, 400, { error: 'at least one model is required' });
 
       res.writeHead(200, {
         'content-type': 'text/event-stream; charset=utf-8',
         'cache-control': 'no-cache',
         connection: 'keep-alive',
       });
+      // Each write is one whole frame, so concurrent runs interleave between
+      // frames and never inside one.
       const emit = (event, data) => {
         if (res.writableEnded) return;
         res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
       };
-      emit('start', { model: modelKey, prompt });
-      try {
-        await runTour({ prompt, modelKey, promptId: body.promptId || null, emit });
-      } catch (err) {
-        // Fail soft: the page shows a sentence, never a stack trace.
-        emit('fatal', { message: err?.message || String(err) });
-      }
+
+      emit('batch-start', { models: modelKeys, prompt });
+      // allSettled, not all: a missing key, a rejected slug, or a provider 500
+      // lands in its own panel and the other six keep going.
+      await Promise.allSettled(
+        modelKeys.map(async (modelKey) => {
+          const tagged = (event, data) => emit(event, { ...data, model: modelKey });
+          tagged('start', { prompt });
+          try {
+            await runTour({ prompt, modelKey, promptId: body.promptId || null, emit: tagged });
+          } catch (err) {
+            // Fail soft: the panel shows a sentence, never a stack trace.
+            tagged('fatal', { message: err?.message || String(err) });
+          }
+        })
+      );
+      emit('batch-done', { models: modelKeys });
       return res.end();
     }
 
@@ -125,7 +155,12 @@ server.listen(PORT, () => {
   console.log(`  models     ${configured}/${MODELS.length} configured`);
   for (const m of MODELS) {
     const d = clientFor(m.key).describe();
-    console.log(`             ${d.configured ? '✓' : '·'} ${d.requestedSlug}${d.configured ? ` → ${d.baseUrl}` : `  (${d.reason})`}`);
+    const effort = d.reasoning.effort
+      ? `  effort ${d.reasoning.effort}${d.reasoning.applied ? '' : ' (endpoint cannot carry it)'} via ${d.reasoning.source}`
+      : '  effort vendor default';
+    console.log(
+      `             ${d.configured ? '✓' : '·'} ${d.requestedSlug}${d.configured ? ` → ${d.baseUrl}${effort}` : `  (${d.reason})`}`
+    );
   }
   console.log('');
 });

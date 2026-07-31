@@ -1,0 +1,637 @@
+{
+  "runId": "2026-07-31T20-05-12-453-laguna-s-2.1-free",
+  "startedAt": "2026-07-31T20:05:12.453Z",
+  "promptId": "text-genesis-6",
+  "prompt": "What is going on in Genesis 6:1-4 with the sons of God and the Nephilim?",
+  "model": {
+    "key": "laguna-s-2.1-free",
+    "label": "Laguna S 2.1 (free)",
+    "requestedSlug": "poolside/laguna-s-2.1:free",
+    "resolvedSlug": "poolside/laguna-s-2.1:free",
+    "resolution": {
+      "slug": "poolside/laguna-s-2.1:free",
+      "requested": "poolside/laguna-s-2.1:free",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "poolside/laguna-s-2.1:free",
+        "laguna-s-2.1:free"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "LAGUNA_REASONING",
+      "applied": true
+    }
+  },
+  "status": "error",
+  "error": {
+    "code": "NO_TOUR",
+    "message": "ran out of model calls (16) without a valid tour"
+  },
+  "tour": null,
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 6718,
+      "promptTokens": 1578,
+      "completionTokens": 269,
+      "reasoningTokens": 100,
+      "cachedPromptTokens": 0,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 1,
+      "latencyMs": 14290,
+      "promptTokens": 9615,
+      "completionTokens": 479,
+      "reasoningTokens": 184,
+      "cachedPromptTokens": 0,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 2,
+      "latencyMs": 5402,
+      "promptTokens": 12199,
+      "completionTokens": 177,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 0,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 3,
+      "latencyMs": 15542,
+      "promptTokens": 13899,
+      "completionTokens": 180,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 0,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 4,
+      "latencyMs": 8462,
+      "promptTokens": 15624,
+      "completionTokens": 198,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 0,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 5,
+      "latencyMs": 4561,
+      "promptTokens": 17391,
+      "completionTokens": 194,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 1568,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 6,
+      "latencyMs": 8659,
+      "promptTokens": 19103,
+      "completionTokens": 173,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 17568,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 7,
+      "latencyMs": 7497,
+      "promptTokens": 20806,
+      "completionTokens": 173,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 0,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 8,
+      "latencyMs": 5248,
+      "promptTokens": 22394,
+      "completionTokens": 174,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 0,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 9,
+      "latencyMs": 5857,
+      "promptTokens": 24011,
+      "completionTokens": 175,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 15808,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 10,
+      "latencyMs": 6472,
+      "promptTokens": 25622,
+      "completionTokens": 206,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 24160,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 11,
+      "latencyMs": 4554,
+      "promptTokens": 27427,
+      "completionTokens": 180,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 0,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 12,
+      "latencyMs": 6228,
+      "promptTokens": 29072,
+      "completionTokens": 171,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 19264,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 13,
+      "latencyMs": 7067,
+      "promptTokens": 30599,
+      "completionTokens": 183,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 20960,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 14,
+      "latencyMs": 5224,
+      "promptTokens": 32395,
+      "completionTokens": 183,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 30752,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    },
+    {
+      "i": 15,
+      "latencyMs": 6417,
+      "promptTokens": 34030,
+      "completionTokens": 181,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 32576,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 6,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "40 of 281 moments"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "sons of God",
+        "limit": 10
+      },
+      "ms": 86,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "nephilim",
+        "limit": 10
+      },
+      "ms": 88,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:168c311c-5d5c-11f0-8252-7f9ec715a664",
+        "fromSec": 1139,
+        "toSec": 1670
+      },
+      "ms": 2,
+      "summary": "1139s–1319s of Who were \"the sons of God\" in Genesis 6?"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "fromSec": 1220,
+        "toSec": 1750
+      },
+      "ms": 3,
+      "summary": "1220s–1400s of Spiritual Warfare"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:edf9e365-6859-4f4d-947e-9cfc491ea29b",
+        "fromSec": 423,
+        "toSec": 784
+      },
+      "ms": 0,
+      "summary": "423s–603s of Genesis 6-11: The Flood"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:788",
+        "fromSec": 1997,
+        "toSec": 2605
+      },
+      "ms": 9,
+      "summary": "1997s–2177s of Naked Bible 94: The Sin of the Watchers and Galatians 3-4"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:why-cant-jacob-and-esau-both-be-blessed",
+        "fromSec": 1331,
+        "toSec": 1965
+      },
+      "ms": 0,
+      "summary": "1331s–1511s of Genesis: Why Can’t Jacob and Esau Both be Blessed? Question and Response"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:why-cant-jacob-and-esau-both-be-blessed",
+        "fromSec": 1511,
+        "toSec": 1965
+      },
+      "ms": 0,
+      "summary": "1511s–1691s of Genesis: Why Can’t Jacob and Esau Both be Blessed? Question and Response"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:788",
+        "fromSec": 2177,
+        "toSec": 2785
+      },
+      "ms": 0,
+      "summary": "2177s–2357s of Naked Bible 94: The Sin of the Watchers and Galatians 3-4"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:788",
+        "fromSec": 2357,
+        "toSec": 2965
+      },
+      "ms": 0,
+      "summary": "2357s–2537s of Naked Bible 94: The Sin of the Watchers and Galatians 3-4"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:9c5f3270-dadd-4f0f-aa27-0740a6e75423",
+        "fromSec": 431,
+        "toSec": 783
+      },
+      "ms": 0,
+      "summary": "431s–611s of Genesis Replay: The Flood"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 45,
+        "toSec": 600
+      },
+      "ms": 0,
+      "summary": "45s–225s of God Question & Response 1"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:1276",
+        "fromSec": 2438,
+        "toSec": 2720
+      },
+      "ms": 1,
+      "summary": "2438s–2618s of Naked Bible 146: Ezekiel 32"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 225,
+        "toSec": 600
+      },
+      "ms": 0,
+      "summary": "225s–405s of God Question & Response 1"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 382,
+        "toSec": 782
+      },
+      "ms": 0,
+      "summary": "382s–562s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 405,
+        "toSec": 785
+      },
+      "ms": 0,
+      "summary": "405s–585s of God Question & Response 1"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 562,
+        "toSec": 942
+      },
+      "ms": 0,
+      "summary": "562s–742s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 8,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 585,
+        "toSec": 965
+      },
+      "ms": 0,
+      "summary": "585s–765s of God Question & Response 1"
+    },
+    {
+      "at": 8,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 742,
+        "toSec": 1122
+      },
+      "ms": 0,
+      "summary": "742s–922s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 9,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 765,
+        "toSec": 1145
+      },
+      "ms": 0,
+      "summary": "765s–945s of God Question & Response 1"
+    },
+    {
+      "at": 9,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 922,
+        "toSec": 1302
+      },
+      "ms": 0,
+      "summary": "922s–1102s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 10,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:788",
+        "fromSec": 2537,
+        "toSec": 2945
+      },
+      "ms": 0,
+      "summary": "2537s–2717s of Naked Bible 94: The Sin of the Watchers and Galatians 3-4"
+    },
+    {
+      "at": 10,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:168c311c-5d5c-11f0-8252-7f9ec715a664",
+        "fromSec": 1319,
+        "toSec": 1670
+      },
+      "ms": 0,
+      "summary": "1319s–1499s of Who were \"the sons of God\" in Genesis 6?"
+    },
+    {
+      "at": 11,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 945,
+        "toSec": 1325
+      },
+      "ms": 0,
+      "summary": "945s–1125s of God Question & Response 1"
+    },
+    {
+      "at": 11,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:giants-land",
+        "fromSec": 535,
+        "toSec": 1067
+      },
+      "ms": 0,
+      "summary": "535s–715s of Deuteronomy: Giants and Justice"
+    },
+    {
+      "at": 12,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 1125,
+        "toSec": 1505
+      },
+      "ms": 0,
+      "summary": "1125s–1305s of God Question & Response 1"
+    },
+    {
+      "at": 12,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:giants-land",
+        "fromSec": 715,
+        "toSec": 1095
+      },
+      "ms": 0,
+      "summary": "715s–895s of Deuteronomy: Giants and Justice"
+    },
+    {
+      "at": 13,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:788",
+        "fromSec": 2717,
+        "toSec": 3095
+      },
+      "ms": 0,
+      "summary": "2717s–2897s of Naked Bible 94: The Sin of the Watchers and Galatians 3-4"
+    },
+    {
+      "at": 13,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 1305,
+        "toSec": 1685
+      },
+      "ms": 0,
+      "summary": "1305s–1485s of God Question & Response 1"
+    },
+    {
+      "at": 14,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 1485,
+        "toSec": 1865
+      },
+      "ms": 0,
+      "summary": "1485s–1665s of God Question & Response 1"
+    },
+    {
+      "at": 14,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:why-cant-jacob-and-esau-both-be-blessed",
+        "fromSec": 1691,
+        "toSec": 2071
+      },
+      "ms": 0,
+      "summary": "1691s–1871s of Genesis: Why Can’t Jacob and Esau Both be Blessed? Question and Response"
+    },
+    {
+      "at": 15,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:788",
+        "fromSec": 2897,
+        "toSec": 3275
+      },
+      "ms": 0,
+      "summary": "2897s–3077s of Naked Bible 94: The Sin of the Watchers and Galatians 3-4"
+    },
+    {
+      "at": 15,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 1665,
+        "toSec": 2045
+      },
+      "ms": 0,
+      "summary": "1665s–1845s of God Question & Response 1"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 16,
+    "toolCalls": 34,
+    "promptTokens": 335765,
+    "completionTokens": 3296,
+    "reasoningTokens": 284,
+    "cachedPromptTokens": 162656,
+    "wallMs": 118501,
+    "modelLatencyMs": 118198,
+    "toolMs": 189
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "poolside/laguna-s-2.1:free",
+      "inputPerMTokensUsd": 0,
+      "outputPerMTokensUsd": 0,
+      "cachedInputPerMTokensUsd": 0,
+      "_note": "PLACEHOLDER — zeros for the `:free` suffix only, unverified. The paid twin `poolside/laguna-s-2.1` is also published, so if the resolver ever falls back to it the price basis in the run record is what will say so. Trust the provider-reported cost, not this row."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T20:07:10.954Z"
+}

@@ -1,0 +1,593 @@
+{
+  "runId": "2026-07-31T20-18-19-899-deepseek-v4-flash",
+  "startedAt": "2026-07-31T20:18:19.899Z",
+  "promptId": null,
+  "prompt": "what does john mean by new creation; or genesis allusions?",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolution": {
+      "slug": "deepseek/deepseek-v4-flash-0731",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek/deepseek-v4-flash-0731",
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash-0731"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "DEEPSEEK_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "New Creation in John: From \"In the Beginning\" to the Garden Tomb",
+    "intro": "You asked what John means by \"new creation\" and how the Genesis allusions work. The short answer, as you'll hear: John doesn't just quote Genesis — he rebuilds his whole Gospel on its skeleton, from the opening line through a seven-day first week, a wedding, a garden, and a breathing that redoes Genesis 2:7. This tour walks you through that architecture so you can start seeing it yourself.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:beginning",
+        "startSec": 2700,
+        "endSec": 2880,
+        "why": "Tim and Jon set the frame: in Genesis 1 the light doesn't eliminate the darkness, it contains it — \"the seventh day has no evening,\" the day the light wins. John capitalizes on that momentum: the darkness trying to overcome the light at the cross, and the resurrection as the moment \"darkness is not able to overcome the light anymore.\" This is the cleanest definition of new creation as new life in Jesus set against the \"anti-creation or the decreation forces of darkness.\"",
+        "episodeTitle": "In the Beginning – John 1",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/8f0c5975-65cf-4a02-baf0-786ba6649656/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=8f0c5975-65cf-4a02-baf0-786ba6649656",
+        "durationSec": 3671,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:why-are-there-4-gospels",
+        "startSec": 1960,
+        "endSec": 2140,
+        "why": "Why can we be sure John is deliberately echoing Genesis? Because \"in the beginning\" is \"blindingly obvious,\" and behind it sits Proverbs 8's Lady Wisdom, itself \"a reading of Genesis 1\" — God's word and ruach as the means of creation. This shows John composing his opening as a retelling of Genesis, with light and word doing the creating, and it explains the phrase \"God's word is the light shining in the darkness.\"",
+        "episodeTitle": "Why Are There Four Accounts of the Gospel?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/5a781ce0-f80e-4a08-a13c-ca2ffb3d0c7a/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=5a781ce0-f80e-4a08-a13c-ca2ffb3d0c7a",
+        "durationSec": 4125,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "startSec": 480,
+        "endSec": 660,
+        "why": "From the opening page the hosts read Jesus as the new Adam: humans were given the image and dominion of God to spread light and order, \"but we fail that creation mandate... and start spreading darkness and chaos instead of order.\" Jesus remakes and reclaims it all as \"the new Adam, as the new human\" — and the hosts make the crucial John point that \"God heals creation whenever he becomes part of it,\" which they call John's soteriology, his theory of salvation.",
+        "episodeTitle": "John 1: In the Beginning Was the Word",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG8007534722.mp3",
+        "durationSec": 3919,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:3c0fc244-3dc3-11f1-ab33-5f07c6c92de3",
+        "startSec": 2930,
+        "endSec": 3110,
+        "why": "Here's the Genesis skeleton made explicit: count the days in John 1–2 and you get seven — day one \"in the beginning,\" then successive \"next day\" markers, landing on Cana's \"on the third day,\" so \"four days plus three would be day seven... and the end of seven days, we get a wedding.\" Seven is the number of completeness, and John \"is often setting up seven so that we are looking for the eighth to find new creation.\" It's a map for reading the whole Gospel.",
+        "episodeTitle": "Gospel of John Overview: A Unique Eyewitness",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG5222140559.mp3",
+        "durationSec": 3787,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:db54663c-6a8e-11f1-8d65-4723e9decce5",
+        "startSec": 790,
+        "endSec": 1000,
+        "why": "Now the wedding sign itself. The hosts track the water imagery through John: wells are where patriarchs meet their wives, so \"water episode is marriage episode,\" and the six stone jars \"set aside and empty\" for purification get refilled — \"he's getting ready to do a new cleaning.\" They hear the wilderness rock struck for water behind it, and wine that points to the wedding banquet and the messianic reign. New creation begins with purification and a wedding.",
+        "episodeTitle": "John Overview: Living Water",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG6305125345.mp3",
+        "durationSec": 4717,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:892c9f58-26cf-11f1-af87-07439b2c818d",
+        "startSec": 380,
+        "endSec": 740,
+        "why": "A caution against flattening the allusions. NT Wright reads the water jars as pointing to \"the ultimate purification which Jesus will offer\" on the cross, but insists this is \"not the cancellation of the Judean way of life\" — John's Gospel \"is a way of tracking through the great stories in Israel's scriptures and saying, now at last we see where it was all going.\" He ties it to Jesus as the true temple, \"the place where heaven and earth meet... earth is shot through with the life of heaven.\"",
+        "episodeTitle": "Why did Jesus turn water into wine? Did Paul invent Christianity? Are Christian hymns wrong? NT Wright Explains",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR1626519213.mp3?updated=1774281250",
+        "durationSec": 2201,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "startSec": 480,
+        "endSec": 700,
+        "why": "The Genesis allusions come home in a garden. The commentary walks Mary's morning: weeping at the tomb, she \"turned around and the morning sun is bright in her eyes... thinking he was the gardener,\" until Jesus says her name — \"Mary\" — and she answers \"Rabboni.\" In John, the first day of the week begins in a garden with the one who tends it calling his own by name, the echo of Eden's gardener.",
+        "episodeTitle": "John 20:1-31",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/z8yyjpv9fmtit6hd/john_201-3185o5y.mp3",
+        "durationSec": 1726,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "startSec": 1000,
+        "endSec": 1180,
+        "why": "The tour ends where John's new creation becomes personal: Jesus breathes on the disciples and says \"Receive the Holy Spirit,\" and the teacher spells out that this \"recalls what God did... in Genesis chapter 2, verse 7, when God formed Adam out of the dust of the ground and then breathed on him.\" He calls it recapitulating: \"here it is, the humanity restored, here it is, life reborn.\" Same breath as the first creation, now making new humans.",
+        "episodeTitle": "John 20:1-31",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/z8yyjpv9fmtit6hd/john_201-3185o5y.mp3",
+        "durationSec": 1726,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "So here's what you can take away: for John, new creation isn't a slogan — it's a story being told again. The same Word who spoke light into the darkness in Genesis speaks again in flesh; a week of seven days leads to a wedding and then to an eighth day; the water of purification becomes the wine of the feast; and the risen Jesus is found in a garden, breathing life into his people the way God breathed into the dust. Every Genesis echo is John saying the same thing: the first creation has found its true human, and what began in a garden is being remade from an empty tomb.",
+    "totalSeconds": 1690
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 4458,
+      "promptTokens": 1751,
+      "completionTokens": 350,
+      "reasoningTokens": 162,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0001148392
+    },
+    {
+      "i": 1,
+      "latencyMs": 4867,
+      "promptTokens": 8145,
+      "completionTokens": 429,
+      "reasoningTokens": 205,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010321192
+    },
+    {
+      "i": 2,
+      "latencyMs": 12615,
+      "promptTokens": 17103,
+      "completionTokens": 1374,
+      "reasoningTokens": 980,
+      "cachedPromptTokens": 8064,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0016727592
+    },
+    {
+      "i": 3,
+      "latencyMs": 9089,
+      "promptTokens": 20230,
+      "completionTokens": 1150,
+      "reasoningTokens": 714,
+      "cachedPromptTokens": 17024,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008185072
+    },
+    {
+      "i": 4,
+      "latencyMs": 8244,
+      "promptTokens": 23770,
+      "completionTokens": 816,
+      "reasoningTokens": 498,
+      "cachedPromptTokens": 20224,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007815472
+    },
+    {
+      "i": 5,
+      "latencyMs": 28294,
+      "promptTokens": 28720,
+      "completionTokens": 2548,
+      "reasoningTokens": 2218,
+      "cachedPromptTokens": 23680,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001485344
+    },
+    {
+      "i": 6,
+      "latencyMs": 22513,
+      "promptTokens": 32048,
+      "completionTokens": 2239,
+      "reasoningTokens": 1909,
+      "cachedPromptTokens": 28672,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0011798416
+    },
+    {
+      "i": 7,
+      "latencyMs": 16584,
+      "promptTokens": 34636,
+      "completionTokens": 1673,
+      "reasoningTokens": 1452,
+      "cachedPromptTokens": 32000,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00092708
+    },
+    {
+      "i": 8,
+      "latencyMs": 55806,
+      "promptTokens": 36147,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 34560,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": 0.001998948
+    },
+    {
+      "i": 9,
+      "latencyMs": 27951,
+      "promptTokens": 36176,
+      "completionTokens": 3186,
+      "reasoningTokens": 1605,
+      "cachedPromptTokens": 36096,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010043488
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "new creation in John's Gospel",
+        "limit": 10
+      },
+      "ms": 101,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "John opens with Genesis in the beginning",
+        "limit": 10
+      },
+      "ms": 76,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Genesis allusions in John",
+        "limit": 10
+      },
+      "ms": 60,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "water to wine third day Cana new creation"
+      },
+      "ms": 100,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "resurrection garden gardener Mary Magdalene new Adam"
+      },
+      "ms": 37,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 20
+      },
+      "ms": 61,
+      "summary": "25 of 102 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 2
+      },
+      "ms": 0,
+      "summary": "25 of 125 moments"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:why-are-there-4-gospels",
+        "fromSec": 1960,
+        "toSec": 2140
+      },
+      "ms": 7,
+      "summary": "1960s–2140s of Why Are There Four Accounts of the Gospel?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:beginning",
+        "fromSec": 2700,
+        "toSec": 2880
+      },
+      "ms": 5,
+      "summary": "2700s–2880s of In the Beginning – John 1"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "fromSec": 480,
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "480s–660s of John 1: In the Beginning Was the Word"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:a44083ce-5463-11f1-b34d-b790002d90a8",
+        "fromSec": 80,
+        "toSec": 360
+      },
+      "ms": 8,
+      "summary": "80s–260s of John Overview: What is a Sign?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2930,
+        "recordId": "spoken-gospel:podcast:3c0fc244-3dc3-11f1-ab33-5f07c6c92de3",
+        "toSec": 3120
+      },
+      "ms": 8,
+      "summary": "2930s–3110s of Gospel of John Overview: A Unique Eyewitness"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 790,
+        "recordId": "spoken-gospel:podcast:db54663c-6a8e-11f1-8d65-4723e9decce5",
+        "toSec": 1000
+      },
+      "ms": 8,
+      "summary": "790s–970s of John Overview: Living Water"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 40,
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "toSec": 420
+      },
+      "ms": 2,
+      "summary": "40s–220s of John 20:1-31"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 380,
+        "recordId": "ask-nt-wright:podcast:892c9f58-26cf-11f1-af87-07439b2c818d",
+        "toSec": 560
+      },
+      "ms": 6,
+      "summary": "380s–560s of Why did Jesus turn water into wine? Did Paul invent Christianity? Are Christian hymns wrong? NT Wright Explains"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "limit": 8,
+        "query": "Jesus gardener mistaken Mary tomb first day of week new creation"
+      },
+      "ms": 76,
+      "summary": "8 hits"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 600,
+        "recordId": "bibleproject:podcast:holy-spirit-part-3",
+        "toSec": 780
+      },
+      "ms": 3,
+      "summary": "600s–780s of Holy Spirit in the New Testament"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1340,
+        "recordId": "bibleproject:podcast:heaven-earth-part-3",
+        "toSec": 1520
+      },
+      "ms": 2,
+      "summary": "1340s–1520s of Jesus, The Ultimate Heaven & Earth Meeting Place"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "limit": 8,
+        "query": "breathed on them receive the Holy Spirit Adam dust new creation"
+      },
+      "ms": 74,
+      "summary": "8 hits"
+    },
+    {
+      "at": 5,
+      "name": "search_corpus",
+      "args": {
+        "limit": 8,
+        "query": "\"the gardener\" Jesus garden Eden resurrection"
+      },
+      "ms": 102,
+      "summary": "8 hits"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 700,
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "toSec": 880
+      },
+      "ms": 1,
+      "summary": "700s–880s of John 20:1-31"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1000,
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "toSec": 1180
+      },
+      "ms": 0,
+      "summary": "1000s–1180s of John 20:1-31"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 300,
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "toSec": 560
+      },
+      "ms": 3,
+      "summary": "300s–480s of John 20:1-31"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 970,
+        "recordId": "spoken-gospel:podcast:db54663c-6a8e-11f1-8d65-4723e9decce5",
+        "toSec": 1150
+      },
+      "ms": 0,
+      "summary": "970s–1150s of John Overview: Living Water"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 560,
+        "recordId": "ask-nt-wright:podcast:892c9f58-26cf-11f1-af87-07439b2c818d",
+        "toSec": 740
+      },
+      "ms": 5,
+      "summary": "560s–740s of Why did Jesus turn water into wine? Did Paul invent Christianity? Are Christian hymns wrong? NT Wright Explains"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 480,
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "480s–660s of John 20:1-31"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2920,
+        "recordId": "bibleproject:podcast:beginning",
+        "toSec": 3070
+      },
+      "ms": 7,
+      "summary": "2920s–3070s of In the Beginning – John 1"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 10,
+    "toolCalls": 29,
+    "promptTokens": 238726,
+    "completionTokens": 19765,
+    "reasoningTokens": 15743,
+    "cachedPromptTokens": 203648,
+    "wallMs": 191264,
+    "modelLatencyMs": 190421,
+    "toolMs": 753
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.011015,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T20:21:31.163Z"
+}

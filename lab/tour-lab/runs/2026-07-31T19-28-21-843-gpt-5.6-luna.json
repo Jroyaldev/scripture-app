@@ -1,0 +1,385 @@
+{
+  "runId": "2026-07-31T19-28-21-843-gpt-5.6-luna",
+  "startedAt": "2026-07-31T19:28:21.844Z",
+  "promptId": null,
+  "prompt": "write a commentary on genesis 1",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Genesis 1: From Formless Darkness to God’s Image",
+    "intro": "This tour builds a commentary on Genesis 1 by following the chapter’s movement: God forms and fills the world, gives humans a distinctive vocation, and brings creation to its seventh-day completion. It also lets you hear two interpretive lenses—the literary shape of the chapter and a Christian reading of its opening mention of God’s Word and Spirit—without confusing those lenses with the chapter’s central claims.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:4115d249-com-d21c89a6-dc42-301f-a389-af61511332ea",
+        "startSec": 0,
+        "endSec": 360,
+        "why": "Begin with the chapter’s big questions and its literary architecture. The commentator says Genesis 1 asks “where did the world and everything in it come from?” and “what does it mean to be human?”, then explains that the first three days form the world and the next three fill it: “days one and four go together,” as do two and five, and three and six.",
+        "episodeTitle": "Genesis 1:1-2:3",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/whbgtb54jm47282d/genesis_11-238ad37.mp3",
+        "durationSec": 1416,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:4115d249-com-d21c89a6-dc42-301f-a389-af61511332ea",
+        "startSec": 700,
+        "endSec": 880,
+        "why": "Now move from cosmic structure to humanity’s place within it. Reading Genesis 1:26–31, the speaker stresses the repeated phrase “in the image of God,” explicitly including “male and female,” and explains the image as God’s “representative presence” in his kingdom and temple. This gives the commentary its account of human dignity and vocation.",
+        "episodeTitle": "Genesis 1:1-2:3",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/whbgtb54jm47282d/genesis_11-238ad37.mp3",
+        "durationSec": 1416,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:aec71fd9715129af804d8566bea8a37a",
+        "startSec": 150,
+        "endSec": 330,
+        "why": "Hear a distinct Christian interpretation of Genesis 1:1–2. The teacher notices “the presence of the Word or the Logos” alongside the Father and the Spirit moving over the waters, and argues that this is not God becoming a Trinity over time but “who he has always been.” Place this here as a theological reading that connects Genesis 1 to the wider Christian canon.",
+        "episodeTitle": "40 Minutes In The Old Testament: Episode 2",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_Min_Ep_2.mp3?dest-id=245197",
+        "durationSec": 2404,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:cathedral-time",
+        "startSec": 2650,
+        "endSec": 2830,
+        "why": "Finish by widening the seventh day into a biblical-theological conclusion. The speakers connect Genesis 1’s seven divine speeches and Sabbath with the tabernacle’s seven commands, saying that on the seventh day God’s rest is also his presence “settling in.” This lands Genesis 1 not merely as a sequence of origins, but as an ordered world moving toward divine presence and rest.",
+        "episodeTitle": "The Cathedral in Time",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/021dbf00-c41b-49cd-af81-b39dd2792a02/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=021dbf00-c41b-49cd-af81-b39dd2792a02",
+        "durationSec": 3428,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips give you a commentary shaped by the text’s own progression: God answers formlessness and emptiness by forming and filling, places humans in the world as his image-bearing representatives, and brings the work to completion in Sabbath rest. The tour also leaves room to distinguish Genesis 1’s literary presentation from later theological reflection on the Father, Son, and Spirit.",
+    "totalSeconds": 900
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2613,
+      "promptTokens": 1122,
+      "completionTokens": 67,
+      "reasoningTokens": 51,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00005387500000000001
+    },
+    {
+      "i": 1,
+      "latencyMs": 2243,
+      "promptTokens": 1417,
+      "completionTokens": 158,
+      "reasoningTokens": 19,
+      "cachedPromptTokens": 1119,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00014316500000000003
+    },
+    {
+      "i": 2,
+      "latencyMs": 3350,
+      "promptTokens": 8687,
+      "completionTokens": 242,
+      "reasoningTokens": 34,
+      "cachedPromptTokens": 1414,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010683900000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 2418,
+      "promptTokens": 11545,
+      "completionTokens": 196,
+      "reasoningTokens": 41,
+      "cachedPromptTokens": 8684,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0005619900000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 2423,
+      "promptTokens": 13757,
+      "completionTokens": 252,
+      "reasoningTokens": 96,
+      "cachedPromptTokens": 11542,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0005434200000000001
+    },
+    {
+      "i": 5,
+      "latencyMs": 2568,
+      "promptTokens": 15931,
+      "completionTokens": 185,
+      "reasoningTokens": 123,
+      "cachedPromptTokens": 13754,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00052059
+    },
+    {
+      "i": 6,
+      "latencyMs": 8964,
+      "promptTokens": 16620,
+      "completionTokens": 1037,
+      "reasoningTokens": 371,
+      "cachedPromptTokens": 15928,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008679050000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 1,
+        "verse": 0,
+        "limit": 20
+      },
+      "ms": 1,
+      "summary": "20 of 922 moments"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Genesis 1 creation image of God day seven",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 116,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "in the beginning heavens earth darkness waters spirit",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 75,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "let there be light good creation order",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 71,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:4115d249-com-d21c89a6-dc42-301f-a389-af61511332ea",
+        "fromSec": 0,
+        "toSec": 240
+      },
+      "ms": 0,
+      "summary": "0s–180s of Genesis 1:1-2:3"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:ferocious-dragons-and-rogue-stars",
+        "fromSec": 620,
+        "toSec": 930
+      },
+      "ms": 0,
+      "summary": "620s–800s of Chaos Dragon E3: Ferocious Dragons and Rogue Stars"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:image-god-part-1",
+        "fromSec": 110,
+        "toSec": 400
+      },
+      "ms": 0,
+      "summary": "110s–290s of Humans as Middle Management"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:aec71fd9715129af804d8566bea8a37a",
+        "fromSec": 150,
+        "toSec": 410
+      },
+      "ms": 0,
+      "summary": "150s–330s of 40 Minutes In The Old Testament: Episode 2"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:4115d249-com-d21c89a6-dc42-301f-a389-af61511332ea",
+        "fromSec": 700,
+        "toSec": 1120
+      },
+      "ms": 0,
+      "summary": "700s–880s of Genesis 1:1-2:3"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:image-god-part-1",
+        "fromSec": 1650,
+        "toSec": 1900
+      },
+      "ms": 0,
+      "summary": "1650s–1830s of Humans as Middle Management"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:cathedral-time",
+        "fromSec": 2470,
+        "toSec": 2780
+      },
+      "ms": 0,
+      "summary": "2470s–2650s of The Cathedral in Time"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:4115d249-com-d21c89a6-dc42-301f-a389-af61511332ea",
+        "fromSec": 1120,
+        "toSec": 1416
+      },
+      "ms": 0,
+      "summary": "1120s–1300s of Genesis 1:1-2:3"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:image-god-part-1",
+        "fromSec": 1830,
+        "toSec": 2100
+      },
+      "ms": 0,
+      "summary": "1830s–2010s of Humans as Middle Management"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:cathedral-time",
+        "fromSec": 2650,
+        "toSec": 2830
+      },
+      "ms": 0,
+      "summary": "2650s–2830s of The Cathedral in Time"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:4115d249-com-d21c89a6-dc42-301f-a389-af61511332ea",
+        "fromSec": 180,
+        "toSec": 420
+      },
+      "ms": 0,
+      "summary": "180s–360s of Genesis 1:1-2:3"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 7,
+    "toolCalls": 17,
+    "promptTokens": 69079,
+    "completionTokens": 2137,
+    "reasoningTokens": 735,
+    "cachedPromptTokens": 53541,
+    "wallMs": 24846,
+    "modelLatencyMs": 24579,
+    "toolMs": 265
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003759,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T19:28:46.690Z"
+}

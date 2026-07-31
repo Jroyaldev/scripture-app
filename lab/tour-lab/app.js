@@ -19,6 +19,10 @@ const num = (n) => (n ?? 0).toLocaleString();
 
 let STATUS = null;
 const PANELS = new Map();
+// The last group of models fired together. Progress is derived from the panels
+// themselves rather than counted here, so a Run pressed on top of a running
+// Send to All cannot desynchronise the tally from what the page is showing.
+let WAVE = null;
 
 // -------------------------------------------------------------------- boot
 
@@ -46,27 +50,18 @@ async function boot() {
   };
   $('#prompt').oninput = () => delete $('#prompt').dataset.promptId;
 
-  const buttons = $('#run-buttons');
-  for (const m of STATUS.models) {
-    const b = el('button', { className: 'primary', disabled: !m.configured }, [
-      el('span', { textContent: `Run ${m.label}` }),
-      el('span', { className: 'why', textContent: m.configured ? m.requestedSlug : `no key configured (${m.keyEnvVar})` }),
-    ]);
-    if (!m.configured) {
-      b.classList.remove('primary');
-      b.title = m.reason;
-    }
-    b.onclick = () => runOne(m.key);
-    buttons.append(b);
-  }
-  const both = el('button', {}, [el('span', { textContent: 'Run both' })]);
-  both.onclick = () => STATUS.models.filter((m) => m.configured).forEach((m) => runOne(m.key));
-  buttons.append(both);
+  // Every model has its own Run button in its own panel header now; the only
+  // button up here is the one that fires all of them at once.
+  const sendAll = $('#send-all');
+  sendAll.onclick = () => startRun(configuredKeys());
+  const configured = STATUS.models.filter((m) => m.configured);
+  sendAll.disabled = !configured.length;
+  sendAll.lastElementChild.textContent = `${configured.length} configured model${configured.length === 1 ? '' : 's'}, in parallel`;
 
   const unconfigured = STATUS.models.filter((m) => !m.configured);
   $('#hint').textContent = unconfigured.length
-    ? `${unconfigured.map((m) => m.label).join(', ')} is disabled: ${unconfigured[0].reason}.`
-    : `Both models configured. Each run is capped at ${STATUS.limits.maxModelCalls} model calls and ${STATUS.limits.maxToolCalls} tool calls.`;
+    ? `${unconfigured.length} of ${STATUS.models.length} model(s) disabled — ${unconfigured.map((m) => `${m.label} needs ${m.keyEnvVar}`).join('; ')}.`
+    : `All ${STATUS.models.length} models configured. Each run is capped at ${STATUS.limits.maxModelCalls} model calls and ${STATUS.limits.maxToolCalls} tool calls.`;
 
   $('#caveats').replaceChildren(...STATUS.caveats.map((c) => el('li', { textContent: c })));
 
@@ -76,16 +71,42 @@ async function boot() {
   await refreshHistory();
 }
 
+const configuredKeys = () => STATUS.models.filter((m) => m.configured).map((m) => m.key);
+
 // ------------------------------------------------------------------ panels
 
 function makePanel(model) {
   const status = el('span', { className: 'badge', textContent: model.configured ? 'idle' : 'no key' });
   const slug = el('span', { className: 'slug', textContent: model.requestedSlug });
-  const head = el('div', { className: 'panel-head' }, [el('b', { textContent: model.label }), slug, status]);
+  slug.title = `requested slug — the resolved one appears here once a run starts`;
+
+  // What thinking budget this model runs at, and where that came from. An
+  // effort the endpoint cannot carry is shown struck through rather than
+  // quietly implied.
+  const r = model.reasoning || {};
+  const effort = el('span', {
+    className: `effort ${r.effort ? (r.applied ? '' : 'inert') : 'default'}`,
+    textContent: r.effort ? `effort ${r.effort}` : 'vendor default effort',
+  });
+  effort.title = r.effort
+    ? `${r.effort} — from ${r.source}${r.applied ? '' : '; this endpoint has no unified reasoning field, so it is NOT being sent'}`
+    : `nothing pinned (${r.source || 'no source'}); the vendor's own default applies`;
+
+  const run = el('button', { className: model.configured ? 'run primary' : 'run', disabled: !model.configured }, [
+    el('span', { textContent: 'Run' }),
+  ]);
+  if (!model.configured) run.title = model.reason;
+
+  const head = el('div', { className: 'panel-head' }, [
+    el('div', { className: 'panel-id' }, [el('b', { textContent: model.label }), slug]),
+    el('div', { className: 'panel-tags' }, [effort, status, run]),
+  ]);
+  const banner = el('p', { className: 'note banner', hidden: true });
   const body = el('div', { className: 'panel-body' });
   const strip = el('div', { className: 'strip' });
-  const root = el('section', { className: 'panel' }, [head, body, strip]);
-  const panel = { root, head, body, strip, status, slug, model, busy: false };
+  const root = el('section', { className: 'panel' }, [head, banner, body, strip]);
+  const panel = { root, head, banner, body, strip, status, slug, run, model, busy: false, log: () => {} };
+  run.onclick = () => startRun([model.key]);
   resetPanel(panel);
   return panel;
 }
@@ -129,38 +150,73 @@ function badge(panel, text, cls) {
   panel.status.textContent = text;
 }
 
+function setBanner(panel, text, cls) {
+  if (!text) {
+    panel.banner.hidden = true;
+    panel.banner.textContent = '';
+    return;
+  }
+  panel.banner.className = `note banner ${cls || ''}`;
+  panel.banner.textContent = text;
+  panel.banner.hidden = false;
+}
+
 // --------------------------------------------------------------- run + SSE
 
-async function runOne(modelKey) {
-  const panel = PANELS.get(modelKey);
+/**
+ * One prompt, one or many models, one stream.
+ *
+ * The server fires every requested run at once and multiplexes their progress
+ * down a single connection, each frame tagged with the model it belongs to, so
+ * panels fill in as their model lands rather than in turn.
+ */
+async function startRun(modelKeys) {
   const prompt = $('#prompt').value.trim();
   if (!prompt) {
     $('#hint').textContent = 'Type a question first.';
     return;
   }
-  if (panel.busy) return;
-  panel.busy = true;
-  badge(panel, 'running', 'run');
+  const keys = modelKeys.filter((k) => {
+    const p = PANELS.get(k);
+    return p && p.model.configured && !p.busy;
+  });
+  if (!keys.length) return;
 
-  const trace = el('ul', { className: 'trace' });
-  panel.body.replaceChildren(el('p', { className: 'prose', textContent: 'Reading the corpus…' }), trace);
-  panel.strip.replaceChildren();
-  const log = (text, cls) => {
-    trace.append(el('li', { className: cls || '', innerHTML: text }));
-    trace.scrollTop = trace.scrollHeight;
-  };
+  for (const k of keys) armPanel(PANELS.get(k));
+  WAVE = { keys };
+  paintBatch();
 
   let res;
   try {
     res = await fetch('./api/tour', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ prompt, model: modelKey, promptId: $('#prompt').dataset.promptId || null }),
+      body: JSON.stringify({ prompt, models: keys, promptId: $('#prompt').dataset.promptId || null }),
     });
   } catch (err) {
-    panel.busy = false;
-    badge(panel, 'error', 'bad');
-    return showError(panel, 'Could not reach the lab server', err.message);
+    for (const k of keys) {
+      const p = PANELS.get(k);
+      p.busy = false;
+      badge(p, 'error', 'bad');
+      showError(p, 'Could not reach the lab server', err.message);
+    }
+    return paintBatch();
+  }
+
+  if (!res.ok || !res.body) {
+    let message = `server returned ${res.status}`;
+    try {
+      message = (await res.json())?.error || message;
+    } catch {
+      /* keep the status line */
+    }
+    for (const k of keys) {
+      const p = PANELS.get(k);
+      p.busy = false;
+      badge(p, 'error', 'bad');
+      showError(p, 'The run never started', message);
+    }
+    return paintBatch();
   }
 
   const reader = res.body.getReader();
@@ -183,33 +239,102 @@ async function runOne(modelKey) {
       } catch {
         continue;
       }
-      handleEvent(panel, event, data, log);
+      routeEvent(event, data);
     }
   }
-  panel.busy = false;
+  // Any panel the stream never finished (server died mid-batch) says so rather
+  // than spinning forever.
+  for (const k of keys) {
+    const p = PANELS.get(k);
+    if (!p.busy) continue;
+    p.busy = false;
+    badge(p, 'error', 'bad');
+    showError(p, 'The stream ended early', 'the lab server closed the connection before this model reported back');
+  }
+  paintBatch();
   await refreshHistory();
 }
 
+function armPanel(panel) {
+  panel.busy = true;
+  panel.run.disabled = true;
+  badge(panel, 'queued', 'run');
+  setBanner(panel, null);
+  const trace = el('ul', { className: 'trace' });
+  panel.body.replaceChildren(el('p', { className: 'prose', textContent: 'Reading the corpus…' }), trace);
+  panel.strip.replaceChildren();
+  panel.log = (text, cls) => {
+    trace.append(el('li', { className: cls || '', innerHTML: text }));
+    trace.scrollTop = trace.scrollHeight;
+  };
+}
+
+function routeEvent(event, data) {
+  if (event === 'batch-start' || event === 'batch-done') return;
+  const panel = PANELS.get(data.model);
+  if (!panel) return;
+  handleEvent(panel, event, data, panel.log);
+}
+
+function paintBatch() {
+  const anyBusy = [...PANELS.values()].some((p) => p.busy);
+  $('#send-all').disabled = anyBusy || !configuredKeys().length;
+  for (const p of PANELS.values()) p.run.disabled = p.busy || !p.model.configured;
+  if (!WAVE) {
+    $('#batch-status').textContent = '';
+    return;
+  }
+  const going = WAVE.keys.filter((k) => PANELS.get(k).busy);
+  const done = WAVE.keys.length - going.length;
+  $('#batch-status').textContent = going.length
+    ? `${done}/${WAVE.keys.length} landed — still running: ${going.map((k) => PANELS.get(k).model.label).join(', ')}`
+    : `${WAVE.keys.length}/${WAVE.keys.length} landed.`;
+}
+
+const landed = () => paintBatch();
+
 function handleEvent(panel, event, data, log) {
+  if (event === 'start') {
+    badge(panel, 'running', 'run');
+  }
   if (event === 'model') {
     const r = data.resolution;
     panel.slug.textContent = r.exact ? `${panel.model.requestedSlug} → ${r.slug}` : `${panel.model.requestedSlug} ⇢ ${r.slug}`;
     panel.slug.title = r.note;
+    if (data.reasoning) {
+      panel.slug.title += `\n\neffort: ${data.reasoning.effort || 'vendor default'} (from ${data.reasoning.source})${
+        data.reasoning.effort && !data.reasoning.applied ? ' — NOT sent, this endpoint has no reasoning field' : ''
+      }`;
+    }
+    setBanner(
+      panel,
+      r.exact ? `Exact: this endpoint publishes ${r.slug} and that is what ran.` : r.note,
+      r.exact ? 'exact' : ''
+    );
     if (!r.exact) log(`<span class="tfail">slug fallback:</span> ${escapeHtml(r.note)}`);
   }
   if (event === 'tool') {
     const arg = data.args ? Object.values(data.args).filter((v) => typeof v !== 'object').slice(0, 2).join(' ') : '';
     log(`<span class="${data.ok === false ? 'tfail' : 'tname'}">${escapeHtml(data.name)}</span> ${escapeHtml(String(arg).slice(0, 64))} — ${escapeHtml(data.summary || '')}`);
+    /* A rejection's actual problems, not just their count — an operator
+       watching "rejected: 4 problem(s)" repeat has no way to tell an empty
+       submit call from a clip running past the tape. */
+    for (const p of Array.isArray(data.problems) ? data.problems : []) {
+      log(`<span class="tfail">    ✗</span> ${escapeHtml(String(p).slice(0, 200))}`);
+    }
   }
   if (event === 'call') {
     log(`· call #${data.i} ${(data.latencyMs / 1000).toFixed(1)}s, ${num(data.usage.promptTokens)} in / ${num(data.usage.completionTokens)} out`);
   }
   if (event === 'fatal') {
+    panel.busy = false;
     badge(panel, 'error', 'bad');
     showError(panel, 'The run stopped', data.message);
+    landed(panel.model.key);
   }
   if (event === 'done') {
     const r = data.record;
+    panel.busy = false;
     if (r.status === 'ok') {
       badge(panel, 'tour', 'ok');
       renderTour(panel, r);
@@ -218,6 +343,7 @@ function handleEvent(panel, event, data, log) {
       showError(panel, r.error?.code === 'NO_KEY' ? 'No key configured' : 'No valid tour', r.error?.message || 'unknown', r);
     }
     setStrip(panel, r);
+    landed(panel.model.key);
   }
 }
 
@@ -359,11 +485,14 @@ async function refreshHistory() {
     ...runs.map((r) => {
       const row = el('button', { className: `history-row ${r.status === 'ok' ? '' : 'failed'}` }, [
         el('span', { className: 'when', textContent: new Date(r.startedAt).toLocaleString() }),
-        el('span', { className: 'who', textContent: r.model }),
+        // Runs made before the record carried an effort say so rather than
+        // claiming a vendor default they may well not have used.
+        el('span', { className: 'who', textContent: `${r.model} · ${r.effort || 'unrecorded'}` }),
         el('span', { className: 'what', textContent: r.title || `(${r.status}) ${r.prompt.slice(0, 90)}` }),
         el('span', { className: 'usd', textContent: usd(r.totalUsd) }),
         el('span', { className: 'n', textContent: r.status === 'ok' ? `${r.steps} steps` : '—' }),
       ]);
+      row.title = `${r.resolvedSlug || r.model} at effort ${r.effort || 'not recorded in this run'}`;
       row.onclick = () => loadRun(r.runId, r.model);
       return row;
     })
@@ -373,7 +502,19 @@ async function refreshHistory() {
 async function loadRun(runId, modelKey) {
   const record = await (await fetch(`./api/run/${encodeURIComponent(runId)}`)).json();
   const panel = PANELS.get(modelKey) || [...PANELS.values()][0];
+  if (panel.busy) {
+    $('#hint').textContent = `${panel.model.label} is mid-run; let it land before loading an old run into its panel.`;
+    return;
+  }
   $('#prompt').value = record.prompt;
+  const res = record.model?.resolution;
+  setBanner(
+    panel,
+    res
+      ? `${res.exact ? 'Exact' : 'Fallback'}: ${record.model.resolvedSlug} at effort ${record.model.reasoning?.effort || 'vendor default'} — from a past run.`
+      : null,
+    res?.exact ? 'exact' : ''
+  );
   if (record.status === 'ok') {
     badge(panel, 'loaded', 'warn');
     renderTour(panel, record);

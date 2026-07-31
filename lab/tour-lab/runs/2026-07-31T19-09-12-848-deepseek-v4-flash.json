@@ -1,0 +1,609 @@
+{
+  "runId": "2026-07-31T19-09-12-848-deepseek-v4-flash",
+  "startedAt": "2026-07-31T19:09:12.849Z",
+  "promptId": null,
+  "prompt": "how to use chiasms, reversal of expectation and other literary tools?",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek-v4-flash",
+    "resolution": {
+      "slug": "deepseek-v4-flash",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek-v4-flash",
+      "endpointStyle": "direct",
+      "endpointHost": "api.deepseek.com",
+      "form": "bare",
+      "via": "models-list",
+      "exact": false,
+      "tried": [
+        "deepseek-v4-flash-0731",
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash",
+        "deepseek/deepseek-v4-flash"
+      ],
+      "note": "endpoint does not publish \"deepseek/deepseek-v4-flash-0731\"; fell back to \"deepseek-v4-flash\" (nearest configured/available model). Results are NOT from the exact requested build.",
+      "availableSample": [
+        "deepseek-v4-flash",
+        "deepseek-v4-pro"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Reading the Bible's Design: Chiasms, Reversals, and the Tools of Biblical Literature",
+    "intro": "You asked how to actually use chiasms, reversal of expectation, and the other literary tools of the Bible — not just what they are, but how to spot them and let them change what you see. This tour starts with the theory (why biblical authors wrote in patterns at all), then walks you through the master rule that makes every tool work, then gives you each tool one at a time — parallelism at the line level, chiasms at the book level, ironic reversal in narrative — and finishes with how to practice this without over-reading. By the end you'll have a working method, and the guardrails to keep it honest.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:design-patterns-bible-live-milpitas-part-1",
+        "startSec": 1615,
+        "endSec": 1925,
+        "why": "This is the orientation: why literary tools matter in the first place. BibleProject opens with Jewish scholar Robert Alter's claim that reading any art requires 'a detailed awareness of the grid of conventions upon which and against which this particular work operates' — and that modern readers have 'lost most of the keys to the conventions out of which these texts were shaped.' They make it concrete twice: the structure of a joke ('you have a setup and then you have the punchline') and a future film critic watching eleven westerns whose sheriff hero always outdraws his enemies, until the twelfth film gives the sheriff an injured arm. Only because the pattern is in your memory does the variation become loud: 'it becomes a contrastive spin on the motif.' This is the frame the whole tour stands on.",
+        "episodeTitle": "Design Patterns in the Bible - Live from Milpitas! Part 1",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/07eef7e7-e57b-47cb-8702-0dd483acee2f/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=07eef7e7-e57b-47cb-8702-0dd483acee2f",
+        "durationSec": 4613,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:design-patterns-bible-live-milpitas-part-1",
+        "startSec": 2040,
+        "endSec": 2160,
+        "why": "Here is the one sentence that runs the whole machine: 'Repetition begins to build expectation, and then variation can give you the punchline.' The hosts say these narratives are 'designed to do what Psalm 1 tells you to do with the Bible, is just to constantly reread the thing' — because authors have 'laid a trail of breadcrumbs for you to go down.' That is exactly the logic a chiasm or an ironic reversal runs on: the pattern primes you, and the deviation hits you. Hold this rule and everything else in the tour is an instance of it.",
+        "episodeTitle": "Design Patterns in the Bible - Live from Milpitas! Part 1",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/07eef7e7-e57b-47cb-8702-0dd483acee2f/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=07eef7e7-e57b-47cb-8702-0dd483acee2f",
+        "durationSec": 4613,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:series-h2r-p17-poetry-e1-thunder-god",
+        "startSec": 3555,
+        "endSec": 3745,
+        "why": "The smallest tool, parallelism — the line-level version of the same rule. BibleProject calls it 'thought rhyming': two similar thoughts stacked, like 'Yahweh's voice shatters the trees, it twists the oaks.' Then the twist: biblical poetry often runs 'one, two, a one-two twist,' where the pattern is set and then broken — a miniature reversal of expectation inside a single stanza. They ground it in Robert Lowth's 1753 Lectures on the Sacred Poetry of the Hebrews, whose definition you can carry forever: lines that 'express the same thing in different words, or different things in the similar form of words.' This is the micro-scale version of the skill you'll use on whole books.",
+        "episodeTitle": "The Thunder of God",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/6592c2ab-2eec-497b-b13a-01f67f59301f/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=6592c2ab-2eec-497b-b13a-01f67f59301f",
+        "durationSec": 4725,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:03ec26a2-a795-11ef-9212-db7a4e9384b8",
+        "startSec": 355,
+        "endSec": 512,
+        "why": "The macro tool, and the clearest anatomy of a chiasm in the corpus. On the Song of Songs, Spoken Gospel explains that 'most people agree this is a chiasm' — 'a literary structure that mirrors itself at beginning and end,' with bookends at the base and matching tiers climbing like a mountain, 'and then at the center of the chiasm, in the middle of the book, is the main point or the highest point.' They then simplify the book to a five-tier structure and show the matching bookends (declarations of love at both ends). Note their honesty: 'this is one structure of many' — chiasms are a reading tool, not a universal key.",
+        "episodeTitle": "Song of Songs Overview: The Honeymoon Night",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG5758922569.mp3?updated=1732144694",
+        "durationSec": 3276,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:b543ecba-6b76-4633-9483-3e1bd6165a6e",
+        "startSec": 440,
+        "endSec": 705,
+        "why": "Reversal of expectation gets a real definition here, because irony is usually misunderstood. Spoken Gospel first dismantles the Alanis Morissette examples — 'None of those are ironic. Those are all inconveniences' — then defines irony as 'doing, searching, trying, grasping for one thing, but receiving its opposite. By the way that you tried to get that thing.' The Roadrunner cartoon is the exhibit ('the elaborate trap he sets for the Roadrunner is what he ends up getting ensnared in himself'), and David Foster Wallace supplies the theological depth: 'anything that you worship will eat you alive... we worship beauty, we always feel ugly.' This is the lens you'll use for the rest of the tour.",
+        "episodeTitle": "Esther 4-8 Part 1: Ironic Reversals",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG1241015294.mp3?updated=1664486111",
+        "durationSec": 2513,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:b543ecba-6b76-4633-9483-3e1bd6165a6e",
+        "startSec": 1635,
+        "endSec": 1835,
+        "why": "The same teachers who defined irony now deploy it, and this is the payoff clip of the whole tour. They line Esther's story up with Jesus — 'Jesus, like Mordecai, is paraded through a city riding on a donkey' — then spring the reversal that breaks the pattern you expected: 'unlike Mordecai, and like Haman, Jesus is hung on the tree. So we expect if the reversal is to be true, Mordecai, Jesus, the new Jew, to reign, to rule.' The expectation itself is reversed: 'You don't go to power through death,' and yet 'Jesus sits at God's right hand in the heavenly places through an ironic salvation.' This shows why the tool matters theologically — reversal isn't a trick, it's how the gospel lands.",
+        "episodeTitle": "Esther 4-8 Part 1: Ironic Reversals",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG1241015294.mp3?updated=1664486111",
+        "durationSec": 2513,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "bibleproject:podcast:applying-paradigm-movements-and-links",
+        "startSec": 2345,
+        "endSec": 2495,
+        "why": "Now the how-to crystallizes. BibleProject names the single transferable skill: 'how to trace a line of thought or a theme through a literary movement as a whole' — and then insists it is 'the same kind of skill that you use at both levels,' from a two-line parallel to a whole scroll. Their image is a tile mosaic: back up and you see the whole portrait, but 'you can zoom in to any one section... a little six inch by six inch square' and find that 'section is super intentional too.' So the tools aren't separate tricks — parallelism, chiasm, and reversal are all the same noticing-skill at different scales.",
+        "episodeTitle": "Applying the Paradigm – Movements and Links",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/f3c3ad0c-3f65-4ed1-9840-fa96a715a151/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=f3c3ad0c-3f65-4ed1-9840-fa96a715a151",
+        "durationSec": 3474,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:how-read-bible-part-5-why-isnt-there-more-detail-bible-stories",
+        "startSec": 2400,
+        "endSec": 2585,
+        "why": "The final step is the guardrail and the invitation. BibleProject warns against the two failure modes of this kind of reading: 'it's not like we're saying oh cool let's turn the Bible into some sort of Bible code thing... by meditation we don't mean that... let's just get lost in our mystical imaginations.' Instead, the authors 'actually designed the whole Bible as this deeply interconnected, densely packed literary statement,' and 'you will only experience it to the depth that you assume it speaks... If you come to it without expectation then that's about all you're gonna see.' It closes like Jesus' parables — 'for those who have ears to hear they'll see that there is a universe of depth and meaning' — which is exactly the posture to bring to every pattern you now know how to look for.",
+        "episodeTitle": "Why isn't there more detail in Bible stories?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/9460a9c7-19b9-456c-9c34-795f8923e26d/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=9460a9c7-19b9-456c-9c34-795f8923e26d",
+        "durationSec": 2666,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "That's the whole arc: the Bible is designed literature, repetition builds your expectation, and the variation is where the meaning lands — whether in a two-line parallel, a book-shaped chiasm, or an ironic reversal that ends on a cross and an empty tomb. You don't need to be a scholar; you need what Psalm 1 describes — to live in the text long enough that the patterns start talking to each other. Pick one book you love, read it twice looking only for repeated words and mirrored scenes, find where the center of the shape is, and see what the author put there. Get a friend or two and compare what you notice. And when a reading feels forced, let it go — the authors were brilliant, but they weren't hiding a code. They were writing for readers with ears.",
+    "totalSeconds": 1577
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2326,
+      "promptTokens": 1740,
+      "completionTokens": 217,
+      "reasoningTokens": 85,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 1,
+      "latencyMs": 3834,
+      "promptTokens": 6186,
+      "completionTokens": 342,
+      "reasoningTokens": 166,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 2,
+      "latencyMs": 8631,
+      "promptTokens": 12228,
+      "completionTokens": 976,
+      "reasoningTokens": 695,
+      "cachedPromptTokens": 6528,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 3,
+      "latencyMs": 5603,
+      "promptTokens": 17769,
+      "completionTokens": 637,
+      "reasoningTokens": 243,
+      "cachedPromptTokens": 13184,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 4,
+      "latencyMs": 9095,
+      "promptTokens": 21457,
+      "completionTokens": 1008,
+      "reasoningTokens": 583,
+      "cachedPromptTokens": 18304,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 5,
+      "latencyMs": 7158,
+      "promptTokens": 25311,
+      "completionTokens": 801,
+      "reasoningTokens": 385,
+      "cachedPromptTokens": 22400,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 6,
+      "latencyMs": 40610,
+      "promptTokens": 29063,
+      "completionTokens": 4443,
+      "reasoningTokens": 4019,
+      "cachedPromptTokens": 26112,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 7,
+      "latencyMs": 41979,
+      "promptTokens": 36030,
+      "completionTokens": 4752,
+      "reasoningTokens": 4356,
+      "cachedPromptTokens": 33408,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 8,
+      "latencyMs": 51615,
+      "promptTokens": 42134,
+      "completionTokens": 6000,
+      "reasoningTokens": 4452,
+      "cachedPromptTokens": 40704,
+      "toolCalls": 1,
+      "finishReason": "length",
+      "providerCostUsd": null
+    },
+    {
+      "i": 9,
+      "latencyMs": 14979,
+      "promptTokens": 48214,
+      "completionTokens": 2046,
+      "reasoningTokens": 31,
+      "cachedPromptTokens": 42112,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "chiasm chiastic structure",
+        "limit": 10
+      },
+      "ms": 122,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "reversal of expectation",
+        "limit": 10
+      },
+      "ms": 77,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "literary design how to read the Bible"
+      },
+      "ms": 103,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "repetition patterns in biblical narrative"
+      },
+      "ms": 110,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "hyperbole irony satire literary devices"
+      },
+      "ms": 83,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:design-patterns-bible-live-milpitas-part-1"
+      },
+      "ms": 6,
+      "summary": "Design Patterns in the Bible - Live from Milpitas! Part 1 (4613s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:design-patterns-bible-live-milpitas-part-2"
+      },
+      "ms": 0,
+      "summary": "Biblical Narrative and Design Patterns - Live from Milpitas! Part 2 (4724s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:b543ecba-6b76-4633-9483-3e1bd6165a6e"
+      },
+      "ms": 1,
+      "summary": "Esther 4-8 Part 1: Ironic Reversals (2513s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:series-h2r-p17-poetry-e1-thunder-god"
+      },
+      "ms": 3,
+      "summary": "The Thunder of God (4725s)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:design-patterns-bible-live-milpitas-part-1",
+        "fromSec": 1560,
+        "toSec": 1760
+      },
+      "ms": 0,
+      "summary": "1560s–1740s of Design Patterns in the Bible - Live from Milpitas! Part 1"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:b543ecba-6b76-4633-9483-3e1bd6165a6e",
+        "fromSec": 440,
+        "toSec": 640
+      },
+      "ms": 0,
+      "summary": "440s–620s of Esther 4-8 Part 1: Ironic Reversals"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:series-h2r-p17-poetry-e1-thunder-god",
+        "fromSec": 3540,
+        "toSec": 3760
+      },
+      "ms": 1,
+      "summary": "3540s–3720s of The Thunder of God"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:03ec26a2-a795-11ef-9212-db7a4e9384b8",
+        "fromSec": 340,
+        "toSec": 560
+      },
+      "ms": 9,
+      "summary": "340s–520s of Song of Songs Overview: The Honeymoon Night"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1630,
+        "recordId": "spoken-gospel:podcast:b543ecba-6b76-4633-9483-3e1bd6165a6e",
+        "toSec": 1810
+      },
+      "ms": 0,
+      "summary": "1630s–1810s of Esther 4-8 Part 1: Ironic Reversals"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2000,
+        "recordId": "spoken-gospel:podcast:b543ecba-6b76-4633-9483-3e1bd6165a6e",
+        "toSec": 2180
+      },
+      "ms": 0,
+      "summary": "2000s–2180s of Esther 4-8 Part 1: Ironic Reversals"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 700,
+        "recordId": "bibleproject:podcast:design-patterns-bible-live-milpitas-part-2",
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "700s–880s of Biblical Narrative and Design Patterns - Live from Milpitas! Part 2"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2420,
+        "recordId": "bibleproject:podcast:how-read-bible-part-5-why-isnt-there-more-detail-bible-stories",
+        "toSec": 2580
+      },
+      "ms": 8,
+      "summary": "2420s–2580s of Why isn't there more detail in Bible stories?"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2000,
+        "recordId": "bibleproject:podcast:design-patterns-bible-live-milpitas-part-1",
+        "toSec": 2180
+      },
+      "ms": 0,
+      "summary": "2000s–2180s of Design Patterns in the Bible - Live from Milpitas! Part 1"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 4160,
+        "recordId": "bibleproject:podcast:design-patterns-bible-live-milpitas-part-2",
+        "toSec": 4320
+      },
+      "ms": 0,
+      "summary": "4160s–4320s of Biblical Narrative and Design Patterns - Live from Milpitas! Part 2"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2320,
+        "recordId": "bibleproject:podcast:applying-paradigm-movements-and-links",
+        "toSec": 2500
+      },
+      "ms": 9,
+      "summary": "2320s–2500s of Applying the Paradigm – Movements and Links"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2300,
+        "recordId": "spoken-gospel:podcast:6eef2130-b99a-44e4-8393-8deae06cc493",
+        "toSec": 2480
+      },
+      "ms": 6,
+      "summary": "2300s–2480s of Daniel Introduction"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1740,
+        "recordId": "bibleproject:podcast:design-patterns-bible-live-milpitas-part-1",
+        "toSec": 1920
+      },
+      "ms": 0,
+      "summary": "1740s–1920s of Design Patterns in the Bible - Live from Milpitas! Part 1"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 3700,
+        "recordId": "bibleproject:podcast:series-h2r-p17-poetry-e1-thunder-god",
+        "toSec": 3850
+      },
+      "ms": 0,
+      "summary": "3700s–3850s of The Thunder of God"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 600,
+        "recordId": "spoken-gospel:podcast:b543ecba-6b76-4633-9483-3e1bd6165a6e",
+        "toSec": 720
+      },
+      "ms": 0,
+      "summary": "600s–720s of Esther 4-8 Part 1: Ironic Reversals"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 500,
+        "recordId": "spoken-gospel:podcast:03ec26a2-a795-11ef-9212-db7a4e9384b8",
+        "toSec": 620
+      },
+      "ms": 1,
+      "summary": "500s–620s of Song of Songs Overview: The Honeymoon Night"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1800,
+        "recordId": "spoken-gospel:podcast:b543ecba-6b76-4633-9483-3e1bd6165a6e",
+        "toSec": 1900
+      },
+      "ms": 0,
+      "summary": "1800s–1900s of Esther 4-8 Part 1: Ironic Reversals"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2380,
+        "recordId": "bibleproject:podcast:how-read-bible-part-5-why-isnt-there-more-detail-bible-stories",
+        "toSec": 2440
+      },
+      "ms": 0,
+      "summary": "2380s–2440s of Why isn't there more detail in Bible stories?"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2560,
+        "recordId": "bibleproject:podcast:how-read-bible-part-5-why-isnt-there-more-detail-bible-stories",
+        "toSec": 2666
+      },
+      "ms": 0,
+      "summary": "2560s–2666s of Why isn't there more detail in Bible stories?"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2340,
+        "recordId": "bibleproject:podcast:applying-paradigm-movements-and-links",
+        "toSec": 2380
+      },
+      "ms": 0,
+      "summary": "2340s–2380s of Applying the Paradigm – Movements and Links"
+    }
+  ],
+  "rejections": [
+    {
+      "at": 8,
+      "errors": [
+        "title: required non-empty string",
+        "intro: required, at least 40 characters",
+        "closing: required, at least 30 characters",
+        "steps: required array"
+      ],
+      "submitted": {}
+    }
+  ],
+  "totals": {
+    "modelCalls": 10,
+    "toolCalls": 32,
+    "promptTokens": 240132,
+    "completionTokens": 21222,
+    "reasoningTokens": 15015,
+    "cachedPromptTokens": 206080,
+    "wallMs": 186375,
+    "modelLatencyMs": 185830,
+    "toolMs": 540
+  },
+  "cost": {
+    "source": "price-table",
+    "inputUsd": 0.015305,
+    "outputUsd": 0.008913,
+    "totalUsd": 0.024218,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported no cost field; cost = tokens x pricing.json (rates are UNVERIFIED placeholders)"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T19:12:19.224Z"
+}

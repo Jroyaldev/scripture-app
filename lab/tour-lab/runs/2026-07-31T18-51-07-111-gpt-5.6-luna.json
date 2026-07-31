@@ -1,0 +1,353 @@
+{
+  "runId": "2026-07-31T18-51-07-111-gpt-5.6-luna",
+  "startedAt": "2026-07-31T18:51:07.111Z",
+  "promptId": "pastoral-doubt",
+  "prompt": "I'm losing my faith and I'm frightened of it. Is doubt a failure? I want to hear people who take doubt seriously rather than scolding it.",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "When Doubt Feels Like Failure",
+    "intro": "You are frightened that doubt means you are failing or losing your faith. This tour does not pretend the questions are small. It starts by separating uncertainty from deliberate rejection, then makes room for intellectual upheaval, honest lament, and the need for evidence and patient companionship. The speakers do not all use the same language, but none of these clips begins by scolding you for being afraid.",
+    "steps": [
+      {
+        "recordId": "naked-bible:podcast:1729",
+        "startSec": 1590,
+        "endSec": 1690,
+        "why": "Begin here for a direct distinction between doubt and apostasy. The speaker says that “forsaking faith is different than having a doubt”: uncertainty can mean “I’m not sure now” and “I gotta think about this,” whereas turning away is described as an intentional decision. That gives you a less frightening category for the experience you are describing.",
+        "episodeTitle": "Naked Bible 184: Hebrews 5:11-6:20",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2017/11/NakedBible184_Hebrews5_11_6_20.mp3",
+        "durationSec": 5241,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "startSec": 560,
+        "endSec": 740,
+        "why": "This clip stays with the intellectual sources of a faith crisis rather than treating them as moral failure. Wright distinguishes biological evolution from “evolutionism,” and says that inherited beliefs may need “their cages rattled a bit.” He recommends patience and says that not solving the problem today—or even this year—is not a reason to stop praying.",
+        "episodeTitle": "#131 Help! I’m on the brink of atheism... Deconstruction and suffering",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR6100001449.mp3?updated=1749725746",
+        "durationSec": 1357,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "bibleproject:podcast:final-instructions-and-soaring-doxology",
+        "startSec": 2025,
+        "endSec": 2160,
+        "why": "Now hear a teacher explicitly resist the impulse to rebuke doubters. The conversation compares manuscript readings of Jude, including “show mercy on those who are wavering” and “rebuke those who are wavering,” then argues that “their questions are important.” It offers the kind of posture you asked for: mercy, help, and attention rather than shame.",
+        "episodeTitle": "The Letter of Jude E6: Final Instructions and a Soaring Doxology",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/6a7451a1-26cf-4fa8-9199-4c212f7a23d9/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=6a7451a1-26cf-4fa8-9199-4c212f7a23d9",
+        "durationSec": 4137,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:444302a2-d904-43b3-a21f-4c7fb0a30dd7",
+        "startSec": 1350,
+        "endSec": 1500,
+        "why": "This is the tour’s permission to speak honestly when faith feels painful. Reflecting on Job, Jeremiah, the Psalms, and Jesus’ cry, the speakers say Scripture shows what it sounds like when faithful people suffer and concludes, “lament rather than being a signal of the absence of faith is actually a sign that faith is very much present.”",
+        "episodeTitle": "Job 2:11-3:26 (Episode 387)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_ep_387.mp3?dest-id=245197",
+        "durationSec": 2435,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:0b0b5970-4d5f-11ee-955e-119eeadcb150",
+        "startSec": 1230,
+        "endSec": 1370,
+        "why": "Thomas gives doubt a human face: he wants to see and touch the wounds, and Jesus meets him there rather than casting him out. Wright says this is “a classic example” of God meeting people where they are, and adds that faith is not faith in itself but “trusting…in God.” That makes room for your need for something solid without reducing it to a defect.",
+        "episodeTitle": "#186 Has the resurrection been debunked? (Classic)",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR9195388223.mp3?updated=1749653807",
+        "durationSec": 2045,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:aa93fe68-dfc1-11ee-8d8c-1b5a7e037e3d",
+        "startSec": 2760,
+        "endSec": 2940,
+        "why": "End with a quieter account of doubt, silence, and fear. The speakers name the mismatch between “I know you’re good” and “I’m just not experiencing your goodness,” then say that Lamentations’ silence does not sugarcoat or explain away suffering but gives it dignity. You are not asked to manufacture certainty here; your lived experience is allowed to be spoken truthfully.",
+        "episodeTitle": "Lamentations Overview: Mercy Every Morning",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG8477051140.mp3?updated=1710173642",
+        "durationSec": 3616,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "Taken together, these voices do not promise that every question will resolve quickly. They offer something more immediate: doubt can be examined without panic, grief can be addressed to God without disguise, and faith—if it remains—need not mean pretending you are certain. If this fear is isolating you, let the tour also be an invitation to find a patient, trustworthy person who can listen with you rather than police your words.",
+    "totalSeconds": 885
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2966,
+      "promptTokens": 1145,
+      "completionTokens": 40,
+      "reasoningTokens": 24,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00004055
+    },
+    {
+      "i": 1,
+      "latencyMs": 3468,
+      "promptTokens": 1440,
+      "completionTokens": 184,
+      "reasoningTokens": 25,
+      "cachedPromptTokens": 1142,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00015899500000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 2967,
+      "promptTokens": 11387,
+      "completionTokens": 386,
+      "reasoningTokens": 42,
+      "cachedPromptTokens": 1437,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014896450000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 3161,
+      "promptTokens": 16442,
+      "completionTokens": 102,
+      "reasoningTokens": 33,
+      "cachedPromptTokens": 11384,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008072150000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 10291,
+      "promptTokens": 17229,
+      "completionTokens": 1210,
+      "reasoningTokens": 307,
+      "cachedPromptTokens": 16439,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009890650000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "doubt faith failure afraid losing faith",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 68,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "doubting God questioning belief",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 63,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Thomas blessed are those who have not seen doubt",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 48,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "lament fear faith silence God",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 70,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "faith crisis deconstruction doubt",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 64,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:1729",
+        "fromSec": 1510,
+        "toSec": 1780
+      },
+      "ms": 6,
+      "summary": "1510s–1690s of Naked Bible 184: Hebrews 5:11-6:20"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:final-instructions-and-soaring-doxology",
+        "fromSec": 1980,
+        "toSec": 2310
+      },
+      "ms": 0,
+      "summary": "1980s–2160s of The Letter of Jude E6: Final Instructions and a Soaring Doxology"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "fromSec": 180,
+        "toSec": 600
+      },
+      "ms": 0,
+      "summary": "180s–360s of #131 Help! I’m on the brink of atheism... Deconstruction and suffering"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:444302a2-d904-43b3-a21f-4c7fb0a30dd7",
+        "fromSec": 1320,
+        "toSec": 1640
+      },
+      "ms": 0,
+      "summary": "1320s–1500s of Job 2:11-3:26 (Episode 387)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:0b0b5970-4d5f-11ee-955e-119eeadcb150",
+        "fromSec": 1190,
+        "toSec": 1450
+      },
+      "ms": 3,
+      "summary": "1190s–1370s of #186 Has the resurrection been debunked? (Classic)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:aa93fe68-dfc1-11ee-8d8c-1b5a7e037e3d",
+        "fromSec": 2760,
+        "toSec": 3050
+      },
+      "ms": 0,
+      "summary": "2760s–2940s of Lamentations Overview: Mercy Every Morning"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "fromSec": 560,
+        "toSec": 860
+      },
+      "ms": 0,
+      "summary": "560s–740s of #131 Help! I’m on the brink of atheism... Deconstruction and suffering"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 14,
+    "promptTokens": 47643,
+    "completionTokens": 1922,
+    "reasoningTokens": 431,
+    "cachedPromptTokens": 31502,
+    "wallMs": 23180,
+    "modelLatencyMs": 22853,
+    "toolMs": 323
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003485,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T18:51:30.291Z"
+}

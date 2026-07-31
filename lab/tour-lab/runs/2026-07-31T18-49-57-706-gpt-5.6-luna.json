@@ -1,0 +1,377 @@
+{
+  "runId": "2026-07-31T18-49-57-706-gpt-5.6-luna",
+  "startedAt": "2026-07-31T18:49:57.706Z",
+  "promptId": null,
+  "prompt": "how does babylon and rome and empire language relate to each other?",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "From Babel to Babylon: Rome and the Empire Pattern",
+    "intro": "This tour traces the relationship as a biblical pattern rather than treating Babylon and Rome as unrelated labels. You’ll begin with Babel’s imperial dream, move through Daniel’s sequence of kingdoms, hear why Revelation calls Rome “Babylon,” and finish with the economic and political pressures that make the language still significant beyond first-century Rome.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:whats-so-bad-about-babel",
+        "startSec": 3000,
+        "endSec": 3180,
+        "why": "Start here for the underlying idea behind the language. The speakers describe Babel as human families that “deify their own tribe into the heavens,” then call Babylon “an icon of the imperial dream to unify humanity under the aegis of one particular city and culture.” That gives you the conceptual foundation before the historical identifications begin.",
+        "episodeTitle": "What’s So Bad about Babel?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/78dbe1f2-1066-413d-b285-74dcb26ce296/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=78dbe1f2-1066-413d-b285-74dcb26ce296",
+        "durationSec": 3905,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:9255b18c-6e25-4c01-b79e-ba1d6300a8d5",
+        "startSec": 2480,
+        "endSec": 2650,
+        "why": "This clip supplies Daniel’s framework for connecting the empires. It explains that Jesus’ kingdom begins “inside of Babylon,” while his final coming makes it “the only kingdom,” and cautions that Daniel is not only naming four kingdoms but also describing “the pattern of kingdoms” that succeed and supplant one another.",
+        "episodeTitle": "Daniel 2: A Statue of Four Kingdoms",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG1588193982.mp3?updated=1664486075",
+        "durationSec": 3839,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "naked-bible:podcast:3091",
+        "startSec": 900,
+        "endSec": 1080,
+        "why": "Now hear the direct Babylon-to-Rome connection in Revelation’s own setting. The speaker says John is “almost certainly using Babylon, the name Babylon, as a cipher for Rome,” because Rome is “the fourth kingdom of Daniel” and has inherited dominion from Babylon. The clip also preserves the already/not-yet tension: the system’s demise has begun, but its final destruction is still future.",
+        "episodeTitle": "Naked Bible 384: Revelation 14",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2021/07/NakedBible384_Revelation14.mp3",
+        "durationSec": 3713,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:ab7677ef-com-3166a062-7802-37ba-be40-6e0e6f984370",
+        "startSec": 1060,
+        "endSec": 1240,
+        "why": "This grounds the identification in Revelation 17 and then explains why the term is larger than a one-to-one code. The commentator says the first readers would have thought of Rome, “the great city” ruling over earthly kings, but adds that after Rome fell, “the Babylon spirit continues to work in this world.” That helps distinguish Rome as the immediate manifestation from Babylon as a recurring imperial pattern.",
+        "episodeTitle": "Revelation 17:1-18",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/wtjgj9ixuyupwauu/revelation_171-18bmv4o.mp3",
+        "durationSec": 1471,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:c1ebb76c-com-aef0354b-6975-3457-b09d-cc858aa87f14",
+        "startSec": 860,
+        "endSec": 1040,
+        "why": "This gives the empire language its material and economic content. The clip contrasts Rome’s propaganda of “peace, stability, order, and wealth” with Revelation’s critique of “the economics of grandiosity,” including wealth built through the trading of human persons. It then says this was true of Rome and “every empire on every continent throughout history,” broadening the pattern without erasing the Roman referent.",
+        "episodeTitle": "Revelation 18:1-24",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/yq954yz2qbs9wfek/revelation_181-24bjjzg.mp3",
+        "durationSec": 1553,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "radically-christian:podcast:4e01d465-https-radicallychristian-com-p-11193",
+        "startSec": 2380,
+        "endSec": 2560,
+        "why": "End with the political and worship dimension of empire. The speaker calls Revelation 13 “a satire of the imperial cult,” connecting the beast’s worship, the seven kings, and the mark with “bowing the knee to Caesar.” The clip then turns the question toward divided allegiance today, giving you a way to apply the Babylon/Rome pattern without simply guessing which modern nation is the next Rome.",
+        "episodeTitle": "Reading and Understanding the Book of Revelation with Garrett Best",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682088/90512b35-4f1c-43c9-96fb-9d30683cbd96/transcoded.mp3?post_id=148682088&relation=podcast&Expires=1785437843&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=Ak84wFwT8vapEt6RksQgTs9pAZ1GLzwZGBxW4i1EFrUuiMtgV-pdCaRGcGXnbRCCtiqTG8c5Ocyo1fuX3jOy3B8mqOYn5eHZyUITx0XLxPI1Eg81WAbHvsfry2PYavNBiQe1fyPNOK-fDR~iK~S3c0jy54nWvAAAO9IPT81QK2UJcPC4-YnWj3PUDskNMLuEwBbFgCCRJ1uFbP1OpnqPWletGbgPMnBhSJ9yKALdlQlVkWa1Tm6MNmKgIW7EEwvPpqsF4lW9rMK0MIAUdm1fCR7gSAhbCXkkd~FLxi6KPDT4YWR-iSwZPLA85QjxZ~Y17DSMCnqUgq3IC7~GLF2F7g__",
+        "durationSec": 3114,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips present Babylon as both a historical city and a scriptural archetype: the imperial system that concentrates power, wealth, identity, and worship in a human order. Rome is Revelation’s first-century embodiment of that system, while the language reaches beyond Rome toward the recurring pattern Daniel and Revelation portray—and toward the rival kingdom of Jesus.",
+    "totalSeconds": 1070
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2841,
+      "promptTokens": 1130,
+      "completionTokens": 29,
+      "reasoningTokens": 13,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000032075
+    },
+    {
+      "i": 1,
+      "latencyMs": 2873,
+      "promptTokens": 1425,
+      "completionTokens": 233,
+      "reasoningTokens": 19,
+      "cachedPromptTokens": 1127,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00018824500000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 3597,
+      "promptTokens": 14340,
+      "completionTokens": 383,
+      "reasoningTokens": 51,
+      "cachedPromptTokens": 1422,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0018586950000000003
+    },
+    {
+      "i": 3,
+      "latencyMs": 3999,
+      "promptTokens": 18773,
+      "completionTokens": 163,
+      "reasoningTokens": 115,
+      "cachedPromptTokens": 14337,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007955950000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 9849,
+      "promptTokens": 19439,
+      "completionTokens": 1086,
+      "reasoningTokens": 205,
+      "cachedPromptTokens": 18770,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009228500000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Babylon Rome empire Revelation",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 108,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Babylon is Rome",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 51,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "beast empire Babylon Rome",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 78,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Daniel kingdoms Revelation Babylon",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 81,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "imperial power empire language",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 59,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Revelation",
+        "chapter": 17,
+        "verse": 0,
+        "limit": 20
+      },
+      "ms": 0,
+      "summary": "20 of 48 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Revelation",
+        "chapter": 18,
+        "verse": 0,
+        "limit": 20
+      },
+      "ms": 0,
+      "summary": "20 of 35 moments"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:whats-so-bad-about-babel",
+        "fromSec": 3090,
+        "toSec": 3290
+      },
+      "ms": 0,
+      "summary": "3090s–3270s of What’s So Bad about Babel?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:9255b18c-6e25-4c01-b79e-ba1d6300a8d5",
+        "fromSec": 2480,
+        "toSec": 2650
+      },
+      "ms": 0,
+      "summary": "2480s–2650s of Daniel 2: A Statue of Four Kingdoms"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:3091",
+        "fromSec": 900,
+        "toSec": 1320
+      },
+      "ms": 0,
+      "summary": "900s–1080s of Naked Bible 384: Revelation 14"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:ab7677ef-com-3166a062-7802-37ba-be40-6e0e6f984370",
+        "fromSec": 1060,
+        "toSec": 1260
+      },
+      "ms": 2,
+      "summary": "1060s–1240s of Revelation 17:1-18"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:c1ebb76c-com-aef0354b-6975-3457-b09d-cc858aa87f14",
+        "fromSec": 860,
+        "toSec": 1080
+      },
+      "ms": 1,
+      "summary": "860s–1040s of Revelation 18:1-24"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:4e01d465-https-radicallychristian-com-p-11193",
+        "fromSec": 2380,
+        "toSec": 2630
+      },
+      "ms": 0,
+      "summary": "2380s–2560s of Reading and Understanding the Book of Revelation with Garrett Best"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:whats-so-bad-about-babel",
+        "fromSec": 3000,
+        "toSec": 3180
+      },
+      "ms": 0,
+      "summary": "3000s–3180s of What’s So Bad about Babel?"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 16,
+    "promptTokens": 55107,
+    "completionTokens": 1894,
+    "reasoningTokens": 403,
+    "cachedPromptTokens": 36756,
+    "wallMs": 23543,
+    "modelLatencyMs": 23159,
+    "toolMs": 382
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003797,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T18:50:21.249Z"
+}

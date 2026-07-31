@@ -1,0 +1,389 @@
+{
+  "runId": "2026-07-31T18-49-26-348-gpt-5.6-luna",
+  "startedAt": "2026-07-31T18:49:26.348Z",
+  "promptId": "word-study-hesed",
+  "prompt": "I keep hearing that the Hebrew word hesed can't be translated. What does hesed actually mean, and where does the Old Testament use it in a way that shows its range?",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Hesed: More Than One English Word",
+    "intro": "You’re right to be cautious when someone says hesed “can’t be translated.” This tour treats that claim as a signal that the word carries several dimensions at once, then lets Old Testament scenes show those dimensions in motion: covenant loyalty, generous action, love, and faithfulness extended both by God and by people.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "startSec": 300,
+        "endSec": 580,
+        "why": "Start here for the basic map. The conversation notes that hesed occurs “245 times,” that about “75% of those” uses describe God, and that one in four describes humans showing it too. It also directly explains why translators use “mercy,” “loving kindness,” or “steadfast love,” saying that “there’s no word in any language that quite does all of the things that chesed is doing.”",
+        "episodeTitle": "The Loyal Love of God",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e530ba3f-428a-4ef5-828c-34800da4963f/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e530ba3f-428a-4ef5-828c-34800da4963f",
+        "durationSec": 4105,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+        "startSec": 900,
+        "endSec": 1080,
+        "why": "Ruth gives you a concrete human-to-human and God-to-outsider example. Naomi’s “deal kindly” is identified as hesed, with options including “covenant faithfulness,” “longstanding loyalty,” and “steadfast love.” The speakers stress that “kindness” can sound too weak and show how Ruth embodies hesed by choosing loyal attachment to Naomi and Yahweh.",
+        "episodeTitle": "Ruth 1-2: God Fills What's Empty",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG9761838334.mp3?updated=1664486106",
+        "durationSec": 3645,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:0e01a154-fdd5-478a-aa04-a438fda4bc4c",
+        "startSec": 2420,
+        "endSec": 2600,
+        "why": "Rahab widens the range beyond Israel’s ordinary social circle. Her request that the spies “deal kindly with my father’s house” is explained as a request for “loyalty or covenant loyalty” in response to the hesed already shown by God. This clip shows hesed as enacted protection and covenant welcome, not merely an inner feeling.",
+        "episodeTitle": "Joshua 1-2: Be Strong and Courageous! And Rahab's Scarlet Thread",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG4806203994.mp3?updated=1664486105",
+        "durationSec": 3508,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:478e6896-2d24-4806-ac5f-4db234766229",
+        "startSec": 1600,
+        "endSec": 1780,
+        "why": "David and Mephibosheth show what the phrase “the kindness of God” looks like when a king acts on it. The teachers say David wants to show “the Hesed of God,” meaning his action can be read as a picture of “covenant loyalty” and “loving kindness.” The frightened response of Saul’s surviving grandson makes the costly, surprising generosity visible.",
+        "episodeTitle": "2 Samuel 8:9-9:13 (Episode 267)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_Min_ep_667.mp3?dest-id=245197",
+        "durationSec": 2471,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:biblical-trust-isnt-blind",
+        "startSec": 2680,
+        "endSec": 2860,
+        "why": "End with Psalm 89, where hesed is not reduced to a pleasant definition but tested by Israel’s crisis. The psalm celebrates that “loyal love will be built up forever,” then asks, “Where is your hesed of old?” after exile. That tension connects hesed to God’s covenant promise and shows why faithfulness is central to its range.",
+        "episodeTitle": "Biblical Trust Isn't Blind",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/d17a6151-e52a-4e7d-a205-18ef95c5a16b/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=d17a6151-e52a-4e7d-a205-18ef95c5a16b",
+        "durationSec": 4097,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips suggest that hesed is not untranslatable so much as too relational and substantial for one English gloss. “Steadfast love” captures its affection and endurance; “covenant loyalty” captures its commitment; “loving kindness” captures its generous action. The scenes help you hear all three at once—and notice that the Old Testament applies the word both to God’s character and to the loyal, generous acts God’s people are called to show.",
+    "totalSeconds": 1000
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2289,
+      "promptTokens": 1151,
+      "completionTokens": 165,
+      "reasoningTokens": 25,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00011630000000000002
+    },
+    {
+      "i": 1,
+      "latencyMs": 3397,
+      "promptTokens": 9362,
+      "completionTokens": 337,
+      "reasoningTokens": 31,
+      "cachedPromptTokens": 1148,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012403550000000003
+    },
+    {
+      "i": 2,
+      "latencyMs": 8039,
+      "promptTokens": 14126,
+      "completionTokens": 292,
+      "reasoningTokens": 122,
+      "cachedPromptTokens": 9359,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008645900000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 10473,
+      "promptTokens": 16636,
+      "completionTokens": 1198,
+      "reasoningTokens": 410,
+      "cachedPromptTokens": 14123,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00117408
+    },
+    {
+      "i": 4,
+      "latencyMs": 6691,
+      "promptTokens": 17513,
+      "completionTokens": 836,
+      "reasoningTokens": 46,
+      "cachedPromptTokens": 16633,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007778550000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "hesed cannot be translated meaning range Hebrew word",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 107,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "lovingkindness steadfast love covenant loyalty hesed",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 71,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Old Testament hesed Ruth David kindness mercy",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 69,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "hesed Psalm Hebrew word faithful love",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 59,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 250,
+        "toSec": 650
+      },
+      "ms": 0,
+      "summary": "250s–430s of The Loyal Love of God"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 2800,
+        "toSec": 3150
+      },
+      "ms": 0,
+      "summary": "2800s–2980s of The Loyal Love of God"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+        "fromSec": 820,
+        "toSec": 1160
+      },
+      "ms": 0,
+      "summary": "820s–1000s of Ruth 1-2: God Fills What's Empty"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:0e01a154-fdd5-478a-aa04-a438fda4bc4c",
+        "fromSec": 2420,
+        "toSec": 2690
+      },
+      "ms": 0,
+      "summary": "2420s–2600s of Joshua 1-2: Be Strong and Courageous! And Rahab's Scarlet Thread"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:478e6896-2d24-4806-ac5f-4db234766229",
+        "fromSec": 1510,
+        "toSec": 1760
+      },
+      "ms": 0,
+      "summary": "1510s–1690s of 2 Samuel 8:9-9:13 (Episode 267)"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:biblical-trust-isnt-blind",
+        "fromSec": 2680,
+        "toSec": 2880
+      },
+      "ms": 0,
+      "summary": "2680s–2860s of Biblical Trust Isn't Blind"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 400,
+        "toSec": 650
+      },
+      "ms": 0,
+      "summary": "400s–580s of The Loyal Love of God"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:478e6896-2d24-4806-ac5f-4db234766229",
+        "fromSec": 1600,
+        "toSec": 1800
+      },
+      "ms": 0,
+      "summary": "1600s–1780s of 2 Samuel 8:9-9:13 (Episode 267)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+        "fromSec": 900,
+        "toSec": 1100
+      },
+      "ms": 0,
+      "summary": "900s–1080s of Ruth 1-2: God Fills What's Empty"
+    }
+  ],
+  "rejections": [
+    {
+      "at": 3,
+      "errors": [
+        "steps[2].recordId: \"spoken-gospel:podcast:0e01a154-fdd5-478a-a438fda4bc4c\" is not an episode in this corpus"
+      ],
+      "submitted": {
+        "title": "Hesed: More Than One English Word",
+        "intro": "You’re right to be cautious when someone says hesed “can’t be translated.” This tour treats that claim as a signal that the word carries several dimensions at once, then lets Old Testament scenes show those dimensions in motion: covenant loyalty, generous action, love, and faithfulness extended both by God and by people.",
+        "steps": [
+          {
+            "recordId": "bibleproject:podcast:loyal-love-god",
+            "startSec": 300,
+            "endSec": 580,
+            "why": "Start here for the basic map. The conversation notes that hesed occurs “245 times,” that about “75% of those” uses describe God, and that one in four describes humans showing it too. It also directly explains why translators use “mercy,” “loving kindness,” or “steadfast love,” saying that “there’s no word in any language that quite does all of the things that chesed is doing.”"
+          },
+          {
+            "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+            "startSec": 900,
+            "endSec": 1080,
+            "why": "Ruth gives you a concrete human-to-human and God-to-outsider example. Naomi’s “deal kindly” is identified as hesed, with options including “covenant faithfulness,” “longstanding loyalty,” and “steadfast love.” The speakers stress that “kindness” can sound too weak and show how Ruth embodies hesed by choosing loyal attachment to Naomi and Yahweh."
+          },
+          {
+            "recordId": "spoken-gospel:podcast:0e01a154-fdd5-478a-a438fda4bc4c",
+            "startSec": 2420,
+            "endSec": 2600,
+            "why": "Rahab widens the range beyond Israel’s ordinary social circle. Her request that the spies “deal kindly with my father’s house” is explained as a request for “loyalty or covenant loyalty” in response to the hesed already shown by God. This clip shows hesed as enacted protection and covenant welcome, not merely an inner feeling."
+          },
+          {
+            "recordId": "forty-minutes-ot:podcast:478e6896-2d24-4806-ac5f-4db234766229",
+            "startSec": 1600,
+            "endSec": 1780,
+            "why": "David and Mephibosheth show what the phrase “the kindness of God” looks like when a king acts on it. The teachers say David wants to show “the Hesed of God,” meaning his action can be read as a picture of “covenant loyalty” and “loving kindness.” The frightened response of Saul’s surviving grandson makes the costly, surprising generosity visible."
+          },
+          {
+            "recordId": "bibleproject:podcast:biblical-trust-isnt-blind",
+            "startSec": 2680,
+            "endSec": 2860,
+            "why": "End with Psalm 89, where hesed is not reduced to a pleasant definition but tested by Israel’s crisis. The psalm celebrates that “loyal love will be built up forever,” then asks, “Where is your hesed of old?” after exile. That tension connects hesed to God’s covenant promise and shows why faithfulness is central to its range."
+          }
+        ],
+        "closing": "Taken together, these clips suggest that hesed is not untranslatable so much as too relational and substantial for one English gloss. “Steadfast love” captures its affection and endurance; “covenant loyalty” captures its commitment; “loving kindness” captures its generous action. The scenes help you hear all three at once—and notice that the Old Testament applies the word both to God’s character and to the loyal, generous acts God’s people are called to show."
+      }
+    }
+  ],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 15,
+    "promptTokens": 58788,
+    "completionTokens": 2828,
+    "reasoningTokens": 634,
+    "cachedPromptTokens": 42363,
+    "wallMs": 31199,
+    "modelLatencyMs": 30889,
+    "toolMs": 306
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004173,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T18:49:57.547Z"
+}

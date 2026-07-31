@@ -1,0 +1,727 @@
+{
+  "runId": "2026-07-31T19-53-53-181-gpt-5.6-luna-pro",
+  "startedAt": "2026-07-31T19:53:53.182Z",
+  "promptId": "text-genesis-6",
+  "prompt": "Walk me through Genesis 6:1-4. Who are the sons of God and the Nephilim, and why is this passage there right before the flood?",
+  "model": {
+    "key": "gpt-5.6-luna-pro",
+    "label": "GPT-5.6 Luna Pro",
+    "requestedSlug": "openai/gpt-5.6-luna-pro",
+    "resolvedSlug": "openai/gpt-5.6-luna-pro",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna-pro",
+      "requested": "openai/gpt-5.6-luna-pro",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna-pro",
+        "gpt-5.6-luna-pro"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "LUNA_PRO_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Genesis 6:1-4: Watchers, Giants, and the Flood",
+    "intro": "This tour first locates Genesis 6:1-4 in the spreading violence of Genesis 4–6, then lets you hear the main readings of the “sons of God” and the Nephilim without pretending the debate is settled. It ends by showing why this strange paragraph functions as the immediate prelude to the flood.",
+    "steps": [
+      {
+        "recordId": "spoken-gospel:podcast:edf9e365-6859-4f4d-947e-9cfc491ea29b",
+        "startSec": 422,
+        "endSec": 600,
+        "why": "Begin with the passage’s narrative purpose rather than its most sensational details. The teachers ask, “Why is this here?” and answer that the rebellion and brokenness are getting worse: humanity is supposed to spread God’s image, but “the exact opposite is happening.” They describe the result as a cosmic rebellion “spiraling out of control,” which prepares you to hear the flood as judgment on creation’s unraveling.",
+        "episodeTitle": "Genesis 6-11: The Flood",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG5000636430.mp3?updated=1664486134",
+        "durationSec": 3274,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "startSec": 680,
+        "endSec": 1080,
+        "why": "Now hear the strongest spiritual-beings reading. The teachers say “the phrase appears about half a dozen times in the Hebrew Bible, and it always has the same meaning,” referring to beings in God’s heavenly court. They connect “saw ... good” and “took” to Genesis 3, calling this “a fall narrative,” and describe the Nephilim as “mighty warriors” and “men of the name” within an ancient story-world of divine-human warrior kings.",
+        "episodeTitle": "God’s Spirit in the Flood Narrative",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/6fed2ba8-01ae-4fdb-8afe-9c7ab3232f32/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=6fed2ba8-01ae-4fdb-8afe-9c7ab3232f32",
+        "durationSec": 3585,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "startSec": 1080,
+        "endSec": 1460,
+        "why": "Use this clip to slow down and separate what Genesis says from later interpretation. The teacher lays out three major views—“spiritual beings,” “human rulers,” and people from the godly line—and stresses that the passage’s main role is to portray the “decay and depravity of the human race.” Most importantly for the Nephilim question, the teacher says they are called “mighty men of old” and “men of renown,” but Genesis does not clearly say they were the offspring of the union.",
+        "episodeTitle": "Genesis 4:1-6:8",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/ba4rg9y6b4ksgv6v/genesis_41-6889j29.mp3",
+        "durationSec": 1767,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:a3cf54d8ac6db89ab2eedd131d56e107",
+        "startSec": 1300,
+        "endSec": 1525,
+        "why": "End by hearing a sustained alternative to the angelic interpretation. This teacher says the “sons of God” are believers—the “true church”—who rebel by marrying into the “Church of Cain” or false church. On this reading, the 120 years is not a new maximum lifespan but the interval before the flood, “a time for repentance,” giving the passage a direct role as a warning and a final window of mercy before judgment.",
+        "episodeTitle": "40 Minutes In The Old Testament: Episode 11",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_MIN_EP_11_Final.mp3?dest-id=245197",
+        "durationSec": 2412,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "You have now heard both the major identifications and the larger biblical logic: Genesis 6:1-4 is deliberately strange, but it is not an isolated monster story. Whether you favor the heavenly-beings reading, the human-rulers reading, or the godly-line reading, the paragraph functions as an escalation of rebellion and violence immediately before the flood.",
+    "totalSeconds": 1183
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 32983,
+      "promptTokens": 6519,
+      "completionTokens": 1578,
+      "reasoningTokens": 1169,
+      "cachedPromptTokens": 3438,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00128928
+    },
+    {
+      "i": 1,
+      "latencyMs": 17362,
+      "promptTokens": 71257,
+      "completionTokens": 3266,
+      "reasoningTokens": 1962,
+      "cachedPromptTokens": 45476,
+      "toolCalls": 16,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.004992460000000001
+    },
+    {
+      "i": 2,
+      "latencyMs": 71164,
+      "promptTokens": 107937,
+      "completionTokens": 9219,
+      "reasoningTokens": 7670,
+      "cachedPromptTokens": 89731,
+      "toolCalls": 13,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.008249310000000001
+    },
+    {
+      "i": 3,
+      "latencyMs": 61961,
+      "promptTokens": 140489,
+      "completionTokens": 9920,
+      "reasoningTokens": 8686,
+      "cachedPromptTokens": 120833,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00912593
+    },
+    {
+      "i": 4,
+      "latencyMs": 65373,
+      "promptTokens": 153570,
+      "completionTokens": 10577,
+      "reasoningTokens": 9137,
+      "cachedPromptTokens": 138905,
+      "toolCalls": 14,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.009201750000000002
+    },
+    {
+      "i": 5,
+      "latencyMs": 80616,
+      "promptTokens": 171745,
+      "completionTokens": 18379,
+      "reasoningTokens": 17723,
+      "cachedPromptTokens": 148928,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.014871605000000001
+    },
+    {
+      "i": 6,
+      "latencyMs": 223312,
+      "promptTokens": 170016,
+      "completionTokens": 36950,
+      "reasoningTokens": 34452,
+      "cachedPromptTokens": 153169,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.025386390000000005
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 6,
+        "verse": 1,
+        "limit": 40
+      },
+      "ms": 95,
+      "summary": "40 of 281 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 6,
+        "verse": 2,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "40 of 281 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 6,
+        "verse": 4,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "40 of 281 moments"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "sons of God daughters of men Genesis 6",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 188,
+      "summary": "15 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Nephilim giants Genesis flood",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 157,
+      "summary": "15 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "fallen angels Genesis six",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 116,
+      "summary": "15 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Genesis 6 before the flood why passage",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 142,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a3cf54d8ac6db89ab2eedd131d56e107",
+        "fromSec": 1180,
+        "toSec": 1360
+      },
+      "ms": 1,
+      "summary": "1180s–1360s of 40 Minutes In The Old Testament: Episode 11"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a3cf54d8ac6db89ab2eedd131d56e107",
+        "fromSec": 1360,
+        "toSec": 1540
+      },
+      "ms": 0,
+      "summary": "1360s–1540s of 40 Minutes In The Old Testament: Episode 11"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a3cf54d8ac6db89ab2eedd131d56e107",
+        "fromSec": 1960,
+        "toSec": 2140
+      },
+      "ms": 0,
+      "summary": "1960s–2140s of 40 Minutes In The Old Testament: Episode 11"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 600,
+        "toSec": 780
+      },
+      "ms": 0,
+      "summary": "600s–780s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 780,
+        "toSec": 960
+      },
+      "ms": 0,
+      "summary": "780s–960s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 960,
+        "toSec": 1140
+      },
+      "ms": 0,
+      "summary": "960s–1140s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 1140,
+        "toSec": 1320
+      },
+      "ms": 0,
+      "summary": "1140s–1320s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "fromSec": 1080,
+        "toSec": 1260
+      },
+      "ms": 3,
+      "summary": "1080s–1260s of Genesis 4:1-6:8"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "fromSec": 1260,
+        "toSec": 1440
+      },
+      "ms": 1,
+      "summary": "1260s–1440s of Genesis 4:1-6:8"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r",
+        "fromSec": 1960,
+        "toSec": 2140
+      },
+      "ms": 4,
+      "summary": "1960s–2140s of Genesis 1-11 Question & Response"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r",
+        "fromSec": 2140,
+        "toSec": 2320
+      },
+      "ms": 0,
+      "summary": "2140s–2320s of Genesis 1-11 Question & Response"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r",
+        "fromSec": 2320,
+        "toSec": 2500
+      },
+      "ms": 0,
+      "summary": "2320s–2500s of Genesis 1-11 Question & Response"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:168c311c-5d5c-11f0-8252-7f9ec715a664",
+        "fromSec": 1100,
+        "toSec": 1280
+      },
+      "ms": 6,
+      "summary": "1100s–1280s of Who were \"the sons of God\" in Genesis 6?"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:168c311c-5d5c-11f0-8252-7f9ec715a664",
+        "fromSec": 1280,
+        "toSec": 1460
+      },
+      "ms": 0,
+      "summary": "1280s–1460s of Who were \"the sons of God\" in Genesis 6?"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:788",
+        "fromSec": 1900,
+        "toSec": 2080
+      },
+      "ms": 6,
+      "summary": "1900s–2080s of Naked Bible 94: The Sin of the Watchers and Galatians 3-4"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:788",
+        "fromSec": 2080,
+        "toSec": 2260
+      },
+      "ms": 0,
+      "summary": "2080s–2260s of Naked Bible 94: The Sin of the Watchers and Galatians 3-4"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 1320,
+        "toSec": 1500
+      },
+      "ms": 0,
+      "summary": "1320s–1500s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 1500,
+        "toSec": 1680
+      },
+      "ms": 0,
+      "summary": "1500s–1680s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 1680,
+        "toSec": 1860
+      },
+      "ms": 0,
+      "summary": "1680s–1860s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:symptom-human-violence",
+        "fromSec": 2180,
+        "toSec": 2360
+      },
+      "ms": 7,
+      "summary": "2180s–2360s of The City E3: A Symptom of Human Violence"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:symptom-human-violence",
+        "fromSec": 2360,
+        "toSec": 2540
+      },
+      "ms": 0,
+      "summary": "2360s–2540s of The City E3: A Symptom of Human Violence"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:edf9e365-6859-4f4d-947e-9cfc491ea29b",
+        "fromSec": 380,
+        "toSec": 560
+      },
+      "ms": 0,
+      "summary": "380s–560s of Genesis 6-11: The Flood"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:edf9e365-6859-4f4d-947e-9cfc491ea29b",
+        "fromSec": 560,
+        "toSec": 740
+      },
+      "ms": 0,
+      "summary": "560s–740s of Genesis 6-11: The Flood"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 240,
+        "toSec": 460
+      },
+      "ms": 6,
+      "summary": "240s–420s of God Question & Response 1"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 460,
+        "toSec": 680
+      },
+      "ms": 0,
+      "summary": "460s–640s of God Question & Response 1"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:warnings-from-ancient-rebellions",
+        "fromSec": 1450,
+        "toSec": 1700
+      },
+      "ms": 4,
+      "summary": "1450s–1630s of The Letter of Jude E3: Warnings From Ancient Rebellions"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:warnings-from-ancient-rebellions",
+        "fromSec": 1700,
+        "toSec": 1900
+      },
+      "ms": 0,
+      "summary": "1700s–1880s of The Letter of Jude E3: Warnings From Ancient Rebellions"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:giants-land",
+        "fromSec": 0,
+        "toSec": 240
+      },
+      "ms": 4,
+      "summary": "0s–180s of Deuteronomy: Giants and Justice"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:twelve-spies-and-promised-land",
+        "fromSec": 2700,
+        "toSec": 2900
+      },
+      "ms": 4,
+      "summary": "2700s–2880s of Numbers E4: Twelve Spies and the Promised Land"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a3cf54d8ac6db89ab2eedd131d56e107",
+        "fromSec": 1300,
+        "toSec": 1420
+      },
+      "ms": 0,
+      "summary": "1300s–1420s of 40 Minutes In The Old Testament: Episode 11"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a3cf54d8ac6db89ab2eedd131d56e107",
+        "fromSec": 1420,
+        "toSec": 1580
+      },
+      "ms": 0,
+      "summary": "1420s–1580s of 40 Minutes In The Old Testament: Episode 11"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "fromSec": 1320,
+        "toSec": 1460
+      },
+      "ms": 0,
+      "summary": "1320s–1460s of Genesis 4:1-6:8"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:edf9e365-6859-4f4d-947e-9cfc491ea29b",
+        "fromSec": 420,
+        "toSec": 680
+      },
+      "ms": 0,
+      "summary": "420s–600s of Genesis 6-11: The Flood"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 580,
+        "toSec": 1160
+      },
+      "ms": 0,
+      "summary": "580s–760s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 1480,
+        "toSec": 1870
+      },
+      "ms": 0,
+      "summary": "1480s–1660s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 520,
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "520s–700s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 700,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "700s–880s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 900,
+        "toSec": 1160
+      },
+      "ms": 0,
+      "summary": "900s–1080s of God’s Spirit in the Flood Narrative"
+    }
+  ],
+  "rejections": [
+    {
+      "at": 5,
+      "errors": [
+        "title: required non-empty string",
+        "intro: required, at least 40 characters",
+        "closing: required, at least 30 characters",
+        "steps: required array"
+      ],
+      "submitted": {}
+    }
+  ],
+  "totals": {
+    "modelCalls": 7,
+    "toolCalls": 58,
+    "promptTokens": 821533,
+    "completionTokens": 89889,
+    "reasoningTokens": 80799,
+    "cachedPromptTokens": 700480,
+    "wallMs": 553622,
+    "modelLatencyMs": 552771,
+    "toolMs": 744
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.073117,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna-pro",
+      "inputPerMTokensUsd": 15,
+      "outputPerMTokensUsd": 120,
+      "cachedInputPerMTokensUsd": 1.5,
+      "_note": "PLACEHOLDER — a guess at a 'pro' multiple over the luna row above, itself a guess. The most expensive row in this file is the least verified one in it. OpenRouter accounts this model's spend itself, so the run record's 'provider' basis is what the ledger actually sums."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T20:03:06.804Z"
+}

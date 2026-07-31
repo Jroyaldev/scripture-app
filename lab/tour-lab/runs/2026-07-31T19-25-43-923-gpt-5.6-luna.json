@@ -1,0 +1,739 @@
+{
+  "runId": "2026-07-31T19-25-43-923-gpt-5.6-luna",
+  "startedAt": "2026-07-31T19:25:43.924Z",
+  "promptId": "doctrinal-resurrection-body",
+  "prompt": "If Jesus rose bodily, what happens to my body when I die? I want to understand what the New Testament actually claims about resurrection versus 'going to heaven'.",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "From Death to Resurrection: What the New Testament Hopes For",
+    "intro": "This tour follows the New Testament’s sequence rather than treating “going to heaven” and resurrection as interchangeable: Jesus’ bodily resurrection, the believer’s presence with Jesus after death, the future raising and transformation of the body, and the final renewal of creation. The teachers sometimes move from biblical text into interpretation, so listen for both what the passages say and how each speaker connects them.",
+    "steps": [
+      {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "startSec": 620,
+        "endSec": 780,
+        "why": "Begin here for the basic category distinction. Wright argues from the empty tomb and Jesus’ appearances that “only empty tomb plus appearances will do the trick” of physical resurrection, then says resurrection “is not about somebody going into a glorious angelic state” or simply “going to heaven.” His discussion of Jesus being recognized by the wounds gives the bodily claim a concrete shape without pretending to explain every property of the risen body.",
+        "episodeTitle": "#164 Easter questions on the resurrection of Jesus",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR6878813537.mp3?updated=1749655811",
+        "durationSec": 2012,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "bibleproject:podcast:what-happens-after-we-die",
+        "startSec": 820,
+        "endSec": 1050,
+        "why": "This clip gives you a useful two-stage map. Reading Psalm 49 and Peter’s use of Psalm 16 in Acts 2, the speakers describe rescue from death as “a resurrection hope” and say, “It’s not afterlife, it’s more life.” They then distinguish the New Testament’s hope of being with Jesus after death—“today you’ll be with me in paradise”—from the later resurrection life, which they call “the life after the life after death.”",
+        "episodeTitle": "Nephesh / Soul E3: What Happens After We Die?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/8cc2f2e1-5198-4189-bc79-2e2552c37903/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=8cc2f2e1-5198-4189-bc79-2e2552c37903",
+        "durationSec": 1890,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "startSec": 1040,
+        "endSec": 1220,
+        "why": "Now hear the immediate state set beside the final hope in the discussion of 2 Corinthians 5. The commentator says that if death tears down the present “earthly tent,” the believer is still “at home with the Lord,” while carefully adding, “our ultimate hope is resurrection.” This is the clearest stop in the tour for the distinction between what happens at death and what happens at the resurrection.",
+        "episodeTitle": "2 Corinthians 5:1-10",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/jckmzx/2_corinthians_51-10816em.mp3",
+        "durationSec": 1584,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:719",
+        "startSec": 1720,
+        "endSec": 1900,
+        "why": "This supplies Paul’s meaning of “spiritual body,” a phrase that can sound like disembodiment. The speaker reads 1 Corinthians 15 and insists, “It’s just a different kind of embodiment,” and, “You don’t go from a body to a non body.” The seed, perishable/imperishable, glory, and power language helps you hear transformation as continuity-plus-change rather than the soul escaping the body.",
+        "episodeTitle": "Naked Bible 88: What is the “spiritual body” Paul talks about in 1 Cor 15?",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2016/02/NakedBible88_spiritualbody_1Cor15.mp3",
+        "durationSec": 2975,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "startSec": 1470,
+        "endSec": 1650,
+        "why": "This is the New Testament’s climactic body passage in the tour. The commentator walks through Paul’s “last trumpet”: “the dead will be raised imperishable,” the mortal “must put on immortality,” and death is finally swallowed up in victory. It gathers the earlier distinctions into the answer to your central question: the Christian hope is not merely survival after death but a future bodily transformation.",
+        "episodeTitle": "1 Corinthians 15:29-58",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/d8ngn3/1_corinthians_1529-589yhwk.mp3",
+        "durationSec": 2010,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "radically-christian:podcast:920f7f45-https-radicallychristian-com-p-9747",
+        "startSec": 580,
+        "endSec": 720,
+        "why": "End with the destination toward which resurrection points. Interpreting 2 Peter 3 alongside Revelation 21 and Ephesians 1:10, the speaker describes “new heavens and a new earth in which righteousness dwells,” with “heaven and earth” fully united and God dwelling among humanity. This gives the bodily resurrection its New Testament setting: not permanent disembodied existence, but life in God’s renewed creation.",
+        "episodeTitle": "New Heavens and New Earth (Part One)",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682217/c4e7cab7-25e4-42aa-8533-9490dbde7514/transcoded.mp3?post_id=148682217&relation=podcast&Expires=1785438056&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=LE6IMlZGZ34wY30Pj5yi~AT5ze2tLwycdU5RHKsxDyV6kWnp7op3Hi8GCMLqPWxdDU2ozndDAKCXmlevx5ySU~f1q-u72m5KDhrkGbX4tEQ1wjfTtWxS2PmgvbT5ijUrvUrxD3tWLWCW4fDah-d8spOCKyfGLC0PckzJ8uUSNa-ioBoZq8igCCZq8ItcvrBUlG4UdYt6rRgHcvbNBOb5i6-0wcXC0qfpjpgx0LECaVuSsPkZyGtJ3OcuRblQqAIWwYFHFofyXJkg-d1wdQOvR8IA~7it4hWBGNfDnhMk5c3wWFMdIqfbtks1qY7mcgSnrQQFL9ZIa1IQkHG2K0O4gg__",
+        "durationSec": 1689,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips present “heaven” as a shorthand some Christians use for being with Jesus after death, but not as the New Testament’s final word about human destiny. The final hope they emphasize is resurrection: God raises and transforms the body, defeats death, and brings creation into its renewed fullness.",
+    "totalSeconds": 1070
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2878,
+      "promptTokens": 1147,
+      "completionTokens": 114,
+      "reasoningTokens": 98,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00008520000000000001
+    },
+    {
+      "i": 1,
+      "latencyMs": 5847,
+      "promptTokens": 1442,
+      "completionTokens": 335,
+      "reasoningTokens": 153,
+      "cachedPromptTokens": 1144,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000249615
+    },
+    {
+      "i": 2,
+      "latencyMs": 9042,
+      "promptTokens": 13389,
+      "completionTokens": 1294,
+      "reasoningTokens": 637,
+      "cachedPromptTokens": 1439,
+      "toolCalls": 12,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0022844650000000003
+    },
+    {
+      "i": 3,
+      "latencyMs": 9458,
+      "promptTokens": 22490,
+      "completionTokens": 1118,
+      "reasoningTokens": 815,
+      "cachedPromptTokens": 13386,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0019425850000000004
+    },
+    {
+      "i": 4,
+      "latencyMs": 7544,
+      "promptTokens": 31288,
+      "completionTokens": 707,
+      "reasoningTokens": 282,
+      "cachedPromptTokens": 22487,
+      "toolCalls": 9,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0017491200000000003
+    },
+    {
+      "i": 5,
+      "latencyMs": 15609,
+      "promptTokens": 38997,
+      "completionTokens": 1970,
+      "reasoningTokens": 1678,
+      "cachedPromptTokens": 31285,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0024587750000000003
+    },
+    {
+      "i": 6,
+      "latencyMs": 17160,
+      "promptTokens": 42865,
+      "completionTokens": 1887,
+      "reasoningTokens": 1568,
+      "cachedPromptTokens": 38994,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0020059400000000003
+    },
+    {
+      "i": 7,
+      "latencyMs": 18972,
+      "promptTokens": 47181,
+      "completionTokens": 2171,
+      "reasoningTokens": 1588,
+      "cachedPromptTokens": 42862,
+      "toolCalls": 10,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0022710200000000003
+    },
+    {
+      "i": 8,
+      "latencyMs": 44991,
+      "promptTokens": 48024,
+      "completionTokens": 5505,
+      "reasoningTokens": 4542,
+      "cachedPromptTokens": 47178,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0038804550000000005
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 89,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "resurrection body heaven",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 93,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "what happens when we die resurrection",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 43,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "new heavens new earth body",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 50,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "absent from the body present with the Lord",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 38,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "first Corinthians fifteen spiritual body resurrection",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 67,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "go to heaven resurrection",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 35,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:what-happens-after-we-die",
+        "fromSec": 820,
+        "toSec": 1000
+      },
+      "ms": 2,
+      "summary": "820s–1000s of Nephesh / Soul E3: What Happens After We Die?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:what-happens-after-we-die",
+        "fromSec": 1000,
+        "toSec": 1160
+      },
+      "ms": 0,
+      "summary": "1000s–1160s of Nephesh / Soul E3: What Happens After We Die?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "fromSec": 580,
+        "toSec": 760
+      },
+      "ms": 0,
+      "summary": "580s–760s of #164 Easter questions on the resurrection of Jesus"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "fromSec": 760,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "760s–900s of #164 Easter questions on the resurrection of Jesus"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:719",
+        "fromSec": 1740,
+        "toSec": 1920
+      },
+      "ms": 0,
+      "summary": "1740s–1920s of Naked Bible 88: What is the “spiritual body” Paul talks about in 1 Cor 15?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:719",
+        "fromSec": 1920,
+        "toSec": 2100
+      },
+      "ms": 0,
+      "summary": "1920s–2100s of Naked Bible 88: What is the “spiritual body” Paul talks about in 1 Cor 15?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 360,
+        "toSec": 540
+      },
+      "ms": 0,
+      "summary": "360s–540s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 700,
+        "toSec": 880
+      },
+      "ms": 0,
+      "summary": "700s–880s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 1040,
+        "toSec": 1220
+      },
+      "ms": 0,
+      "summary": "1040s–1220s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:920f7f45-https-radicallychristian-com-p-9747",
+        "fromSec": 500,
+        "toSec": 680
+      },
+      "ms": 0,
+      "summary": "500s–680s of New Heavens and New Earth (Part One)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:920f7f45-https-radicallychristian-com-p-9747",
+        "fromSec": 1120,
+        "toSec": 1300
+      },
+      "ms": 0,
+      "summary": "1120s–1300s of New Heavens and New Earth (Part One)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:920f7f45-https-radicallychristian-com-p-9747",
+        "fromSec": 1260,
+        "toSec": 1440
+      },
+      "ms": 0,
+      "summary": "1260s–1440s of New Heavens and New Earth (Part One)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:901a0482-com-79e0bee1-9b9a-365b-8796-2f8d34debedf",
+        "fromSec": 420,
+        "toSec": 620
+      },
+      "ms": 0,
+      "summary": "420s–600s of #145 Should I use the word ’heaven’? Will we know everything in the new creation?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:901a0482-com-79e0bee1-9b9a-365b-8796-2f8d34debedf",
+        "fromSec": 860,
+        "toSec": 1060
+      },
+      "ms": 0,
+      "summary": "860s–1040s of #145 Should I use the word ’heaven’? Will we know everything in the new creation?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:2d7af292-1b89-11f0-92c5-3b6db220c428",
+        "fromSec": 160,
+        "toSec": 440
+      },
+      "ms": 0,
+      "summary": "160s–340s of NT Wright on the Resurrection: History, Theology & Why It Still Matters with Tom Wright and Mike Bird"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "depart and be with Christ better resurrection",
+        "sourceId": "ask-nt-wright",
+        "limit": 10
+      },
+      "ms": 63,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "dead raised imperishable last trumpet changed",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 52,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "resurrection of life resurrection of judgment body",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 41,
+      "summary": "10 hits"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:what-happens-after-we-die",
+        "fromSec": 740,
+        "toSec": 860
+      },
+      "ms": 4,
+      "summary": "740s–860s of Nephesh / Soul E3: What Happens After We Die?"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:what-happens-after-we-die",
+        "fromSec": 900,
+        "toSec": 1080
+      },
+      "ms": 0,
+      "summary": "900s–1080s of Nephesh / Soul E3: What Happens After We Die?"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 1300,
+        "toSec": 1530
+      },
+      "ms": 0,
+      "summary": "1300s–1480s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 1530,
+        "toSec": 1750
+      },
+      "ms": 0,
+      "summary": "1530s–1710s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 4,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:what-happens-after-we-die"
+      },
+      "ms": 1,
+      "summary": "Nephesh / Soul E3: What Happens After We Die? (1890s)"
+    },
+    {
+      "at": 4,
+      "name": "episode_info",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5"
+      },
+      "ms": 8,
+      "summary": "#164 Easter questions on the resurrection of Jesus (2012s)"
+    },
+    {
+      "at": 4,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9"
+      },
+      "ms": 1,
+      "summary": "2 Corinthians 5:1-10 (1584s)"
+    },
+    {
+      "at": 4,
+      "name": "episode_info",
+      "args": {
+        "recordId": "naked-bible:podcast:719"
+      },
+      "ms": 6,
+      "summary": "Naked Bible 88: What is the “spiritual body” Paul talks about in 1 Cor 15? (2975s)"
+    },
+    {
+      "at": 4,
+      "name": "episode_info",
+      "args": {
+        "recordId": "radically-christian:podcast:920f7f45-https-radicallychristian-com-p-9747"
+      },
+      "ms": 0,
+      "summary": "New Heavens and New Earth (Part One) (1689s)"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:920f7f45-https-radicallychristian-com-p-9747",
+        "fromSec": 560,
+        "toSec": 760
+      },
+      "ms": 0,
+      "summary": "560s–740s of New Heavens and New Earth (Part One)"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:920f7f45-https-radicallychristian-com-p-9747",
+        "fromSec": 1280,
+        "toSec": 1530
+      },
+      "ms": 1,
+      "summary": "1280s–1460s of New Heavens and New Earth (Part One)"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "fromSec": 620,
+        "toSec": 850
+      },
+      "ms": 0,
+      "summary": "620s–800s of #164 Easter questions on the resurrection of Jesus"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:what-happens-after-we-die",
+        "fromSec": 800,
+        "toSec": 1090
+      },
+      "ms": 0,
+      "summary": "800s–980s of Nephesh / Soul E3: What Happens After We Die?"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 1470,
+        "toSec": 1740
+      },
+      "ms": 0,
+      "summary": "1470s–1650s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:what-happens-after-we-die",
+        "fromSec": 780,
+        "toSec": 880
+      },
+      "ms": 0,
+      "summary": "780s–880s of Nephesh / Soul E3: What Happens After We Die?"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:what-happens-after-we-die",
+        "fromSec": 980,
+        "toSec": 1180
+      },
+      "ms": 0,
+      "summary": "980s–1160s of Nephesh / Soul E3: What Happens After We Die?"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "fromSec": 620,
+        "toSec": 820
+      },
+      "ms": 0,
+      "summary": "620s–800s of #164 Easter questions on the resurrection of Jesus"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 680,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "680s–860s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:719",
+        "fromSec": 1720,
+        "toSec": 2120
+      },
+      "ms": 0,
+      "summary": "1720s–1900s of Naked Bible 88: What is the “spiritual body” Paul talks about in 1 Cor 15?"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:920f7f45-https-radicallychristian-com-p-9747",
+        "fromSec": 540,
+        "toSec": 760
+      },
+      "ms": 0,
+      "summary": "540s–720s of New Heavens and New Earth (Part One)"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 9,
+    "toolCalls": 56,
+    "promptTokens": 246823,
+    "completionTokens": 15101,
+    "reasoningTokens": 11361,
+    "cachedPromptTokens": 199875,
+    "wallMs": 132362,
+    "modelLatencyMs": 131501,
+    "toolMs": 594
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.016927,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T19:27:56.286Z"
+}

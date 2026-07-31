@@ -1,0 +1,699 @@
+{
+  "runId": "2026-07-31T19-53-35-256-gpt-5.6-luna",
+  "startedAt": "2026-07-31T19:53:35.256Z",
+  "promptId": "doctrinal-atonement",
+  "prompt": "Did God pour out wrath on Jesus at the cross? I want to hear the different ways teachers explain what the crucifixion accomplished, including where they disagree.",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Wrath, Substitution, and Victory at the Cross",
+    "intro": "This tour starts by mapping the main ways Christians have explained what Jesus’ death accomplished, then lets you hear a clear propitiatory and penal-substitution account. From there it turns to BibleProject’s substantially different reading of Jesus’ “cup,” hears N. T. Wright argue that victory and substitution belong together, and ends with an explicit claim that Jesus took wrath on himself. The point is not to force agreement, but to let the disagreements become audible.",
+    "steps": [
+      {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "startSec": 288,
+        "endSec": 440,
+        "why": "Begin with a map of the debate. The teachers say that atonement theories ask “how does the death of one man cover or take away the guilt of the entire world?” and introduce Christus Victor as Jesus “waging war” against the forces of darkness.",
+        "episodeTitle": "Theories of Atonement – CrossTalk S4E10",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682238/4202feae-310f-48d3-8260-2bd297e7ec54/transcoded.mp3?post_id=148682238&relation=podcast&Expires=1785437879&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=E81CSoqx5J2xZCnTPRkPrWvRg17tmjM-2SKhycuZSAMk4XOl732-KwOVFWlcApEglSliBQA4R8rvfsVLBkCl5wLrSJeFJE8YFypZehk1S-ztVhFWUOaXbBbN9Ljnj9yk4CxD8CvqZvUeUpm0st083KKQu8uajFMmkOZhz7FeZXgC6Xmc9frzupTiWp9gV1U1qj14AnTiRqjJoBIVkwTkQzHh0KCRmLXCs0pKbEAEz-H7qAjGYKr0-w04CQCM2GTYNZ2q8WWm8SHYOfihsTvcGwCbh48uSLygBXDGvyuPHDZzeDCDWp8K5zjgnJbXnWNCyt8aDP-dX-e4oZzV77TM1Q__",
+        "durationSec": 2917,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:bacb1fc2-com-e79bf8f7-6ab5-30f3-9e4f-46bbb41dd164",
+        "startSec": 1180,
+        "endSec": 1540,
+        "why": "This is the clearest traditional propitiatory and penal account in the tour. The teacher connects Jesus to the Day of Atonement and says that “the wrath of God that sin deserves” is, in some sense, “poured out on Jesus,” so that “the penalty for sin has been fully and finally dealt with.”",
+        "episodeTitle": "Romans 3:21-26",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/zhvgac/romans_321-368t8hu.mp3",
+        "durationSec": 1954,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:two-men-named-jesus",
+        "startSec": 1510,
+        "endSec": 2000,
+        "why": "Now hear a direct alternative to that formulation. BibleProject reads Jesus’ cup through Israel’s judgment and Barabbas: Jesus “will poke the bear and allow Rome to kill him instead of the whole people,” then explicitly says this is “totally different” from modern Protestant conceptions of Jesus bearing God’s wrath on the cross.",
+        "episodeTitle": "Two Men Named Jesus",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/2d2b5ff7-d5a7-4f12-b496-d2e799ece9e0/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=2d2b5ff7-d5a7-4f12-b496-d2e799ece9e0",
+        "durationSec": 3582,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:32b053a0-4d5c-11ee-8683-f1dd20c5e5ec",
+        "startSec": 1380,
+        "endSec": 1600,
+        "why": "Wright supplies a mediating synthesis rather than simply choosing one theory. He says the cross wins “a victory over the dark force” through Jesus taking the sinner’s place, and concludes that it is “definitely substitutionary” and “definitely penal,” but within the larger story of God dealing with the powers.",
+        "episodeTitle": "#185 Questions on Crucifixion and Atonement (Classic)",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR9770585049.mp3?updated=1749653873",
+        "durationSec": 2261,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:d50324b1-cc4e-4295-a992-55319e5ada78",
+        "startSec": 3760,
+        "endSec": 3940,
+        "why": "End with the strongest contrasting affirmation of wrath being borne by Jesus. The speaker says Jesus comes “as a master of wrath” and, “by his taking on the wrath for all guilt,” executes justice against himself; the same clip also says the cross judged and defeated the spiritual powers.",
+        "episodeTitle": "Nahum Introduction: God Will Not Clear the Guilty",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG6248171917.mp3?updated=1664486074",
+        "durationSec": 3977,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "You have now heard three distinct emphases: a classic account in which guilt, penalty, and divine wrath are dealt with in Jesus; a BibleProject reading in which the cup chiefly means Jesus entering Israel’s destructive fate under Rome rather than God punishing Jesus; and Wright’s attempt to hold penal substitution and Christus Victor together as “victory through substitution.” The teachers therefore do not all answer your opening question in the same way—and that difference is part of what this tour is meant to clarify.",
+    "totalSeconds": 1402
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3811,
+      "promptTokens": 1147,
+      "completionTokens": 175,
+      "reasoningTokens": 159,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00012180000000000002
+    },
+    {
+      "i": 1,
+      "latencyMs": 34452,
+      "promptTokens": 1442,
+      "completionTokens": 517,
+      "reasoningTokens": 222,
+      "cachedPromptTokens": 0,
+      "toolCalls": 10,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00045440000000000004
+    },
+    {
+      "i": 2,
+      "latencyMs": 9988,
+      "promptTokens": 21644,
+      "completionTokens": 773,
+      "reasoningTokens": 434,
+      "cachedPromptTokens": 1439,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0030037400000000004
+    },
+    {
+      "i": 3,
+      "latencyMs": 18422,
+      "promptTokens": 31286,
+      "completionTokens": 2379,
+      "reasoningTokens": 1169,
+      "cachedPromptTokens": 21641,
+      "toolCalls": 23,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0028493600000000004
+    },
+    {
+      "i": 4,
+      "latencyMs": 21877,
+      "promptTokens": 47802,
+      "completionTokens": 2324,
+      "reasoningTokens": 1660,
+      "cachedPromptTokens": 31283,
+      "toolCalls": 12,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0037720300000000004
+    },
+    {
+      "i": 5,
+      "latencyMs": 81635,
+      "promptTokens": 50089,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 47799,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": 0.004364165000000001
+    },
+    {
+      "i": 6,
+      "latencyMs": 48311,
+      "promptTokens": 50124,
+      "completionTokens": 5636,
+      "reasoningTokens": 4867,
+      "cachedPromptTokens": 50086,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0038871350000000008
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "wrath on Jesus at the cross",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 86,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "God's wrath cross Jesus",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 46,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "penal substitution atonement",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 58,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "substitutionary atonement Jesus took our sins",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 43,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Christus Victor powers cross victory",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 42,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "ransom sacrifice crucifixion accomplished",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 65,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "propitiation expiation cross wrath",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 59,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "what did the cross accomplish",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 48,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Jesus abandoned forsaken cross God",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 58,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "atonement theories cross",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 49,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457"
+      },
+      "ms": 1,
+      "summary": "Theories of Atonement – CrossTalk S4E10 (2917s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath"
+      },
+      "ms": 5,
+      "summary": "Saved from God’s Wrath (3397s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:two-men-named-jesus"
+      },
+      "ms": 4,
+      "summary": "Two Men Named Jesus (3582s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:32b053a0-4d5c-11ee-8683-f1dd20c5e5ec"
+      },
+      "ms": 1,
+      "summary": "#185 Questions on Crucifixion and Atonement (Classic) (2261s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:4407f465-com-4cd1537d-2808-398a-be11-4fab5f531a13"
+      },
+      "ms": 0,
+      "summary": "#84 Why did Jesus have to die? What did it achieve? (1547s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:bacb1fc2-com-e79bf8f7-6ab5-30f3-9e4f-46bbb41dd164"
+      },
+      "ms": 3,
+      "summary": "Romans 3:21-26 (1954s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "naked-bible:podcast:2461"
+      },
+      "ms": 4,
+      "summary": "Naked Bible 270: Exodus 11-12 (4109s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d50324b1-cc4e-4295-a992-55319e5ada78"
+      },
+      "ms": 6,
+      "summary": "Nahum Introduction: God Will Not Clear the Guilty (3977s)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 260,
+        "toSec": 440
+      },
+      "ms": 0,
+      "summary": "260s–440s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 440,
+        "toSec": 620
+      },
+      "ms": 0,
+      "summary": "440s–620s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 760,
+        "toSec": 940
+      },
+      "ms": 0,
+      "summary": "760s–940s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 1020,
+        "toSec": 1175
+      },
+      "ms": 0,
+      "summary": "1020s–1175s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 1510,
+        "toSec": 1700
+      },
+      "ms": 0,
+      "summary": "1510s–1690s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 1740,
+        "toSec": 1915
+      },
+      "ms": 0,
+      "summary": "1740s–1915s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:bacb1fc2-com-e79bf8f7-6ab5-30f3-9e4f-46bbb41dd164",
+        "fromSec": 1000,
+        "toSec": 1180
+      },
+      "ms": 0,
+      "summary": "1000s–1180s of Romans 3:21-26"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:bacb1fc2-com-e79bf8f7-6ab5-30f3-9e4f-46bbb41dd164",
+        "fromSec": 1180,
+        "toSec": 1360
+      },
+      "ms": 0,
+      "summary": "1180s–1360s of Romans 3:21-26"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:bacb1fc2-com-e79bf8f7-6ab5-30f3-9e4f-46bbb41dd164",
+        "fromSec": 1360,
+        "toSec": 1540
+      },
+      "ms": 0,
+      "summary": "1360s–1540s of Romans 3:21-26"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:two-men-named-jesus",
+        "fromSec": 1360,
+        "toSec": 1540
+      },
+      "ms": 0,
+      "summary": "1360s–1540s of Two Men Named Jesus"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:two-men-named-jesus",
+        "fromSec": 1540,
+        "toSec": 1720
+      },
+      "ms": 0,
+      "summary": "1540s–1720s of Two Men Named Jesus"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:two-men-named-jesus",
+        "fromSec": 1720,
+        "toSec": 1900
+      },
+      "ms": 0,
+      "summary": "1720s–1900s of Two Men Named Jesus"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:two-men-named-jesus",
+        "fromSec": 1900,
+        "toSec": 2080
+      },
+      "ms": 0,
+      "summary": "1900s–2080s of Two Men Named Jesus"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "fromSec": 2050,
+        "toSec": 2230
+      },
+      "ms": 0,
+      "summary": "2050s–2230s of Saved from God’s Wrath"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "fromSec": 2230,
+        "toSec": 2410
+      },
+      "ms": 0,
+      "summary": "2230s–2410s of Saved from God’s Wrath"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "fromSec": 2410,
+        "toSec": 2590
+      },
+      "ms": 0,
+      "summary": "2410s–2590s of Saved from God’s Wrath"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:32b053a0-4d5c-11ee-8683-f1dd20c5e5ec",
+        "fromSec": 1000,
+        "toSec": 1180
+      },
+      "ms": 0,
+      "summary": "1000s–1180s of #185 Questions on Crucifixion and Atonement (Classic)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:32b053a0-4d5c-11ee-8683-f1dd20c5e5ec",
+        "fromSec": 1180,
+        "toSec": 1360
+      },
+      "ms": 0,
+      "summary": "1180s–1360s of #185 Questions on Crucifixion and Atonement (Classic)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:32b053a0-4d5c-11ee-8683-f1dd20c5e5ec",
+        "fromSec": 1360,
+        "toSec": 1540
+      },
+      "ms": 0,
+      "summary": "1360s–1540s of #185 Questions on Crucifixion and Atonement (Classic)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:32b053a0-4d5c-11ee-8683-f1dd20c5e5ec",
+        "fromSec": 1540,
+        "toSec": 1720
+      },
+      "ms": 0,
+      "summary": "1540s–1720s of #185 Questions on Crucifixion and Atonement (Classic)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d50324b1-cc4e-4295-a992-55319e5ada78",
+        "fromSec": 2980,
+        "toSec": 3160
+      },
+      "ms": 0,
+      "summary": "2980s–3160s of Nahum Introduction: God Will Not Clear the Guilty"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d50324b1-cc4e-4295-a992-55319e5ada78",
+        "fromSec": 3580,
+        "toSec": 3760
+      },
+      "ms": 0,
+      "summary": "3580s–3760s of Nahum Introduction: God Will Not Clear the Guilty"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d50324b1-cc4e-4295-a992-55319e5ada78",
+        "fromSec": 3760,
+        "toSec": 3977
+      },
+      "ms": 1,
+      "summary": "3760s–3940s of Nahum Introduction: God Will Not Clear the Guilty"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 220,
+        "toSec": 340
+      },
+      "ms": 0,
+      "summary": "220s–340s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 560,
+        "toSec": 670
+      },
+      "ms": 0,
+      "summary": "560s–670s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 1450,
+        "toSec": 1570
+      },
+      "ms": 0,
+      "summary": "1450s–1570s of Theories of Atonement – CrossTalk S4E10"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 7,
+    "toolCalls": 55,
+    "promptTokens": 203534,
+    "completionTokens": 17804,
+    "reasoningTokens": 14511,
+    "cachedPromptTokens": 153348,
+    "wallMs": 219085,
+    "modelLatencyMs": 218496,
+    "toolMs": 580
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.018453,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T19:57:14.341Z"
+}

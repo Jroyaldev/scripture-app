@@ -1,0 +1,740 @@
+{
+  "runId": "2026-07-31T19-44-30-375-gpt-5.6-luna",
+  "startedAt": "2026-07-31T19:44:30.376Z",
+  "promptId": "book-orientation-romans",
+  "prompt": "I'm about to read Romans for the first time. Give me an orientation to the whole letter: what Paul is arguing, who he's arguing with, and how the parts fit together.",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Romans before Romans: a map of Paul’s argument",
+    "intro": "Before you start reading, this tour gives you the setting, the central claim, and a map of the letter’s four movements. Listen for the concrete problem in Rome beneath Paul’s theology: how Jews and Gentiles can become one people under Jesus.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:63bf2f5f-com-6cd6a9f3-108c-38ad-b4b8-02550ba51633",
+        "startSec": 800,
+        "endSec": 980,
+        "why": "Begin with the real congregation Paul is addressing rather than treating Romans as an abstract theology textbook. This clip describes “Gentile groups” and “Jewish groups” that “aren’t really getting along,” then identifies Paul’s aim: that they worship “with one mind and one voice.”",
+        "episodeTitle": "Backstory to Romans",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/i5pj3w/backstory.mp3",
+        "durationSec": 1197,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:d09c8ed4-f6cf-11ee-8072-b7002c006746",
+        "startSec": 1400,
+        "endSec": 1860,
+        "why": "Now hear how Paul frames his own letter at the opening: Romans 1:1–6 functions as a “table of contents,” presenting the gospel as news about Jesus, the Davidic and Spirit-empowered king. The clip lands on “a different king who can include diverse people in his kingdom,” giving you the letter’s political and theological frame.",
+        "episodeTitle": "Romans Overview: Jesus is King",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG3092543348.mp3?updated=1712708592",
+        "durationSec": 2862,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "startSec": 0,
+        "endSec": 820,
+        "why": "Use this as your chapter-by-chapter map. The speaker names “four big chunks”—chapters 1–4, 5–8, 9–11, and 12–16—and walks through how universal need leads to righteousness through Christ, new life by the Spirit, the question of Israel, and a united community.",
+        "episodeTitle": "An Overview of the Letter to the Romans",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/x82wrk/overview.mp3",
+        "durationSec": 1242,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "startSec": 870,
+        "endSec": 1010,
+        "why": "Finish by adjusting the lens you bring to the book. The speaker cautions against reading Romans as “almost exclusively about our own individual personal salvation” and argues that the letter’s ending keeps the “people of God” and their shared worship at the center. That helps chapters 9–11 and the practical material in 12–16 belong to the same argument.",
+        "episodeTitle": "An Overview of the Letter to the Romans",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/x82wrk/overview.mp3",
+        "durationSec": 1242,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "As you read, keep the four movements in view: Paul levels Jew and Gentile under sin and announces God’s righteousness through faith; explains the new life Christ and the Spirit create; wrestles with God’s faithfulness to Israel; and finally shows what this one family must look like in practice. Romans is not only answering how individuals are saved—it is arguing what kind of people the gospel makes, and how they must live together.",
+    "totalSeconds": 1600
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 5419,
+      "promptTokens": 1151,
+      "completionTokens": 180,
+      "reasoningTokens": 164,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0001253
+    },
+    {
+      "i": 1,
+      "latencyMs": 6172,
+      "promptTokens": 1446,
+      "completionTokens": 509,
+      "reasoningTokens": 250,
+      "cachedPromptTokens": 1148,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00035405500000000004
+    },
+    {
+      "i": 2,
+      "latencyMs": 6066,
+      "promptTokens": 18339,
+      "completionTokens": 747,
+      "reasoningTokens": 350,
+      "cachedPromptTokens": 1443,
+      "toolCalls": 9,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0025745550000000005
+    },
+    {
+      "i": 3,
+      "latencyMs": 25171,
+      "promptTokens": 31465,
+      "completionTokens": 1700,
+      "reasoningTokens": 962,
+      "cachedPromptTokens": 18336,
+      "toolCalls": 12,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0028444100000000003
+    },
+    {
+      "i": 4,
+      "latencyMs": 36254,
+      "promptTokens": 40969,
+      "completionTokens": 1695,
+      "reasoningTokens": 971,
+      "cachedPromptTokens": 31462,
+      "toolCalls": 12,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00251992
+    },
+    {
+      "i": 5,
+      "latencyMs": 70435,
+      "promptTokens": 50745,
+      "completionTokens": 3659,
+      "reasoningTokens": 3295,
+      "cachedPromptTokens": 0,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.072699
+    },
+    {
+      "i": 6,
+      "latencyMs": 70911,
+      "promptTokens": 53330,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 50742,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": 0.004430845000000001
+    },
+    {
+      "i": 7,
+      "latencyMs": 66211,
+      "promptTokens": 53365,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 53327,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": 0.0041379450000000005
+    },
+    {
+      "i": 8,
+      "latencyMs": 97758,
+      "promptTokens": 53400,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 53362,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": 0.004138295
+    },
+    {
+      "i": 9,
+      "latencyMs": 80717,
+      "promptTokens": 53435,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 53397,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": 0.004138645000000001
+    },
+    {
+      "i": 10,
+      "latencyMs": 79141,
+      "promptTokens": 53470,
+      "completionTokens": 5892,
+      "reasoningTokens": 5240,
+      "cachedPromptTokens": 49664,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0441244
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 0,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans overview whole letter Paul argument",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 123,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "letter to the Romans structure chapters",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 84,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Jews Gentiles Romans gospel righteousness faith",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 66,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 through 11 then chapters 12 Christian life",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 35,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "who is Paul arguing with in Romans law circumcision",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 50,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Romans",
+        "chapter": 1,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 1,
+      "summary": "20 of 151 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Romans",
+        "chapter": 8,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "40 of 383 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Romans",
+        "chapter": 12,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "19 of 157 moments"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7"
+      },
+      "ms": 1,
+      "summary": "An Overview of the Letter to the Romans (1242s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:63bf2f5f-com-6cd6a9f3-108c-38ad-b4b8-02550ba51633"
+      },
+      "ms": 2,
+      "summary": "Backstory to Romans (1197s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d09c8ed4-f6cf-11ee-8072-b7002c006746"
+      },
+      "ms": 3,
+      "summary": "Romans Overview: Jesus is King (2862s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01"
+      },
+      "ms": 1,
+      "summary": "Romans Overview: Handed Over To Death (2931s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:dc431d46-190e-11ef-9218-8bc4e318e54d"
+      },
+      "ms": 1,
+      "summary": "Romans Overview: What Happens to Israel? (2673s)"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans table of contents thesis statement gospel power of God salvation",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 63,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 12 16 weak strong unity Jew Gentile Rome",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 81,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans Paul plans Spain Rome church not founded by Paul",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 44,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans chapters 1 4 sin justification 5 8 new life 9 11 Israel 12 16",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 49,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:63bf2f5f-com-6cd6a9f3-108c-38ad-b4b8-02550ba51633",
+        "fromSec": 120,
+        "toSec": 300
+      },
+      "ms": 0,
+      "summary": "120s–300s of Backstory to Romans"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:63bf2f5f-com-6cd6a9f3-108c-38ad-b4b8-02550ba51633",
+        "fromSec": 580,
+        "toSec": 760
+      },
+      "ms": 0,
+      "summary": "580s–760s of Backstory to Romans"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:63bf2f5f-com-6cd6a9f3-108c-38ad-b4b8-02550ba51633",
+        "fromSec": 880,
+        "toSec": 1060
+      },
+      "ms": 0,
+      "summary": "880s–1060s of Backstory to Romans"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:63bf2f5f-com-6cd6a9f3-108c-38ad-b4b8-02550ba51633",
+        "fromSec": 1000,
+        "toSec": 1197
+      },
+      "ms": 0,
+      "summary": "1000s–1180s of Backstory to Romans"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d09c8ed4-f6cf-11ee-8072-b7002c006746",
+        "fromSec": 330,
+        "toSec": 550
+      },
+      "ms": 0,
+      "summary": "330s–510s of Romans Overview: Jesus is King"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d09c8ed4-f6cf-11ee-8072-b7002c006746",
+        "fromSec": 1400,
+        "toSec": 1700
+      },
+      "ms": 0,
+      "summary": "1400s–1580s of Romans Overview: Jesus is King"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d09c8ed4-f6cf-11ee-8072-b7002c006746",
+        "fromSec": 1820,
+        "toSec": 2010
+      },
+      "ms": 0,
+      "summary": "1820s–2000s of Romans Overview: Jesus is King"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "fromSec": 50,
+        "toSec": 250
+      },
+      "ms": 0,
+      "summary": "50s–230s of An Overview of the Letter to the Romans"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "fromSec": 200,
+        "toSec": 430
+      },
+      "ms": 0,
+      "summary": "200s–380s of An Overview of the Letter to the Romans"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "fromSec": 420,
+        "toSec": 660
+      },
+      "ms": 0,
+      "summary": "420s–600s of An Overview of the Letter to the Romans"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "fromSec": 640,
+        "toSec": 880
+      },
+      "ms": 0,
+      "summary": "640s–820s of An Overview of the Letter to the Romans"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "fromSec": 870,
+        "toSec": 1010
+      },
+      "ms": 0,
+      "summary": "870s–1010s of An Overview of the Letter to the Romans"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:63bf2f5f-com-6cd6a9f3-108c-38ad-b4b8-02550ba51633",
+        "fromSec": 800,
+        "toSec": 980
+      },
+      "ms": 1,
+      "summary": "800s–980s of Backstory to Romans"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:63bf2f5f-com-6cd6a9f3-108c-38ad-b4b8-02550ba51633",
+        "fromSec": 960,
+        "toSec": 1140
+      },
+      "ms": 0,
+      "summary": "960s–1140s of Backstory to Romans"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:63bf2f5f-com-6cd6a9f3-108c-38ad-b4b8-02550ba51633",
+        "fromSec": 400,
+        "toSec": 620
+      },
+      "ms": 0,
+      "summary": "400s–580s of Backstory to Romans"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:63bf2f5f-com-6cd6a9f3-108c-38ad-b4b8-02550ba51633",
+        "fromSec": 620,
+        "toSec": 820
+      },
+      "ms": 0,
+      "summary": "620s–800s of Backstory to Romans"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d09c8ed4-f6cf-11ee-8072-b7002c006746",
+        "fromSec": 1500,
+        "toSec": 1840
+      },
+      "ms": 0,
+      "summary": "1500s–1680s of Romans Overview: Jesus is King"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "fromSec": 320,
+        "toSec": 560
+      },
+      "ms": 5,
+      "summary": "320s–500s of Romans Overview: Handed Over To Death"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "fromSec": 820,
+        "toSec": 1080
+      },
+      "ms": 1,
+      "summary": "820s–1000s of Romans Overview: Handed Over To Death"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "fromSec": 1260,
+        "toSec": 1540
+      },
+      "ms": 0,
+      "summary": "1260s–1440s of Romans Overview: Handed Over To Death"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "fromSec": 2680,
+        "toSec": 2931
+      },
+      "ms": 0,
+      "summary": "2680s–2860s of Romans Overview: Handed Over To Death"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:dc431d46-190e-11ef-9218-8bc4e318e54d",
+        "fromSec": 80,
+        "toSec": 300
+      },
+      "ms": 3,
+      "summary": "80s–260s of Romans Overview: What Happens to Israel?"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:dc431d46-190e-11ef-9218-8bc4e318e54d",
+        "fromSec": 1640,
+        "toSec": 1940
+      },
+      "ms": 0,
+      "summary": "1640s–1820s of Romans Overview: What Happens to Israel?"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:dc431d46-190e-11ef-9218-8bc4e318e54d",
+        "fromSec": 2320,
+        "toSec": 2590
+      },
+      "ms": 0,
+      "summary": "2320s–2500s of Romans Overview: What Happens to Israel?"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d09c8ed4-f6cf-11ee-8072-b7002c006746",
+        "fromSec": 1360,
+        "toSec": 1540
+      },
+      "ms": 0,
+      "summary": "1360s–1540s of Romans Overview: Jesus is King"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d09c8ed4-f6cf-11ee-8072-b7002c006746",
+        "fromSec": 1680,
+        "toSec": 1860
+      },
+      "ms": 0,
+      "summary": "1680s–1860s of Romans Overview: Jesus is King"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d09c8ed4-f6cf-11ee-8072-b7002c006746",
+        "fromSec": 1980,
+        "toSec": 2160
+      },
+      "ms": 0,
+      "summary": "1980s–2160s of Romans Overview: Jesus is King"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 11,
+    "toolCalls": 49,
+    "promptTokens": 411115,
+    "completionTokens": 38382,
+    "reasoningTokens": 35232,
+    "cachedPromptTokens": 313981,
+    "wallMs": 544879,
+    "modelLatencyMs": 544255,
+    "toolMs": 614
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.142087,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T19:53:35.255Z"
+}

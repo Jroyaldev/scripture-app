@@ -117,8 +117,14 @@ function appendLedger(record) {
     toolCalls: 0,
     totalUsd: 0,
     costSources: {},
+    efforts: {},
   };
   m.resolvedSlug = record.model.resolvedSlug;
+  // A model's runs can span efforts, so the ledger counts them rather than
+  // pretending one number covers the row.
+  m.efforts = m.efforts || {};
+  const effort = record.model.reasoning?.effort || 'vendor-default';
+  m.efforts[effort] = (m.efforts[effort] || 0) + 1;
   m.runs += 1;
   if (record.status === 'ok') m.ok += 1;
   else m.failed += 1;
@@ -211,6 +217,15 @@ export async function runTour({ prompt, modelKey, promptId = null, emit = () => 
       requestedSlug: spec.requestedSlug,
       resolvedSlug: null,
       resolution: null,
+      // Which thinking budget this run asked for, where that came from, and
+      // whether the endpoint could carry it. Written before the first call so
+      // even a run that dies at resolution says what it was going to run at.
+      reasoning: {
+        effort: client.reasoning.effort,
+        source: client.reasoning.source,
+        envVar: spec.env.reasoning || null,
+        applied: null,
+      },
     },
     status: 'error',
     error: null,
@@ -252,7 +267,10 @@ export async function runTour({ prompt, modelKey, promptId = null, emit = () => 
     const resolution = await client.ensureResolved();
     record.model.resolvedSlug = resolution.slug;
     record.model.resolution = resolution;
-    emit('model', { resolution });
+    // The unified `reasoning` field only exists on aggregator endpoints.
+    record.model.reasoning.applied =
+      Boolean(client.reasoning.effort) && resolution.endpointStyle === 'aggregator';
+    emit('model', { resolution, reasoning: record.model.reasoning });
   } catch (err) {
     // No key, or the endpoint could not be reached at all. Fail soft, in words.
     return finish({ status: 'error', error: { code: err.code || 'RESOLVE', message: err.message } });
@@ -265,10 +283,24 @@ export async function runTour({ prompt, modelKey, promptId = null, emit = () => 
 
   let toolCallCount = 0;
 
+  /* The reply cap covers REASONING plus visible output on these endpoints,
+     and the old 6,000 default was measured being eaten whole: luna at max
+     effort spent 36,783 tokens thinking on one probe, hit `length` mid
+     tool-call, and the provider delivered submit_tour with EMPTY arguments —
+     which the validator then read as four missing fields. Every "rejected:
+     4 problem(s)" across luna, luna-pro and deepseek on 2026-07-31 was this,
+     and each one costs a whole extra model call to repair. The cap scales
+     with the effort actually being sent, because the thinking budget is the
+     thing the cap has to clear. */
+  const effort = client.reasoningEffort;
+  const maxTokens = effort === 'max' || effort === 'xhigh' ? 56000
+    : effort === 'high' ? 28000
+    : 12000;
+
   for (let step = 0; step < MAX_MODEL_CALLS; step += 1) {
     let reply;
     try {
-      reply = await client.chat({ messages, tools: TOOL_SCHEMAS, signal });
+      reply = await client.chat({ messages, tools: TOOL_SCHEMAS, maxTokens, signal });
     } catch (err) {
       return finish({ status: 'error', error: { code: err.code || 'CALL', message: err.message } });
     }
@@ -325,7 +357,10 @@ export async function runTour({ prompt, modelKey, promptId = null, emit = () => 
                 instruction: 'The tour was rejected and NOT saved. Fix exactly these problems and call submit_tour again. Do not change anything else.',
               }),
             });
-            emit('tool', { name, ok: false, summary: `rejected: ${check.errors.length} problem(s)` });
+            /* The model gets the full error list to repair against; the page
+               was getting only the count, which made every rejection a
+               question for the operator. Same list, both directions. */
+            emit('tool', { name, ok: false, summary: `rejected: ${check.errors.length} problem(s)`, problems: check.errors });
           }
           continue;
         }
@@ -360,7 +395,7 @@ export async function runTour({ prompt, modelKey, promptId = null, emit = () => 
         role: 'user',
         content: `That tour was rejected and NOT saved:\n- ${check.errors.join('\n- ')}\n\nFix exactly these problems and call the submit_tour tool.`,
       });
-      emit('tool', { name: 'submit_tour', ok: false, summary: `rejected: ${check.errors.length} problem(s)` });
+      emit('tool', { name: 'submit_tour', ok: false, summary: `rejected: ${check.errors.length} problem(s)`, problems: check.errors });
       continue;
     }
 
@@ -402,6 +437,7 @@ export function listRuns({ limit = 60 } = {}) {
           prompt: r.prompt,
           model: r.model.key,
           resolvedSlug: r.model.resolvedSlug,
+          effort: r.model.reasoning?.effort || null,
           status: r.status,
           title: r.tour?.title || null,
           steps: r.tour?.steps?.length || 0,

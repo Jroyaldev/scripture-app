@@ -1,0 +1,533 @@
+{
+  "runId": "2026-07-31T18-54-24-686-deepseek-v4-flash",
+  "startedAt": "2026-07-31T18:54:24.686Z",
+  "promptId": "pastoral-grief",
+  "prompt": "My mother died three weeks ago and I cannot pray. I don't want tidy answers — I want to hear people talk honestly about grief and where God is in it.",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek-v4-flash",
+    "resolution": {
+      "slug": "deepseek-v4-flash",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek-v4-flash",
+      "endpointStyle": "direct",
+      "endpointHost": "api.deepseek.com",
+      "form": "bare",
+      "via": "models-list",
+      "exact": false,
+      "tried": [
+        "deepseek-v4-flash-0731",
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash",
+        "deepseek/deepseek-v4-flash"
+      ],
+      "note": "endpoint does not publish \"deepseek/deepseek-v4-flash-0731\"; fell back to \"deepseek-v4-flash\" (nearest configured/available model). Results are NOT from the exact requested build.",
+      "availableSample": [
+        "deepseek-v4-flash",
+        "deepseek-v4-pro"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Three Weeks After Her Death: Honest Grief, Prayer, and Where God Is",
+    "intro": "Three weeks is no time at all, and the fact that prayer has gone quiet in you is not a failure. This tour is not going to fix anything or hand you a tidy answer. It is seven short stretches of tape from teachers who have either been in the dark themselves or sat closely beside people who have. They talk about what grief does to prayer, what the Bible's own sufferers sound like when they are suffocating, and where God actually is while you cannot find words. You can listen to all of it in one sitting, or one clip at a time. The only expectation is that you bring your grief exactly as it is.",
+    "steps": [
+      {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "startSec": 90,
+        "endSec": 270,
+        "why": "Start here because it names your exact situation. A listener whose father has just died writes that prayer feels like 'a silly exercise in just talking or thinking to myself,' and that her grief feels small and selfish. Tom Wright answers her — and you — that this is 'not selfish and it is not unimportant. God loves your broken heart.' He describes that waking moment 'when it hits you again, he's gone,' and then gives the one instruction that matters: don't hurry past the scene of Mary and Martha saying 'Lord, if only you'd been here, my brother wouldn't have died' — stop there and say your own version of that sentence to Jesus.",
+        "episodeTitle": "#196 Pain and suffering Part 2 (Classic)",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR3879333769.mp3?updated=1749653312",
+        "durationSec": 1455,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:444302a2-d904-43b3-a21f-4c7fb0a30dd7",
+        "startSec": 1190,
+        "endSec": 1400,
+        "why": "Now that someone has said your grief is seen, hear what faithful people sound like in the worst of it. Two Old Testament teachers on Job chapter 3, where Job is 'suffocated by the darkness of pain and grief' and wishes he had never been born. They add Jeremiah, cursing the day of his birth, and then say plainly what the Bible is doing: it doesn't give an instruction manual for suffering — it shows you 'here's how this sounds like when someone is in this situation and they open their mouth.' The point lands hard: 'the faithful suffer and it sounds like this,' and 'lament is the quintessential cry of faith — you don't lament to a God you don't believe exists.'",
+        "episodeTitle": "Job 2:11-3:26 (Episode 387)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_ep_387.mp3?dest-id=245197",
+        "durationSec": 2435,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "startSec": 2130,
+        "endSec": 2362,
+        "why": "This is the voice of someone who has lived it — the author of a grief book written from losing a spouse — and he is done with people's tidy lines. He says 'nobody has a right to tell anybody else how to grieve' and 'no two griefs are the same,' and he tells you not to let anyone 'make you feel bad because they try to tell you where you should be or how you should be grieving.' Then he dismantles the platitudes you will be handed: 'God needed another angel' — 'I'm thinking I want to slap you in the face' — and the famous 'one day at a time' — 'how about one step at a time, one second at a time.' It is permission to be exactly where you are.",
+        "episodeTitle": "Some Things I Wish Everyone Knew About Grief",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/151262658/96f24d4c-c85d-4c44-be4e-c5eb9605780e/transcoded.mp3?post_id=151262658&relation=podcast&Expires=1785437767&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=dgjzRqPzmoQPsEMSSMmExZhFh7Emn1byXf2jYT6tjJfQFCFY-MJhSeKje9oF9yQR6ly~pvN1A7E12joCs~tO2qo8wwrEp-87JE2tJillnoBH9tG2T~vqqrabTIR6AdgW9O1-HGJVcgv9OVpczgso6y2Ri5ZnF0ART0pnBzK28lyaFeUtw9Buzzt-BikeYnkKonRgv5N718fw0QNC5UqCh9kxvpTBaglQo3U3SDJEOOq41EdD9NctwYz~vIs77WEjNb2udS0EyLq5rnBeverhs6wtqKpOIBXOrYrLbQ8UGz~wbkysHH2ZxU3m9VS3b1MH74yAddxl3ocINNbGt5ua~g__",
+        "durationSec": 3241,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:8f69bf0a-com-59af7369-e75d-395e-85a6-34ac29b8e25e",
+        "startSec": 250,
+        "endSec": 448,
+        "why": "Here is the Scriptural answer to 'I cannot pray,' taught gently from Romans 8. Paul says the Spirit intercedes 'with groanings too deep for words' — literally, the teacher notes, 'wordless groanings.' He describes your exact condition: 'the weight of difficulty, hardship has washed over us so deeply, and we've got nothing left.' And then the good news: the Spirit 'himself is groaning along with us,' and 'takes what we're groaning about and feeling, and he translates those groanings according to the will of God.' Your wordlessness is not the absence of prayer — it is the shape prayer takes when the Spirit carries it.",
+        "episodeTitle": "Romans 8:26-39",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/8rp82y/romans_826-39blqmq.mp3",
+        "durationSec": 1393,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:a1a084d1-com-06ada9f3-4c3f-3851-9ba5-35f817a4ee6f",
+        "startSec": 1370,
+        "endSec": 1472,
+        "why": "This answers the question underneath everything: where is God in the death of someone you love? A careful walk through John 11 and the shortest verse in the Bible. Jesus knows he is about to raise Lazarus — death is not the end, he has just said so — and still 'he weeps at the reality of death and at the pain it causes.' The teacher's line to hold onto: 'death and the grief it brings rouses Jesus because it's not the way it's supposed to be.' And the crowd, watching him cry, says the truest thing: 'see how he loved him.' God does not stand above your grief; he is moved by it.",
+        "episodeTitle": "John 11:1-54",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/rhu2ccvr4rgf5c54/john_111-54bhwxv.mp3",
+        "durationSec": 2212,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "startSec": 1945,
+        "endSec": 2110,
+        "why": "A conversation with Cameron Cole, who lost his three-year-old son and wrote 'Therefore I Have Hope.' The point here is that the darkest prayer in the Bible was prayed by God's own Son: on the cross Jesus said the first line of Psalm 22, 'My God, my God, why have you forsaken me' — 'physically agonizing' even to speak, and by quoting that one line he was 'including everything else that this psalm says.' Then Cole pauses on verse 2, 'I cry by day, but you do not answer, and by night I find no rest': 'there's no quick fix here... he's not feeling the happies.' When you cannot pray, you are not outside the Bible — you are inside its most important psalm.",
+        "episodeTitle": "Psalm 22: Lament Psalms (w/ Cameron Cole)",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG7303573431.mp3?updated=1686154567",
+        "durationSec": 2801,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:b4eb4192-dfc0-11ee-bfef-8777c8532f4c",
+        "startSec": 2968,
+        "endSec": 3125,
+        "why": "End here, because this is the most honest close you could ask for. From the Lamentations series: laments are 'a furnace' that throws your belief in God into the fire of suffering, and then — 'Jesus comes on the scene, God Himself... his last words are laments.' They say the truth plainly: 'when we bring our laments to God, resurrection is on the other side. But there's still that stuttering stop, three days in the grave, that pause between the hope of a lament and the resurrection of Jesus that we all are invited into.' No one asks you to skip the pause. That pause is yours to sit in.",
+        "episodeTitle": "Lamentations Overview: What is a Lament?",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG3623907103.mp3?updated=1710173227",
+        "durationSec": 3323,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "That is the whole tour. Notice what it did not do: no one told you to feel better, no one rushed you to hope, no one explained your mother's death. What these voices did instead is put you in the company of Job and Jeremiah, of Mary and Martha, of a father who lost his son, and finally of Jesus himself — the one whose own prayer was 'why have you forsaken me,' and the one who weeps at the reality of death. The pause between lament and resurrection is real, and it is allowed. And if you still cannot pray, you now know the Bible's word for what is happening in you: the Spirit is groaning along with you, wordlessly, until words come back. They do not have to come back today.",
+    "totalSeconds": 1244
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 4240,
+      "promptTokens": 1759,
+      "completionTokens": 408,
+      "reasoningTokens": 217,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 1,
+      "latencyMs": 11335,
+      "promptTokens": 8636,
+      "completionTokens": 1434,
+      "reasoningTokens": 1086,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 2,
+      "latencyMs": 7304,
+      "promptTokens": 15714,
+      "completionTokens": 812,
+      "reasoningTokens": 419,
+      "cachedPromptTokens": 9984,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 3,
+      "latencyMs": 13832,
+      "promptTokens": 21004,
+      "completionTokens": 1463,
+      "reasoningTokens": 1043,
+      "cachedPromptTokens": 16512,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 4,
+      "latencyMs": 19666,
+      "promptTokens": 26820,
+      "completionTokens": 1980,
+      "reasoningTokens": 1547,
+      "cachedPromptTokens": 22400,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 5,
+      "latencyMs": 61178,
+      "promptTokens": 31774,
+      "completionTokens": 5920,
+      "reasoningTokens": 5462,
+      "cachedPromptTokens": 28800,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 6,
+      "latencyMs": 38466,
+      "promptTokens": 39817,
+      "completionTokens": 4228,
+      "reasoningTokens": 3982,
+      "cachedPromptTokens": 37632,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 7,
+      "latencyMs": 41116,
+      "promptTokens": 46442,
+      "completionTokens": 4692,
+      "reasoningTokens": 2856,
+      "cachedPromptTokens": 44032,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "grief and loss of my mother",
+        "limit": 10
+      },
+      "ms": 74,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "can't pray when you're grieving",
+        "limit": 10
+      },
+      "ms": 40,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "lament psalm honest anger at God",
+        "limit": 10
+      },
+      "ms": 83,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "fromSec": 600,
+        "toSec": 780
+      },
+      "ms": 0,
+      "summary": "600s–780s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "fromSec": 90,
+        "toSec": 270
+      },
+      "ms": 4,
+      "summary": "90s–270s of #196 Pain and suffering Part 2 (Classic)"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "where are you God why have you forsaken me"
+      },
+      "ms": 83,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "death of my son grief hope resurrection"
+      },
+      "ms": 43,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 269,
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "toSec": 449
+      },
+      "ms": 0,
+      "summary": "269s–449s of #196 Pain and suffering Part 2 (Classic)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1220,
+        "recordId": "forty-minutes-ot:podcast:444302a2-d904-43b3-a21f-4c7fb0a30dd7",
+        "toSec": 1400
+      },
+      "ms": 3,
+      "summary": "1220s–1400s of Job 2:11-3:26 (Episode 387)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1600,
+        "recordId": "forty-minutes-ot:podcast:bc5051ec-0654-4fc1-b734-545e1a4d0587",
+        "toSec": 1780
+      },
+      "ms": 3,
+      "summary": "1600s–1780s of Job 33:19-34:37 (Episode 414)"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "Spirit intercedes groans too deep for words Romans 8"
+      },
+      "ms": 65,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 250,
+        "recordId": "listeners-commentary:podcast:8f69bf0a-com-59af7369-e75d-395e-85a6-34ac29b8e25e",
+        "toSec": 430
+      },
+      "ms": 0,
+      "summary": "250s–430s of Romans 8:26-39"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1230,
+        "recordId": "ask-nt-wright:podcast:b0f4b5a0-887e-11ee-a8fa-e13f92f1541a",
+        "toSec": 1410
+      },
+      "ms": 1,
+      "summary": "1230s–1410s of #195 Pain and suffering Part 1 (Classic)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1370,
+        "recordId": "listeners-commentary:podcast:a1a084d1-com-06ada9f3-4c3f-3851-9ba5-35f817a4ee6f",
+        "toSec": 1550
+      },
+      "ms": 0,
+      "summary": "1370s–1550s of John 11:1-54"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "Psalm 88 darkest psalm darkness"
+      },
+      "ms": 97,
+      "summary": "10 hits"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1930,
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "toSec": 2110
+      },
+      "ms": 11,
+      "summary": "1930s–2110s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2970,
+        "recordId": "spoken-gospel:podcast:b4eb4192-dfc0-11ee-bfef-8777c8532f4c",
+        "toSec": 3150
+      },
+      "ms": 0,
+      "summary": "2970s–3150s of Lamentations Overview: What is a Lament?"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 820,
+        "recordId": "bibleproject:podcast:powerless-grieving-and-unimportant-beatitudes-pt-2",
+        "toSec": 1000
+      },
+      "ms": 4,
+      "summary": "820s–1000s of Sermon on the Mount E5: The Powerless, Grieving, and Unimportant"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2130,
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "toSec": 2310
+      },
+      "ms": 5,
+      "summary": "2130s–2310s of Some Things I Wish Everyone Knew About Grief"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 0,
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "toSec": 180
+      },
+      "ms": 0,
+      "summary": "0s–180s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1150,
+        "recordId": "forty-minutes-ot:podcast:444302a2-d904-43b3-a21f-4c7fb0a30dd7",
+        "toSec": 1230
+      },
+      "ms": 9,
+      "summary": "1150s–1230s of Job 2:11-3:26 (Episode 387)"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 430,
+        "recordId": "listeners-commentary:podcast:8f69bf0a-com-59af7369-e75d-395e-85a6-34ac29b8e25e",
+        "toSec": 520
+      },
+      "ms": 0,
+      "summary": "430s–520s of Romans 8:26-39"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1440,
+        "recordId": "listeners-commentary:podcast:a1a084d1-com-06ada9f3-4c3f-3851-9ba5-35f817a4ee6f",
+        "toSec": 1560
+      },
+      "ms": 0,
+      "summary": "1440s–1560s of John 11:1-54"
+    },
+    {
+      "at": 6,
+      "name": "episode_info",
+      "args": {
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658"
+      },
+      "ms": 1,
+      "summary": "Some Things I Wish Everyone Knew About Grief (3241s)"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2300,
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "toSec": 2450
+      },
+      "ms": 0,
+      "summary": "2300s–2450s of Some Things I Wish Everyone Knew About Grief"
+    },
+    {
+      "at": 6,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6"
+      },
+      "ms": 1,
+      "summary": "Psalm 22: Lament Psalms (w/ Cameron Cole) (2801s)"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 8,
+    "toolCalls": 28,
+    "promptTokens": 191966,
+    "completionTokens": 20937,
+    "reasoningTokens": 16612,
+    "cachedPromptTokens": 162688,
+    "wallMs": 197677,
+    "modelLatencyMs": 197137,
+    "toolMs": 529
+  },
+  "cost": {
+    "source": "price-table",
+    "inputUsd": 0.012753,
+    "outputUsd": 0.008794,
+    "totalUsd": 0.021547,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported no cost field; cost = tokens x pricing.json (rates are UNVERIFIED placeholders)"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T18:57:42.363Z"
+}

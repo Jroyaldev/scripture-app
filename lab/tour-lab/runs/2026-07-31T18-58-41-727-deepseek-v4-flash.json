@@ -1,0 +1,419 @@
+{
+  "runId": "2026-07-31T18-58-41-727-deepseek-v4-flash",
+  "startedAt": "2026-07-31T18:58:41.728Z",
+  "promptId": null,
+  "prompt": "how does babylon and rome and empire language relate to each other?",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek-v4-flash",
+    "resolution": {
+      "slug": "deepseek-v4-flash",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek-v4-flash",
+      "endpointStyle": "direct",
+      "endpointHost": "api.deepseek.com",
+      "form": "bare",
+      "via": "models-list",
+      "exact": false,
+      "tried": [
+        "deepseek-v4-flash-0731",
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash",
+        "deepseek/deepseek-v4-flash"
+      ],
+      "note": "endpoint does not publish \"deepseek/deepseek-v4-flash-0731\"; fell back to \"deepseek-v4-flash\" (nearest configured/available model). Results are NOT from the exact requested build.",
+      "availableSample": [
+        "deepseek-v4-flash",
+        "deepseek-v4-pro"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Babylon, Rome, and the Language of Empire",
+    "intro": "You've asked one of the great questions of biblical imagination: how does Babylon, an empire that had been dead for centuries, end up standing in for Rome, and why does the Bible keep calling empires by old names? This tour follows the name from the tower at Babel to the book of Revelation, then out into our own world. You'll hear how Babylon becomes an archetype rather than a place, how first-century Jews and the apostle John used it as a deliberate cipher for Rome, and finally why the Bible treats the fall of Rome and the end of the world as one and the same story.",
+    "steps": [
+      {
+        "recordId": "spoken-gospel:podcast:6eef2130-b99a-44e4-8393-8deae06cc493",
+        "startSec": 280,
+        "endSec": 510,
+        "why": "Start at the source: Genesis 11, the tower in the plain of Shinar. This discussion reads Babylon as \"a place of self-worship, autonomy, pride,\" the exact opposite of the Edenic mandate to spread out and be fruitful — \"let's all come together and be in one place and go up instead of out.\" It ends with the crucial move: God scatters the builders, but \"Babylon is not gone or forgotten... Babylon shows up in the book of Revelation. It's not just a city, it's a symbol of all human pride and self-worship,\" and the Babel experiment simply continues in Nebuchadnezzar's Babylon, \"the biggest, brightest, most powerful nation there's ever been.\"",
+        "episodeTitle": "Daniel Introduction",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG2538539015.mp3?updated=1664486072",
+        "durationSec": 2537,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "bibleproject:podcast:day-lord-part-1-whats-deal-babylon",
+        "startSec": 1200,
+        "endSec": 1360,
+        "why": "This is where the term \"archetype\" gets named out loud: \"the rise and fall of Egypt and the rise and fall of Babylon become archetypes of how God is working in all of human history.\" Babylon is the empire that \"has exalted and placed itself to the place of God,\" and when God takes it down, the oppressed go free — which is why \"the end of the world in the Revelation... is described as the fall of Babylon,\" complete with the ten plagues of Exodus \"put in a blender and get recycled.\" This gives you the grammar before you meet Rome.",
+        "episodeTitle": "What's the Deal With Babylon?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/c3471202-004c-4aee-b05c-698ea3ca89a9/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=c3471202-004c-4aee-b05c-698ea3ca89a9",
+        "durationSec": 3879,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:3125",
+        "startSec": 1000,
+        "endSec": 1260,
+        "why": "The hinge of your question. Heiser lays out that Rome \"has inherited dominion from the original Babylon of Daniel's own day,\" making it \"the latest iteration for what the problem is, what this whole system is.\" Then he documents that this wasn't John's invention: second-temple Jewish sources — 2 Baruch, the Sibylline Oracles, 1 Peter 5:13, even the Habakkuk Pesher — \"were using Babylon very specifically for Rome,\" and some went so far as to \"name Rome as the fourth kingdom of Daniel 7.\" He also notes the scholarly debate over whether that equation only took hold after Rome destroyed the temple in AD 70 — that is, Babylon's name attached to Rome because Rome did to Israel \"all over again\" what Babylon had done.",
+        "episodeTitle": "Naked Bible 390: Revelation 17-18",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2021/08/NakedBible390_Revelation17_18.mp3",
+        "durationSec": 3937,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:8c7fcd78-com-fbaa510c-b700-3da6-a1bb-9ff48f5b5463",
+        "startSec": 872,
+        "endSec": 930,
+        "why": "A short, concrete proof that the cipher was ordinary usage, not just apocalyptic showmanship: when Peter writes \"she who is in Babylon,\" the teacher walks through why that's the church in Rome. \"Babylon in the Old Testament was the ultimate enemy of God's people who took them away, took Judah away into captivity, into exile. And thus in Jewish thinking, she sort of became... an archetype of empires that are opponents of God's people and God's way.\" Peter is in Rome, writing to exiles scattered abroad — and he calls Rome Babylon without explanation, because his readers simply knew.",
+        "episodeTitle": "1 Peter 5:6-14",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/5wwst6/1_peter_56-146gtms.mp3",
+        "durationSec": 1055,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:ab7677ef-com-3166a062-7802-37ba-be40-6e0e6f984370",
+        "startSec": 1130,
+        "endSec": 1245,
+        "why": "Now the payoff in Revelation 17: the woman is \"the great city, which reigns over the kings of the earth,\" and \"for the first readers, they immediately would have thought of Rome.\" But note the careful move the teacher makes: Rome was the manifestation of Babylon in John's day, and yet \"while the Roman Empire may have fallen, the end has not come, which means the Babylon spirit continues to work in this world until Jesus, the Lamb Himself, returns and vanquishes all forms of Babylon throughout history.\" The word \"Babylon\" points at Rome and past Rome at once — and the point for the original readers was encouragement: the superpower that made their lives miserable is \"simply a pawn of the beast\" and \"she'd eventually meet her doom.\"",
+        "episodeTitle": "Revelation 17:1-18",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/wtjgj9ixuyupwauu/revelation_171-18bmv4o.mp3",
+        "durationSec": 1471,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:3125",
+        "startSec": 2462,
+        "endSec": 2560,
+        "why": "A sharper definition so \"Babylon\" doesn't flatten into a vague synonym for any big country. Heiser argues from Revelation 17:18 that the description \"excludes Jerusalem, but fits Babylon and Rome very well,\" and concludes the beast and the woman are \"all Babylon, applied to, used as a cipher... by which to talk about Rome.\" His larger claim: chapters 15-18 are \"setting up a final conflict between God and the Babel system. It's not between God and Jerusalem.\" Babylon names the system of nations aligned with the beast — the rebellion worldview Heiser ties to Deuteronomy 32 — that seduces the nations into worshiping it.",
+        "episodeTitle": "Naked Bible 390: Revelation 17-18",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2021/08/NakedBible390_Revelation17_18.mp3",
+        "durationSec": 3937,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:day-lord-part-6-revelation-and-jesus-modern-politics",
+        "startSec": 395,
+        "endSec": 580,
+        "why": "Close by watching the Rome/Babylon distinction dissolve — deliberately. Tim Mackie points out that when Paul writes that the day of the Lord comes \"like a thief in the night while people are saying, peace and safety,\" he's quoting the Pax Romana propaganda: \"This was a public service announcement of the Roman Empire... Peace and safety.\" Paul \"will appeal to the day of the Lord to talk about the Babylon of his day, namely Rome.\" Then the deepest point: \"Was Isaiah talking about the end of the world or the fall of Babylon? And so was Paul talking here about the fall of Rome or Jesus' ultimate return...? And it doesn't seem like he even wants to think about those as separate things because... it's the same narrative story.\" That's the biblical logic that lets one name carry from Babel to Rome to the end of all things.",
+        "episodeTitle": "Revelation and Jesus in Modern Politics",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/15a024a9-20dd-4cb4-9f29-496bc5259d52/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=15a024a9-20dd-4cb4-9f29-496bc5259d52",
+        "durationSec": 3042,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "So the answer to your question is that Babylon is a name that travels. It begins as a literal city and a real empire, becomes in the prophets an archetype of the power that sets itself in God's place, gets worn by Rome when it takes up the same role of temple-destroyer and exile-maker, and in Revelation becomes the name for the whole enduring system of self-worship and anti-Christ empire — which is why the fall of Rome and the fall of Babylon at the end of the age are, in the Bible's way of seeing, the same story. The empire language isn't a code to crack so much as a lens: wherever human power glorifies itself, seduces the nations, and drinks the blood of God's people, you are looking at Babylon, and Babylon's end is already written.",
+    "totalSeconds": 1106
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 4390,
+      "promptTokens": 1740,
+      "completionTokens": 469,
+      "reasoningTokens": 234,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 1,
+      "latencyMs": 20644,
+      "promptTokens": 10232,
+      "completionTokens": 2379,
+      "reasoningTokens": 1978,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 2,
+      "latencyMs": 8969,
+      "promptTokens": 15450,
+      "completionTokens": 979,
+      "reasoningTokens": 499,
+      "cachedPromptTokens": 12544,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 3,
+      "latencyMs": 50387,
+      "promptTokens": 19754,
+      "completionTokens": 5116,
+      "reasoningTokens": 4718,
+      "cachedPromptTokens": 16384,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    },
+    {
+      "i": 4,
+      "latencyMs": 44099,
+      "promptTokens": 26492,
+      "completionTokens": 6000,
+      "reasoningTokens": 6000,
+      "cachedPromptTokens": 24832,
+      "toolCalls": 0,
+      "finishReason": "length",
+      "providerCostUsd": null
+    },
+    {
+      "i": 5,
+      "latencyMs": 44825,
+      "promptTokens": 19092,
+      "completionTokens": 5787,
+      "reasoningTokens": 3993,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": null
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Babylon is Rome",
+        "limit": 10
+      },
+      "ms": 79,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Babylon the great harlot",
+        "limit": 10
+      },
+      "ms": 70,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Rome is Babylon",
+        "limit": 10
+      },
+      "ms": 38,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "empire language Revelation",
+        "limit": 10
+      },
+      "ms": 65,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:6eef2130-b99a-44e4-8393-8deae06cc493",
+        "fromSec": 330,
+        "toSec": 510
+      },
+      "ms": 5,
+      "summary": "330s–510s of Daniel Introduction"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:3091",
+        "fromSec": 1100,
+        "toSec": 1290
+      },
+      "ms": 0,
+      "summary": "1100s–1280s of Naked Bible 384: Revelation 14"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8c7fcd78-com-fbaa510c-b700-3da6-a1bb-9ff48f5b5463",
+        "fromSec": 830,
+        "toSec": 1000
+      },
+      "ms": 1,
+      "summary": "830s–1000s of 1 Peter 5:6-14"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:day-lord-part-1-whats-deal-babylon",
+        "fromSec": 1180,
+        "toSec": 1360
+      },
+      "ms": 0,
+      "summary": "1180s–1360s of What's the Deal With Babylon?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1080,
+        "recordId": "listeners-commentary:podcast:ab7677ef-com-3166a062-7802-37ba-be40-6e0e6f984370",
+        "toSec": 1260
+      },
+      "ms": 0,
+      "summary": "1080s–1260s of Revelation 17:1-18"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1320,
+        "recordId": "listeners-commentary:podcast:ab7677ef-com-3166a062-7802-37ba-be40-6e0e6f984370",
+        "toSec": 1471
+      },
+      "ms": 0,
+      "summary": "1320s–1471s of Revelation 17:1-18"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 330,
+        "recordId": "naked-bible:podcast:3125",
+        "toSec": 520
+      },
+      "ms": 0,
+      "summary": "330s–510s of Naked Bible 390: Revelation 17-18"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2380,
+        "recordId": "naked-bible:podcast:3125",
+        "toSec": 2560
+      },
+      "ms": 0,
+      "summary": "2380s–2560s of Naked Bible 390: Revelation 17-18"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 400,
+        "recordId": "bibleproject:podcast:day-lord-part-6-revelation-and-jesus-modern-politics",
+        "toSec": 580
+      },
+      "ms": 9,
+      "summary": "400s–580s of Revelation and Jesus in Modern Politics"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 280,
+        "recordId": "spoken-gospel:podcast:6eef2130-b99a-44e4-8393-8deae06cc493",
+        "toSec": 360
+      },
+      "ms": 0,
+      "summary": "280s–360s of Daniel Introduction"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1000,
+        "recordId": "naked-bible:podcast:3091",
+        "toSec": 1120
+      },
+      "ms": 0,
+      "summary": "1000s–1120s of Naked Bible 384: Revelation 14"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1250,
+        "recordId": "listeners-commentary:podcast:ab7677ef-com-3166a062-7802-37ba-be40-6e0e6f984370",
+        "toSec": 1335
+      },
+      "ms": 0,
+      "summary": "1250s–1335s of Revelation 17:1-18"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 350,
+        "recordId": "bibleproject:podcast:day-lord-part-6-revelation-and-jesus-modern-politics",
+        "toSec": 430
+      },
+      "ms": 0,
+      "summary": "350s–430s of Revelation and Jesus in Modern Politics"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 6,
+    "toolCalls": 19,
+    "promptTokens": 92760,
+    "completionTokens": 20730,
+    "reasoningTokens": 17422,
+    "cachedPromptTokens": 58752,
+    "wallMs": 173962,
+    "modelLatencyMs": 173314,
+    "toolMs": 268
+  },
+  "cost": {
+    "source": "price-table",
+    "inputUsd": 0.011167,
+    "outputUsd": 0.008707,
+    "totalUsd": 0.019874,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported no cost field; cost = tokens x pricing.json (rates are UNVERIFIED placeholders)"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T19:01:35.690Z"
+}

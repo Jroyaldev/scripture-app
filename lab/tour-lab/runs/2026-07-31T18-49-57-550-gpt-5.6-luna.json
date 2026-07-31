@@ -1,0 +1,485 @@
+{
+  "runId": "2026-07-31T18-49-57-550-gpt-5.6-luna",
+  "startedAt": "2026-07-31T18:49:57.550Z",
+  "promptId": "book-orientation-romans",
+  "prompt": "I'm about to read Romans for the first time. Give me an orientation to the whole letter: what Paul is arguing, who he's arguing with, and how the parts fit together.",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Romans: The Letter’s Argument and Shape",
+    "intro": "Read Romans as a sustained argument rather than a collection of disconnected proof texts. This tour will give you the map, place Paul’s Jew-Gentile tensions in their Roman setting, and then trace the movement from universal need, through God’s faithfulness to Israel, into the shared life Paul wants the Roman churches to embody.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "startSec": 0,
+        "endSec": 520,
+        "why": "Start here for the bird’s-eye map you asked for. The teacher divides Romans into “four big chunks”—chapters 1–4, 5–8, 9–11, and 12–16—and identifies 1:16–17 as “the thesis to the letter,” then explains how the first two movements establish faith in Jesus rather than Torah-keeping as the basis both for being right with God and for Spirit-shaped life.",
+        "episodeTitle": "An Overview of the Letter to the Romans",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/x82wrk/overview.mp3",
+        "durationSec": 1242,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:d09c8ed4-f6cf-11ee-8072-b7002c006746",
+        "startSec": 150,
+        "endSec": 330,
+        "why": "Now hear why this letter has the shape it does. Paul has never visited Rome, is introducing himself before a hoped-for journey to Spain, and is not merely answering isolated church problems: the hosts describe Romans as “a sustained thought” in which Paul makes “a long argument from beginning to end.” They also flag the Jew-Gentile tension Paul is addressing.",
+        "episodeTitle": "Romans Overview: Jesus is King",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG3092543348.mp3?updated=1712708592",
+        "durationSec": 2862,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "startSec": 180,
+        "endSec": 360,
+        "why": "This gives you the controlling human and theological problem behind chapters 1–8. The hosts say Paul is leveling the playing field: Jews and Gentiles alike are “under the power of sin and death,” so both start “on square one” and need rescue. Listen for how Jesus’ reign, rather than ethnic identity or imperial status, creates one family.",
+        "episodeTitle": "Romans Overview: Handed Over To Death",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG3565017248.mp3?updated=1712710406",
+        "durationSec": 2931,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:dc431d46-190e-11ef-9218-8bc4e318e54d",
+        "startSec": 1440,
+        "endSec": 1620,
+        "why": "Use this as the hinge into chapters 9–11, where Paul answers the obvious Jewish objection: if Gentiles share Israel’s promises through faith, has God failed Israel? The clip presents Paul’s conclusion that God’s mercy reaches through disobedience, ends in praise, and calls the reader to humility before “the unsearchable” wisdom of God.",
+        "episodeTitle": "Romans Overview: What Happens to Israel?",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG3311501314.mp3?updated=1716474009",
+        "durationSec": 2673,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:dc431d46-190e-11ef-9218-8bc4e318e54d",
+        "startSec": 1860,
+        "endSec": 2040,
+        "why": "Finish by seeing why chapters 12–16 are not an unrelated appendix. The hosts describe them as the “kingdom ethics” that embody Jesus’ sacrifice in relationships, government, and the church, especially between Jewish and Gentile believers. The practical answer is neither uniform Jewish practice nor uniform Gentile practice, but learning what it means to “serve each other, die for each other, love one another.”",
+        "episodeTitle": "Romans Overview: What Happens to Israel?",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG3311501314.mp3?updated=1716474009",
+        "durationSec": 2673,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "As you read, keep returning to the letter’s movement: the gospel puts Jew and Gentile on the same footing; faith in the Messiah and the Spirit address both guilt and transformed life; God’s faithfulness to Israel remains part of the argument; and mercy becomes a concrete way of life in a mixed community. When Romans turns from explanation to exhortation, Paul is showing what his gospel produces.",
+    "totalSeconds": 1240
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2409,
+      "promptTokens": 1151,
+      "completionTokens": 52,
+      "reasoningTokens": 36,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000048500000000000007
+    },
+    {
+      "i": 1,
+      "latencyMs": 2213,
+      "promptTokens": 1446,
+      "completionTokens": 173,
+      "reasoningTokens": 20,
+      "cachedPromptTokens": 1148,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00015245500000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 3480,
+      "promptTokens": 9253,
+      "completionTokens": 315,
+      "reasoningTokens": 52,
+      "cachedPromptTokens": 1443,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0011796050000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 3259,
+      "promptTokens": 15478,
+      "completionTokens": 339,
+      "reasoningTokens": 62,
+      "cachedPromptTokens": 9250,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001074325
+    },
+    {
+      "i": 4,
+      "latencyMs": 5336,
+      "promptTokens": 21102,
+      "completionTokens": 341,
+      "reasoningTokens": 295,
+      "cachedPromptTokens": 15475,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00106265
+    },
+    {
+      "i": 5,
+      "latencyMs": 4568,
+      "promptTokens": 23115,
+      "completionTokens": 277,
+      "reasoningTokens": 215,
+      "cachedPromptTokens": 21099,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0006291150000000001
+    },
+    {
+      "i": 6,
+      "latencyMs": 3560,
+      "promptTokens": 23942,
+      "completionTokens": 337,
+      "reasoningTokens": 91,
+      "cachedPromptTokens": 23112,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0005369950000000001
+    },
+    {
+      "i": 7,
+      "latencyMs": 6323,
+      "promptTokens": 27241,
+      "completionTokens": 467,
+      "reasoningTokens": 405,
+      "cachedPromptTokens": 23939,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009322650000000002
+    },
+    {
+      "i": 8,
+      "latencyMs": 12931,
+      "promptTokens": 28059,
+      "completionTokens": 1271,
+      "reasoningTokens": 459,
+      "cachedPromptTokens": 27238,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00113753
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 0,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Romans",
+        "chapter": 1,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "20 of 151 moments"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans letter overview Paul argument Jew Gentile gospel righteousness faith",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 121,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans structure chapters 1 8 9 11 12 16",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 47,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "who is Paul arguing with Romans law circumcision Jews Gentiles",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 39,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "fromSec": 0,
+        "toSec": 360
+      },
+      "ms": 2,
+      "summary": "0s–180s of An Overview of the Letter to the Romans"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "fromSec": 0,
+        "toSec": 330
+      },
+      "ms": 4,
+      "summary": "0s–180s of Romans Overview: Handed Over To Death"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:dc431d46-190e-11ef-9218-8bc4e318e54d",
+        "fromSec": 0,
+        "toSec": 300
+      },
+      "ms": 4,
+      "summary": "0s–180s of Romans Overview: What Happens to Israel?"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 12 therefore mercy body living sacrifice chapters 12 15 unity weak strong",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 84,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 9 11 Israel promises Gentiles olive tree whole letter",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 60,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "fromSec": 180,
+        "toSec": 360
+      },
+      "ms": 0,
+      "summary": "180s–360s of An Overview of the Letter to the Romans"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 5 8 Adam Christ Spirit slavery death life argument overview",
+        "sourceId": "spoken-gospel",
+        "limit": 8
+      },
+      "ms": 78,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 12 16 practical application unity church Paul letter conclusion",
+        "sourceId": "spoken-gospel",
+        "limit": 8
+      },
+      "ms": 79,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:784f6fd-com-593cbc4b-91c7-3c8e-8a92-5e869484507f",
+        "fromSec": 0,
+        "toSec": 240
+      },
+      "ms": 0,
+      "summary": "0s–180s of Introduction to Romans 9-11"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:563dc410-com-ce514ba5-aa67-339c-86cc-23a2b5995f8e",
+        "fromSec": 0,
+        "toSec": 180
+      },
+      "ms": 1,
+      "summary": "0s–180s of Romans 15:1-13"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans chapters 12 through 16 therefore practical instructions renewed mind body church unity",
+        "sourceId": "listeners-commentary",
+        "limit": 10
+      },
+      "ms": 68,
+      "summary": "10 hits"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "fromSec": 180,
+        "toSec": 360
+      },
+      "ms": 7,
+      "summary": "180s–360s of Romans Overview: Handed Over To Death"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "fromSec": 340,
+        "toSec": 520
+      },
+      "ms": 3,
+      "summary": "340s–520s of An Overview of the Letter to the Romans"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:dc431d46-190e-11ef-9218-8bc4e318e54d",
+        "fromSec": 1560,
+        "toSec": 1770
+      },
+      "ms": 0,
+      "summary": "1560s–1740s of Romans Overview: What Happens to Israel?"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:dc431d46-190e-11ef-9218-8bc4e318e54d",
+        "fromSec": 1860,
+        "toSec": 2070
+      },
+      "ms": 0,
+      "summary": "1860s–2040s of Romans Overview: What Happens to Israel?"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d09c8ed4-f6cf-11ee-8072-b7002c006746",
+        "fromSec": 150,
+        "toSec": 360
+      },
+      "ms": 0,
+      "summary": "150s–330s of Romans Overview: Jesus is King"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:dc431d46-190e-11ef-9218-8bc4e318e54d",
+        "fromSec": 1440,
+        "toSec": 1620
+      },
+      "ms": 0,
+      "summary": "1440s–1620s of Romans Overview: What Happens to Israel?"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 9,
+    "toolCalls": 23,
+    "promptTokens": 150787,
+    "completionTokens": 3572,
+    "reasoningTokens": 1635,
+    "cachedPromptTokens": 123804,
+    "wallMs": 44709,
+    "modelLatencyMs": 44079,
+    "toolMs": 597
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.006753,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T18:50:42.259Z"
+}

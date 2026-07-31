@@ -1,0 +1,482 @@
+{
+  "runId": "2026-07-31T20-06-56-960-deepseek-v4-flash",
+  "startedAt": "2026-07-31T20:06:56.960Z",
+  "promptId": "text-genesis-6",
+  "prompt": "Walk me through Genesis 6:1-4. Who are the sons of God and the Nephilim, and why is this passage there right before the flood?",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolution": {
+      "slug": "deepseek/deepseek-v4-flash-0731",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek/deepseek-v4-flash-0731",
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash-0731"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "DEEPSEEK_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Genesis 6:1-4: The Sons of God, the Nephilim, and Why the Flood Had to Come",
+    "intro": "This is one of the strangest and most disputed passages in the Bible — four verses that have spawned 3,000 years of debate, a whole library of Second Temple angel lore, and a lot of confident claims that outrun the text. This tour will first map the honest options for who the \"sons of God\" and the Nephilim are, let you hear a cautious voice and a dissenting one, and then follow the passage forward: why it sits exactly here, what it says about how bad things got, and how it echoes through the New Testament. By the end you'll know both what the text does and does not say, and why its placement before the flood matters.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r",
+        "startSec": 1995,
+        "endSec": 2470,
+        "why": "Start with the map, not the answer. Tim and Jon open by saying this is 'a 3,000-year-old conversation' and that 'you join millions of people before you who have been trying to figure out what on earth that story is trying to say.' They read Genesis 6:1-4 aloud and lay out the three classic views of the sons of God — the divine beings of Job's council, the ancient kings who took wives as they pleased, and the 'Sethite view' — while stressing the text's own reserve: 'All it says is in the same time period was the period of when the Nephilim were on the earth.' This gives you the honest frame before anyone argues a case.",
+        "episodeTitle": "Genesis 1-11 Question & Response",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e1d03584-54ec-43f1-a199-59f940b9f1b5/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e1d03584-54ec-43f1-a199-59f940b9f1b5",
+        "durationSec": 2761,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:168c311c-5d5c-11f0-8252-7f9ec715a664",
+        "startSec": 1139,
+        "endSec": 1499,
+        "why": "Now hear a careful scholar think out loud about the angel reading. N.T. Wright pairs Genesis 6 with Job 1-2, where the sons of God are God's 'civil service' — 'the people who run different departments' — and then questions our modern assumption that a spiritual being could have nothing carnal about it: 'because of the residual Platonism of Western culture, we have assumed that what we call spiritual beings would have nothing carnal or physical about them.' He reads the giants as 'a distant memory that there were enormous people... the Goliaths of this world,' and ends with a word of caution worth carrying: 'the Bible doesn't tell us very much about it. We need to be careful of the ground we're treading on.'",
+        "episodeTitle": "Who were \"the sons of God\" in Genesis 6?",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR8906685313.mp3?updated=1752131684",
+        "durationSec": 2194,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "bibleproject:podcast:warnings-from-ancient-rebellions",
+        "startSec": 1465,
+        "endSec": 1645,
+        "why": "This is the bridge between the text and its ancient reception. Tim notes that 'sons of God' as a phrase in the Hebrew Bible 'only ever refers to spiritual beings,' and walks through how Jude retells this story using the version from 1 Enoch — the source that first made the Nephilim the giant offspring of angels. Most importantly, he situates the passage: 'This is the story trying to explain the spreading of violence in the land that began with Cain, increased with Lemech. Why did it get so bad that God had to just wipe everything clean?' That is the exact question your tour is answering.",
+        "episodeTitle": "The Letter of Jude E3: Warnings From Ancient Rebellions",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/004cab63-cc73-4279-8e72-cee9c6528c65/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=004cab63-cc73-4279-8e72-cee9c6528c65",
+        "durationSec": 3114,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "startSec": 1290,
+        "endSec": 1470,
+        "why": "Before the angel reading hardens into consensus, hear the sober dissent. This teacher insists the text does not say what is popularly claimed: 'whoever the Nephilim are, they are not the offspring of the sons of God and the daughters of men. That is a very common way that's been taught, and it's a misreading of this text.' He then moves straight into verse 5 — the wickedness of the human heart — calling it the conclusion of chapters 4, 5, and this opening snapshot of 6, with God's grief described (via John Walton) as an 'audit' of a corrupted account. It models how to read the passage's connection to the flood without importing Enoch.",
+        "episodeTitle": "Genesis 4:1-6:8",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/ba4rg9y6b4ksgv6v/genesis_41-6889j29.mp3",
+        "durationSec": 1767,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:edf9e365-6859-4f4d-947e-9cfc491ea29b",
+        "startSec": 422,
+        "endSec": 760,
+        "why": "Here is the deepest answer to 'why is this passage here.' Spoken Gospel reads the union of sons of God and daughters of men as a reversal of the creation mandate: humanity was supposed to 'be fruitful and multiply and spread the image of God around the world, and the exact opposite is happening through this cross-pollination of these fallen, rebellious mini-gods... a false way to fulfill the command to be fruitful and multiply.' They even risk the Jesus connection — the true God-man, '100% God, 100% man,' born of a virgin, who births a new people through the gospel rather than a corrupted line.",
+        "episodeTitle": "Genesis 6-11: The Flood",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG5000636430.mp3?updated=1664486134",
+        "durationSec": 3274,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "naked-bible:podcast:788",
+        "startSec": 1997,
+        "endSec": 2177,
+        "why": "Michael Heiser states the stakes that made this passage loom so large in biblical history: in Second Temple Judaism, 'the reason for the proliferation of evil is the sin of the watchers' — not just Adam's fall — and he argues Paul's world assumed that reading. He cites 4 Ezra as one of the few dissenting texts, noting that even there the point is that evil became everyone's condition. This explains why the passage haunts the rest of the Bible (Jude, 2 Peter, Revelation), even if you do not adopt Heiser's maximal version — and it is the strongest version of the supernatural reading, set honestly against the dissenters you heard earlier.",
+        "episodeTitle": "Naked Bible 94: The Sin of the Watchers and Galatians 3-4",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2016/04/NakedBible94_SinofWatchers_Galatians.mp3",
+        "durationSec": 4831,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:the-first-time-god-gets-angry",
+        "startSec": 2351,
+        "endSec": 2531,
+        "why": "Land the tour where the passage points: the flood itself. This episode shows that Genesis 6's introduction to the flood is grief, not rage — 'the first time God is depicted as feeling any emotion in the Bible, it's not anger, it's grief and sorrow' — and that the trigger is systemic violence: 'the land was filled with violence... It's like what happened to Cain and Abel went viral.' That is precisely what Genesis 6:1-4 is doing there: it explains how the murderous spiral of Cain and Lamech broke the boundary between heaven and earth, filled the land with the violence of the 'mighty men of renown,' and moved God to grieve, judge, and start over.",
+        "episodeTitle": "The First Time God Gets Angry",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/f27f027e-08e1-4fd4-9de1-e41b2c4455e8/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=f27f027e-08e1-4fd4-9de1-e41b2c4455e8",
+        "durationSec": 3735,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "So the honest summary: the text itself never says the Nephilim are the children of angels and women — that is an interpretation, one the Second Temple world (and many readers since) found compelling enough to build on, and one other careful readers resist. What the passage plainly does is show a world where the boundary between divine and human has been violated, where the mighty are celebrated for violence rather than for bearing God's image, and where things have spiraled so far from the garden that God's grief moves him to wash the slate clean. Whatever you conclude about the sons of God, you can now hear that the passage is there to answer one question: how did it get this bad? And the New Testament's answer, in its own way, is that God came down as the true son of God to undo exactly that mess. Listen at your own pace, and let the disagreement in these voices be a gift — it means the text is still alive.",
+    "totalSeconds": 1893
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2968,
+      "promptTokens": 1772,
+      "completionTokens": 309,
+      "reasoningTokens": 137,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0001062992
+    },
+    {
+      "i": 1,
+      "latencyMs": 17348,
+      "promptTokens": 8019,
+      "completionTokens": 1716,
+      "reasoningTokens": 1414,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0013748392
+    },
+    {
+      "i": 2,
+      "latencyMs": 4280,
+      "promptTokens": 10457,
+      "completionTokens": 422,
+      "reasoningTokens": 148,
+      "cachedPromptTokens": 7936,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0004933208
+    },
+    {
+      "i": 3,
+      "latencyMs": 29646,
+      "promptTokens": 12959,
+      "completionTokens": 2887,
+      "reasoningTokens": 2376,
+      "cachedPromptTokens": 10368,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012001304
+    },
+    {
+      "i": 4,
+      "latencyMs": 8221,
+      "promptTokens": 16708,
+      "completionTokens": 842,
+      "reasoningTokens": 422,
+      "cachedPromptTokens": 12928,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008011584
+    },
+    {
+      "i": 5,
+      "latencyMs": 12872,
+      "promptTokens": 20678,
+      "completionTokens": 1092,
+      "reasoningTokens": 755,
+      "cachedPromptTokens": 16640,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000917672
+    },
+    {
+      "i": 6,
+      "latencyMs": 49192,
+      "promptTokens": 22980,
+      "completionTokens": 4597,
+      "reasoningTokens": 2770,
+      "cachedPromptTokens": 20608,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0016769424
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "GEN",
+        "chapter": 6
+      },
+      "ms": 90,
+      "summary": "25 of 281 moments"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "sons of God Nephilim",
+        "limit": 10
+      },
+      "ms": 115,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Nephilim giants sons of God",
+        "limit": 10
+      },
+      "ms": 93,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 382,
+        "toSec": 562
+      },
+      "ms": 1,
+      "summary": "382s–562s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r",
+        "fromSec": 1995,
+        "toSec": 2175
+      },
+      "ms": 0,
+      "summary": "1995s–2175s of Genesis 1-11 Question & Response"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:why-cant-jacob-and-esau-both-be-blessed",
+        "fromSec": 1331,
+        "toSec": 1511
+      },
+      "ms": 0,
+      "summary": "1331s–1511s of Genesis: Why Can’t Jacob and Esau Both be Blessed? Question and Response"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2175,
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r",
+        "toSec": 2400
+      },
+      "ms": 0,
+      "summary": "2175s–2355s of Genesis 1-11 Question & Response"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1000,
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "toSec": 1180
+      },
+      "ms": 0,
+      "summary": "1000s–1180s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 422,
+        "recordId": "spoken-gospel:podcast:edf9e365-6859-4f4d-947e-9cfc491ea29b",
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "422s–602s of Genesis 6-11: The Flood"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1465,
+        "recordId": "bibleproject:podcast:warnings-from-ancient-rebellions",
+        "toSec": 1645
+      },
+      "ms": 0,
+      "summary": "1465s–1645s of The Letter of Jude E3: Warnings From Ancient Rebellions"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1290,
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "toSec": 1470
+      },
+      "ms": 0,
+      "summary": "1290s–1470s of Genesis 4:1-6:8"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1997,
+        "recordId": "naked-bible:podcast:788",
+        "toSec": 2177
+      },
+      "ms": 5,
+      "summary": "1997s–2177s of Naked Bible 94: The Sin of the Watchers and Galatians 3-4"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 602,
+        "recordId": "spoken-gospel:podcast:edf9e365-6859-4f4d-947e-9cfc491ea29b",
+        "toSec": 760
+      },
+      "ms": 0,
+      "summary": "602s–760s of Genesis 6-11: The Flood"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2351,
+        "recordId": "bibleproject:podcast:the-first-time-god-gets-angry",
+        "toSec": 2531
+      },
+      "ms": 3,
+      "summary": "2351s–2531s of The First Time God Gets Angry"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1139,
+        "recordId": "ask-nt-wright:podcast:168c311c-5d5c-11f0-8252-7f9ec715a664",
+        "toSec": 1319
+      },
+      "ms": 4,
+      "summary": "1139s–1319s of Who were \"the sons of God\" in Genesis 6?"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 45,
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "toSec": 225
+      },
+      "ms": 6,
+      "summary": "45s–225s of God Question & Response 1"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1152,
+        "recordId": "forty-minutes-ot:podcast:a3cf54d8ac6db89ab2eedd131d56e107",
+        "toSec": 1332
+      },
+      "ms": 3,
+      "summary": "1152s–1332s of 40 Minutes In The Old Testament: Episode 11"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "limit": 8,
+        "query": "watchers sons of God Genesis 6 angels",
+        "sourceId": "naked-bible"
+      },
+      "ms": 78,
+      "summary": "8 hits"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1319,
+        "recordId": "ask-nt-wright:podcast:168c311c-5d5c-11f0-8252-7f9ec715a664",
+        "toSec": 1499
+      },
+      "ms": 0,
+      "summary": "1319s–1499s of Who were \"the sons of God\" in Genesis 6?"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1332,
+        "recordId": "forty-minutes-ot:podcast:a3cf54d8ac6db89ab2eedd131d56e107",
+        "toSec": 1512
+      },
+      "ms": 0,
+      "summary": "1332s–1512s of 40 Minutes In The Old Testament: Episode 11"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2400,
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r",
+        "toSec": 2560
+      },
+      "ms": 0,
+      "summary": "2400s–2560s of Genesis 1-11 Question & Response"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 7,
+    "toolCalls": 22,
+    "promptTokens": 93573,
+    "completionTokens": 11865,
+    "reasoningTokens": 8022,
+    "cachedPromptTokens": 71808,
+    "wallMs": 124930,
+    "modelLatencyMs": 124527,
+    "toolMs": 398
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.00657,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T20:09:01.890Z"
+}

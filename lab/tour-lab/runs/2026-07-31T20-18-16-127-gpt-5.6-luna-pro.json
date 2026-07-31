@@ -1,0 +1,738 @@
+{
+  "runId": "2026-07-31T20-18-16-127-gpt-5.6-luna-pro",
+  "startedAt": "2026-07-31T20:18:16.127Z",
+  "promptId": null,
+  "prompt": "what does john mean by new creation; or genesis allusions?",
+  "model": {
+    "key": "gpt-5.6-luna-pro",
+    "label": "GPT-5.6 Luna Pro",
+    "requestedSlug": "openai/gpt-5.6-luna-pro",
+    "resolvedSlug": "openai/gpt-5.6-luna-pro",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna-pro",
+      "requested": "openai/gpt-5.6-luna-pro",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna-pro",
+        "gpt-5.6-luna-pro"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "LUNA_PRO_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "John’s New Creation: Genesis Echoes in the Fourth Gospel",
+    "intro": "This tour listens for the Genesis-shaped architecture of John’s Gospel and follows it into Jesus’ teaching, signs, and resurrection. It moves from John 1’s light, life, and tabernacle imagery to new birth, the healing of blind humanity, and finally the “eighth day” of resurrection and the Spirit’s commission.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:beginning",
+        "startSec": 520,
+        "endSec": 880,
+        "why": "Start with John’s architecture. The speakers say the prologue tells Jesus’ story first through “the language of Genesis 1” and then through “the language of the tabernacle.” That gives you two main Genesis-related lenses—creation and God’s dwelling presence—before you hear how the rest of the Gospel develops them.",
+        "episodeTitle": "In the Beginning – John 1",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/8f0c5975-65cf-4a02-baf0-786ba6649656/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=8f0c5975-65cf-4a02-baf0-786ba6649656",
+        "durationSec": 3671,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "startSec": 340,
+        "endSec": 700,
+        "why": "Now move from structure to meaning. The speakers say, “John begins his gospel with Eden, with new creation,” and trace darkness, light, water, Spirit, Adam, and Jesus as the “new Adam.” Their key proposal is that “life itself has become us,” so Jesus’ incarnation is how John describes God healing and remaking creation.",
+        "episodeTitle": "John 1: In the Beginning Was the Word",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG8007534722.mp3",
+        "durationSec": 3919,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "bibleproject:podcast:anointed-question-and-response",
+        "startSec": 220,
+        "endSec": 400,
+        "why": "This clip takes the Genesis echo into Jesus’ conversation with Nicodemus. It explains the double sense of being born “again” or “from above,” then connects “born of water and the spirit” with the Garden of Eden and with Isaiah’s promise that God will pour out both water and Spirit to bring new life. It shows that John’s allusion is a network, not just a reference to one verse.",
+        "episodeTitle": "The Anointed Question and Response",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/44966189-3eae-410f-aded-16b3ec4f2e71/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=44966189-3eae-410f-aded-16b3ec4f2e71",
+        "durationSec": 3564,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:db54663c-6a8e-11f1-8d65-4723e9decce5",
+        "startSec": 3840,
+        "endSec": 4160,
+        "why": "Here the proposal becomes visible in one of John’s signs: Jesus makes mud, sends the blind man to wash, and gives him sight. The speakers call it “new creation” and say, “God is reenacting the moment of humanity’s creation in Eden there in the dirt.” They also connect the man’s new sight back to Nicodemus: Jesus must “create new creation in you to make you see.”",
+        "episodeTitle": "John Overview: Living Water",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG6305125345.mp3",
+        "durationSec": 4717,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:e1d1cb1c-1ba2-11f0-9e6a-730b0b3fac80",
+        "startSec": 620,
+        "endSec": 760,
+        "why": "Finish with John 20, where the Genesis pattern reaches resurrection and mission. Wright points out John’s repeated “first day of the week” and calls it “the beginning of God’s new creation,” or “the eighth day.” He then links Jesus breathing the Spirit onto the disciples with God breathing life into Adam and explains how the new-creation people are sent to do for the world what Jesus did.",
+        "episodeTitle": "BONUS Subscriber only Easter Show: What does Easter mean for the mission of the Church today? Tom Wright and Mike Bird",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR4249819305.mp3?updated=1749648274",
+        "durationSec": 1578,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "Taken together, these clips present John’s “new creation” as a Genesis-shaped retelling: light and life enter darkness, God dwells among humans, water and Spirit bring new birth, Jesus re-forms humanity, and resurrection opens the eighth day. Listen especially for the way the teachers describe these as layered echoes—Genesis 1, Genesis 2, tabernacle, prophetic restoration, and John 20 all converging on what Jesus is doing.",
+    "totalSeconds": 1360
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 4879,
+      "promptTokens": 5801,
+      "completionTokens": 575,
+      "reasoningTokens": 510,
+      "cachedPromptTokens": 3350,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0006236000000000001
+    },
+    {
+      "i": 1,
+      "latencyMs": 44729,
+      "promptTokens": 7698,
+      "completionTokens": 5583,
+      "reasoningTokens": 4884,
+      "cachedPromptTokens": 4260,
+      "toolCalls": 9,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0037362000000000007
+    },
+    {
+      "i": 2,
+      "latencyMs": 36710,
+      "promptTokens": 76079,
+      "completionTokens": 5599,
+      "reasoningTokens": 4525,
+      "cachedPromptTokens": 49096,
+      "toolCalls": 14,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00654866
+    },
+    {
+      "i": 3,
+      "latencyMs": 37956,
+      "promptTokens": 182266,
+      "completionTokens": 7252,
+      "reasoningTokens": 4984,
+      "cachedPromptTokens": 140576,
+      "toolCalls": 15,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.010789235000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 61863,
+      "promptTokens": 216631,
+      "completionTokens": 10466,
+      "reasoningTokens": 8615,
+      "cachedPromptTokens": 196583,
+      "toolCalls": 16,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.01051868
+    },
+    {
+      "i": 5,
+      "latencyMs": 91707,
+      "promptTokens": 241956,
+      "completionTokens": 20894,
+      "reasoningTokens": 20468,
+      "cachedPromptTokens": 217169,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.01718679
+    },
+    {
+      "i": 6,
+      "latencyMs": 64815,
+      "promptTokens": 239986,
+      "completionTokens": 15474,
+      "reasoningTokens": 14006,
+      "cachedPromptTokens": 222731,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.013237210000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "new creation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 100,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Genesis allusion John",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 98,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "in the beginning creation John",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 122,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "John new creation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 81,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "born again water spirit creation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 119,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "new heavens new earth John",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 77,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 1,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 1,
+      "summary": "16 of 308 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 1,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "40 of 922 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 20,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "10 of 102 moments"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John 20 first day garden breath Spirit",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 179,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John resurrection eighth day new creation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 130,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John signs seven creation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 103,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John 9 mud eyes creation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 127,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John 2 temple tabernacle creation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 142,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John tabernacle dwelling new creation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 91,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John 3 born water Spirit Genesis",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 135,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John garden gardener resurrection Genesis",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 141,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John 20 breath creation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 129,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John Gospel Genesis garden creation allusions",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 131,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John new birth creation Nicodemus",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 119,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 3,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "10 of 160 moments"
+    },
+    {
+      "at": 2,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 9,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "13 of 38 moments"
+    },
+    {
+      "at": 2,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 21,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "7 of 51 moments"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "fromSec": 300,
+        "toSec": 480
+      },
+      "ms": 9,
+      "summary": "300s–480s of John 1: In the Beginning Was the Word"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "fromSec": 480,
+        "toSec": 660
+      },
+      "ms": 0,
+      "summary": "480s–660s of John 1: In the Beginning Was the Word"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "fromSec": 660,
+        "toSec": 840
+      },
+      "ms": 0,
+      "summary": "660s–840s of John 1: In the Beginning Was the Word"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:beginning",
+        "fromSec": 620,
+        "toSec": 800
+      },
+      "ms": 0,
+      "summary": "620s–800s of In the Beginning – John 1"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:beginning",
+        "fromSec": 2240,
+        "toSec": 2420
+      },
+      "ms": 0,
+      "summary": "2240s–2420s of In the Beginning – John 1"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:beginning",
+        "fromSec": 3090,
+        "toSec": 3270
+      },
+      "ms": 0,
+      "summary": "3090s–3270s of In the Beginning – John 1"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:anointed-question-and-response",
+        "fromSec": 280,
+        "toSec": 460
+      },
+      "ms": 0,
+      "summary": "280s–460s of The Anointed Question and Response"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:db54663c-6a8e-11f1-8d65-4723e9decce5",
+        "fromSec": 3800,
+        "toSec": 3980
+      },
+      "ms": 0,
+      "summary": "3800s–3980s of John Overview: Living Water"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:db54663c-6a8e-11f1-8d65-4723e9decce5",
+        "fromSec": 3980,
+        "toSec": 4160
+      },
+      "ms": 0,
+      "summary": "3980s–4160s of John Overview: Living Water"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "fromSec": 520,
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "520s–700s of John 20:1-31"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "fromSec": 700,
+        "toSec": 880
+      },
+      "ms": 0,
+      "summary": "700s–880s of John 20:1-31"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:holy-spirit-part-3",
+        "fromSec": 580,
+        "toSec": 760
+      },
+      "ms": 6,
+      "summary": "580s–760s of Holy Spirit in the New Testament"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:e1d1cb1c-1ba2-11f0-9e6a-730b0b3fac80",
+        "fromSec": 580,
+        "toSec": 760
+      },
+      "ms": 2,
+      "summary": "580s–760s of BONUS Subscriber only Easter Show: What does Easter mean for the mission of the Church today? Tom Wright and Mike Bird"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:303640f0-com-cf827cc1-6e97-304c-8a37-a938ff469245",
+        "fromSec": 480,
+        "toSec": 686
+      },
+      "ms": 3,
+      "summary": "480s–660s of Gospel of John Overview"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:3c0fc244-3dc3-11f1-ab33-5f07c6c92de3",
+        "fromSec": 3030,
+        "toSec": 3230
+      },
+      "ms": 3,
+      "summary": "3030s–3210s of Gospel of John Overview: A Unique Eyewitness"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "fromSec": 340,
+        "toSec": 520
+      },
+      "ms": 0,
+      "summary": "340s–520s of John 1: In the Beginning Was the Word"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "fromSec": 520,
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "520s–700s of John 1: In the Beginning Was the Word"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:beginning",
+        "fromSec": 520,
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "520s–700s of In the Beginning – John 1"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:beginning",
+        "fromSec": 700,
+        "toSec": 880
+      },
+      "ms": 0,
+      "summary": "700s–880s of In the Beginning – John 1"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:anointed-question-and-response",
+        "fromSec": 220,
+        "toSec": 400
+      },
+      "ms": 0,
+      "summary": "220s–400s of The Anointed Question and Response"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:303640f0-com-cf827cc1-6e97-304c-8a37-a938ff469245",
+        "fromSec": 530,
+        "toSec": 686
+      },
+      "ms": 0,
+      "summary": "530s–686s of Gospel of John Overview"
+    }
+  ],
+  "rejections": [
+    {
+      "at": 5,
+      "errors": [
+        "title: required non-empty string",
+        "intro: required, at least 40 characters",
+        "closing: required, at least 30 characters",
+        "steps: required array"
+      ],
+      "submitted": {}
+    }
+  ],
+  "totals": {
+    "modelCalls": 7,
+    "toolCalls": 57,
+    "promptTokens": 970417,
+    "completionTokens": 65843,
+    "reasoningTokens": 57992,
+    "cachedPromptTokens": 833765,
+    "wallMs": 344834,
+    "modelLatencyMs": 342659,
+    "toolMs": 2049
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.06264,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna-pro",
+      "inputPerMTokensUsd": 15,
+      "outputPerMTokensUsd": 120,
+      "cachedInputPerMTokensUsd": 1.5,
+      "_note": "PLACEHOLDER — a guess at a 'pro' multiple over the luna row above, itself a guess. The most expensive row in this file is the least verified one in it. OpenRouter accounts this model's spend itself, so the run record's 'provider' basis is what the ledger actually sums."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T20:24:00.961Z"
+}
