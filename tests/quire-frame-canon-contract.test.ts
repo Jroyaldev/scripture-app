@@ -402,6 +402,110 @@ test("nothing the margin holds, and nothing the panel does, reaches a term of th
 });
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   §05·4, AMENDED 2026-07-31 · the measure holds against the FRAME
+
+   WHAT THE TEST ABOVE SAYS, and every word of it still stands: "A rule
+   conditioned on what the margin CONTAINS, or on whether the study panel is
+   OPEN, may not touch any of them — that is precisely the residue §05·4
+   removes." The offender scan is unchanged and still empty.
+
+   What is new is one property that IS conditioned on the panel — the study
+   column has two residents now, and an expanded player takes up to 520 where
+   the Living Margin takes 380 — and it exists to CANCEL the panel out of the
+   measure's position rather than to feed it in. In the paper's own terms:
+
+       left = (paper − measure block + borrowed) / 2,  paper = rest − borrowed
+
+   so `borrowed` leaves the arithmetic entirely and the measure's left edge is
+   a function of the window alone: the section's own rule, one decision further
+   out than it was written for. The claim is only true if both halves are
+   exact, so both are pinned here rather than left to the prose — the borrow is
+   the column's width minus its RESTING width and nothing else, and the canon
+   consumes it with a plus and a half. Either half written any other way is a
+   passage that moves when the reader opens a player. */
+test("the borrow cancels: the measure's left edge is a function of the window and not of the column's resident", () => {
+  const borrowed = declarationsOf("--study-borrowed");
+  assert.equal(borrowed.length, 2,
+    "the borrow is a resting declaration and one exception, the way --rail-flow-w is");
+
+  const [rest, taken] = borrowed as [[string, string], [string, string]];
+  assert.equal(rest[0], ".app-shell", "the resting case is stated on the shell itself");
+  assert.equal(rest[1], "0px", "at rest the column is at its own width and nothing is borrowed");
+
+  /* Keyed on the FOLDED margin, because the fold is what puts a wider box in
+     the flow. The dock is `position: fixed`; a player expanded over a closed
+     study panel takes width from nothing and must borrow nothing. */
+  assert.equal(taken[0], '.app-shell:has(.living-margin[data-folded="true"])',
+    "the one state that borrows is the one state where a wider resident stands in the flow");
+  assert.equal(taken[1].replace(/\s+/g, " "), "calc(var(--player-column-w) - var(--margin-width))",
+    "the borrow is the column's width beyond its RESTING width; any other subtrahend is a passage that moves");
+
+  // And the canon spends it the one way that cancels: half, added to the
+  // LEADING track — not to the trailing one, and not whole.
+  const centred = declarationsOf("--canon-centred")[0]![1]!.replace(/\s+/g, " ");
+  assert.match(centred, /\(100% - var\(--measure-block\) \+ var\(--study-borrowed\)\) \/ 2/,
+    "the leading track is not (paper − measure block + borrowed) / 2, so the borrow does not cancel");
+  assert.match(centred, /^minmax\(0, clamp\(/,
+    "the anchor must sit inside a minmax, so a paper too narrow for it can still lay out");
+  /* The measure's own guard, and the reason the anchor can never re-wrap the
+     page: a leading track wider than the room the measure block needs is
+     capped before the measure is asked to give. */
+  assert.match(centred, /calc\(100% - var\(--measure-block\)\)\s*\)\)/,
+    "the anchor is not capped at the room the measure block leaves, so a frozen column could squeeze the passage");
+  assert.match(centred, /minmax\(0, var\(--measure-block\)\) minmax\(0, 1fr\)$/,
+    "the measure block is still column 4 and the trailing track is still the 1fr that absorbs the borrow");
+});
+
+/* And the ceiling that makes the anchor reachable. §05·4's shrink order opens
+   "Trailing air to 40", which is the canon already saying how far the air on
+   the right of the measure may be spent — so the column may borrow the right
+   gutter down to that floor and no further. Without this the anchor is a
+   position the paper cannot hold: measured at 1512 with the rail open, the old
+   ceiling left 776.16 of paper for a 692 measure sitting 94 from the paper's
+   left edge, which is 9.84px of overflow, so the guard above would cap the
+   anchor and the passage would move after all. */
+test("the study column may borrow the right gutter, and only down to the trailing-air floor", () => {
+  const column = declarationsOf("--player-column-w")
+    .filter(([selector]) => selector === ".app-shell");
+  assert.equal(column.length, 1, "the column's width is composed in one place");
+  const value = column[0]![1]!.replace(/\s+/g, " ");
+
+  assert.match(value, /^clamp\( var\(--margin-width\), min\( 32vw,/,
+    "the floor is still the margin's own width and 32vw is still one of the two ceilings");
+  assert.match(value, /- var\(--trailing-air-min\)/,
+    "the borrow does not stop at §05·4's own trailing-air floor");
+  assert.match(value, /\) \/ 2/,
+    "the borrow is not HALF the resting gutter's own width; the gutter pays twice over otherwise");
+  assert.match(value, /var\(--margin-width\) \+ \(/,
+    "the ceiling is the resting width plus a borrow, which is the sentence the anchor needs");
+  assert.match(value, /, 520px \)$/, "the composition's own cap is unchanged");
+
+  /* Read the way the engine reads it, at the four windows the amendment was
+     measured at. `A` is what the shell leaves for the paper and the column
+     together; the anchored left gutter is (A − 380 − 692) / 2 and the paper
+     must hold it, the measure block and 40 of trailing air. */
+  const M = 692, REST = 380, FLOOR = 40;
+  const columnAt = (window: number, rail: number): number => {
+    const A = window - rail - 10 - 10;
+    const borrow = (A - REST - M) / 2 - FLOOR;
+    return Math.min(520, Math.max(REST, Math.min(0.32 * window, REST + borrow)));
+  };
+  for (const [window, rail, expected] of [
+    [1280, 232, 380], [1350, 232, 380], [1440, 232, 398],
+    [1512, 232, 434], [1600, 232, 478], [1656, 56, 520],
+  ] as const) {
+    const width = columnAt(window, rail);
+    assert.equal(Math.round(width * 100) / 100, expected,
+      `at ${window} with a ${rail} rail the column is ${width}, not ${expected}`);
+    if (width <= REST) continue;
+    const paper = window - rail - 20 - width;
+    const restGutter = (window - rail - 20 - REST - M) / 2;
+    assert.ok(paper - restGutter - M >= FLOOR - 1e-9,
+      `at ${window}: the anchored measure leaves ${paper - restGutter - M} of trailing air, under the canon's 40`);
+  }
+});
+
+/* ═══════════════════════════════════════════════════════════════════════════
    §05·1 / §05·3 · the closed bottom edge, on every paper in the composition
    ═══════════════════════════════════════════════════════════════════════ */
 

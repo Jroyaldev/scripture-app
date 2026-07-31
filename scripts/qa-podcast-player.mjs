@@ -565,6 +565,11 @@ const DOCK_TRUTH = `(() => {
     // that width is that the passage must not re-wrap. The page's text is
     // max-width bound, so this number is the proof rather than the intent.
     verseWidth: Math.round(document.querySelector(".verse-line")?.getBoundingClientRect().width ?? 0),
+    /* And where it sits, added 2026-07-31 with §05·4's amendment: the ceiling
+       above keeps the LINES, the anchor keeps the PLACE, and a tour that only
+       ever asked about the width is how the 51.92px slide went unmeasured for
+       a day. */
+    verseLeft: Math.round((document.querySelector(".verse-line")?.getBoundingClientRect().left ?? 0) * 100) / 100,
     folded: document.querySelector(".living-margin")?.getAttribute("data-folded") ?? null,
     // The masthead's own top edge. A dock with no max-height could grow past
     // the top of a short window, and the dock clips what it cannot hold — so
@@ -1934,6 +1939,7 @@ const openSheet = await evaluate(`(() => {
     })(),
     bodyTop: Math.round(document.querySelector(".scripture-body").getBoundingClientRect().top),
     verseWidth: Math.round(document.querySelector(".verse-line")?.getBoundingClientRect().width ?? 0),
+    verseLeft: Math.round((document.querySelector(".verse-line")?.getBoundingClientRect().left ?? 0) * 100) / 100,
     measure,
   };
 })()`);
@@ -1968,6 +1974,15 @@ assert.ok((openSheet.measure?.characters ?? 0) >= 52,
    bound, so widening the column spends the stage's side air and stops there. */
 assert.equal(openSheet.verseWidth, beforeSheet.verseWidth,
   `opening the player re-wrapped the reading page: ${beforeSheet.verseWidth} → ${openSheet.verseWidth}`);
+/* Nor is its PLACE bought from it · added 2026-07-31 with §05·4's amendment.
+   The line above has always been the whole of "not bought from the passage",
+   and it was never the whole of it: the passage kept every line and moved
+   51.92px left at this width, because a measure centred in the paper slides by
+   half of whatever the column takes. It is anchored now — the measure holds
+   the position it has at rest and the right gutter pays the borrow — so the
+   two ends of the swap are the same passage in the same place, exactly. */
+assert.equal(openSheet.verseLeft, beforeSheet.verseLeft,
+  `opening the player moved the passage ${Math.round((openSheet.verseLeft - beforeSheet.verseLeft) * 100) / 100}px: ${beforeSheet.verseLeft} → ${openSheet.verseLeft}`);
 console.log("the column swap", openSheet);
 await screenshot("paper-column-open");
 await screenshot("paper-column-folded-tab", ".margin-fold-tab");
@@ -2038,10 +2053,20 @@ console.log("the column at rest", rest);
      1 · ONE EDGE. If the two residents ever disagree about their left edge or
          their width, there are two boxes in the column and not one. This is
          the strongest of the three and it is asserted exactly.
-     2 · THE PAGE HOLDS ITS LINES. A page that holds still at rest and re-wraps
+     2 · THE PAGE HOLDS ITS LINES — and since 2026-07-31 it holds its PLACE.
+         WHAT THIS CLAIM WAS: "A page that holds still at rest and re-wraps
          mid-transition is worse than one that never moves, because the reader
          sees the text jump twice. Every sampled frame must show the same verse
-         box, not just the first and the last.
+         box, not just the first and the last." That was the strongest claim
+         available while the measure was centred in the paper, because the
+         passage genuinely slid — 51.92px at 1512 — and the sampled box could
+         only be its WIDTH and its height.
+         §05·4's amendment makes the position a function of the window alone,
+         so the box sampled here now carries its LEFT EDGE too and the claim is
+         the whole box: the verse box is IDENTICAL through the swap, in every
+         frame of it, in both directions. One distinct box per gesture, or the
+         anchor is not holding. That is a stronger gate than "no re-wrap" by
+         exactly the thing that used to move.
      3 · IT HOLDS THE FRAME. A move that drops frames is a move that reads as a
          stutter no easing can rescue. Width and height cost layout by
          definition here — the reading page genuinely gives up space — so this
@@ -2067,7 +2092,11 @@ const SWAP_FRAMES = (ms) => `(() => new Promise((done) => {
       edge: px(Math.abs((m?.left ?? 0) - (k?.left ?? 0))),
       width: px(Math.abs((m?.width ?? 0) - (k?.width ?? 0))),
       seam: px((k?.top ?? 0) - (m?.bottom ?? 0)),
-      verse: px(v?.width ?? 0) + "x" + px(v?.height ?? 0),
+      /* The whole box, left edge first. The left is what §05·4's amendment
+         pins; the width and height are the re-wrap gate this has always
+         carried, and they stay in the same string so one comparison covers
+         both claims. */
+      verse: px(v?.left ?? 0) + "@" + px(v?.width ?? 0) + "x" + px(v?.height ?? 0),
     });
     if (now - t0 < ${ms}) requestAnimationFrame(tick); else done(frames);
   };
@@ -2093,8 +2122,13 @@ async function watchSwap(what, trigger, gutter) {
     `${what}: the residents' left edges came apart by ${worstEdge}px mid-gesture`);
   assert.ok(worstWidth <= 0.5,
     `${what}: the residents' widths came apart by ${worstWidth}px mid-gesture`);
+  /* One box, left edge included. A second entry here is either a re-wrap or a
+     passage that moved, and §05·4 now forbids both — see the amendment at
+     .scripture-inner and the ceiling it is paid for by. Both widths this loop
+     runs at are the wide shell; the compact band below 979 keeps its own
+     layout and is never sampled here. */
   assert.equal(seen.length, 1,
-    `${what}: the reading page re-wrapped DURING the swap — verse boxes seen: ${seen.join(", ")}`);
+    `${what}: the verse box did not hold through the swap — boxes seen (left@width×height): ${seen.join(", ")}`);
   assert.ok(worstSeam <= 2,
     `${what}: the seam moved ${worstSeam}px off the frame's ${gutter} mid-gesture`);
   /* Two frames' grace at 60fps. The gate is that the move is not dropping

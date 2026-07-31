@@ -1331,7 +1331,21 @@ html, body, #root {
      show through at edges/during transitions. */
   background: var(--bg-primary);
   color: var(--text-primary);
-  transition: background-color var(--transition-slow), color var(--transition-normal);
+  /* --study-borrowed joins the list 2026-07-31, and it is here rather than
+     beside its own declaration because a `transition` on a second .app-shell
+     rule is not a second transition, it is this one deleted. It is the THIRD
+     half of the one gesture — see .living-margin and .podcast-dock, which run
+     the same tier, the same curve and the same duration — and it has to be,
+     because the borrow flips to its final value the instant the fold does
+     while the column's own width takes 240ms to get there. A step function
+     read against an easing curve is the passage sliding out and gliding back,
+     which is a worse fault than the one the anchor removes. In lockstep the
+     two cancel every frame: measured over the whole transition, zero frames in
+     which the verse box differs from its resting box at all. */
+  transition:
+    background-color var(--transition-slow),
+    color var(--transition-normal),
+    --study-borrowed var(--transport-move) var(--ease-transport);
 }
 
 
@@ -1441,25 +1455,137 @@ html, body, #root {
    unchanged, which is the point: this is not a new width, it is the old width
    stopped from being taken out of the passage at the widths nobody measured.
 
-   WHAT IT DOES NOT FIX, and the reader should have it plainly: above 1388 the
-   passage does not re-wrap, but it still MOVES. The measure is centred in the
-   paper (§05·4, the centred canon), so a paper that narrows by N slides the
-   text by N/2 — 51.92px at 1512. No ceiling can take that out; only a measure
-   that stops centring while the player owns the column could, and that is
-   §05·4's decision and not this one's. Motion turns the slide into a glide;
-   it cannot turn it into nothing. */
+   ── The slide is now nothing · RESTATED 2026-07-31 ─────────────────────────
+
+   WHAT THIS SAID, verbatim, and it was right about every part of it except
+   whose decision it was waiting on: "WHAT IT DOES NOT FIX, and the reader
+   should have it plainly: above 1388 the passage does not re-wrap, but it
+   still MOVES. The measure is centred in the paper (§05·4, the centred
+   canon), so a paper that narrows by N slides the text by N/2 — 51.92px at
+   1512. No ceiling can take that out; only a measure that stops centring
+   while the player owns the column could, and that is §05·4's decision and
+   not this one's. Motion turns the slide into a glide; it cannot turn it into
+   nothing."
+
+   §05·4 has ruled — see the amendment at .scripture-inner — and the ruling is
+   that the passage's horizontal position is a function of the WINDOW alone.
+   The measure holds the place it has at rest while a resident borrows width,
+   so the glide is now nothing, which is exactly what that paragraph said only
+   un-centring could buy.
+
+   The half of it that lands HERE is that the ceiling has changed its mind
+   about what the page can spare. It used to be the MEASURE that had to
+   survive, and a measure surviving is not a measure holding still: at 1512
+   the old ceiling left 776.16 of paper for a 692 measure, which keeps every
+   line and still puts the text 51.92px left of where it was. What the page
+   can spare is now what its RIGHT GUTTER can spare, because the anchored
+   measure spends the borrow out of that gutter and out of nothing else:
+
+       borrow ≤ (paper at rest − measure block) / 2 − trailing air
+
+   and this column is the margin's own width plus that borrow. Trailing air is
+   §05·4's own floor, from the shrink order it opens with — "Trailing air to
+   40" — which is the canon already saying how far the air on the right of the
+   measure may be spent. So the column takes the reader's gutter down to the
+   canon's floor and never past it, and where the gutter is already under the
+   floor there is nothing to borrow and the column stays at 380.
+
+   The old air term is not kept beside this one, because it can never bind:
+   with D = paper-at-rest − measure block it is D, this one is D/2 + 150, and
+   D < 300 is the only case where D is the smaller — where this term is under
+   300 and the clamp's floor is what ships either way.
+
+   WHAT IT COSTS, measured in the running app at 884 tall, rail open:
+
+       1440   column 460.8 → 398      right gutter 17.6 → 40, slide 40.4 → 0
+       1512   column 483.84 → 434     right gutter 42.08 → 40, slide 51.92 → 0
+       1600   column 512 → 478        right gutter 72 → 40, slide 66 → 0
+       1656   column 520 → 520        (rail collapsed: nothing to pay)
+
+   The transcript is that much narrower in the band where it binds, and that
+   is the price of the ruling rather than an oversight: a column is allowed to
+   borrow the page's air and is not allowed to borrow the passage's position.
+   REJECTED, with its number: letting the gutter go to zero instead of to 40
+   buys back 40px of column at every one of those widths and puts the text
+   flush against the paper's own edge, ten pixels from the player. */
 .app-shell {
   --player-column-w: clamp(
     var(--margin-width),
     min(
       32vw,
       calc(
-        100vw - var(--rail-flow-w) - var(--pane-gutter) - var(--page-inset)
-        - var(--verse-gutter) - var(--reading-max-width)
+        var(--margin-width)
+        + (
+          100vw - var(--rail-flow-w) - var(--pane-gutter) - var(--page-inset)
+          - var(--margin-width) - var(--verse-gutter) - var(--reading-max-width)
+        ) / 2
+        - var(--trailing-air-min)
       )
     ),
     520px
   );
+
+  /* What the column has actually taken beyond its resting width, which is the
+     one number the anchored measure needs and the only thing it reads about
+     the study column. Written as a pair the way --rail-flow-w above is: the
+     resting case is the declaration, and the one state that is not resting is
+     the exception. It is keyed on the FOLDED margin rather than on the
+     expanded dock because the fold is what puts a wider box in the flow — the
+     dock is `position: fixed` and takes no width from anything, so a player
+     expanded with the study panel closed borrows nothing and must say so.
+
+     Zero in the two shells that keep their own layouts, and by construction
+     rather than by a rule of their own: focus mode renders no study panel at
+     all (`marginVisible && !focusMode` in app.tsx), so there is no resident to
+     borrow; and below 979 the compact band's residents are stacked bands
+     rather than a column, where the ceiling above is already under the floor
+     at every width the band covers — 380 is what ships and 380 is the rest
+     width, so this is 0. */
+  --study-borrowed: 0px;
+}
+
+.app-shell:has(.living-margin[data-folded="true"]) {
+  --study-borrowed: calc(var(--player-column-w) - var(--margin-width));
+}
+
+/* The sheet's first and only registered property, and it is registered for one
+   reason: an unregistered custom property has no type, so it cannot be
+   interpolated — it flips at the halfway point of any transition asked of it,
+   which is the step this exists to remove. A `<length>` that inherits is what
+   it already is; the registration is the engine being told so. The initial
+   value matches the resting declaration above rather than being a second
+   opinion about it. */
+@property --study-borrowed {
+  syntax: "<length>";
+  inherits: true;
+  initial-value: 0px;
+}
+
+/* Both stand-downs drop the borrow off the END of that list and restate
+   nothing else — `transition-property` rather than `transition`, so a shell
+   that later learns a fourth transition cannot have this rule quietly deciding
+   its duration.
+
+   REDUCED MOTION: the anchor LANDS with the column rather than gliding after
+   it. The practice here is that the geometry is untouched and only the travel
+   goes, and the player's tour measures the end state both ways.
+
+   A WINDOW DRAG is TRACKING, not motion, which is the rule the column itself
+   keeps at the foot of this sheet. app.tsx pins --player-column-w for the
+   length of the burst, so the borrow is already constant through it and the
+   passage re-centres against the WINDOW frame by frame — that is the rule
+   working, not an exception to it. This is for the frame before the pin lands,
+   where a resize can still move the clamp and start a 240ms glide inside a
+   drag. It must NOT outlast the burst: on settle the freeze lifts and the
+   column glides to its new clamped width, and the borrow has to glide with it
+   or the two stop cancelling. app.tsx clears the mark first and releases the
+   pin on the following frame, in that order, for exactly this reason. */
+@media (prefers-reduced-motion: reduce) {
+  .app-shell { transition-property: background-color, color; }
+}
+
+:root[data-viewport-resizing] .app-shell {
+  transition-property: background-color, color;
 }
 
 /* A tile like the rest: collapsed, it stands exactly where the brand tile
@@ -4416,14 +4542,120 @@ html, body, #root {
    margin's below 320. Below the margin's 240 the block canon stops being
    offered at all and the page switches canon — the margin closing, in one
    place. The measure is the last thing to yield and yields only below 980,
-   where H's rules take over. */
+   where H's rules take over.
+
+   ── AMENDED 2026-07-31 · the measure centres against the FRAME ─────────────
+
+   THE CENTRED CANON, as this section has said it since the block canon was
+   switched off: "Air, then the reserve closed to nothing, then the measure
+   block, then equal air. Gutter and measure alone, centred in the paper." And
+   the sentence this whole section opens with, which the amendment is made in
+   order to keep: "so the measure's position is a residue of two other
+   decisions: how wide the margin is, and whether the panel is open. It lands
+   slightly right of the page's centre and slightly left of nothing at all —
+   and it moves. That is what the eye is objecting to."
+
+   The paper stopped being a constant when the study column got a second
+   resident. An expanded player takes clamp(380 … 520) where the Living Margin
+   takes 380, so the paper narrows by the difference, so a measure centred in
+   the paper slides by half of it — measured 51.92px at 1512 — every time the
+   reader opens or closes what they are listening to. Centring in the paper had
+   become the residue this section was written to abolish, one decision over:
+   the measure's position was a fact about which resident owned the column.
+
+   THE EXCEPTION, and it is the whole of it: THE PASSAGE'S HORIZONTAL POSITION
+   IS A FUNCTION OF THE WINDOW ALONE. Never of which resident owns the study
+   column, never of whether it is folded or expanded, never of what width the
+   player has taken. The measure centres against the FRAME at rest, and holds
+   against the frame when a resident borrows width.
+
+   The mechanism is one term added to the leading track: the measure sits where
+   it would sit if the column were at its RESTING width — centred against the
+   380px margin — in every state, and the borrow comes out of the right gutter.
+   Written out, with P the paper, M the measure block and b what the column has
+   borrowed beyond 380:
+
+       left  = (P − M + b) / 2        and P = P at rest − b,
+       so    = (P at rest − M) / 2    which has no b in it at all.
+
+   That cancellation is the rule, not a convenience: b leaves the arithmetic
+   entirely, so the same expression holds while the WINDOW moves (the passage
+   re-centres against the frame, which is what it should do) and while the
+   COLUMN moves (the passage does not move at all). It is also what makes the
+   resize freeze harmless: app.tsx pins the column's width for the length of a
+   drag, and a pinned b is still a b that cancels, so the passage tracks the
+   WINDOW through the burst and does not step when the freeze lifts.
+
+   The one place it does not cancel is measured rather than assumed, because it
+   is the only place the guard below can bind. A drag that NARROWS the window
+   holds the column at a width the window can no longer afford — 7f66130's own
+   sentence, "the reading page absorbs the whole delta" — so for those frames
+   the paper is too short for the anchor and the passage drifts left of it.
+   Scripted 1600 → 1384 at 884 tall with the rail open: 161 frames of burst,
+   worst departure 40px at 1510 where the column is frozen at 475 and the paper
+   is 783 against the 826 the anchor wants; the drift is monotone in, monotone
+   out, and every frame after the freeze lifts is within 12.1px and closing to
+   exactly 0. It is smaller than it was before the anchor existed, because the
+   frozen width itself is smaller — the same drag used to pin 512. What the
+   guard buys is that the ANCHOR never takes the measure: below 1414 in that
+   same burst the frozen column leaves 687 of paper for a 692 measure and the
+   line does re-wrap, which is the paper being too small and not the canon
+   choosing to move — the same five pixels short it would be with no anchor in
+   the sheet at all.
+
+   AT REST b IS ZERO and the term is (P − M) / 2, which is the number the 1fr
+   pair resolved to. The resting look is therefore not merely similar, it is
+   the same arithmetic; measured identical to the hundredth of a pixel at 1440,
+   1512 and 1600 in both rail states, and at 900 in the compact band.
+
+   The right gutter is what pays, and §05·4 has already said how far it may:
+   the shrink order above opens "Trailing air to 40", so 40 is the floor and
+   the ceiling on --player-column-w is written from it (see "The slide is now
+   nothing", up the file). The measure therefore never yields to this — a
+   borrow that would reach it is a borrow the column is not allowed to take —
+   and the clamp's upper bound on the track below is the guard that says so in
+   one place rather than trusting the ceiling to be correct.
+
+   SCOPE. The wide shell only, and by construction rather than by a rule of its
+   own: focus mode renders no study panel, so there is no second resident and
+   b is 0 (§05·5 keeps its own canon and this changes nothing about it); below
+   979 the residents are stacked bands rather than a column, the column's own
+   ceiling is under its floor at every width the band covers, and b is 0 there
+   too. THE 1188–1388 BAND, where the ceiling was already stopping the column
+   widening, is where the amendment costs least and it is worth stating exactly
+   rather than waving at. Measured, rail open: at 1280 the column was 380 and
+   is 380, the paper is 648 either way, and nothing whatever changes. At 1350
+   the old ceiling still let it reach 406 and the passage still moved 13px; the
+   column is 380 there now and the passage does not move. The band's resting
+   layout is untouched at every width in it — the same paper, the same tracks,
+   the same verse box — and what it loses is the last of a widening that was
+   being taken out of the passage's position.
+
+   §05·6 is untouched. This is still five tracks, the measure block is still
+   column 4 in both canons, and the leading track is still the only thing that
+   varies — what changed is that it is now a stated position rather than a
+   residue. */
 .scripture-inner {
   /* Air, then the reserve closed to nothing, then the measure block, then
      equal air. "Gutter and measure alone, centred in the paper." The measure
      block yields here and only here, because a paper too narrow to hold it is
-     already H's problem. */
+     already H's problem.
+
+     The leading track carries the amendment above: it is what a 1fr resolves
+     to — half the leftover — plus half of what the study column has borrowed,
+     which is the same thing as saying the measure keeps its resting place. The
+     clamp's upper bound is the measure's own guard: a leading track may never
+     be so wide that the measure block cannot follow it, so the anchor gives
+     way before the passage re-wraps. It never binds at a width the ceiling
+     allows; it
+     binds only for the length of a shrink-drag, where the column is frozen and
+     the page is absorbing the whole delta. */
   --canon-centred:
-    minmax(0, 1fr)
+    minmax(0, clamp(
+      0px,
+      calc((100% - var(--measure-block) + var(--study-borrowed)) / 2),
+      calc(100% - var(--measure-block))
+    ))
     0
     0
     minmax(0, var(--measure-block))

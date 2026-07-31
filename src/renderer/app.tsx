@@ -1903,6 +1903,39 @@ export function App(): React.JSX.Element {
    * TRACKING — one-to-one, no easing, no lag — so the shell is marked for the
    * length of the burst and the transitions stand down. The mark clears a beat
    * after the last resize, which is what returns the swap its motion.
+   *
+   * ── The passage is anchored now · 2026-07-31 ─────────────────────────────
+   *
+   * WHAT THE PARAGRAPH BELOW SAYS, and it is still exactly what happens: "for
+   * the length of the burst the column is FROZEN at its measured width — the
+   * page absorbs the whole delta — and on settle the freeze lifts after the
+   * transitions return, so the column takes its new width as one glide."
+   *
+   * §05·4's amendment makes the measure's position a function of the window
+   * alone: it holds where it would be with the column at its resting width,
+   * and `--study-borrowed` — the column's width minus that resting width — is
+   * what the canon subtracts back out. A FROZEN column is a frozen borrow, and
+   * a frozen borrow still cancels, so the passage keeps re-centring against
+   * the window through the whole burst. Measured over a scripted 1600 → 1384
+   * drag: every settled frame within 12.1px and closing to exactly 0, and the
+   * one departure during the burst is the frames where the pinned column is
+   * simply wider than the narrowed window can afford, which is this
+   * paragraph's own "the page absorbs the whole delta".
+   *
+   * TWO THINGS HERE ARE NOW LOAD-BEARING for that and must not be reordered:
+   *
+   *   · The property pinned is `--player-column-w` and not the column's
+   *     `width`. The borrow is derived from that token, so pinning the token
+   *     keeps the two halves of the cancellation in agreement; pinning the box
+   *     would freeze one half and leave the other live.
+   *   · The mark is cleared BEFORE the pin is released, on the previous frame,
+   *     and that order is what keeps the two halves in the SAME regime. The
+   *     mark stands down two transitions at once — the column's width, and the
+   *     borrow's own on .app-shell — so under the mark both cut and after it
+   *     both glide, and either way they cancel. What would not cancel is a
+   *     mixed regime: one of the two suppressed while the other eases. Adding
+   *     a rule that stands down only one of them re-opens the slide for the
+   *     length of a drag.
    */
   useEffect(() => {
     let settle: number | undefined;
