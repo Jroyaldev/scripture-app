@@ -96,6 +96,24 @@
      take away the only way to switch the episode off. */
   max-height: calc(100vh - var(--frame-top) - 2 * var(--page-inset));
 
+  /* ── One gesture · the player's half ─────────────────────────────────────
+     Added 2026-07-31. The other half is on .living-margin in styles.css, and
+     the WIDTH here is deliberately the same declaration as the width there:
+     same tier, same curve, same duration, started by the same attribute flip
+     in the same style recalculation, running between the same two values. That
+     is what gives the column one left edge at every frame rather than two that
+     arrive together.
+
+     The height is NOT here, and that is the design rather than an omission —
+     see "The sheet is the one that grows" below. This box has no height of its
+     own to animate and must not be given one: it is whatever the masthead, the
+     transport and the rail come to, and the effect that publishes
+     --podcast-dock-h depends on that staying true ("it grows for a chapter
+     line, again while peeking"). A length written here to make the box
+     animatable would freeze the one measurement the study panel's floor is
+     derived from. So the box stays `auto` and the thing inside it moves. */
+  transition: width var(--transport-move) var(--ease-transport);
+
   background: var(--bg-float);
   /* Docked things take a hairline and floating things take the one shadow; this
      is the app's only permanent floating surface, so it takes both — the
@@ -165,27 +183,78 @@
      where the arithmetic is. A 380px column gives a 17px reading serif about
      46 characters; the app gives its own page 60–75. */
   width: var(--player-column-w);
+  /* The sheet's own height is the cap now — see below. Leaving the old one in
+     place would clamp the column to 56vh in the one state that is supposed to
+     fill it. */
+  max-height: none;
+}
+
+/* ── The sheet is the one that grows · RESTATED 2026-07-31 ──────────────────
+
+   WHAT THIS SAID, on a `height` and a `grid-template-rows` that both stood
+   here: "Four rows: the mast, the sheet, the transport and the rail. The sheet
+   is the one that grows, and the other three are the same height they are when
+   the dock is folded — which is what makes the folded and unfolded players the
+   same object rather than two."
+
+   That sentence is exactly right and the declarations underneath it did not
+   say it. They set the BOX to the column's full height and let a `1fr` row
+   take up the slack, which meant the box arrived at the new height in one
+   frame and the sheet was merely what filled it. Nothing could ease: a box
+   whose collapsed height is `auto` has no length to leave from, and giving it
+   one would freeze the measurement the panel's floor is made of (see the
+   transition note on .podcast-dock).
+
+   So the sentence is now the mechanism. The three other rows keep their own
+   heights, the sheet is the only row with a length, and the box is `auto` in
+   both states — which means the box IS the sum, and the sum is what moves:
+
+       collapsed   auto = --podcast-dock-h + 0
+       open        auto = --podcast-dock-h + (column - --podcast-dock-h)
+
+   The second term is the only thing that travels, over --transport-move on
+   --ease-transport, and because the dock is pinned to the frame's bottom inset
+   it travels UPWARD — the player rises to meet the tab that the margin is
+   folding into, one gutter of canvas ahead of it the whole way.
+
+   The subtracted term is --podcast-dock-head-h and NOT --podcast-dock-h, and
+   the difference between those two is the difference between a fact and a
+   reservation. --podcast-dock-h is what the dock takes up when nobody is
+   reading it, frozen at the last shut measurement on purpose so the study
+   panel's floor cannot move when the player opens. --podcast-dock-head-h is
+   what the three other rows come to RIGHT NOW. They differ by 1.55px, because
+   the masthead stops repeating a title the sheet is already showing, and
+   subtracting the frozen one landed the open player 1.55px short of the column
+   in every configuration — measured at 1512 with the margin open, with it
+   closed, and in the compact band. The seam paid for all three. See the effect
+   that publishes them, in PodcastPlayer.
+
+   With the live one the term cancels exactly, which is why the open player
+   lands ON the column's top edge rather than near it. The fallback is the
+   frozen number, for the first frame before anything has been measured.
+
+   `grid-template-rows` is gone with it. Four implicit `auto` rows is what four
+   rows that each know their own height already are, and a `1fr` row inside an
+   `auto` box resizes to max-content, which is a transcript. */
+.podcast-sheet {
+  height: 0;
+  transition: height var(--transport-move) var(--ease-transport);
+}
+
+.podcast-dock[data-expanded="true"] .podcast-sheet {
   height: calc(
     100vh - var(--player-column-top) - var(--page-inset)
-    - var(--margin-fold-h) - var(--pane-gutter)
+    - var(--margin-fold-h) - var(--pane-gutter) - var(--podcast-dock-head-h, var(--podcast-dock-h))
   );
-  /* The height above IS the cap now. Leaving the old one in place would clamp
-     the column to 56vh in the one state that is supposed to fill it. */
-  max-height: none;
-
-  /* Four rows: the mast, the sheet, the transport and the rail. The sheet is
-     the one that grows, and the other three are the same height they are when
-     the dock is folded — which is what makes the folded and unfolded players
-     the same object rather than two. (The two live regions above them are
-     `.sr-only`, which is `position: absolute`, so they are not grid items and
-     do not count here.) */
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
 }
 
 /* With no margin in the shell there is no second resident, so there is no
    folded tab to clear and the player takes the column from its own top. */
-.app-shell:not(:has(.living-margin)) .podcast-dock[data-expanded="true"] {
-  height: calc(100vh - var(--player-column-top) - var(--page-inset));
+.app-shell:not(:has(.living-margin)) .podcast-dock[data-expanded="true"] .podcast-sheet {
+  height: calc(
+    100vh - var(--player-column-top) - var(--page-inset)
+    - var(--podcast-dock-head-h, var(--podcast-dock-h))
+  );
 }
 
 /* A shelved Dock owns the bottom band of the READING STAGE. That band is only
@@ -532,13 +601,25 @@
 /* Grows and shrinks rather than jumping: a zero grid row rather than an
    unmount, so the surface a reader is pointing at animates to its new height
    instead of arriving at it. */
+/* ── One property, not two · RESTATED 2026-07-31 ────────────────────────────
+   WHAT THIS SAID: "Grows and shrinks rather than jumping: a zero grid row
+   rather than an unmount, so the surface a reader is pointing at animates to
+   its new height instead of arriving at it."
+
+   The claim stands and the sheet still animates to its new height instead of
+   arriving at it. What is gone is `grid-template-rows: 0fr ↔ 1fr` easing over
+   --transport-move, because the sheet's own `height` now does exactly that job
+   one level up (see "The sheet is the one that grows"), and two properties
+   easing the same distance on the same curve is the fault this whole pass
+   exists to remove — a fraction of a height, inside a height, both moving.
+
+   The row stays at `1fr`, permanently, so it is not a state at all: whatever
+   the box is, the sheet's contents are that. At `height: 0` that is nothing,
+   which is what the 0fr row was for. */
 .podcast-sheet {
   display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows var(--transport-move) var(--ease-transport);
+  grid-template-rows: 1fr;
 }
-
-.podcast-dock[data-expanded="true"] .podcast-sheet { grid-template-rows: 1fr; }
 
 /* The row opens the height; this settles the contents into it. Opacity leads
    slightly on the way in so the text arrives in a space that is already there
@@ -2154,7 +2235,10 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .podcast-dock { animation: none; }
+  /* `transition: none` added 2026-07-31 with the column swap's motion. The
+     dock lands at the same width, the same height and the same seam as it
+     does with the motion on — the gesture is removed, not the geometry. */
+  .podcast-dock { animation: none; transition: none; }
   .app-shell.focus-mode .podcast-dock,
   .app-shell.focus-mode .podcast-dock :where(
     .podcast-mast, .podcast-rail, .podcast-dock-lines,
@@ -2494,7 +2578,14 @@
      stop. */
   .podcast-dock[data-expanded="true"] {
     width: auto;
-    height: var(--player-compact-h);
+  }
+
+  /* Same mechanism as the column, dated 2026-07-31: the share of the height is
+     spent on the SHEET rather than on the box, so the band opens and closes on
+     the one property the column does and the two forms are one gesture. The
+     box is still exactly --player-compact-h, because it is the sum. */
+  .podcast-dock[data-expanded="true"] .podcast-sheet {
+    height: calc(var(--player-compact-h) - var(--podcast-dock-head-h, var(--podcast-dock-h)));
   }
 
   /* With the room, the plate stops competing: a full-width mast has no width

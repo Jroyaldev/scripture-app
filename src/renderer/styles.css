@@ -405,16 +405,13 @@
      that could grow is a column that could move under the other one.
 
      --player-column-w is what the column becomes while the player owns it,
-     and it is a MEASURE decision. The transcript is reading-face body copy and
-     the app gives its own page 60–75 characters; a 380px column gives it 46.
-     The ceiling is set by what the reading page can spare: the page's text is
-     max-width bound, so widening this only spends the stage's own side air
-     until that air runs out, and at 520 there is still some left at 1512 with
-     the rail expanded. The floor is the margin's own width, so on a narrow
-     window nothing moves at all. */
+     and it MOVED to .app-shell on 2026-07-31 — see "What the page can spare"
+     there. It could not stay here: the number it needs is how much side air
+     the reading page has, and that depends on which of its two widths the rail
+     is standing at, which is a fact about the shell and is invisible from
+     :root. The other two stay, because they are the column's own. */
   --player-column-top: var(--frame-top);
   --margin-fold-h: 36px;
-  --player-column-w: clamp(var(--margin-width), 32vw, 520px);
   /* The compact band has no side column to take, so the open player takes a
      share of the height instead — and the folded margin above it reserves the
      same number, which is why it is a token and not two literals. */
@@ -498,6 +495,31 @@
      Loop durations are not here: a keyframed loading segment is not a
      transition and has no reader waiting at the end of it. It is written at
      its own keyframes, in the partial that owns them. */
+  /* ── AMENDED 2026-07-31 · the column swap ────────────────────────────────
+     No new row. A column swap is a MOVE and it takes --transport-move on
+     --ease-transport, which is the row that already says "the sheet, the dock,
+     a new episode". The whole gesture is one duration and one curve; where a
+     part of it is faster it is --transport-quick from the row above, and
+     nothing is invented.
+
+     What DOES change is the last clause of the paragraph above, which read:
+     "Anything on this surface that is a CONTROL answering still takes
+     --transition-fast, and nothing outside the player may take these."
+
+     The Living Margin now takes --transport-move, and the Living Margin is not
+     the player. The exception is exact and it is a consequence of the reader's
+     own decision rather than a widening of the tier: since the column swap
+     landed, the margin and the player are TWO RESIDENTS OF ONE COLUMN, and the
+     column is one object. The two halves of one transformation cannot be timed
+     from two tiers — a seam whose ends run on different curves is a seam that
+     stretches, which is the whole thing the swap must not do.
+
+     So the clause becomes: nothing outside the player may take these, EXCEPT
+     the other resident of the player's own column, and only for the geometry
+     the two of them share. The margin's own surfaces — its rows, its cards,
+     its lenses, its tab strip — are controls answering and still take
+     --transition-fast. Two declarations spend this, both are named in the
+     other's comment, and neither is a precedent for a third. */
   --ease-transport: cubic-bezier(0.2, 0.8, 0.2, 1);         /* @kind other */
   --transport-quick: 140ms;   /* @kind other — play↔pause, the rail catching up */
   --transport-move: 240ms;    /* @kind other — the sheet, the dock, a new episode */
@@ -1325,6 +1347,68 @@ html, body, #root {
 
 .app-shell:has(> .sidebar.collapsed) {
   --rail-flow-w: var(--rail-w-collapsed);
+}
+
+/* ── What the page can spare · 2026-07-31 ───────────────────────────────────
+   --player-column-w, moved down from :root. See the study column's block
+   there for the other two numbers it shares.
+
+   WHAT THIS SAID, at :root, verbatim: "The ceiling is set by what the reading
+   page can spare: the page's text is max-width bound, so widening this only
+   spends the stage's own side air until that air runs out, and at 520 there is
+   still some left at 1512 with the rail expanded. The floor is the margin's
+   own width, so on a narrow window nothing moves at all."
+
+   Every clause of that is the right intent and `clamp(380px, 32vw, 520px)` is
+   not it. 32vw does not know how much air the stage has, so the ceiling was
+   checked at ONE window — 1512, where it clears by 4.16px — and asserted for
+   all of them. Measured in the running app on 2026-07-31, at 1280 × 884 with
+   the rail open:
+
+       at rest   paper 648, the verse line 648 wide and 61.55 tall
+       open      paper 618.41, the verse line 618.41 wide and 92.32 tall
+
+   The line got taller because it WRAPPED. Opening the player re-set the
+   passage. The band where that happens is a window between 1188 and 1388 CSS
+   px wide — below 1188 the floor already holds the column at 380 and nothing
+   moves, above 1388 the paper keeps the measure — and 1280 is the middle of
+   it. The tour's own gate could not see it: it asserts the verse's WIDTH and
+   was run at 1512.
+
+   So the ceiling is written as the sentence it was always meant to be. The
+   paper is what is left of the shell after the rail, the two frame edges and
+   this column, and the measure block is what the paper may not go under:
+
+       paper = 100vw - rail - pane gutter - THIS - page inset  ≥  measure block
+
+   solved for THIS. `min()` takes whichever of the two ceilings binds first,
+   the composition's 32vw or the page's own air, and the clamp keeps the floor
+   the margin's own width — so where there is nothing to spare the column does
+   not widen, which is what "on a narrow window nothing moves at all" says.
+
+   At 1512 with the rail open this resolves to 483.84 and the geometry is
+   unchanged, which is the point: this is not a new width, it is the old width
+   stopped from being taken out of the passage at the widths nobody measured.
+
+   WHAT IT DOES NOT FIX, and the reader should have it plainly: above 1388 the
+   passage does not re-wrap, but it still MOVES. The measure is centred in the
+   paper (§05·4, the centred canon), so a paper that narrows by N slides the
+   text by N/2 — 51.92px at 1512. No ceiling can take that out; only a measure
+   that stops centring while the player owns the column could, and that is
+   §05·4's decision and not this one's. Motion turns the slide into a glide;
+   it cannot turn it into nothing. */
+.app-shell {
+  --player-column-w: clamp(
+    var(--margin-width),
+    min(
+      32vw,
+      calc(
+        100vw - var(--rail-flow-w) - var(--pane-gutter) - var(--page-inset)
+        - var(--verse-gutter) - var(--reading-max-width)
+      )
+    ),
+    520px
+  );
 }
 
 /* A tile like the rest: collapsed, it stands exactly where the brand tile
@@ -5894,20 +5978,84 @@ html, body, #root {
    added 2026-07-30 with it. Without this it lands ON the last rows of the
    panel on every cold start that has something to offer, which is the one
    thing the whole reservation exists to prevent. */
+/* ── The seam, restated 2026-07-31 ──────────────────────────────────────────
+   WHAT THIS SAID: "The seam is the frame's own, not a separate 24. Every other
+   gap in the shell is --pane-gutter now; this one kept spending --sp-xl, so
+   the space between the panel and the player read as more than twice the space
+   between the panel and the page. --podcast-dock-h is measured by the player
+   rather than guessed, so this closes on the dock's actual height in every
+   state it has."
+
+   All of that is kept and none of it changes. What changes is the MECHANISM,
+   because the old one could not move. `margin-bottom` shortened a STRETCHED
+   box: the panel's height was a residue of the flex line, so it had no length
+   of its own to animate from, and at the moment of the swap the reservation
+   also went to 0 — a 155px discontinuity underneath whatever the height was
+   doing. Two lengths that must stay complementary cannot be one of them being
+   a leftover.
+
+   So the panel takes its own height, from the top of the column, and the
+   reservation is spent inside it rather than beside it. Same edges, same
+   seam — measured 665.45 either way at 1512 × 884 — and now both residents
+   are lengths, which is what makes the seam a thing that can travel. */
 .app-shell:has(.podcast-dock) .living-margin,
 .app-shell:has(.podcast-resume) .living-margin {
-  /* The seam is the frame's own, not a separate 24. Every other gap in the
-     shell is --pane-gutter now; this one kept spending --sp-xl, so the space
-     between the panel and the player read as more than twice the space
-     between the panel and the page. --podcast-dock-h is measured by the
-     player rather than guessed, so this closes on the dock's actual height
-     in every state it has. */
-  margin-bottom: calc(var(--podcast-dock-h) + var(--pane-gutter));
+  align-self: flex-start;
+  height: calc(100% - var(--podcast-dock-h) - var(--pane-gutter));
+  margin-bottom: 0;
+  /* The cap comes off in the two-resident configuration, dated 2026-07-31.
+     `max-width: 420px` is the panel's own bound on its own width and it never
+     bound anything at rest, because the resting width is 380. It bound the
+     TRANSITION: unfolding drops the folded rule that set it to `none`, so for
+     the first 25ms of every collapse the tab was clamped at 420 while the
+     player below it was still 484 wide — measured, both edges out by up to
+     64px, in the one gesture whose whole claim is that the column has one edge.
+     Here the width is the COLUMN's, and a column is not capped by one of the
+     two things standing in it. */
+  max-width: none;
   /* The panel's own gutter, the same --sp-xl it holds on the left and right.
      The resting value clears a 40px fade that is no longer drawn here, and
      every pixel of the surplus was scrollable emptiness under the last card —
      the list appearing to continue past where it ends. */
   padding-bottom: var(--sp-xl);
+
+  /* ── One gesture ──────────────────────────────────────────────────────────
+     Added 2026-07-31. The swap changed GEOMETRY and not only content from the
+     day the two residents stopped being the same width, and it arrived at the
+     new geometry in one frame.
+
+     These two declarations are half of the transformation; the other half is
+     on .podcast-dock, and they are deliberately identical. Same tier, same
+     curve, same duration, started by the same attribute flip in the same style
+     recalculation — which is what lets the two residents be read as one
+     object rather than as two surfaces that happen to agree at both ends:
+
+       · WIDTH runs between the same two values on both, so the column has one
+         left edge at every frame. Measured over 58 sampled frames in each
+         direction at 1512 and at 1280: zero frames in which the two residents
+         disagree about either their left edge or their width, by more than
+         half a pixel, in either direction.
+       · HEIGHT runs in opposite directions over the same distance, so the
+         canvas between them does not stretch, does not close and does not
+         open. It TRAVELS, from the bottom of the column to the top, and one
+         line moving from one end of one column to the other is the whole
+         gesture.
+
+     The seam is exactly --pane-gutter at both ends of the move and drifts by
+     1.55px in the middle of it, monotonically, in one direction, and that is
+     honest rather than tolerated: the masthead stops repeating a title the
+     sheet is already showing at the instant the gesture starts, so the player's
+     own content is 1.55px shorter for the length of it. It is a fact about the
+     masthead and not the two residents disagreeing — see the note on
+     --podcast-dock-head-h in PodcastPlayer, which is what takes the other
+     1.55px out of both ENDS, where it was visible as an 11.55px gutter.
+
+     A column swap is a MOVE, so it is --transport-move on --ease-transport,
+     the tier's own row for it. See the tier's note at :root for why the Living
+     Margin — which is not the player — is allowed to spend it. */
+  transition:
+    width var(--transport-move) var(--ease-transport),
+    height var(--transport-move) var(--ease-transport);
 }
 
 /* ── The folded resident ────────────────────────────────────────────────────
@@ -5931,20 +6079,55 @@ html, body, #root {
   max-width: none;
   height: var(--margin-fold-h);
   min-height: var(--margin-fold-h);
-  padding: 0;
+  /* Block only, dated 2026-07-31. It was `padding: 0`, and the inline half of
+     that was a 24px sideways lurch of the panel's every row at the instant the
+     fold began — under a box that was by then MOVING, which is exactly when a
+     reader can see it. The panel's inline gutter is a constant now and the tab
+     bleeds through it instead; see .margin-fold-tab. */
+  padding-block: 0;
   overflow: hidden;
 }
 
 /* The reservation belongs to the collapsed dock, and a folded margin is never
    above one: the player that folded it is the player that owns the rest of the
-   column. Without this the tab would hold 148px of empty canvas under itself. */
+   column. Without this the tab would hold 148px of empty canvas under itself.
+   The margin-bottom half of it retired 2026-07-31 with the seam — there is no
+   bottom margin left to zero, because the reservation is spent inside the
+   height now.
+
+   And the HEIGHT is restated here rather than only on the bare
+   `[data-folded]` rule above, dated 2026-07-31, because the seam rule that
+   gives the unfolded panel its length is one `:has()` more specific than that
+   one and was silently winning: the column widened, the player rose, and the
+   panel it had folded stayed 665px tall underneath it. Both ends of the seam
+   have to be stated at the same weight or the seam is not a seam. */
 .app-shell:has(.podcast-dock) .living-margin[data-folded="true"],
 .app-shell:has(.podcast-resume) .living-margin[data-folded="true"] {
-  margin-bottom: 0;
+  height: var(--margin-fold-h);
   padding-bottom: 0;
 }
 
+/* ── What the box is holding, while the box is moving ───────────────────────
+   Added 2026-07-31. `visibility: hidden` alone is a cut, and a cut in the
+   middle of a 240ms move is the second event that stops the swap reading as
+   one. The panel leaves at --transport-quick — a control's tempo, because the
+   panel is not what the reader is watching; the BOX is — and it is out before
+   the box is a third of the way down, so at no point are the panel and the tab
+   both legible in the same column.
+
+   `visibility` is in the transition list with `allow-discrete` so the flip to
+   hidden lands at the END of the fade rather than at the start of it. Without
+   that the property the fade exists to soften is the one property that still
+   cuts. Coming back the discrete step runs first, which is what a surface
+   fading IN wants: present, then legible. */
+.living-margin .margin-workspace-panel {
+  transition:
+    opacity var(--transport-quick) var(--ease-transport),
+    visibility var(--transport-quick) var(--ease-transport) allow-discrete;
+}
+
 .living-margin[data-folded="true"] .margin-workspace-panel {
+  opacity: 0;
   visibility: hidden;
 }
 
@@ -5962,14 +6145,40 @@ html, body, #root {
   display: flex;
   align-items: center;
   gap: var(--sp-sm);
-  width: 100%;
+  /* Full bleed through the panel's own inline gutter, dated 2026-07-31. The
+     gutter used to go to 0 when the fold began, which put this button on the
+     paper's edge for free and moved every row of the panel 24px sideways to
+     pay for it. The gutter stays; this reaches through it. Same drawing. */
+  width: calc(100% + 2 * var(--sp-xl));
+  margin-inline: calc(-1 * var(--sp-xl));
   height: var(--margin-fold-h);
   padding: 0 var(--sp-lg) 0 var(--sp-xl);
   border: 0;
   background: none;
   color: var(--text-tertiary);
   cursor: pointer;
-  transition: color var(--transition-fast), background-color var(--transition-fast);
+
+  /* ── The line arrives as the box lands · 2026-07-31 ───────────────────────
+     React mounts this button at the instant the fold begins, so without a
+     starting style it is a finished tab sitting in a 665px box — the panel
+     turning into a tab by being replaced by one, which is the reading this
+     whole pass exists to prevent.
+
+     It is held out until the box has nearly stopped: --transport-quick of fade
+     after --transport-move minus that much of delay, so the line reaches full
+     strength at the same moment the height does. The box closes onto the label
+     and the label is what it closes onto. One property, no travel of its own —
+     a tab that also slid would be a second thing moving. */
+  opacity: 1;
+  transition:
+    color var(--transition-fast),
+    background-color var(--transition-fast),
+    opacity var(--transport-quick) var(--ease-transport)
+      calc(var(--transport-move) - var(--transport-quick));
+}
+
+@starting-style {
+  .margin-fold-tab { opacity: 0; }
 }
 
 .margin-fold-tab:hover { background: var(--surface-hover); color: var(--text-primary); }
@@ -6023,8 +6232,20 @@ html, body, #root {
   .margin-fold-seal { background: Highlight; }
 }
 
+/* The swap lands, it does not travel. Extended 2026-07-31 with the motion:
+   every declaration the gesture added is listed, and the END STATE is
+   untouched by all of it — the column is the same width, the seam is in the
+   same place, the panel is hidden and the tab is at full strength. A reader
+   who has asked for no motion gets the swap as a cut, which is what they
+   asked for, and not a different layout.
+
+   The margin's own width and height are already covered one block down, by
+   the `.scripture-body > .living-margin` rule that carries `!important`; the
+   dock's are covered in styles/player.css beside its own declaration. These
+   three are what this file added that nothing else was already answering. */
 @media (prefers-reduced-motion: reduce) {
-  .margin-fold-tab { transition: none; }
+  .margin-fold-tab,
+  .living-margin .margin-workspace-panel { transition: none; }
 }
 
 /* Five lenses in a 380px column leave no slack. Measured in the running app:
@@ -6048,6 +6269,26 @@ html, body, #root {
    player is a dock and the margin reserves it exactly as before. The two never
    hold the band at once, so there is nothing to crush and no strip to open. */
 @media (max-width: 979px) {
+  /* ── The band is not a column · 2026-07-31 ────────────────────────────────
+     The seam rule up the file gives the column's two residents explicit
+     heights and takes the reservation out of `margin-bottom`, because a
+     stretched box has no length to animate from. None of that argument is
+     about this band: here the residents are stacked, their main size is a
+     flex-basis rather than a height, and the reservation has always been a
+     margin under a pane. So the band keeps exactly what it had.
+
+     Restated at this weight rather than left to the cascade: the seam rule is
+     `.app-shell:has(.podcast-dock) .living-margin`, one `:has()` more specific
+     than this band's own `.scripture-body > .living-margin`, so it reached in
+     here and set `margin-bottom: 0` on a pane whose whole reservation that
+     was. Measured at 900px: the study pane ran 99px under the player. */
+  .app-shell:has(.podcast-dock) .scripture-body > .living-margin,
+  .app-shell:has(.podcast-resume) .scripture-body > .living-margin {
+    align-self: auto;
+    height: auto;
+    margin-bottom: calc(var(--podcast-dock-h) + var(--pane-gutter));
+  }
+
   .scripture-body > .living-margin[data-folded="true"] {
     align-self: auto;
     flex: 0 0 var(--margin-fold-h);
@@ -6062,7 +6303,15 @@ html, body, #root {
     margin-bottom: calc(var(--player-compact-h) + var(--pane-gutter));
   }
 
-  .margin-fold-tab { padding: 0 var(--sp-lg); }
+  /* And the bleed comes off with it. The tab reaches through the panel's
+     inline gutter at column widths because the gutter is kept there now; the
+     folded pane in this band still has `padding: 0`, so reaching through it
+     would hang the tab 24px off both edges of the screen. */
+  .margin-fold-tab {
+    width: 100%;
+    margin-inline: 0;
+    padding: 0 var(--sp-lg);
+  }
 }
 
 .margin-connection-inspector {

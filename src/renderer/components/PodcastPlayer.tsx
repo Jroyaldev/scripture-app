@@ -1268,6 +1268,61 @@ export function PodcastPlayer({
    * Written to the shell rather than to :root, so a second player could never
    * write over the first one's number.
    */
+  /**
+   * The other number: the dock WITHOUT its sheet, in whatever state it is in.
+   *
+   * Added 2026-07-31 with the swap's motion, and it is a different number from
+   * --podcast-dock-h even though the arithmetic looks the same. That one is a
+   * RESERVATION — what the dock takes up when nobody is reading it — and it is
+   * deliberately frozen at the last shut measurement, because the study panel's
+   * floor must not move when the player opens. This one is a FACT about right
+   * now, and the open player's sheet is sized from it.
+   *
+   * They differ by 1.55px, measured at 1512 × 884, and the comment above
+   * predicted exactly why: "the collapsed dock is genuinely a pixel shorter
+   * while the sheet is open — the corner stops repeating a title the sheet is
+   * already showing". `.podcast-dock-body` is 71.55 shut and 70.00 open.
+   *
+   * That 1.55 is the whole reason this exists. The open player's height is
+   * head + sheet, and if the sheet is sized from the frozen reservation the
+   * player lands 1.55px short of the column it is supposed to fill — which the
+   * seam pays for, at 11.55px between the residents instead of the frame's 10,
+   * in every configuration (measured: margin open, margin closed, and the
+   * compact band, all three off by the same amount).
+   *
+   * Subtracting is safe HERE and was not safe there. The objection to
+   * `round(whole − sheet)` was that it lands on 143 in one state and 142 in the
+   * other and twitches the panel's floor; nothing about this number reaches the
+   * panel's floor, and it is published unrounded.
+   *
+   * IT IS PUBLISHED FROM A LAYOUT EFFECT, not only from the observer, and that
+   * is the point of it being a callback. The masthead loses its line in the
+   * same commit that starts the move, and a ResizeObserver is by definition a
+   * frame behind — so the first frames of every swap were sized from the head
+   * the dock had a moment ago. Measured before this: the seam sat 1.55px off
+   * for the first ~50ms of each direction and then converged, which is a seam
+   * that changes width during a gesture whose whole claim is that it does not.
+   * Read in the commit that changes it, there is nothing to converge from.
+   */
+  const publishDockHead = (): void => {
+    const box = dockBoxRef.current;
+    const shell = box?.closest<HTMLElement>(".app-shell");
+    if (!box || !shell) return;
+    const head = box.getBoundingClientRect().height
+      - (sheetRef.current?.getBoundingClientRect().height ?? 0);
+    const next = `${Math.round(head * 100) / 100}px`;
+    if (shell.style.getPropertyValue("--podcast-dock-head-h") === next) return;
+    shell.style.setProperty("--podcast-dock-head-h", next);
+  };
+
+  /* Keyed on the swap and nothing else. Every other reason the head can change
+     is a resize, which the observer below already sees in time; this exists for
+     the ONE change that happens in the same commit as the move and would
+     otherwise be seen a frame late. Reading layout on every render of a
+     component whose clock re-renders it four times a second would be a
+     forced reflow four times a second, for no frame that needs it. */
+  useLayoutEffect(publishDockHead, [expanded]);
+
   useEffect(() => {
     const box = dockBoxRef.current;
     const shell = box?.closest<HTMLElement>(".app-shell");
@@ -1290,15 +1345,52 @@ export function PodcastPlayer({
 
          Holding the last shut measurement is also the honest statement of what
          this number IS: what the dock reserves, which is what it takes up when
-         nobody is reading it. */
+         nobody is reading it.
+
+         ── AND WHILE IT IS MOVING · 2026-07-31 ──────────────────────────────
+         Both reasons above are kept, and a third condition joins them, because
+         the swap now takes 240ms instead of one frame.
+
+         The state guard alone is right on the way OPEN and wrong on the way
+         BACK. `expandedRef` goes false at the first frame of the collapse,
+         while the box is still most of a column tall — so every resize tick of
+         the closing animation published a height between 772 and 145 as
+         "what the dock reserves when nobody is reading it". Measured before
+         this line existed: the study panel's own target height was rewritten
+         on every frame of the collapse, so its transition restarted on every
+         frame and it crawled — 21% of the way back while the player was 72% of
+         the way down. The seam between the two residents, which is supposed to
+         be 10px in every frame of the swap, opened to 316.
+
+         The sheet's height is the settle signal, and it is the right one: the
+         number is defined as the box WITHOUT the sheet, so the box is only
+         worth measuring when there is no sheet in it. Reason two above is why
+         this cannot replace the state guard — on the way open the sheet is
+         still at zero for a frame while the masthead has already lost its
+         line — so it stands beside it rather than instead of it. */
       if (expandedRef.current) return;
+      if ((sheetRef.current?.getBoundingClientRect().height ?? 0) > 0.5) return;
+      /* Two decimal places rather than whole pixels, dated 2026-07-31, and the
+         reason is arithmetic rather than precision. This number is now on both
+         sides of one sum: the open sheet is the column LESS this, and the open
+         box is this PLUS the sheet. Rounded, the two do not cancel — measured
+         at 1280 × 884 the collapsed box is 143.55 and the published 144 made
+         the open player 2px short of the column, which the seam paid for: 12px
+         of canvas between the residents instead of the frame's 10, constant
+         through the whole transition and wrong at both ends of it.
+
+         Whole pixels were never the point. The rounding was here to keep the
+         panel's floor from twitching, and the thing that twitched was
+         `round(whole − sheet)` flipping between 143 and 142 — a subtraction
+         this still does not do. */
       shell.style.setProperty(
         "--podcast-dock-h",
-        `${Math.round(box.getBoundingClientRect().height)}px`,
+        `${Math.round(box.getBoundingClientRect().height * 100) / 100}px`,
       );
     };
-    publish();
-    const observer = new ResizeObserver(publish);
+    const publishBoth = (): void => { publish(); publishDockHead(); };
+    publishBoth();
+    const observer = new ResizeObserver(publishBoth);
     observer.observe(box);
     if (sheetRef.current) observer.observe(sheetRef.current);
     return () => {
@@ -1306,6 +1398,7 @@ export function PodcastPlayer({
       /* Back to the sheet's own value when the player leaves, rather than
          leaving the last measured height behind as a floor nothing stands on. */
       shell.style.removeProperty("--podcast-dock-h");
+      shell.style.removeProperty("--podcast-dock-head-h");
     };
     /* The resume offer takes the same reservation, because it stands in the
        same lane: without this it would sit ON the last rows of the study panel

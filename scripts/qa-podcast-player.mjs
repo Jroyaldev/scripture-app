@@ -530,9 +530,25 @@ const DOCK_TRUTH = `(() => {
     // What the panel gives up to the player, and what is actually left between
     // them. The reservation moved from padding to margin when the panel stopped
     // growing a floor and started ENDING above the player.
+    //
+    // RESTATED 2026-07-31 with the swap's motion, and the claim is unchanged:
+    // this is still "what the panel gives up to the player", still measured
+    // against the dock's own height rather than a guess. What moved is where
+    // the reservation is SPENT. It was margin-bottom on a stretched box, and
+    // a stretched box has no length of its own to animate from — so the panel
+    // now takes an explicit height from the top of the column with the
+    // reservation inside it, and the computed marginBottom reads 0 in every
+    // state rather than the number this is about.
+    //
+    // Read off the frame instead of off one declaration, which is the better
+    // probe either way: the reservation IS the distance from the panel's
+    // bottom edge to the frame's own bottom inset, whichever property is
+    // holding it open. Same number, one mechanism less to be wrong about.
     marginFloor: (() => {
       const margin = document.querySelector(".living-margin");
-      return margin ? Math.round(parseFloat(getComputedStyle(margin).marginBottom)) : null;
+      if (!margin) return null;
+      const inset = Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--page-inset")) || 0);
+      return Math.round(window.innerHeight - inset - margin.getBoundingClientRect().bottom);
     })(),
     marginClearance: (() => {
       const margin = document.querySelector(".living-margin");
@@ -1720,6 +1736,16 @@ console.log("the column swap", openSheet);
 await screenshot("paper-column-open");
 await screenshot("paper-column-folded-tab", ".margin-fold-tab");
 
+/* ── The seam is the frame's own ─────────────────────────────────────────────
+   Added 2026-07-31 with the swap's motion. The gate above says the player
+   begins one gutter below the tab; this says the gutter is the gutter. It was
+   1.55px wider than that in every open state and at every width until the
+   sheet stopped being sized from the frozen reservation — see
+   --podcast-dock-head-h in PodcastPlayer. `equal` on a rounded pixel rather
+   than a range, because a range is what let 11.55 sit here unnoticed. */
+assert.equal(openSheet.dock.top - openSheet.margin.bottom, openSheet.gutter,
+  `the seam between the residents is ${openSheet.dock.top - openSheet.margin.bottom}px, not the frame's ${openSheet.gutter}`);
+
 /* THE SWAP ITSELF, mid-gesture. Both residents are moving here — the tab
    unfolding downward and the player folding back into its corner — and the
    only way to know whether that reads as one movement or as two surfaces
@@ -1759,11 +1785,164 @@ assert.ok(rest.seam >= 0 && rest.seam <= 24, `the seam between the residents is 
 assert.match(rest.arrow ?? "", /takes the study column$/,
   "the arrow on the folded resident must say what it is about to do");
 console.log("the column at rest", rest);
+
+/* ══ ONE GESTURE, NOT TWO STATE CHANGES · added 2026-07-31 ═══════════════════
+
+   Everything above this line is about the two ENDS of the swap, and until now
+   that was all there was: the residents arrived at the new geometry in one
+   frame, so the ends were the whole story. They are not any more, and a
+   transition is exactly the kind of thing a capture cannot gate — a still of a
+   moving column looks the same whether the two halves are moving together or
+   merely finishing together.
+
+   So it is sampled, in the page, on requestAnimationFrame, because the whole
+   move is 240ms and a poll over CDP has a round trip in it. Three claims, and
+   each of them is a way the swap could stop reading as one object:
+
+     1 · ONE EDGE. If the two residents ever disagree about their left edge or
+         their width, there are two boxes in the column and not one. This is
+         the strongest of the three and it is asserted exactly.
+     2 · THE PAGE HOLDS ITS LINES. A page that holds still at rest and re-wraps
+         mid-transition is worse than one that never moves, because the reader
+         sees the text jump twice. Every sampled frame must show the same verse
+         box, not just the first and the last.
+     3 · IT HOLDS THE FRAME. A move that drops frames is a move that reads as a
+         stutter no easing can rescue. Width and height cost layout by
+         definition here — the reading page genuinely gives up space — so this
+         is measured on a real window rather than assumed from the properties.
+
+   The SEAM is reported rather than asserted tightly, and the reason is in the
+   note beside --podcast-dock-head-h: the masthead stops repeating a title the
+   sheet is showing at the instant the gesture starts, so the player's own
+   content is 1.55px shorter for the length of it. Both ENDS are exact (the
+   assertion for that is above); in between the seam drifts monotonically by
+   that 1.55 and by nothing else, so the bound here is 2px. */
+const SWAP_FRAMES = (ms) => `(() => new Promise((done) => {
+  const px = (v) => Math.round(v * 100) / 100;
+  const frames = [];
+  const t0 = performance.now();
+  const tick = () => {
+    const now = performance.now();
+    const m = document.querySelector(".living-margin")?.getBoundingClientRect();
+    const k = document.querySelector(".podcast-dock")?.getBoundingClientRect();
+    const v = document.querySelector(".verse-line")?.getBoundingClientRect();
+    frames.push({
+      t: Math.round(now - t0),
+      edge: px(Math.abs((m?.left ?? 0) - (k?.left ?? 0))),
+      width: px(Math.abs((m?.width ?? 0) - (k?.width ?? 0))),
+      seam: px((k?.top ?? 0) - (m?.bottom ?? 0)),
+      verse: px(v?.width ?? 0) + "x" + px(v?.height ?? 0),
+    });
+    if (now - t0 < ${ms}) requestAnimationFrame(tick); else done(frames);
+  };
+  requestAnimationFrame(tick);
+}))()`;
+
+/** Fire one direction of the swap and watch every frame of it. */
+async function watchSwap(what, trigger, gutter) {
+  const frames = await evaluate(`(async () => {
+    const watching = ${SWAP_FRAMES(420)};
+    document.querySelector(${JSON.stringify(trigger)})?.click();
+    return await watching;
+  })()`);
+  const gaps = frames.slice(1).map((frame, i) => frame.t - frames[i].t);
+  const seen = [...new Set(frames.map((frame) => frame.verse))];
+  const worstEdge = Math.max(...frames.map((frame) => frame.edge));
+  const worstWidth = Math.max(...frames.map((frame) => frame.width));
+  const worstSeam = Math.max(...frames.map((frame) => Math.abs(frame.seam - gutter)));
+  /* Half a pixel, not zero: the two boxes are laid out independently and a
+     shared edge can land either side of a device pixel. A whole pixel of
+     disagreement is two boxes; half of one is one box being rounded. */
+  assert.ok(worstEdge <= 0.5,
+    `${what}: the residents' left edges came apart by ${worstEdge}px mid-gesture`);
+  assert.ok(worstWidth <= 0.5,
+    `${what}: the residents' widths came apart by ${worstWidth}px mid-gesture`);
+  assert.equal(seen.length, 1,
+    `${what}: the reading page re-wrapped DURING the swap — verse boxes seen: ${seen.join(", ")}`);
+  assert.ok(worstSeam <= 2,
+    `${what}: the seam moved ${worstSeam}px off the frame's ${gutter} mid-gesture`);
+  /* Two frames' grace at 60fps. The gate is that the move is not dropping
+     frames, not that the machine running it is otherwise idle. */
+  const dropped = gaps.filter((gap) => gap > 34).length;
+  assert.ok(dropped === 0,
+    `${what}: ${dropped} of ${gaps.length} frames took over 34ms (worst ${Math.max(...gaps)}ms)`);
+  console.log(`${what}: ${frames.length} frames, worst edge ${worstEdge}px, worst seam offset ${worstSeam}px, worst frame ${Math.max(...gaps)}ms, verse ${seen[0]}`);
+  return frames;
+}
+
+/* Both directions, at the tour's own width and then at 1280 — which is the
+   width the ceiling on --player-column-w was got wrong at, and the reason it
+   is now derived from what the page can spare rather than from 32vw. */
+for (const width of [null, 1280]) {
+  if (width) await setViewportWidth(width);
+  const label = width ? `${width}px` : "the tour's own width";
+  const gutter = await evaluate(`Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--pane-gutter")))`);
+  await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "false"`);
+  await sleep(320);
+  await watchSwap(`the player taking the column at ${label}`,
+    '.podcast-mast-icon[aria-expanded="false"]', gutter);
+  await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "true"`);
+  await sleep(320);
+  await watchSwap(`the margin taking it back at ${label}`, ".margin-fold-tab", gutter);
+  await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "false"`);
+  await sleep(320);
+}
+await cdp.send("Emulation.clearDeviceMetricsOverride");
+await sleep(680);
+
+/* ── The same end state, with no travel ─────────────────────────────────────
+   The app's reduced-motion practice is that the surface LANDS rather than
+   moves, and the way that goes wrong is a rule that turns a transition off and
+   leaves a different layout behind. So the end state is measured twice, once
+   with the motion and once without, and the two are compared as numbers. */
+const endState = `(() => {
+  const m = document.querySelector(".living-margin").getBoundingClientRect();
+  const k = document.querySelector(".podcast-dock").getBoundingClientRect();
+  const v = document.querySelector(".verse-line").getBoundingClientRect();
+  const px = (n) => Math.round(n * 100) / 100;
+  return { marginW: px(m.width), marginH: px(m.height), dockH: px(k.height), dockTop: px(k.top), seam: px(k.top - m.bottom), verseL: px(v.left), verseW: px(v.width), verseH: px(v.height) };
+})()`;
+await clickElement('.podcast-mast-icon[aria-expanded="false"]');
+await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "true"`);
+await sleep(420);
+const moved = await evaluate(endState);
+await clickElement(".margin-fold-tab");
+await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "false"`);
+await sleep(420);
+await cdp.send("Emulation.setEmulatedMedia", {
+  features: [{ name: "prefers-reduced-motion", value: "reduce" }],
+});
+await sleep(220);
+await clickElement('.podcast-mast-icon[aria-expanded="false"]');
+await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "true"`);
+/* Deliberately shorter than --transport-move: with the motion off there is
+   nothing to wait for, and a long settle here would pass even if there were. */
+await sleep(80);
+const landed = await evaluate(endState);
+assert.deepEqual(landed, moved,
+  `reduced motion lands somewhere else: ${JSON.stringify(landed)} vs ${JSON.stringify(moved)}`);
+console.log("reduced motion lands the same column", landed);
+await cdp.send("Emulation.setEmulatedMedia", { features: [] });
+await sleep(220);
+await clickElement(".margin-fold-tab");
+await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "false"`);
+await sleep(320);
+
 /* Back open for the transcript assertions below, which are about the sheet's
    own machine rather than about the column. */
 await clickElement('.podcast-mast-icon[aria-expanded="false"]');
 await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "true"`);
 await sleep(320);
+/* And handed back FOLLOWING, which is where the block above found it. Six
+   openings and two viewport changes move the transcript's own scroll, and a
+   transcript that has been scrolled is browsing by design — so without this the
+   next assertion reads "the transcript rests on following" and fails on a mode
+   this block put it in rather than on anything the sheet did wrong. The pill is
+   the reader's own way back, so it is the way back used here. */
+if (await evaluate(`Boolean(document.querySelector(".podcast-transcript-follow"))`)) {
+  await evaluate(`document.querySelector(".podcast-transcript-follow")?.click()`);
+  await sleep(320);
+}
 
 const transcriptAtRest = await evaluate(`(() => {
   const list = document.querySelector(".podcast-transcript");
