@@ -20172,19 +20172,30 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 .resource-shelf .trusted-resource-imprint {
-  /* Two rows, and the second one is the tally's LANE rather than a corner it
-     is dropped into. A numeral floated over the artwork collides with it the
-     moment a publisher has three digits on Genesis 1 — 922 moments across
-     eleven publishers puts several of them over a hundred — and a mark with a
-     number sitting on it is not a mark. The lane costs nine pixels of the
-     plate and guarantees the artwork a rectangle nothing else is ever in. */
+  /* THE SYMBOL IS CENTRED IN THE WHOLE PLATE, 2026-07-31, at the maintainer's
+     word: "that may be intended but i would prefer to see it centered."
+
+     This was two rows — `grid-template-rows: minmax(0, 1fr) auto` — the second
+     being the tally's own lane, reasoned as: "a numeral floated over the
+     artwork collides with it the moment a publisher has three digits on
+     Genesis 1 … and a mark with a number sitting on it is not a mark." The
+     collision is real and that answer was sound. What it cost is that the
+     artwork centred in the ROW and not in the PLATE, which reads as a logo
+     sitting high — which is what the maintainer saw before being told the
+     geometry.
+
+     So the artwork takes the whole plate and the tally leaves the flow for the
+     corner. The collision is answered by the width cap on the symbol instead:
+     a centred mark stops short of the numeral's corner, so the two share a box
+     without ever sharing a pixel. */
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  align-items: center;
+  place-items: center;
   position: relative;
-  gap: 1px;
   height: var(--shelf-row);
-  padding: 5px 9px 4px;
+  /* Symmetric top and bottom, where the lane needed 5/4. With the numeral out
+     of flow the symbol is the only thing left in the grid, so an even padding
+     box makes `place-items: center` exact rather than half a pixel low. */
+  padding: 5px 9px;
 }
 
 /* ── ONE OPTICAL SCALE FOR THE MARKS · RESTATED 2026-07-31 ─────────────────
@@ -20220,12 +20231,24 @@ button.lang-phrase-diagram-node:focus-visible,
    The clamp is a guard rather than a shape: nothing reaches either end. */
 .resource-shelf .trusted-resource-imprint .trusted-resource-source {
   --shelf-art-h: clamp(18px, calc(33px / pow(var(--resource-symbol-ratio), 0.34)), 37px);
+  /* What the tally's corner needs kept clear of a centred symbol: three
+     tabular digits at 9px mono is about 17px, plus a gap. */
+  --shelf-tally-clear: 22px;
   justify-self: center;
   align-self: center;
   /* `min()` against the cell rather than a second clamp: in the narrow shell
      the cell can be tighter than the widest symbol wants, and `contain` then
      letterboxes the artwork down by its own ratio instead of cropping it. */
-  width: min(100%, calc(var(--shelf-art-h) * var(--resource-symbol-ratio)));
+  /* The second bound is the tally's clear space, added 2026-07-31 when the
+     numeral left the flow for the corner: a centred symbol that grew past this
+     would reach the numeral, which is the collision the row-lane existed to
+     prevent. Twice the reserve, because the symbol is centred — what it takes
+     on the right it takes on the left too. */
+  width: min(
+    100%,
+    calc(100% - 2 * var(--shelf-tally-clear)),
+    calc(var(--shelf-art-h) * var(--resource-symbol-ratio))
+  );
   height: var(--shelf-art-h);
   /* CENTRED, where the register left-aligned. A left-aligned logo in a cell it
      does not fill is a logo pushed against a wall; centred in a cell of its own
@@ -21848,8 +21871,12 @@ button.lang-phrase-diagram-node:focus-visible,
    not a column — and it is at FULL INK, quiet by size rather than by an
    opacity that took nine plates under Law 6's floor. */
 .trusted-resource-imprint-count {
-  justify-self: end;
-  align-self: end;
+  /* Out of the flow 2026-07-31, so the artwork can centre in the plate rather
+     than in a row above this. The corner it takes is the padding's own corner,
+     so it sits where the lane used to put it and nothing else moved. */
+  position: absolute;
+  right: 9px;
+  bottom: 4px;
   padding: 0;
   background: none;
   color: var(--shelf-tally-ink, var(--resource-ink));
