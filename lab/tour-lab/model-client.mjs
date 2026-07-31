@@ -228,7 +228,10 @@ export class ModelClient {
        maps to each vendor's own control. Unset = vendor default, as before,
        and the run record says which. */
     const effort = (readEnv(spec.env.reasoning || '') || readEnv('TOUR_REASONING') || '').toLowerCase();
-    this.reasoningEffort = ['low', 'medium', 'high'].includes(effort) ? effort : null;
+    /* 'max' and 'xhigh' pass through verbatim — newer models advertise tiers
+       above 'high', the aggregator forwards unknown efforts to the provider,
+       and a provider that rejects one returns a 400 the run record keeps. */
+    this.reasoningEffort = ['low', 'medium', 'high', 'xhigh', 'max'].includes(effort) ? effort : null;
     this.resolution = null;
   }
 
