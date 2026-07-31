@@ -806,6 +806,20 @@ await waitFor(`Boolean(document.querySelector(".resources-digest"))`, 20_000);
    works. */
 await evaluate(`document.querySelector(".resources-door")?.click()`);
 await waitFor(`Boolean(document.querySelector('#margin-resources-panel:not([hidden]) .resources'))`, 10_000);
+
+/* ── THE ROOM HAS TWO FORMS · 2026-07-31 ───────────────────────────────────
+   Everything from here down to the list's own section is about the CARD form,
+   and the reader's choice between the two PERSISTS IN SETTINGS. So a tour that
+   simply assumed the shipped form fails on any profile whose last run left the
+   list showing — which is precisely how this gate first ran red, on its own
+   previous run. Put the room in the form this section measures, and give the
+   profile back what it was holding at the end of the tour. */
+const heldView = await evaluate(`window.api.settings.get().then((settings) => settings.resourceView)`);
+await evaluate(`(() => {
+  const lens = document.querySelector("#margin-resources-panel:not([hidden])");
+  [...lens.querySelectorAll(".resource-view-choice")]
+    .find((choice) => choice.textContent.trim() === "Cards")?.click();
+})()`);
 await waitFor(`document.querySelectorAll(".resource-card").length > 0`, 20_000);
 await sleep(320);
 
@@ -1434,6 +1448,228 @@ console.log("shelf rack · dense",
   assertShelfRack(await evaluate(SHELF_RACK), `${DENSE}'s shelf`));
 
 await screenshot("paper-resources-dense", ".living-margin");
+
+/* ══════════════════════════════════════════════════════════════════════════
+   THE LIST, AND THE TOGGLE THAT REACHES IT · 2026-07-31
+   ══════════════════════════════════════════════════════════════════════════
+
+   The maintainer: "give a toggle for a list view where people can get more data
+   in via list if the logo views are too much for them (not for shelf but for
+   listings)".
+
+   Measured HERE, on the dense chapter, because the dense chapter is the case
+   the list exists for and because it is the only place all eleven publishers
+   are on screen at once — which is the only place "every publisher's ink holds
+   4.5 on its own paper" can be seen to hold or fail. All four atmospheres are
+   swept below: the ink is DERIVED per atmosphere (see --ink-fit-* in
+   styles.css), so one atmosphere would prove a quarter of the claim.
+
+   Three things this gate is FOR, none of which a file can hold:
+
+     1. THE TOGGLE REACHES THE FORM. A room that draws a control which does not
+        change what is drawn is worse than no control at all.
+     2. THE LIST IS THE SAME ANSWER. Same entries, same press, same sentence —
+        regrouped, never re-filtered. A list that quietly showed fewer would be
+        the drawer this room replaced, wearing new type.
+     3. THE INK IS LEGIBLE. The list carries brand in COLOUR AND TYPE and in
+        nothing else, so a publisher's colour here is load-bearing text in a way
+        it is nowhere else in the app. */
+const LIST = `(() => {
+  const lens = document.querySelector("#margin-resources-panel:not([hidden])");
+  /* NORMALISED THROUGH A CANVAS, exactly as the ground sweep does it, and for a
+     reason this probe found the hard way: --resource-run-ink is derived with
+     relative colour syntax, so its COMPUTED value serialises as
+     "oklch(0.76 0.15 148.9)" rather than as "rgb(...)". A regex that pulls the
+     numbers out of a colour string then reads a hue angle of 148.9 as a blue
+     channel and reports 1.17:1 for an ink that measures 8.5. One parser for two
+     serialisations is two chances to be wrong; the canvas is the engine's own
+     answer and has neither. */
+  const paint = document.createElement("canvas").getContext("2d");
+  const bytes = (value) => {
+    paint.clearRect(0, 0, 1, 1);
+    paint.fillStyle = "#000";
+    paint.fillStyle = value;
+    paint.fillRect(0, 0, 1, 1);
+    return [...paint.getImageData(0, 0, 1, 1).data].slice(0, 3);
+  };
+  const channel = (v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+  const luminance = ([r, g, b]) => 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  const against = (ink, ground) => {
+    const [high, low] = [luminance(bytes(ink)), luminance(ground)].sort((a, b) => b - a);
+    return Math.round(((high + 0.05) / (low + 0.05)) * 100) / 100;
+  };
+  /* The paper this surface is actually on. Through a probe rather than off the
+     token, so an atmosphere that paints its panel differently is measured
+     rather than assumed. */
+  const probe = document.createElement("span");
+  probe.style.cssText = "position:absolute;pointer-events:none";
+  lens.append(probe);
+  probe.style.backgroundColor = getComputedStyle(document.querySelector(".app-shell"))
+    .getPropertyValue("--bg-reading").trim();
+  const ground = bytes(getComputedStyle(probe).backgroundColor);
+  probe.remove();
+  const runs = [...lens.querySelectorAll(".resource-run")];
+  const entries = [...lens.querySelectorAll(".resource-entry")];
+  return {
+    view: lens.querySelector(".resource-room")?.dataset.view ?? null,
+    entries: entries.length,
+    runs: runs.length,
+    // The publisher is named ONCE per run, and every run names one.
+    named: runs.filter((run) => (run.querySelector(".resource-run-name")?.textContent ?? "").trim().length > 0).length,
+    namesPerRun: [...new Set(runs.map((run) => run.querySelectorAll(".resource-run-name").length))],
+    // NO ARTWORK, anywhere on this surface. The maintainer tried the cropped
+    // symbols at the run head, could not see them at that size, and dropped
+    // them; they are not to come back by accident.
+    artwork: [...lens.querySelectorAll(".resource-runs, .resource-runs *")]
+      .filter((node) => getComputedStyle(node).backgroundImage !== "none").length,
+    plates: lens.querySelectorAll(".resource-runs .taught-here-plate, .resource-runs img, .resource-runs svg").length,
+    // NO GROUND on an entry: brand here is colour and type.
+    tinted: entries.filter((entry) => {
+      const face = entry.querySelector(".resource-entry-face");
+      return face ? getComputedStyle(face).backgroundColor !== "rgba(0, 0, 0, 0)" : false;
+    }).length,
+    // One control per entry, exactly as a card has one.
+    controls: [...new Set(entries.map((entry) => entry.querySelectorAll("button").length))],
+    // The claim is still SAID, where a screen reader is owed it.
+    spoken: entries.filter((entry) => /worked through|brought in alongside|mentioned|alluded to|Opens the official/
+      .test(entry.querySelector("button")?.getAttribute("aria-label") ?? "")).length,
+    // Cheap until reached, exactly as the cards are.
+    lazy: entries.filter((entry) => getComputedStyle(entry).contentVisibility === "auto").length,
+    // The masthead, and its rule in full ink.
+    masthead: (() => {
+      const flag = lens.querySelector(".resource-list-masthead");
+      if (!flag) return null;
+      const box = getComputedStyle(flag);
+      return {
+        rule: box.borderBottomWidth,
+        kicker: flag.querySelector(".taught-here-kicker")?.textContent?.trim() ?? null,
+        title: flag.querySelector("h4")?.textContent?.trim() ?? null,
+      };
+    })(),
+    // AND THE INK, on every publisher on screen, against the paper it sits on.
+    inks: runs.map((run) => {
+      const name = run.querySelector(".resource-run-name");
+      const entry = run.querySelector(".resource-entry");
+      return {
+        source: name.dataset.source,
+        name: against(getComputedStyle(name).color, ground),
+        spine: against(getComputedStyle(entry, "::before").backgroundColor, ground),
+        title: against(getComputedStyle(entry.querySelector(".resource-entry-title")).color, ground),
+        meta: against(getComputedStyle(entry.querySelector(".resource-entry-meta")).color, ground),
+      };
+    }),
+  };
+})()`;
+
+const TOGGLE = `(() => {
+  const lens = document.querySelector("#margin-resources-panel:not([hidden])");
+  const group = lens.querySelector(".resource-view-toggle");
+  if (!group) return null;
+  const choices = [...group.querySelectorAll("[role=radio]")];
+  return {
+    role: group.getAttribute("role"),
+    label: group.getAttribute("aria-label"),
+    choices: choices.map((choice) => choice.textContent.trim()),
+    checked: choices.filter((choice) => choice.getAttribute("aria-checked") === "true")
+      .map((choice) => choice.textContent.trim()),
+    // ONE tab stop. Two would spend a reader's keyboard on how a room is drawn.
+    tabStops: choices.filter((choice) => choice.tabIndex === 0).length,
+    // NOT A FILTER. The shelf owns filtering and says so with aria-pressed; a
+    // second pressed-plate control in this room would be read as a third way of
+    // narrowing it.
+    pressed: choices.filter((choice) => choice.hasAttribute("aria-pressed")).length,
+    // And it is nowhere near the rack.
+    inShelf: document.querySelectorAll(".resource-shelf .resource-view-choice, .resource-shelf-head .resource-view-choice").length,
+  };
+})()`;
+
+/* Returns whether the toggle was REACHABLE, and never waits on a room that is
+   not open. A gate that waits for a state the app cannot currently reach does
+   not fail — it spins to its timeout and everything below it silently never
+   runs, which is the one failure mode qa-support/app-vocabulary exists to stop.
+   Later sections of this tour are on other passages and other lenses. */
+async function setResourceView(view) {
+  const reachable = await evaluate(
+    `Boolean(document.querySelector("#margin-resources-panel:not([hidden]) .resource-view-choice"))`,
+  );
+  if (!reachable) return false;
+  await evaluate(`(() => {
+    [...document.querySelectorAll("#margin-resources-panel:not([hidden]) .resource-view-choice")]
+      .find((choice) => choice.textContent.trim().toLowerCase() === ${JSON.stringify(view)})?.click();
+  })()`);
+  await waitFor(`Boolean(document.querySelector('#margin-resources-panel:not([hidden]) .resource-room[data-view="${view}"]'))`, 15_000);
+  await evaluate(`document.querySelector(".living-margin").scrollTop = 0`);
+  await sleep(420);
+  return true;
+}
+
+const cardsBefore = await evaluate(TOGGLE);
+assert.equal(cardsBefore?.role, "radiogroup",
+  "the view toggle is not announced as a choice between two exclusive states");
+assert.deepEqual(cardsBefore.choices, ["Cards", "List"]);
+assert.deepEqual(cardsBefore.checked, ["Cards"], "the room does not open in the shipped form");
+assert.equal(cardsBefore.tabStops, 1, "the toggle is two tab stops; a radio group is one");
+assert.equal(cardsBefore.pressed, 0, "the toggle is wearing the shelf's filter idiom");
+assert.equal(cardsBefore.inShelf, 0,
+  "the toggle reached the shelf — the instruction was 'not for shelf but for listings'");
+assert.ok((cardsBefore.label ?? "").length > 0, "the toggle has no accessible name");
+console.log("toggle · cards", cardsBefore);
+
+await setResourceView("list");
+const list = await evaluate(LIST);
+assert.equal(list.view, "list", "pressing List did not change what the room draws");
+assert.equal(list.entries, density.cards,
+  `the list drew ${list.entries} of the ${density.cards} the cards drew; the two forms are one answer`);
+assert.ok(list.runs > 4, `the dense chapter grouped into ${list.runs} publisher runs`);
+assert.equal(list.named, list.runs, "a run is drawn with no publisher at its head");
+assert.deepEqual(list.namesPerRun, [1], "a publisher is named once per run, or the run rule is not one");
+assert.equal(list.artwork, 0,
+  `${list.artwork} elements in the list draw artwork; the symbols were dropped here deliberately`);
+assert.equal(list.plates, 0, "a plate is back on the list");
+assert.equal(list.tinted, 0, "an entry is wearing a ground; brand on this surface is colour and type");
+assert.deepEqual(list.controls, [1], "an entry holds exactly one control, and it is the entry");
+assert.ok(list.spoken > 0, "no entry says its claim in its accessible name");
+assert.equal(list.lazy, list.entries, "the list is drawing nine hundred entries eagerly");
+assert.equal(list.masthead?.rule, "3px", "the masthead's rule is not a flag's rule");
+assert.equal(list.masthead?.kicker, "From the transcripts");
+assert.equal(list.masthead?.title, "Taught here");
+console.log("the list", { ...list, inks: `${list.inks.length} publishers` });
+
+/* THE INK, ON EVERY PUBLISHER, IN EVERY ATMOSPHERE. The publisher's colour here
+   is TEXT — 9px tracked caps — so Law 6 holds it to 4.5 rather than to the 3 a
+   mark would take, and the derivation that makes that true is three numbers per
+   polarity. This sweep is the only thing standing between those numbers and a
+   claim nobody checked. */
+for (const theme of ATMOSPHERES) {
+  await setTheme(theme);
+  await sleep(320);
+  const swept = await evaluate(LIST);
+  for (const publisher of swept.inks) {
+    for (const [rank, ratio] of Object.entries(publisher)) {
+      if (rank === "source") continue;
+      assert.ok(ratio >= ACCENT_FLOOR,
+        `${publisher.source}'s ${rank} is ${ratio}:1 on ${theme}'s paper in the list`);
+    }
+  }
+  console.log(`list ink · ${theme}`, swept.inks.map((ink) => `${ink.source} ${ink.name}`).join(" · "));
+  await screenshot(`${theme}-resources-list`, ".living-margin");
+}
+await setTheme("light");
+
+/* AND THE READER'S CHOICE IS THEIRS TO KEEP. It is written to settings rather
+   than to the study workspace — a comfort preference of the same kind as the
+   reading size — so it survives a passage, a lens and a launch. The round trip
+   is what is asserted rather than the file, because the round trip is what a
+   reader would notice failing. */
+const persisted = await evaluate(`window.api.settings.get().then((settings) => settings.resourceView)`);
+assert.equal(persisted, "list", "the reader's choice of form did not reach settings");
+await setResourceView("cards");
+assert.equal(
+  await evaluate(`window.api.settings.get().then((settings) => settings.resourceView)`),
+  "cards",
+  "the toggle writes one way only",
+);
+console.log("the view persists", { chose: "list", read: persisted, andBack: "cards" });
 
 /* The three discovery treatments, from the same cards and the same ordering.
    NOT a product control and never asserted as one — see the room's own note
@@ -2329,6 +2565,15 @@ await screenshot("forced-colors-dock", ".podcast-dock");
    covered here from the beginning: the face's hairline, the running mark, the
    ↗ ring, and the plate's one documented opt-out. */
 await screenshot("forced-colors-resources", ".living-margin");
+/* AND THE LIST, which is the form a forced palette costs the most: the cards
+   lose a tint and keep a plate, but the list carries brand in COLOUR AND TYPE
+   and loses both at once. What has to survive is the structure — a heading over
+   its own run, a spine down each entry, the masthead's rule — redrawn in the
+   reader's own ink. Added 2026-07-31 with the form. */
+if (await setResourceView("list")) {
+  await screenshot("forced-colors-resources-list", ".living-margin");
+  await setResourceView("cards");
+} else console.log("forced colors · the room is not open here; the list capture is skipped rather than waited on");
 /* The column in the reader's own two colours: the folded tab's kicker, its
    seal dot where there is one, and the open player beside it. */
 await clickElement('.podcast-mast-icon[aria-expanded="false"]');
@@ -2384,6 +2629,48 @@ if (narrow.overlap !== null) {
 await parkPointer();
 await screenshot("paper-dock-narrow");
 console.log("narrow", narrow);
+
+/* ── BOTH FORMS AT COMPACT WIDTH · 2026-07-31 ─────────────────────────────
+   MEASURED AND NOT PHOTOGRAPHED, and the reason is the section this sits in:
+   at compact width the study column is FOLDED for the open player, so a
+   picture of the room here is a picture of the fold. What can be checked is
+   the geometry, and it is the only thing at stake — the card was two-up until
+   this build, and a single column is the same column at every width, so the
+   one thing a much wider measure could break is a head line whose plate,
+   passage and extent stop needing to share a rule and drift apart. They are
+   still one row at 868px, and an entry is still one row of 48.
+
+   The pictures of both forms live where the room is actually open: the four
+   atmospheres above, and the dense chapter. */
+const narrowForms = {};
+for (const form of ["cards", "list"]) {
+  if (!(await setResourceView(form))) { narrowForms[form] = "the room is not open at this width"; continue; }
+  narrowForms[form] = await evaluate(`(() => {
+    const lens = document.querySelector("#margin-resources-panel:not([hidden])");
+    const first = lens.querySelector(".resource-card, .resource-entry");
+    const head = lens.querySelector(".resource-card-head");
+    return first
+      ? {
+        box: Math.round(first.getBoundingClientRect().width) + "x" + Math.round(first.getBoundingClientRect().height),
+        /* ONE ROW, STILL: the head's three parts on one line at any measure.
+           Measured as the head's own height against its tallest child, NOT as
+           the number of distinct child top edges — the parts are 28, 17 and 14
+           pixels tall and centred, so three different tops is what a single
+           correctly-aligned row looks like. */
+        headOneRow: head
+          ? Math.round(head.getBoundingClientRect().height)
+            <= Math.max(...[...head.children].map((part) => Math.round(part.getBoundingClientRect().height))) + 2
+          : null,
+        overflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
+      }
+      : null;
+  })()`);
+}
+await setResourceView("cards");
+assert.equal(narrowForms.cards?.headOneRow ?? true, true,
+  "the card's head line broke into two rows at compact width");
+assert.equal(narrowForms.cards?.overflowX ?? false, false, "the listings pushed the frame sideways");
+console.log("narrow forms", narrowForms);
 
 /* ── Exclusivity at every width ────────────────────────────────────────────
    The compact band is where the audit's ⊘ finding lived: an already-crushed
@@ -2511,6 +2798,9 @@ console.log("stopped", stopped);
 
 await navigatePassage(original.passage);
 await setMargin(original.margin);
+/* And the form the profile was holding when the tour arrived. A QA run may
+   measure both; it may not decide for the reader which one they keep. */
+await evaluate(`window.api.settings.set({ resourceView: ${JSON.stringify(heldView)} })`);
 await setTheme(original.theme);
 await setMaterial(original.material);
 await setFocusMode(original.focus);

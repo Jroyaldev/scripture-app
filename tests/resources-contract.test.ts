@@ -110,7 +110,13 @@ test("every card obeys one face, and the face refuses a fifth thing", () => {
      which passage, how long. Everything else the row said out loud is in the
      ORDERING now, which is silent. */
   const room = read("src/renderer/components/Resources.tsx");
-  const card = room.slice(room.indexOf("function ResourceCard("), room.indexOf("* The two footings"));
+  /* THE SLICE ENDS AT THE LIST · 2026-07-31. It ran to "* The two footings",
+     which was the next thing in the file until the list view landed between
+     them — and a slice that swallows a second component quietly turns "a card
+     holds exactly one control" into "this region of the file holds one
+     button", which is a weaker claim wearing the same words. The list makes
+     the same promise about its own entries and is asserted where it lives. */
+  const card = room.slice(room.indexOf("function ResourceCard("), room.indexOf("* ── THE LIST ·"));
 
   for (const part of [
     "resource-card-play",     // the transport's own face, at the room's scale
@@ -136,15 +142,37 @@ test("every card obeys one face, and the face refuses a fifth thing", () => {
   for (const forbidden of [/relationSaid\(/, /clockOf\(/, /evidence/, /metadata\?\./]) {
     assert.doesNotMatch(face, forbidden, `the card face is carrying ${forbidden} again`);
   }
-  assert.match(card, /const spoken =/);
+  /* RESTATED 2026-07-31. This asserted `const spoken =` — the sentence composed
+     INSIDE the card. It is `spokenFor` now, and the move is the point: the list
+     view says the same sentence about the same entry, and two components each
+     composing their own would drift, which is exactly how the surface this room
+     replaced ended up with two brand policies over one set of episodes. */
+  assert.match(card, /const spoken = spokenFor\(entry, running\);/);
   assert.match(card, /aria-label=\{spoken\}/);
+  assert.match(room, /function spokenFor\(entry: ResourceEntry, running: boolean\): string/,
+    "the entry's sentence must be said in one place for both forms of the room");
 
   /* Two sizes, and the second is earned by a treatment rather than by being
      first in a thin list. */
   assert.match(room, /data-weight=\{heavy \? "heavy" : "light"\}/);
   assert.match(room, /entry\.timed != null/);
+
+  /* ── WHAT THE SECOND SIZE IS SPENT ON · RESTATED 2026-07-31 ──────────────
+     This asserted `grid-column: 1 / -1` — the heavy card SPANNING BOTH COLUMNS.
+     There is one column now (see `.resource-grid`), so a span is not a currency
+     the family can spend and the assertion could only ever pass by accident.
+
+     The claim under it never was about columns: the strongest answer in the
+     room should look like the strongest answer. It is spent in TYPE, on the one
+     thing a reader scans, and that is what is held here — a step on the title
+     and nothing else, so the family cannot quietly grow a second difference and
+     become the chart two sizes exist to avoid. */
   const styles = read("src/renderer/styles.css");
-  assert.match(styles, /\.resource-card\[data-weight="heavy"\] \{[^}]*grid-column: 1 \/ -1/s);
+  assert.doesNotMatch(styles, /\.resource-card\[data-weight="heavy"\] \{[^}]*grid-column/s,
+    "the heavy card is spanning columns again; there is only one");
+  assert.match(styles,
+    /\.resource-card\[data-weight="heavy"\] \.resource-card-title \{\s*\n\s*font-size: 0\.8125rem;\s*\n\s*\}/,
+    "the second size lost the one difference it is allowed, or grew a second one");
 });
 
 test("aboutness decides order and size, and is never printed", () => {
@@ -209,15 +237,33 @@ test("density is a room, not a drawer", () => {
   assert.doesNotMatch(code("src/renderer/components/Resources.tsx"), /shown\.slice\(/,
     "the room is capping the answer again");
 
-  /* Nine hundred cards is only honest if they are cheap until they are near
-     the viewport, and if the scrollbar does not lie while they wait. */
+  /* Nine hundred of anything is only honest if they are cheap until they are
+     near the viewport, and if the scrollbar does not lie while they wait. Both
+     forms of the room pay that price — added for the list 2026-07-31, because
+     a list is denser and therefore draws MORE of them per screen, not fewer. */
   const styles = read("src/renderer/styles.css");
   assert.match(styles, /\.resource-card \{[^}]*content-visibility: auto/s);
   assert.match(styles, /\.resource-card \{[^}]*contain-intrinsic-size/s);
+  assert.match(styles, /\.resource-entry \{[^}]*content-visibility: auto/s);
+  assert.match(styles, /\.resource-entry \{[^}]*contain-intrinsic-size/s);
 
-  /* And the room is a grid, never a ribbon: nothing on this surface scrolls
-     sideways or advances on its own. */
-  assert.match(styles, /\.resource-grid \{[^}]*grid-template-columns: repeat\(2, minmax\(0, 1fr\)\)/s);
+  /* ── ONE CARD PER ROW · RESTATED 2026-07-31 ──────────────────────────────
+     This held `repeat(2, minmax(0, 1fr))`, under the heading "the room is a
+     grid, never a ribbon". The maintainer reversed the column count — "make
+     listing cards not stack side by side make them force full width" — and the
+     reason the two-column rule gave for itself argues for one:
+
+       "an `auto-fill` grid in a panel that can be 320–420px wide flickers
+        between one column and two as the reader drags the window, and a room
+        that reflows under the hand is not calm."
+
+     A single track is the only count in this panel that cannot flicker at any
+     width. So the claim is unchanged and stronger — a stable track count, and
+     never a ribbon — and the number it is held at moved from two to one. */
+  assert.match(styles, /\.resource-grid \{[^}]*grid-template-columns: minmax\(0, 1fr\);/s,
+    "the listings are stacking side by side again");
+  assert.doesNotMatch(styles, /\.resource-grid \{[^}]*auto-fill/s,
+    "the grid is deciding its own column count again; that is the reflow the two-column rule was written against");
   assert.doesNotMatch(room, /scrollIntoView|carousel|marquee/);
 });
 
@@ -459,6 +505,197 @@ test("the card's ground is derived, not picked", () => {
   assert.match(styles,
     /\.resource-card\[data-source\] \.resource-card-extent,\s*\n\s*\.resource-card\[data-source\] \.resource-card-plate \.taught-here-mark \{\s*\n\s*color: var\(--text-secondary\);/,
     "the card's quietest ink is the tertiary again, which does not clear 4.5 on a tinted ground");
+});
+
+test("the list is the recovered masthead: runs, spines, and no artwork at all", () => {
+  /* NEW CONTRACT · 2026-07-31, on the maintainer's instruction: "give a toggle
+     for a list view where people can get more data in via list if the logo
+     views are too much for them (not for shelf but for listings)".
+
+     THE FORM WAS NOT INVENTED FOR THIS BUILD. It is the app's own resource
+     masthead brought forward from ae15ab9, drawn at the real column width and
+     approved that night. Everything asserted here is a clause of that
+     grammar. */
+  const room = read("src/renderer/components/Resources.tsx");
+  const styles = read("src/renderer/styles.css");
+  const list = room.slice(room.indexOf("* ── THE LIST ·"), room.indexOf("* ── THE TOGGLE ·"));
+
+  /* ONE MASTHEAD, and it is the app's own element rather than a second set of
+     declarations that says the same thing in four numbers. Two mastheads over
+     one answer is the defect this whole room exists to have removed. */
+  assert.match(room, /className=\{view === "list"\s*\n\s*\? "taught-here-masthead resource-list-masthead"/,
+    "the list drew its own masthead instead of the app's");
+  assert.match(room, /<span className="taught-here-kicker">From the transcripts<\/span>/);
+  assert.match(styles, /\.taught-here-masthead \{[^}]*border-bottom: 3px solid var\(--text-primary\)/s,
+    "the masthead's rule is a hairline again; a flag's rule is 3px in full ink");
+  assert.match(styles, /\.taught-here-masthead :is\(h3, h4\) \{[^}]*font: 700 1rem\/1\.1/s);
+  assert.match(styles, /\.taught-here-masthead :is\(h3, h4\) \{[^}]*letter-spacing: -0\.025em/s,
+    "the flag lost its tight letterspacing");
+
+  /* PUBLISHER RUNS: named once, at the head of their own run. This is NOT the
+     run rule the card room reversed — that was about a MARK withdrawn from
+     some cards and kept on others, and there are no marks here to withdraw. */
+  assert.match(list, /className="resource-source resource-run-name" data-source=\{run\.id\}/);
+  assert.match(room, /const runs = useMemo\(\(\) => \{/);
+  assert.match(room, /for \(const entry of shown\) \{/,
+    "the runs must be built from the same `shown` the cards draw — same filter, same entries");
+  assert.match(styles, /\.resource-run-name \{[^}]*text-transform: uppercase/s);
+  assert.match(styles, /\.resource-run-name \{[^}]*letter-spacing: 0\.09em/s);
+
+  /* THE SPINE, and the hairline. Both are the grammar; neither is a box. */
+  assert.match(styles, /\.resource-entry::before \{[^}]*background: var\(--resource-run-ink/s,
+    "the entry's spine lost the publisher's colour");
+  assert.match(styles, /\.resource-entry-face \{[^}]*border-top: 1px solid var\(--border-subtle\)/s);
+
+  /* NO BOXES, NO TINTS, NO PLATES, NO ARTWORK. The mechanism, not the taste:
+     it is the whole reason this form is denser than the cards. The one mark
+     allowed is the app's transport on the entry that is actually playing. */
+  assert.doesNotMatch(list, /taught-here-plate|taught-here-mark|resource-symbol|ResourceKindIcon/,
+    "artwork is back on the list; the list is the answer to 'the logo views are too much'");
+  assert.doesNotMatch(styles, /\.resource-entry-face \{[^}]*background: var\(--resource/s,
+    "the entry is wearing the publisher's ground; brand here is colour and type only");
+  assert.match(list, /\{running && \(\s*\n\s*<TransportPlayMark className="resource-entry-play"/,
+    "the transport mark must be drawn on the playing entry and on no other");
+
+  /* ONE CONTROL PER ENTRY, exactly as a card has one, and the SAME sentence. */
+  assert.equal((list.match(/<button/g) ?? []).length, 1,
+    "an entry holds exactly one control, and it is the entry");
+  assert.match(list, /aria-label=\{spokenFor\(entry, running\)\}/,
+    "the list is composing its own accessible sentence instead of the room's one");
+
+  /* AND THE ORDER IS THE SAME ORDER, regrouped rather than re-sorted. A `sort`
+     in here would be a second answer to the question the ranking answers. */
+  assert.doesNotMatch(list, /\.sort\(/, "the list is re-ranking the room's answer");
+  assert.doesNotMatch(room.slice(room.indexOf("const runs = useMemo"), room.indexOf("const heaviest")), /\.sort\(|\.slice\(/,
+    "the runs are sorting or capping what the cards show whole");
+});
+
+test("a publisher's ink is derived for TYPE, and holds 4.5 on paper", () => {
+  /* NEW CONTRACT · 2026-07-31. The list sets a publisher's NAME in their own
+     colour, and --resource-source is a SURFACE colour picked to be painted
+     behind a reverse mark: about half the shelf is too light to set type in and
+     two are too dark to tell from the app's own ink. So it is derived, and the
+     derivation is the third of a family — see the --ink-fit-* note at :root.
+
+     A hand-picked ink per publisher per atmosphere is forty-four numbers nobody
+     can check. The approved reference page hand-picked eleven; this is what
+     replaces them. */
+  const styles = read("src/renderer/styles.css");
+  /* Bounded to the RULE. An unbounded slice runs to the end of the sheet and
+     picks up every other fit in it, so "this ink is not borrowing the accent's
+     clamp" would be answered by a rule four hundred lines away. */
+  const inkAt = styles.indexOf(".resource-source[data-source] {");
+  const ink = styles.slice(inkAt, styles.indexOf("\n}", inkAt) + 2);
+  assert.match(ink, /--resource-run-ink: oklch\(from var\(--resource-source\)/,
+    "the run's ink is no longer derived from the publisher's own colour");
+  assert.match(ink, /clamp\(var\(--ink-fit-floor\), l, var\(--ink-fit-ceiling\)\)/,
+    "the ink's lightness is unclamped, or clamped on one side only");
+  assert.match(ink, /clamp\(0, c, var\(--ink-fit-c-max\)\)/,
+    "the chroma ceiling is gone; a fully saturated hue vibrates at 9px");
+  /* Hue is the publisher's, untouched — the same clause the ground's fit has,
+     and the whole of what makes this their colour rather than a tint of ours. */
+  assert.match(ink, /clamp\(0, c, var\(--ink-fit-c-max\)\)\s*\n\s*h\);/,
+    "the ink is moving the publisher's hue");
+
+  /* Two polarities for the number that has one, and ONE ceiling for the number
+     that does not: a hue vibrating at 9px is not a fact about the atmosphere. */
+  assert.equal((styles.match(/--ink-fit-floor:/g) ?? []).length, 2,
+    "the ink fit has a light polarity and a dark one, and no more");
+  assert.equal((styles.match(/--ink-fit-c-max:/g) ?? []).length, 1,
+    "the chroma ceiling grew a polarity it has no reason for");
+
+  /* NOT --accent-fit-*, which is the obvious thing to reach for and is the
+     wrong direction: its 0.52 ceiling is chosen so the app's PAPER reads on the
+     accent, and read the other way round it is inside the margin of error for a
+     saturated hue rather than outside it. */
+  assert.doesNotMatch(ink, /accent-fit/,
+    "the run's ink is borrowing the accent's clamp; that clamp is for paper on a mark, not a mark on paper");
+
+  /* And the hook is the palette's own, so no publisher can be left off a list.
+     `.resource-source` is declared by all eleven brand blocks. */
+  assert.equal((styles.match(/^\.resource-source\[data-source="/gm) ?? []).length, 11,
+    "a publisher lost the palette hook the list paints from");
+
+  /* qa-podcast-player measures all eleven × four atmospheres in the running
+     engine against the 4.5 floor, so these three numbers cannot drift. */
+  const tour = read("scripts/qa-podcast-player.mjs");
+  assert.match(tour, /name: against\(getComputedStyle\(name\)\.color, ground\)/,
+    "nothing measures the run's ink in the engine; a contrast claim nobody checks is a claim");
+  assert.match(tour, /spine: against\(getComputedStyle\(entry, "::before"\)\.backgroundColor, ground\)/,
+    "the spine takes the same derived ink and is not measured");
+  assert.match(tour, /for \(const theme of ATMOSPHERES\) \{[\s\S]{0,600}?await evaluate\(LIST\)/,
+    "the ink sweep runs in one atmosphere; the derivation has a polarity, so one proves a quarter of it");
+});
+
+test("the view toggle is a choice, is remembered, and is not a filter", () => {
+  /* NEW CONTRACT · 2026-07-31. Two states, at the head of what they govern.
+     Everything here is about the three ways this control could have gone wrong:
+     by looking like the shelf's filter, by being unreachable from a keyboard,
+     and by forgetting what the reader chose. */
+  const room = read("src/renderer/components/Resources.tsx");
+  const styles = read("src/renderer/styles.css");
+
+  /* A RADIO GROUP, because the two states are mutually exclusive and
+     exhaustive. Not `aria-pressed` — that is the shelf's idiom, and the shelf
+     is the filter. */
+  assert.match(room, /role="radiogroup"/);
+  assert.match(room, /aria-label="How this chapter's listings are laid out"/);
+  assert.match(room, /aria-checked=\{view === option\.id\}/);
+  assert.doesNotMatch(
+    room.slice(room.indexOf("* ── THE TOGGLE ·"), room.indexOf("/* The two footings")),
+    /aria-pressed/,
+    "the toggle is wearing the shelf's filter idiom");
+
+  /* ONE TAB STOP, and the arrows move and choose. A room that can be nine
+     hundred entries long must not spend two tab presses on how they are drawn. */
+  assert.match(room, /tabIndex=\{view === option\.id \? 0 : -1\}/);
+  assert.match(room, /event\.key === "ArrowRight" \|\| event\.key === "ArrowDown"/);
+  assert.match(room, /moved\?\.\[\(at \+ step \+ VIEWS\.length\) % VIEWS\.length\]\?\.focus\(\)/,
+    "the arrows move the selection without moving the focus, which is not a radio group");
+
+  /* AND THE HEAD KEEPS ITS IDENTITY ACROSS THE SWITCH. Drawn as two branches,
+     React unmounts the focused radio along with the head that held it and the
+     reader is returned to the top of the document — measured. One element, two
+     classes. */
+  assert.doesNotMatch(room, /view === "list" \? \(\s*\n\s*<header/,
+    "the head is two elements again; the switch will throw away the focused radio");
+
+  /* THE APP'S VIEW-TAB IDIOM: ink and Law 2's seal, the same instrument
+     `.podcast-view-tab` uses for the sheet's two views. */
+  assert.match(styles, /\.resource-view-choice::after \{[^}]*background: var\(--study-gold\)/s,
+    "the chosen view lost its seal");
+  assert.match(styles, /\.resource-view-choice\[aria-checked="true"\] \{ color: var\(--text-primary\); \}/);
+  /* And it survives a forced palette, where box-shadow and backgrounds do not. */
+  assert.match(styles, /forced-colors[\s\S]*\.resource-view-choice\[aria-checked="true"\] \{[^}]*outline: 2px solid Highlight/,
+    "the chosen view is stated only on channels a forced palette throws away");
+
+  /* REMEMBERED, in settings, on the module — never in the component, because
+     the margin mounts three of them and a `useState` would give one reader
+     three answers. */
+  const store = read("src/renderer/resource-view.ts");
+  assert.match(store, /window\.api\.settings\.set\(\{ resourceView: next \}\)/);
+  assert.match(store, /window\.api\.settings\.get\(\)/);
+  assert.match(store, /if \(!result\.ok \|\| chosen\) return;/,
+    "a settled read can overwrite a choice the reader already made by hand");
+  assert.match(room, /useSyncExternalStore\(subscribeResourceView, readResourceView\)/);
+  assert.doesNotMatch(room, /useState<ResourceView>/,
+    "the view is component state again; three panels would hold three answers");
+
+  /* THE MAIN PROCESS NORMALISES IT, and an unknown id is the shipped form
+     rather than a refusal. */
+  const main = read("src/electron/main.ts");
+  assert.match(main, /const RESOURCE_VIEWS = new Set<AppSettingsSchema\["resourceView"\]>\(\["cards", "list"\]\);/);
+  assert.match(main, /resourceView: normalizeResourceView\(settled\.resourceView\)/);
+  assert.match(main, /resourceView: normalizeResourceView\(partial\.resourceView \?\? store\.store\.resourceView\)/);
+  assert.match(main, /resourceView: "cards",/, "the shipped form is not the default");
+
+  /* AND IT NEVER REACHES THE SHELF. The maintainer's instruction was explicit —
+     "not for shelf but for listings" — and the rack has one form. */
+  const shelf = room.slice(room.indexOf('className="resource-shelf-block"'), room.indexOf("{library && ("));
+  assert.doesNotMatch(shelf, /ResourceViewToggle|resource-view-choice/,
+    "the toggle reached the shelf; the rack is not part of this");
+  assert.doesNotMatch(styles, /\.resource-shelf[^{]*\.resource-view/,
+    "a rule is styling the toggle inside the shelf");
 });
 
 test("the transcript disclosure reaches the surfaces that show it, in a reader's language", () => {
@@ -711,9 +948,31 @@ test("the discovery shape is the open question, and never a product control", ()
   const room = read("src/renderer/components/Resources.tsx");
   assert.match(room, /const SHAPES = \["weight", "even", "spine"\] as const;/);
   assert.match(room, /document\.documentElement\.dataset\["discoveryShape"\]/);
-  assert.doesNotMatch(room, /localStorage|window\.api\.settings|onShapeChange/,
+  /* ── SCOPED TO THE SHAPE · RESTATED 2026-07-31 ──────────────────────────
+     This banned `localStorage|window.api.settings|onShapeChange` ANYWHERE IN
+     THE FILE, which was a correct gate for exactly as long as the file held one
+     preference. It now holds two, and they are opposite in kind: the discovery
+     shape is the open question and must not be remembered; the CARDS-OR-LIST
+     view is the reader's own settled choice and must be.
+
+     A file-wide ban would have failed on the view and, worse, could have been
+     "fixed" by moving the shape's persistence into a sibling module — which is
+     the letter of the rule with none of its meaning. So the ban is now on what
+     it was always about: nothing in this file may hand the SHAPE to storage,
+     and no module may either. */
+  const shape = room.slice(room.indexOf("const SHAPES ="), room.indexOf("/** What a press hands the transport"));
+  assert.doesNotMatch(shape, /localStorage|window\.api\.settings|onShapeChange/,
     "the discovery shape is being remembered, which makes an open question look settled");
+  assert.doesNotMatch(read("src/renderer/resource-view.ts"), /discovery|[Ss]hape/,
+    "the shape is being persisted through the view's store, which is the ban's letter without its meaning");
+  assert.doesNotMatch(read("src/electron/main.ts"), /discoveryShape/,
+    "the shape reached the settings schema; it is an open question, not a preference");
   assert.doesNotMatch(room, /aria-label="Choose a layout"|<select/);
+  /* And the CHOOSER the shape may not have is one the view does have, which is
+     the clearest statement of the difference between them. */
+  assert.match(room, /function ResourceViewToggle\(/);
+  assert.doesNotMatch(room, /function DiscoveryShapePicker|shape-choice|data-shape-picker/,
+    "the discovery shape grew a chooser; that makes an open question look answered");
 
   const vocabulary = read("scripts/qa-support/app-vocabulary.mjs");
   assert.match(vocabulary, /"data-discovery": \{[\s\S]*values: \["weight", "even", "spine", "digest"\]/);

@@ -232,15 +232,27 @@ export const ATTRIBUTE_VOCABULARY = Object.freeze({
   // only entry in this table that is deliberately NOT settled: the discovery
   // treatment is the open question of the player wave, and the reader chooses
   // between three renderings of the same cards and the same ordering.
-  // "digest" is Overview's four-card square, which is the room's card at the
-  // room's smaller size and never a fourth shape.
+  // "digest" is Overview's four-card column, which is the room's own card in
+  // the Overview block and never a fourth shape. (It read "four-card square"
+  // until 2026-07-31; the square was the two-column grid, which is gone.)
   "data-discovery": {
     source: "src/renderer/components/Resources.tsx · DiscoveryShape",
     values: ["weight", "even", "spine", "digest"],
   },
+  // Which of the two FORMS the room's listings are drawn in. Added 2026-07-31
+  // and, unlike the discovery shape above, this one is settled: it is the
+  // reader's own choice and it is kept in settings across sessions. It governs
+  // the listings only — the publisher shelf above them has one form and does
+  // not carry this attribute.
+  "data-view": {
+    source: "src/renderer/components/Resources.tsx · ResourceView",
+    values: ["cards", "list"],
+  },
   // Which of the two card sizes this one takes. It is a fact about the answer
-  // rather than about the card: a treatment long enough to be the reason a
-  // reader is here takes the full width, and everything else is a tile.
+  // rather than about the card: the treatment most likely to be the reason a
+  // reader is here sets its title one step larger, and everything else is at
+  // the room's own size. (It read "takes the full width, and everything else
+  // is a tile" until 2026-07-31, when every card went full width.)
   "data-weight": {
     source: "src/renderer/components/Resources.tsx · ResourceCard",
     values: ["heavy", "light"],

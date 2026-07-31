@@ -259,6 +259,20 @@ export type VerseNumberMode = "always" | "faint" | "hover";
  */
 export type MarkingSurface = "palette" | "dock";
 
+/**
+ * How the Resources room lays its LISTINGS out.
+ *
+ * Two forms of ONE answer, not two answers: the same entries, the same press,
+ * the same accessible sentence. Cards lead with the publisher's mark and give
+ * a title the column's whole measure; the list carries the publisher in colour
+ * and type alone and fits about 1.8 times as many entries on a screen.
+ *
+ * The publisher shelf ABOVE the listings has one form and is not governed by
+ * this — the maintainer's instruction was explicit that the rack is not part
+ * of it ("not for shelf but for listings").
+ */
+export type ResourceView = "cards" | "list";
+
 /** One stop in the passage-picker recents list. */
 export interface RecentPassageSetting {
   book: string;
@@ -277,6 +291,8 @@ export interface AppSettings {
   marginVisible: boolean;
   readingSize: ReadingSize;
   verseNumbers: VerseNumberMode;
+  /** Cards or list, for the Resources room's listings. See ResourceView. */
+  resourceView: ResourceView;
   /**
    * What the reader muted, permanently: `publisher` or `publisher:kind`.
    * The main process applies it to every query.

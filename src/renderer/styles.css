@@ -590,6 +590,52 @@
   --ground-fit-c-max: 0.022;   /* @kind other */
   --ground-fit-step: -0.055;   /* @kind other */
 
+  /* ── Setting TYPE in a publisher's colour · 2026-07-31 ───────────────────
+     The third of the three fits, and the one the Resources list view needed.
+     They are siblings and the family is worth stating once, because which
+     channel each of them holds still is the whole of what makes it correct:
+
+       --accent-fit-*  keeps hue AND chroma, clamps LIGHTNESS. It has to hold
+         as a MARK on our paper, and the hard clamp is what makes the
+         counter-ink a single line with no branch.
+       --ground-fit-*  keeps HUE, clamps chroma, REPLACES lightness. It has to
+         hold as PAPER, and every card must sit on one plane.
+       --ink-fit-*     keeps hue and most of the chroma, clamps LIGHTNESS
+         HARDER than the accent does. It has to hold as TYPE on our paper, and
+         type is held to 4.5:1 where a mark is held to 3.
+
+     WHY IT CANNOT BE --accent-fit-*, which is the obvious thing to reach for.
+     That ceiling is 0.52, chosen so the app's PAPER reads on the accent — the
+     other direction. Run it the way round this needs and the arithmetic is
+     tight rather than comfortable: at the light atmospheres' paper (Y ≈ 0.966
+     on Paper, 1.0 on Porcelain) a 4.5:1 ink must sit at Y ≤ 0.176, which is a
+     neutral oklch L of about 0.56 — and a saturated yellow or green at a given
+     L carries MORE luminance than a neutral does, so 0.52 is inside the
+     margin of error rather than outside it. The ceiling here is 0.50, which
+     leaves the worst hue on the shelf a real gap rather than a rounding one.
+
+     THE DARK FLOOR is the same calculation mirrored: against Ink (Y ≈ 0.011)
+     and Onyx (Y ≈ 0.012) a 4.5:1 ink must reach Y ≥ 0.225, a neutral L of
+     about 0.61 — and a saturated blue at a given L carries LESS luminance than
+     a neutral, so the floor is 0.76 rather than 0.62. That figure also lands
+     where the hand-picked inks on the approved reference page landed, which is
+     the cheapest possible check that the derivation and the drawing agree.
+
+     THE CHROMA CEILING is not about contrast. 9px tracked caps in a fully
+     saturated hue vibrate; 0.15 is the largest value that holds still at that
+     size and it is above where nine of the eleven publishers already sit, so
+     it clamps two and leaves the rest untouched. Chroma is otherwise the
+     publisher's, which with hue is what makes this their colour and not a
+     tint of ours.
+
+     ELEVEN PUBLISHERS × FOUR ATMOSPHERES, ZERO HAND-PICKED HEXES — and
+     scripts/qa-podcast-player.mjs measures every one of the forty-four in the
+     running engine against the 4.5 floor, so these three numbers cannot drift
+     away from the claim they make. */
+  --ink-fit-floor: 0;      /* @kind other */
+  --ink-fit-ceiling: 0.50; /* @kind other */
+  --ink-fit-c-max: 0.15;   /* @kind other */
+
   --material-blur: 0px;   /* @kind other */
   --material-saturate: 1; /* @kind other */
 
@@ -871,6 +917,11 @@
      holds 5.88:1 over the worst of the eleven dark grounds. */
   --ground-fit-l: 0.262;
   --ground-fit-step: 0.055;
+  /* The dark polarity of the INK fit — see the :root note for the arithmetic.
+     Only the two numbers that have a polarity turn over; the chroma ceiling is
+     about type vibrating at 9px, which has no polarity either. */
+  --ink-fit-floor: 0.76;
+  --ink-fit-ceiling: 1;
   /* Laurel's dark polarity, Rev 04 §4. Declared only; the licensed strings
      migrate onto it in a separate pass this block does not own. */
   --accent-laurel: #9DAA8A;     /* 7.00:1 on paper */
@@ -19785,9 +19836,13 @@ button.lang-phrase-diagram-node:focus-visible,
   text-transform: uppercase;
 }
 
-.taught-here-masthead h3 {
+/* h3 on Overview's digest, h4 in the room's list view — the room's own <h3> is
+   the section title, so its masthead's flag is one rank below it. One rule for
+   the flag either way: a heading's LEVEL is about where it sits in the
+   document, and its face is about what it is. */
+.taught-here-masthead :is(h3, h4) {
   margin: 0;
-  font: var(--fw-bold) 1rem/1.1 var(--font-ui);
+  font: 700 1rem/1.1 var(--font-ui);
   letter-spacing: -0.025em;
 }
 
@@ -20314,18 +20369,40 @@ button.lang-phrase-diagram-node:focus-visible,
   margin-top: var(--sp-md);
 }
 
+/* ── ONE CARD PER ROW · 2026-07-31 ─────────────────────────────────────────
+   The maintainer, verbatim: "make listing cards not stack side by side make
+   them force full width".
+
+   WHAT THIS REPLACES, quoted whole because a rule reversed without its own
+   words on the page is one nobody can argue with later:
+
+     "Two columns at the margin's own width, and it stays two: an `auto-fill`
+      grid in a panel that can be 320–420px wide flickers between one column
+      and two as the reader drags the window, and a room that reflows under
+      the hand is not calm."
+
+   EVERY WORD OF THAT SURVIVES AND IT ARGUES FOR ONE COLUMN. The objection was
+   never to a single column; it was to a column COUNT that moves under the
+   hand. `repeat(1, …)` cannot flicker — it is the only track count in this
+   panel that is stable at every width the panel has, including the narrow
+   shell where auto-fill and two-up both collapse anyway.
+
+   WHY THE COUNT WAS THE PROBLEM. Two columns of a 332px panel gave each card
+   ~146px of measure, and that one number is behind nearly every defect this
+   card has been through: the title wrapped after three words, the passage
+   ellipsed mid-word, a publisher's name came out as "40 MINUTES IN THE OLD
+   TE…", and the plate had to be argued down to fit beside them. A card cannot
+   be composed out of that; it can only be triaged. See `.resource-card-head`
+   below for what the recovered measure is spent on.
+
+   THE GUTTER STAYS 10. It was raised to 10 when the ground arrived — "two
+   planes 8px apart read as one plane with a seam" — and a column of tinted
+   planes needs that separation more than a grid did, not less: two cards of
+   the same publisher now sit directly above one another with nothing but the
+   gutter between two nearly identical hues. */
 .resource-grid {
   display: grid;
-  /* Two columns at the margin's own width, and it stays two: an `auto-fill`
-     grid in a panel that can be 320–420px wide flickers between one column and
-     two as the reader drags the window, and a room that reflows under the
-     hand is not calm. */
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  /* 6 → 8 with the taste pass, 8 → 10 with the ground. Every card is now a
-     tinted plane rather than paper with a plate on it, and two planes 8px
-     apart read as one plane with a seam. The gutter is what tells eleven
-     papers apart; it is the cheapest thing on this surface and the most
-     load-bearing. */
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
   margin: 0;
   padding: 0;
@@ -20341,7 +20418,12 @@ button.lang-phrase-diagram-node:focus-visible,
      the ones outside the viewport are not laid out until they are near it, and
      the intrinsic size stops the scrollbar from lying while they wait. */
   content-visibility: auto;
-  contain-intrinsic-size: auto 112px;
+  /* 112 → 84 with the full-width recomposition: three rows became two, and an
+     intrinsic size that over-states a card by a third makes the scrollbar lie
+     by a third over nine hundred of them. Measured in the running engine at
+     the reference width: a one-line title draws 78px and a two-line title 94,
+     so 84 is the estimate that is wrong by least before a card is laid out. */
+  contain-intrinsic-size: auto 84px;
 }
 
 /* ── THE CARD'S GROUND · 2026-07-30 ────────────────────────────────────────
@@ -20393,24 +20475,41 @@ button.lang-phrase-diagram-node:focus-visible,
     calc(l + var(--ground-fit-step) * 0.42) c h);
 }
 
-/* The second size. It is the same card — same face, same four things, same
-   radius — spanning both columns, and it earns that by what the ordering
-   already worked out rather than by carrying an extra word. */
+/* ── THE SECOND SIZE · RESTATED 2026-07-31 ─────────────────────────────────
+   It read "the same card — same face, same four things, same radius — SPANNING
+   BOTH COLUMNS", and the span is gone with the columns. The claim it carried
+   is not: the strongest answer in the room should look like the strongest
+   answer, and the ordering has already worked out which one that is.
+
+   It is spent in TYPE now, and only in type — one step on the title, which is
+   the one thing on this card a reader is scanning. Nothing else about a heavy
+   card differs: same plate, same head, same ground, same radius. Two sizes,
+   and the difference between them is a thirteenth of an em. */
 .resource-card[data-weight="heavy"] {
-  grid-column: 1 / -1;
-  contain-intrinsic-size: auto 100px;
+  contain-intrinsic-size: auto 88px;
 }
 
 .resource-card-face {
   display: grid;
-  /* Colophon, name, foot — and the foot is on the card's FLOOR rather than
-     under whatever the name happened to need. Added 2026-07-30: the face was
-     `align-content: start`, so two cards side by side with a one-line and a
-     two-line title put their passage and their extent on two different lines,
-     and a grid of them had no horizontal rhythm at all. The middle row takes
-     the slack; the passage and the extent align across every row. */
-  grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 9px;
+  /* ── HEAD, THEN TITLE · 2026-07-31 ──────────────────────────────────────
+     This was three rows — `auto minmax(0, 1fr) auto` — with a note that is
+     worth keeping because it names the defect the third row existed to fix:
+     "two cards side by side with a one-line and a two-line title put their
+     passage and their extent on two different lines, and a grid of them had no
+     horizontal rhythm at all."
+
+     THERE IS NO SIDE BY SIDE. One card per row means the passage and the
+     extent have nothing to align WITH across a row, so pinning them to the
+     card's floor bought nothing and cost a whole row of height — and it left
+     the head line, which is now 288px wide, holding a 56px plate and 232px of
+     nothing.
+
+     So the filing moves UP into that emptiness and the title takes the floor:
+     two rows, the head at its natural height, the title below it. A card is a
+     row shorter and its title has four times the measure. */
+  grid-template-rows: auto minmax(0, auto);
+  align-content: start;
+  gap: 8px;
   width: 100%;
   height: 100%;
   /* 8 → 10 with the taste pass, 10 → 11 with the ground: on a tinted plane the
@@ -20418,8 +20517,10 @@ button.lang-phrase-diagram-node:focus-visible,
      inside the block is what makes a card look printed on its own edge. */
   padding: 11px;
   border: 1px solid var(--resource-ground-edge, var(--border-subtle));
-  /* Canon: 0.22 × the shorter dimension, rounded even, capped at 8 — a ~112px
-     tile takes the cap, and the plate inside it nests at 4. */
+  /* Canon: 0.22 × the shorter dimension, rounded even, capped at 8. The card
+     is 78px tall and 332 wide now rather than ~112 square, so 0.22 × 78 is 17
+     and the cap takes it to 8 — the same number the law gave the tile, which
+     is why the corner did not move when the shape did. */
   border-radius: var(--radius-md);
   background: var(--resource-ground, none);
   color: inherit;
@@ -20469,12 +20570,41 @@ button.lang-phrase-diagram-node:focus-visible,
   color: var(--text-secondary);
 }
 
-/* ── The foot, and what a press will do ────────────────────────────────────
-   The transport mark used to sit in the card's head beside the publisher's
-   plate: two marks on the loudest line, and 20px of amber repeated once per
-   card down a room that can be nine hundred long. It is at the foot now,
-   against the extent it acts on — "▸ 12 min" is one object, and the head is
-   free for the colophon that has to be on every card. */
+/* ── THE HEAD LINE, AND WHAT FULL WIDTH IS FOR · 2026-07-31 ────────────────
+   `.resource-card-foot` stood here — the passage on the left, the transport
+   and the extent on the right, pinned to the card's floor under the title.
+   It is `.resource-card-head` now and it is the card's FIRST line, holding
+   all three of the small facts:
+
+     [PLATE] ······················· Genesis 6:1–4  ▸ 9 min
+     Who were "the sons of God" in Genesis 6?
+
+   THE PROPORTIONS, and every one of them is a consequence of the measure
+   rather than a preference. At the reference width the card's inner measure is
+   ~288px. The plate is 56 and fixed; the tail — a 14px transport mark, 5px,
+   and an extent that is at most "129 min" in the numeral face — is ~62 and
+   fixed. That leaves ~160 for the passage against a longest real label of
+   about 120 ("1 Corinthians 15:20–28"), so the ref never truncates and never
+   has to be given a lane it does not use: `margin-inline-start: auto` binds it
+   to the tail, and the two of them close the line as one right-hand cluster
+   against the plate on the left.
+
+   WHY IDENTITY LEFT AND FILING RIGHT. The plate is the only thing on this line
+   that identifies a PUBLISHER, and it is the thing a reader's eye returns to
+   when scanning a column; the passage and the extent are what they check once
+   they have stopped. Left is the returning edge, right is the stopping edge.
+   That order also puts the transport mark against the extent it acts on — "▸ 9
+   min" is one object, which is why the pair moved up together and the mark did
+   not go back into the head beside the plate, where two marks argued.
+
+   AND THE TITLE GETS THE FLOOR — the whole 288, four times what it had. */
+.resource-card-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .resource-card-tail {
   display: flex;
   flex: none;
@@ -20583,14 +20713,26 @@ button.lang-phrase-diagram-node:focus-visible,
    THE REDUNDANCY IT WAS SOLVING IS REAL AND IS STILL SOLVED. It moved into the
    four currencies a mark can be quiet in without being absent: the ground
    above carries the publisher so the plate no longer has to be the whole of
-   the identity (HIERARCHY); the plate has the head line to itself now that the
-   transport moved to the foot (SCALE); one plate at one x on every card, over
-   a foot that aligns across the row (RHYTHM); and the gutter and the card's
-   own padding both went up (SPACING). */
+   the identity (HIERARCHY); the plate is the only mark on the head line and
+   the transport sits a clear 170px away from it against the extent (SCALE);
+   one plate at one x, in one column, so a run of the same publisher is a
+   straight edge rather than a checkerboard (RHYTHM — restated 2026-07-31, when
+   "a foot that aligns across the row" stopped meaning anything: there is no
+   row); and the gutter and the card's own padding both went up (SPACING).
 
-/* The thing's own name. Two lines, because a title is long by nature and its
-   first forty characters identify it; `pretty` rather than `balance` because a
-   two-line clamp has no ragged block to balance. */
+   ONE COLUMN MADE THE THIRD OF THOSE STRONGER RATHER THAN WEAKER. Two-up, the
+   same publisher's two cards could land side by side or diagonally, and the
+   plates read as scatter; stacked, they land at the same x on consecutive
+   lines, which is what a running imprint looks like in print. */
+
+/* The thing's own name, on the card's floor and at the card's whole measure.
+   Two lines still — a title is long by nature — but the clamp is a backstop
+   now rather than the normal case: at ~288px a 0.75rem reading serif holds
+   about 48 characters a line, so most titles land on one and the corpus's
+   longest lands inside two. It was ~20 characters a line in the two-column
+   grid, which is what made a three-word first line the normal case.
+   `pretty` rather than `balance` because a clamped block has no ragged tail to
+   balance. */
 .resource-card-title {
   display: -webkit-box;
   overflow: hidden;
@@ -20602,26 +20744,24 @@ button.lang-phrase-diagram-node:focus-visible,
   -webkit-line-clamp: 2;
 }
 
+/* The whole of the second size — see the note at [data-weight="heavy"]. */
 .resource-card[data-weight="heavy"] .resource-card-title {
   font-size: 0.8125rem;
-  -webkit-line-clamp: 2;
-}
-
-.resource-card-foot {
-  display: flex;
-  /* `center` rather than `baseline`, with the transport mark now in this row:
-     a 14px disc has no baseline of its own, so a baseline row hung it off the
-     bottom of the numerals beside it. */
-  align-items: center;
-  justify-content: space-between;
-  gap: 6px;
-  min-width: 0;
 }
 
 /* The passage, in the reading face: it is the answer rather than the filing.
    A reader on Romans 8:1 who sees 8:1–4 knows it is theirs without a band
-   heading saying so — which is the whole of what the bands were for. */
+   heading saying so — which is the whole of what the bands were for.
+
+   BOUND TO THE TAIL rather than given a lane of its own · 2026-07-31. The two
+   of them are one right-hand cluster closing the head line, and a lane would
+   pin the passage to a fixed x that the extent's own width then argues with.
+   The min-width is what keeps the ellipsis reachable in the pathological case
+   — a flex item's floor is its content, so without it a long label would push
+   the tail off the card rather than clip itself. */
 .resource-card-ref {
+  min-width: 0;
+  margin-inline-start: auto;
   overflow: hidden;
   color: var(--text-secondary);
   font: var(--fw-medium) 0.6875rem/1.5 var(--font-reading);
@@ -20637,6 +20777,290 @@ button.lang-phrase-diagram-node:focus-visible,
   font: 0.625rem/1.5 var(--font-mono);
   font-variant-numeric: tabular-nums;
   white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   THE LIST · 2026-07-31
+   ═══════════════════════════════════════════════════════════════════════════
+
+   The maintainer, verbatim: "give a toggle for a list view where people can get
+   more data in via list if the logo views are too much for them (not for shelf
+   but for listings)".
+
+   NOT INVENTED HERE. This is the app's own resource masthead brought forward —
+   recovered from ae15ab9, drawn at the real 332px column against real Genesis 6
+   material, and approved on the night of 2026-07-31. The grammar, in full:
+
+     A MASTHEAD · tracked kicker, bold flag with tight letterspacing, and a 3px
+       rule in FULL INK beneath it. Three pixels rather than one, because this
+       rule is a flag's rule and not a separator: a hairline under a 16px bold
+       title reads as the top of a box that is not there.
+     PUBLISHER RUNS · the publisher named ONCE per run, in their own ink, at
+       9px bold tracked caps.
+     AN ENTRY · a 3px spine in the publisher's colour, a hairline separator
+       above it, the title in the reading serif at the column's whole measure,
+       and a meta line of passage and length.
+
+   NO BOXES, NO TINTS, NO PLATES, NO ARTWORK. Brand is carried by COLOUR AND
+   TYPE alone, and that is not an aesthetic preference — it is the entire
+   mechanism by which this form fits about 1.8 times as much on a
+   screen as the cards do. MEASURED in the running engine at the reference
+   width: a card draws 78px and takes a 10px gutter, so it costs 88; an entry
+   draws 48 and its run heading amortises to about one more. 88 against 49 is
+   1.8× as many entries on a screen — and on Genesis 1 that is the difference
+   between eleven headings a reader can scan and nine hundred cards they
+   cannot.
+
+   THE CROPPED SYMBOLS WERE TRIED AT THE RUN HEAD AND DELIBERATELY DROPPED. The
+   maintainer looked at that version and could not see them at that size. They
+   are not to be added back — the shelf is where a logo is drawn at a size a
+   logo needs, and this surface is the one that answers "what if the logos are
+   too much".
+
+   AND THE SHELF IS NOT PART OF THIS. It has one form, it keeps it, and the
+   toggle below never reaches it. */
+
+/* ── The publisher's ink, derived · 2026-07-31 ─────────────────────────────
+   A publisher's --resource-source is a SURFACE colour: it is picked to be
+   painted behind a reverse mark, so about half of the eleven are too light to
+   set type in and two are too dark to tell from the app's own ink. Setting the
+   run's name in the raw brand hex would put Enter the Bible's yellow at about
+   1.6:1 on Paper and Naked Bible's charcoal at a value that says "this is not
+   a link" — so the ink is DERIVED, the way --player-accent already is, with
+   the clamp turned to what type needs. See the --ink-fit-* note at :root for
+   the arithmetic and the measured floors.
+
+   `.resource-source` is the palette hook the eleven brand blocks have declared
+   since the merge and that NOTHING has ever used — a dead selector in eleven
+   enumerations. It is live now, which is better than a twelfth enumeration:
+   every publisher gets this for free, and a publisher added tomorrow cannot be
+   left off a list the way The Listener's once was. */
+.resource-source[data-source] {
+  --resource-run-ink: oklch(from var(--resource-source)
+    clamp(var(--ink-fit-floor), l, var(--ink-fit-ceiling))
+    clamp(0, c, var(--ink-fit-c-max))
+    h);
+}
+
+/* ── The listings' head, in both forms ─────────────────────────────────────
+   IN LIST VIEW IT IS `.taught-here-masthead` ITSELF — the app's own masthead
+   rule, unmodified: the tracked kicker, the 700/16px flag at -0.025em, and the
+   3px rule in full ink beneath. NOT A COPY OF IT. The approved reference page
+   is that rule drawn at the real column width, and a second set of
+   declarations restating it in four numbers is exactly how one surface ends up
+   with two mastheads that disagree — which this room has already been through
+   once, and is the reason it exists.
+
+   All this adds is a second COLUMN for the toggle, so the 3px rule still runs
+   the whole measure under both of them and the flag keeps the left.
+
+   IN CARD VIEW there is no masthead and no rule. The cards carry their own
+   identity and a heading over them would be that same duplication coming back
+   by the front door — so the line is the toggle alone, right-aligned. */
+.resource-list-masthead {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+}
+
+.resource-list-masthead > .resource-view-toggle {
+  grid-row: 1 / 3;
+  grid-column: 2;
+}
+
+.resource-listing-head {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: var(--sp-md);
+}
+
+/* ── The toggle ────────────────────────────────────────────────────────────
+   THE APP'S VIEW-TAB IDIOM, and the choice of idiom is the whole design: ink
+   plus Law 2's seal on the edge nearest what it opens, which is what
+   `.podcast-view-tab` already does for the sheet's two views. It is
+   deliberately NOT the shelf's pressed-plate idiom — the shelf is the filter,
+   and a filter-shaped control in a room that has a filter will be read as a
+   second one. This changes what the same entries look like. It never changes
+   which entries there are.
+
+   Quiet by construction: two words in the small UI face, tertiary until
+   chosen, no border, no ground, no chevron, no icon. */
+.resource-view-toggle {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 12px;
+}
+
+.resource-view-choice {
+  position: relative;
+  padding: 0 1px 5px;
+  border: 0;
+  background: none;
+  color: var(--text-tertiary);
+  font: var(--fw-medium) 0.6875rem/1 var(--font-ui);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+/* Law 2 · the seal on the edge nearest the content it opens, which is down. */
+.resource-view-choice::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+  border-radius: var(--radius-mark);
+  background: var(--study-gold);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.resource-view-choice[aria-checked="true"] { color: var(--text-primary); }
+.resource-view-choice[aria-checked="true"]::after { opacity: 1; }
+.resource-view-choice:not([aria-checked="true"]):hover { color: var(--text-secondary); }
+
+.resource-view-choice:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+
+/* In the masthead the seal would sit two pixels off a 3px rule in full ink and
+   be read as a nick in it. Four more pixels of padding lifts the choices clear
+   and the seal reads as a mark on the tab, which is what it is. */
+.resource-list-masthead .resource-view-choice { padding-bottom: 7px; }
+
+/* ── The runs ──────────────────────────────────────────────────────────────
+   One publisher, one heading, their entries beneath. The gap between runs is
+   what does the work a plate does in the card room: it is the only thing
+   separating two publishers, so it is larger than anything inside a run. */
+.resource-runs {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.resource-run { padding-top: 14px; }
+
+/* The publisher, once, in their own derived ink. 9px bold tracked caps is the
+   imprint voice the card's plate used to set names in before the marks
+   replaced them — it is the app's existing voice for a publisher's name in
+   type, recovered here where there is no artwork to fight it. */
+.resource-run-name {
+  margin: 0 0 5px;
+  color: var(--resource-run-ink, var(--text-secondary));
+  font: 700 0.5625rem/1.2 var(--font-ui);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.resource-run-entries {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/* ── An entry ──────────────────────────────────────────────────────────────
+   A hairline above and a 3px spine in the publisher's colour, and that is the
+   whole of the chrome. The spine is inset from both ends rather than run to
+   the full height, so a run of eight entries reads as eight marks in a column
+   and not as one long bar with lines across it.
+
+   Nine hundred of these is only honest if they are cheap until they are
+   reached, exactly as the cards are — `content-visibility` and an intrinsic
+   size measured off the drawn row, not guessed. */
+.resource-entry {
+  position: relative;
+  content-visibility: auto;
+  /* Measured, not guessed: 7 + 17 + 2 + 15 + 7 = 48 for a one-line title, and
+     65 where a title takes two. 48 is the honest estimate for the ones nobody
+     has scrolled to. */
+  contain-intrinsic-size: auto 48px;
+}
+
+.resource-entry::before {
+  content: "";
+  position: absolute;
+  inset: 8px auto 8px 0;
+  width: 3px;
+  border-radius: var(--radius-mark);
+  background: var(--resource-run-ink, var(--border-strong));
+}
+
+.resource-entry-face {
+  display: grid;
+  gap: 2px;
+  width: 100%;
+  padding: 7px 2px 7px 11px;
+  border: 0;
+  border-top: 1px solid var(--border-subtle);
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+/* The app's own hover, and nothing brand-coloured: the resting state is the
+   thing that must stay free of grounds, and a surface with no hover at all
+   tells nobody 956 lines are pressable. */
+.resource-entry-face:hover { background: var(--surface-hover); }
+
+/* The offset is the app's own +2 rather than an inset ring. An inset ring is
+   what a full-width row invites and Rev 04 §4 bans outright — it lands on the
+   element's own fill — so the ring sits outside, where it briefly overlaps a
+   neighbouring hairline and is unmistakably a ring. */
+.resource-entry-face:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* The one playing. The mark in the meta line is the app's transport face —
+   see the note in components/Resources for why it is drawn on that entry and
+   on no other — and the ground is the app's own, never the publisher's. */
+.resource-entry-face[data-running="true"] { background: var(--surface-hover); }
+
+/* The thing's own name, at the column's whole measure and in the reading face.
+   Two lines are allowed and rarely needed: at ~300px this holds about 50
+   characters a line. */
+.resource-entry-title {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--text-primary);
+  font: var(--fw-medium) 0.78125rem/1.32 var(--font-reading);
+  letter-spacing: -0.002em;
+  text-wrap: pretty;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.resource-entry-meta {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: var(--text-tertiary);
+  font: 0.625rem/1.45 var(--font-ui);
+}
+
+.resource-entry-ref {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resource-entry-dot { color: var(--text-tertiary); }
+
+.resource-entry-extent {
+  flex: none;
+  font-variant-numeric: tabular-nums;
+}
+
+.resource-entry-play {
+  --transport-size: 11px;
+  flex: none;
 }
 
 /* ── The spine ─────────────────────────────────────────────────────────────
@@ -20778,6 +21202,9 @@ button.lang-phrase-diagram-node:focus-visible,
 
 @media (prefers-reduced-motion: reduce) {
   .resource-card-face,
+  .resource-entry-face,
+  .resource-view-choice,
+  .resource-view-choice::after,
   .resources .taught-here-walk,
   .resources-door { transition: none; }
   .resource-card-face:active .resource-card-play { transform: none; }
@@ -20819,6 +21246,48 @@ button.lang-phrase-diagram-node:focus-visible,
      does — the marks are approved reverses and the artwork may not be
      recoloured — and it is the only opt-out in this room. */
   .resource-card-plate { forced-color-adjust: none; }
+
+  /* ── The list, in the reader's own two colours · 2026-07-31 ─────────────
+     THIS IS THE FORM THAT NEEDS THE BLOCK MOST, because a forced palette takes
+     away the only thing the list uses to carry brand: colour. The card room
+     loses a tint and keeps a plate; the list loses a publisher's ink and would
+     otherwise be left with a run heading and a spine drawn in nothing.
+
+     So the two of them are redrawn in the reader's ink and the STRUCTURE is
+     what survives — a heading over its own run, a mark down the left of each
+     entry, a rule between entries. That is the grammar; the colour was only
+     ever how it was tinted. And the masthead's rule is full ink here for the
+     same reason it is full ink everywhere else: it is a flag's rule.
+
+     No opt-out anywhere on this surface. There is no approved artwork on it to
+     protect — which is the point of it — so nothing may claim one. */
+  .resource-list-masthead { border-bottom-color: CanvasText; }
+  .taught-here-kicker,
+  .resource-run-name,
+  .resource-entry-title,
+  .resource-entry-meta { color: CanvasText; }
+  .resource-entry::before { background: CanvasText; }
+  .resource-entry-face { border-top-color: GrayText; }
+  .resource-entry-face:hover { background: Highlight; color: HighlightText; }
+  .resource-entry-face:focus-visible { outline-color: Highlight; }
+  /* Hover paints Highlight, so the playing entry cannot also be a fill or the
+     two would be indistinguishable. It takes the room's own running mark —
+     an outline — which is the same answer the card gives one line up. */
+  .resource-entry-face[data-running="true"] {
+    background: Canvas;
+    outline: 2px solid Highlight;
+    outline-offset: -2px;
+  }
+
+  /* The toggle. A forced palette suppresses box-shadow and drops the seal's
+     background to nothing, so the chosen view is stated on the one channel
+     that survives — the same channel the shelf's chosen plate uses. */
+  .resource-view-choice { color: CanvasText; }
+  .resource-view-choice[aria-checked="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: 2px;
+  }
+  .resource-view-choice::after { background: CanvasText; }
 }
 
 .trusted-resources-status {
@@ -20939,6 +21408,13 @@ button.lang-phrase-diagram-node:focus-visible,
    chart this shelf was built to avoid. The publisher survives on the card
    where it is approved to: inside the plate. */
 .resource-card-face,
+/* And the list's entries, added 2026-07-31. Exactly the same argument a third
+   time, and here it matters most: the entry SITS INSIDE a `.resource-source`
+   element — the spine and the run's name above it are drawn from the
+   publisher's own colour — so without this the transport mark on the playing
+   entry would be painted in the publisher's hue rather than the app's gold.
+   The publisher owns the spine; the app owns the transport. */
+.resource-entry-face,
 .podcast-resume {
   --resource-source: var(--study-gold);
   /* A surface colour and a 3px rail are not the same job. Most brands survive

@@ -242,6 +242,21 @@ interface AppSettingsSchema {
   readingSize: "s" | "m" | "l";
   verseNumbers: "always" | "faint" | "hover";
   /**
+   * How the Resources room lays its LISTINGS out — cards or list.
+   *
+   * Added 2026-07-31 on the maintainer's instruction: "give a toggle for a list
+   * view where people can get more data in via list if the logo views are too
+   * much for them (not for shelf but for listings)". It is a comfort setting of
+   * the same kind as `readingSize` and `verseNumbers` — a reader who wants more
+   * per screen wants it on every chapter and on every launch — so it is kept
+   * here rather than in the study workspace, whose validator is a revisioned
+   * document about the reader's WORK.
+   *
+   * It governs the listings only. The publisher shelf above them has no second
+   * form and never gains one.
+   */
+  resourceView: "cards" | "list";
+  /**
    * What the reader has muted, permanently and library-wide. Entries are either
    * `publisher` or `publisher:kind`. The two earlier keys are migrated into it.
    */
@@ -409,6 +424,17 @@ function normalizeMarkingSurface(value: unknown): AppSettingsSchema["markingSurf
     && MARKING_SURFACE_IDS.has(value as AppSettingsSchema["markingSurface"])
     ? value as AppSettingsSchema["markingSurface"]
     : "palette";
+}
+
+/* Two forms of one room's listings, and nothing else may be stored here. An
+   unknown id is CARDS rather than a refusal: a comfort setting that arrives
+   corrupt should hand the reader the shipped form, not an empty room. */
+const RESOURCE_VIEWS = new Set<AppSettingsSchema["resourceView"]>(["cards", "list"]);
+
+function normalizeResourceView(value: unknown): AppSettingsSchema["resourceView"] {
+  return typeof value === "string" && RESOURCE_VIEWS.has(value as AppSettingsSchema["resourceView"])
+    ? value as AppSettingsSchema["resourceView"]
+    : "cards";
 }
 
 function normalizeLastRead(value: unknown): AppSettingsSchema["lastRead"] {
@@ -641,6 +667,7 @@ const store = new Store<AppSettingsSchema>({
     marginVisible: true,
     readingSize: "m",
     verseNumbers: "always",
+    resourceView: "cards",
     resourceMutes: [],
     hiddenResourceSources: [],
     hiddenResourceKinds: [],
@@ -3651,6 +3678,7 @@ function registerIpcHandlers(): void {
       theme: normalizeTheme(settled.theme),
       material: normalizeMaterial(settled.material, settled.theme),
       markingSurface: normalizeMarkingSurface(settled.markingSurface),
+      resourceView: normalizeResourceView(settled.resourceView),
       lastRead: normalizeLastRead(settled.lastRead),
       lastHeard: normalizeLastHeard(settled.lastHeard),
       researchSession: normalizeResearchSession(settled.researchSession),
@@ -3692,6 +3720,7 @@ function registerIpcHandlers(): void {
         partial.theme ?? store.store.theme,
       ),
       markingSurface: normalizeMarkingSurface(partial.markingSurface ?? store.store.markingSurface),
+      resourceView: normalizeResourceView(partial.resourceView ?? store.store.resourceView),
       lastRead: normalizeLastRead(hasLastRead ? partial.lastRead : store.store.lastRead),
       lastHeard: normalizeLastHeard(hasLastHeard ? partial.lastHeard : store.store.lastHeard),
       researchSession: normalizeResearchSession(

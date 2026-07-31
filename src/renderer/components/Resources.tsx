@@ -1,5 +1,7 @@
 import type React from "react";
 import { useMemo, useState, useSyncExternalStore } from "react";
+import type { ResourceView } from "../api.js";
+import { readResourceView, setResourceView, subscribeResourceView } from "../resource-view.js";
 import type { PassageMoment } from "../../core/passage-index.js";
 import { verseSpan } from "../../core/passage-index.js";
 import type { ReferenceRelation } from "../../core/references.js";
@@ -91,8 +93,17 @@ import {
 const WALK_FLOOR_SECONDS = 60;
 const WALK_STOPS = 12;
 
-/** How many voices the Overview digest offers before its door. Four, so the
- * room's two-column grid closes as a square rather than leaving an orphan. */
+/**
+ * How many voices the Overview digest offers before its door.
+ *
+ * RESTATED 2026-07-31. It read "Four, so the room's two-column grid closes as
+ * a square rather than leaving an orphan" — a reason that died with the second
+ * column. Four survives on a different footing and the number is unchanged
+ * because the new one holds it at the same value: the card is a row shorter
+ * than it was, so four of them cost Overview about what two of the old ones
+ * did, and four is what a digest under an insight and a cross-reference list
+ * can carry without becoming the room it has a door to.
+ */
 const DIGEST = 4;
 
 export interface ResourceEntry {
@@ -357,6 +368,29 @@ function episodeOf(entry: ResourceEntry): PodcastEpisode {
 }
 
 /**
+ * THE ENTRY'S OWN SENTENCE, said once for both forms of the room.
+ *
+ * Factored out of the card on 2026-07-31, when the list view arrived. The two
+ * forms draw very different things — the list draws no mark at all — and if
+ * each composed its own sentence they would drift, which is precisely how the
+ * merged surface ended up with two brand policies over one set of episodes.
+ *
+ * What a screen reader is owed is the CLAIM: who, what, where in the chapter,
+ * how long, and from what point in the file. The relation is spoken here and
+ * printed on neither face, because what a face is owed is calm.
+ */
+function spokenFor(entry: ResourceEntry, running: boolean): string {
+  const said = entry.timed ? relationSaid(entry.timed.relation) : LISTED_SAID;
+  if (entry.link) {
+    return `Read ${entry.episode} on ${entry.sourceName} — ${entry.label}, ${entry.kind}. Opens the official page.`;
+  }
+  const now = running ? "Now playing. " : "";
+  return entry.timed
+    ? `${now}Hear ${entry.episode}, ${entry.sourceName}. ${relationSpoken(entry.timed.relation, entry.label)}, ${extentOf(entry.timed.seconds)} from ${clockOf(entry.timed.at)}.`
+    : `${now}Hear ${entry.episode}, ${entry.sourceName}. ${entry.label} is ${said}.`;
+}
+
+/**
  * The card, in both sizes and all three shapes.
  *
  * THE FACE IS A CONTRACT: the publisher's identity, the thing's own name, the
@@ -406,6 +440,43 @@ function episodeOf(entry: ResourceEntry): PodcastEpisode {
  * no longer true is that a source without a mark takes no colour at all: the
  * card's ground is an homage to their hue either way, which is what finally
  * closes the gap between the two forms. See the ground note in styles.css.
+ *
+ * ── ONE CARD PER ROW, AND THE CARD RE-PROPORTIONED FOR IT · 2026-07-31 ──────
+ *
+ * The maintainer, verbatim: "i see were pretty good where were at we just need
+ * to make listing cards not stack side by side make them force full width".
+ *
+ * THE TWO-UP GRID WAS THE ROOT OF MOST OF WHAT HAS BEEN WRONG WITH THIS CARD.
+ * A 332px column laid two-up gives each card about 146px of measure, and every
+ * defect the last three builds fixed was a symptom of that one number: a title
+ * that wrapped after three words, a passage that ellipsed mid-word, a
+ * publisher's name cut to "40 MINUTES IN THE OLD TE…", a plate whose size had
+ * to be argued down. None of those were composition problems. They were a
+ * measure problem wearing composition's clothes.
+ *
+ * So the grid is ONE COLUMN, and the card is redrawn for the shape that makes
+ * — not stretched into it. What was a three-row stack (plate · title · foot)
+ * is now a HEAD LINE and a TITLE:
+ *
+ *     [PLATE] ······················· Genesis 6:1–4  ▸ 9 min
+ *     Who were "the sons of God" in Genesis 6?
+ *
+ * The head carries all three of the small facts — whose material this is,
+ * where in the chapter it lands, how long it runs — because at full width they
+ * fit on one rule, and at 146px they never could: that is the whole reason the
+ * old card had to spend a row on the plate alone and another on the foot.
+ * Identity anchors the left, the filing closes the right, and the title gets
+ * the card's ENTIRE measure on the line beneath, which is the thing a reader
+ * is actually scanning for.
+ *
+ * Measured on the reference width: the title's measure goes from ~124px to
+ * ~288 (about 20 characters a line to 48), and the card gets SHORTER rather
+ * than taller — three rows became two, so a screen holds about the same number
+ * of entries it did two-up while each of them is finally legible.
+ *
+ * WHAT DID NOT CHANGE, and neither may: the ground is still the derived homage
+ * to the publisher's hue (--ground-fit-*), and the mark is still on every card.
+ * Both are the reader's own standing rulings and this build touches neither.
  */
 function ResourceCard({
   entry,
@@ -420,15 +491,7 @@ function ResourceCard({
   playing: boolean;
   onOpen: (entry: ResourceEntry) => void;
 }): React.JSX.Element {
-  const said = entry.timed ? relationSaid(entry.timed.relation) : LISTED_SAID;
-  /* The card's own sentence, rather than its four faces read end to end. The
-     relation is SPOKEN here and printed nowhere: what a screen reader is owed
-     is the claim, and what the face is owed is calm. */
-  const spoken = entry.link
-    ? `Read ${entry.episode} on ${entry.sourceName} — ${entry.label}, ${entry.kind}. Opens the official page.`
-    : entry.timed
-      ? `${running ? "Now playing. " : ""}Hear ${entry.episode}, ${entry.sourceName}. ${relationSpoken(entry.timed.relation, entry.label)}, ${extentOf(entry.timed.seconds)} from ${clockOf(entry.timed.at)}.`
-      : `${running ? "Now playing. " : ""}Hear ${entry.episode}, ${entry.sourceName}. ${entry.label} is ${said}.`;
+  const spoken = spokenFor(entry, running);
   return (
     /* The publisher moves to the CARD, and it is the card that needs it: the
        ground is derived from `--resource-source`, and the face below re-declares
@@ -449,19 +512,26 @@ function ResourceCard({
         onClick={() => onOpen(entry)}
         type="button"
       >
-        {/* The head is the colophon and nothing else. Every card carries it —
-            see the reversal note above. */}
-        <span className="taught-here-plate resource-card-plate" data-source={entry.sourceId}>
-          <span className="taught-here-mark">{entry.sourceName}</span>
-        </span>
-        <span className="resource-card-title">{entry.episode}</span>
-        {/* The foot is the passage on the left and, on the right, what a press
-            will do to it. The transport mark sits against the extent it acts
-            on rather than up in the head against the publisher's plate: one
-            mark per line, and the loudest thing on the card is no longer a
-            20px disc of amber repeated nine hundred times. */}
-        <span className="resource-card-foot">
+        {/* ── THE HEAD LINE IS THE WHOLE FILING · 2026-07-31 ────────────────
+            The card was a three-row STACK — plate, then title, then a foot of
+            passage and extent — and it had to be, because at 146px the plate
+            and the extent could not share a line. At full width they can, and
+            so the three small facts (whose it is, where it is, how long it
+            runs) close up into ONE rule across the top and the title takes
+            everything below it.
+
+            What that buys is measured rather than claimed: the title's measure
+            goes from ~124px to ~288, about 20 characters a line to 48, and the
+            card gets SHORTER — one row came out of it. See `.resource-card-head`
+            in styles.css for the proportions. */}
+        <span className="resource-card-head">
+          <span className="taught-here-plate resource-card-plate" data-source={entry.sourceId}>
+            <span className="taught-here-mark">{entry.sourceName}</span>
+          </span>
           <span className="resource-card-ref">{entry.label}</span>
+          {/* The transport mark stays against the extent it acts on — "▸ 12
+              min" is one object, which is why the pair moved up together
+              rather than the extent moving alone. */}
           <span className="resource-card-tail">
             {entry.link ? (
               <span aria-hidden="true" className="resource-card-out">
@@ -475,8 +545,199 @@ function ResourceCard({
             </span>
           </span>
         </span>
+        <span className="resource-card-title">{entry.episode}</span>
       </button>
     </li>
+  );
+}
+
+/**
+ * ── THE LIST · 2026-07-31 ──────────────────────────────────────────────────
+ *
+ * The maintainer, verbatim: "give a toggle for a list view where people can get
+ * more data in via list if the logo views are too much for them (not for shelf
+ * but for listings)".
+ *
+ * THIS FORM WAS NOT INVENTED HERE. It is the app's own resource masthead
+ * brought forward — recovered from ae15ab9, drawn at the real column width
+ * against real Genesis 6 material, and approved on the night of 2026-07-31.
+ * What it is, in the order a reader meets it:
+ *
+ *   A MASTHEAD · a tracked kicker, a bold title with tight letterspacing, and
+ *     a 3px rule in full ink beneath. A flag, in the newspaper sense: it says
+ *     what the column below it is and then gets out of the way.
+ *   PUBLISHER RUNS · the publisher named ONCE, at the head of their own run,
+ *     in THEIR OWN COLOUR at 9px bold tracked caps. This is the run rule the
+ *     card room reversed — and the reversal stands where it was made. What the
+ *     reader rejected was a MARK that appeared on some cards and not others,
+ *     because a withdrawn mark asks a question it cannot answer. There are no
+ *     marks on this surface at all, so there is nothing to withdraw: the
+ *     publisher is a heading, and a heading over its own run is what every
+ *     printed table of contents in the world does.
+ *   AN ENTRY · a 3px spine in the publisher's colour, a hairline above, the
+ *     title in the reading serif at the column's whole measure, and a meta
+ *     line of passage and length.
+ *
+ * NO BOXES, NO TINTS, NO PLATES, NO ARTWORK. Brand is carried by COLOUR AND
+ * TYPE and by nothing else, which is the entire reason this form fits two and
+ * a half times as much on a screen as the cards do.
+ *
+ * THE CROPPED SYMBOLS WERE TRIED AT THE RUN HEAD AND DROPPED. The maintainer
+ * looked at that version and could not see them at that size — which is the
+ * same finding the shelf's own rack note reaches from the other direction (a
+ * mark is sized by what a logo needs, and a 12px logo needs nothing). They are
+ * not to be added back.
+ *
+ * ── WHY THE ORDER IS DIFFERENT HERE, AND WHY THAT IS NOT A SECOND ANSWER ────
+ *
+ * The card room is aboutness end to end: 956 entries in one ranked column,
+ * because the ordering is what makes the first screen the right one. Grouping
+ * that ranking by publisher would produce runs of one, over and over, and a
+ * publisher named once per run would then be named 300 times — which is the
+ * repetition this form exists to remove.
+ *
+ * So the list groups by PUBLISHER, in the shelf's own order (which is itself
+ * the ranking's, by first appearance), and holds aboutness INSIDE each run.
+ * Nothing is filtered, nothing is capped, and the same entries are present in
+ * both forms — what changes is the axis a reader scans down. That is the whole
+ * of what "more data in via list" asks for: on Genesis 1 it turns a wall into
+ * a table of contents with eleven headings in it.
+ */
+function ResourceList({
+  runs,
+  playing,
+  runningKey,
+  onOpen,
+}: {
+  runs: ReadonlyArray<{ id: string; name: string; entries: ResourceEntry[] }>;
+  playing: boolean;
+  runningKey: string | null;
+  onOpen: (entry: ResourceEntry) => void;
+}): React.JSX.Element {
+  return (
+    <ul className="resource-runs">
+      {runs.map((run) => (
+        <li className="resource-run" key={run.id}>
+          {/* The publisher, once, in their own ink. `.resource-source` is the
+              palette hook the eleven brand blocks have always declared and
+              nothing has ever used; it is live now, and it is what lets this
+              surface take a publisher's colour without a twelfth per-source
+              enumeration to fall out of step with the other eleven. */}
+          <p className="resource-source resource-run-name" data-source={run.id}>{run.name}</p>
+          <ul className="resource-run-entries">
+            {run.entries.map((entry) => {
+              const running = runningKey === entry.key;
+              return (
+                <li
+                  className="resource-source resource-entry"
+                  data-source={entry.sourceId}
+                  key={entry.key}
+                >
+                  <button
+                    aria-label={spokenFor(entry, running)}
+                    className="resource-entry-face"
+                    data-kind={entry.link ? "read" : "hear"}
+                    data-running={running ? "true" : undefined}
+                    onClick={() => onOpen(entry)}
+                    type="button"
+                  >
+                    <span className="resource-entry-title">{entry.episode}</span>
+                    <span className="resource-entry-meta">
+                      {/* THE ONE MARK ON THIS SURFACE, and it is the app's
+                          rather than a publisher's: the entry the dock is
+                          actually playing says so in the transport's own face.
+                          Drawn on that entry ALONE — 956 amber discs is the
+                          thing the card room moved its transport to the foot to
+                          stop, and a list has no foot to move it to. */}
+                      {running && (
+                        <TransportPlayMark className="resource-entry-play" paused={!playing} />
+                      )}
+                      <span className="resource-entry-ref">{entry.label}</span>
+                      <span aria-hidden="true" className="resource-entry-dot">·</span>
+                      <span className="resource-entry-extent">
+                        {entry.timed ? extentOf(entry.timed.seconds) : entry.kind}
+                      </span>
+                    </span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * ── THE TOGGLE · 2026-07-31 ────────────────────────────────────────────────
+ *
+ * Two states, at the head of the thing they govern, in the app's own view-tab
+ * idiom: ink and Law 2's seal on the edge nearest what it opens. That idiom is
+ * chosen deliberately over the shelf's pressed plates — THE SHELF ALREADY OWNS
+ * FILTERING, and a control that looks filter-shaped in a room with a filter in
+ * it will be read as one. This changes what the same entries look like; it
+ * never changes which entries there are.
+ *
+ * ANNOUNCED AS A CHOICE, not as two switches. A radio group is the honest
+ * shape — the two states are mutually exclusive and exhaustive — so a screen
+ * reader reads "How this chapter's listings are laid out, Cards, selected, 1
+ * of 2", and the arrow keys move and choose the way a radio group's do. Roving
+ * tabindex, so the group is ONE tab stop rather than two: a room whose listings
+ * are nine hundred entries long must not spend two of a reader's tab presses on
+ * how they are drawn.
+ */
+const VIEWS: ReadonlyArray<{ id: ResourceView; label: string }> = [
+  { id: "cards", label: "Cards" },
+  { id: "list", label: "List" },
+];
+
+function ResourceViewToggle({
+  view,
+  onChange,
+}: {
+  view: ResourceView;
+  onChange: (next: ResourceView) => void;
+}): React.JSX.Element {
+  const choose = (event: React.KeyboardEvent<HTMLButtonElement>): void => {
+    const step = event.key === "ArrowRight" || event.key === "ArrowDown"
+      ? 1
+      : event.key === "ArrowLeft" || event.key === "ArrowUp"
+        ? -1
+        : 0;
+    if (step === 0) return;
+    event.preventDefault();
+    const at = VIEWS.findIndex((option) => option.id === view);
+    const next = VIEWS[(at + step + VIEWS.length) % VIEWS.length]!;
+    onChange(next.id);
+    /* The focus follows the selection, which is what makes a radio group a
+       radio group. Read off the DOM rather than held in a ref: two of them, in
+       one parent, with a stable class. */
+    const group = event.currentTarget.parentElement;
+    const moved = group?.querySelectorAll<HTMLButtonElement>(".resource-view-choice");
+    moved?.[(at + step + VIEWS.length) % VIEWS.length]?.focus();
+  };
+  return (
+    <div
+      aria-label="How this chapter's listings are laid out"
+      className="resource-view-toggle"
+      role="radiogroup"
+    >
+      {VIEWS.map((option) => (
+        <button
+          aria-checked={view === option.id}
+          className="resource-view-choice"
+          key={option.id}
+          onClick={() => onChange(option.id)}
+          onKeyDown={choose}
+          role="radio"
+          tabIndex={view === option.id ? 0 : -1}
+          type="button"
+        >
+          {option.label}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -577,6 +838,10 @@ export function Resources({
 }): React.JSX.Element {
   const { showToast } = useToast();
   const shape = useDiscoveryShape();
+  /* Cards or list, and it OUTLIVES the passage — which is the one way it
+     differs from the two pieces of state below. See renderer/resource-view for
+     why it is on a module and in settings rather than in this component. */
+  const view = useSyncExternalStore(subscribeResourceView, readResourceView);
   /* Which publisher the room is narrowed to, and whether the library panel is
      open. Both die with the passage: "just show me Naked Bible" is a glance,
      not a preference. */
@@ -674,16 +939,46 @@ export function Resources({
   const walkOffer = `The ${walkStops.length} fullest, end to end — about ${walkLength}. Leave it whenever you like.`;
   const walkSpoken = `Listen through ${displayBook} ${chapter} — the ${walkStops.length} fullest treatments, end to end, about ${walkLength}. Leave it whenever you like.`;
 
-  /* Heavy is the shape of the answer rather than a count of it: the cards that
+  /* ── The list's runs ──────────────────────────────────────────────────────
+     One pass over the SAME `shown` the cards draw — same filter, same
+     aboutness, same entries — regrouped so a publisher is named once. The
+     order of the runs is the order a publisher first appears in the ranking,
+     which is the shelf's own order, so the rack above and the column below
+     read down in the same sequence. Nothing is sorted here and nothing is
+     dropped: `runs.flatMap(r => r.entries)` is `shown`, permuted. */
+  const runs = useMemo(() => {
+    const order: Array<{ id: string; name: string; entries: ResourceEntry[] }> = [];
+    const held = new Map<string, { id: string; name: string; entries: ResourceEntry[] }>();
+    for (const entry of shown) {
+      let run = held.get(entry.sourceId);
+      if (!run) {
+        run = { id: entry.sourceId, name: entry.sourceName, entries: [] };
+        held.set(entry.sourceId, run);
+        order.push(run);
+      }
+      run.entries.push(entry);
+    }
+    return order;
+  }, [shown]);
+
+  /* ── The second size · RESTATED 2026-07-31 ────────────────────────────────
+     What this said, and it was true of the two-column grid: "the cards that
      genuinely work through this passage take the full width and the rest are
-     tiles, so the weight of a chapter is visible before a word is read. Two
-     sizes and no more — a size family with three in it is a chart. */
+     tiles, so the weight of a chapter is visible before a word is read."
+
+     EVERY CARD TAKES THE FULL WIDTH NOW, so a span is no longer a currency the
+     family can spend — see the card's own recomposition note. What survives is
+     the claim underneath it, which was never about columns: the strongest
+     answer in the room should look like the strongest answer. It is spent in
+     TYPE instead, on the one thing a reader is scanning — the title — and that
+     is the only difference between the two sizes. Still two, still no more:
+     a size family with three in it is a chart. */
   const heaviest = shown.length > 2
     ? Math.max(...shown.map((entry) => entry.weight))
     : Number.POSITIVE_INFINITY;
   /* Heavy is earned by a treatment, not by being first in a thin list. A
      chapter whose whole shelf is four articles has no treatments in it, and
-     four full-width cards would be a claim the data does not make — so the
+     four emphasised cards would be a claim the data does not make — so the
      size only ever marks a timed answer, and only one within three quarters of
      a point of the best. */
   const isHeavy = (entry: ResourceEntry): boolean => shape === "weight"
@@ -897,8 +1192,59 @@ export function Resources({
         </button>
       )}
 
-      {shape === "spine" ? (
-        <div className="resource-room" data-discovery="spine">
+      {/* ── The listings' own head, and the toggle in it · 2026-07-31 ────────
+          WHERE IT LIVES, and it is a decision rather than a spare corner. The
+          room's other head — `.resource-shelf-head` — is the SHELF's status
+          line, and the shelf is the filter. A control for how the listings are
+          drawn, parked among "Showing Naked Bible" and "Show all", would be
+          read as a third way of narrowing the room. So it sits at the head of
+          the thing it actually governs, directly over the listings, below the
+          walk that belongs to the room rather than to them.
+
+          IN LIST VIEW THIS LINE IS THE MASTHEAD. The kicker and the flag take
+          its left and the 3px rule closes it, exactly as the approved grammar
+          has it; the toggle rides at the right, which is where a dateline goes.
+          In card view there is no masthead and no rule — the cards carry their
+          own identity — so the line is the toggle alone, quiet, over the first
+          card. */}
+      {entries.length > 0 && (
+        /* ONE ELEMENT, TWO DRESSES, and that is a keyboard decision rather than
+           a tidiness one. Drawn as two branches — a <header> for the list and a
+           <div> for the cards — React unmounts the whole subtree on every
+           switch, WHICH TAKES THE FOCUSED RADIO WITH IT: measured, and a reader
+           who pressed Left on the toggle was returned to the top of the
+           document. The head keeps its identity and its position in the child
+           list, so the toggle's own buttons survive the change they caused and
+           focus stays where the reader put it.
+
+           The flag is an h4 because this room's own <h3> is above it; on
+           Overview's digest the same masthead's flag is an h3, because there it
+           is the block's own head. */
+        <header
+          className={view === "list"
+            ? "taught-here-masthead resource-list-masthead"
+            : "resource-listing-head"}
+          data-view={view}
+        >
+          {view === "list" && (
+            <>
+              <span className="taught-here-kicker">From the transcripts</span>
+              <h4>Taught here</h4>
+            </>
+          )}
+          <ResourceViewToggle onChange={setResourceView} view={view} />
+        </header>
+      )}
+
+      {/* The reader's own setting decides the FORM; the discovery shape decides
+          how cards are laid out inside the card form and has nothing to say
+          about a list. See the shape's note above for why it is not a control. */}
+      {view === "list" ? (
+        <div className="resource-room" data-discovery={shape} data-view="list">
+          <ResourceList onOpen={open} playing={playing} runningKey={runningKey} runs={runs} />
+        </div>
+      ) : shape === "spine" ? (
+        <div className="resource-room" data-discovery="spine" data-view="cards">
           {stops.map(([at, cards]) => (
             <div className="resource-stop" key={at}>
               {/* The spine's whole idea, said in two characters: this run of
@@ -924,7 +1270,7 @@ export function Resources({
           ))}
         </div>
       ) : (
-        <div className="resource-room" data-discovery={shape}>
+        <div className="resource-room" data-discovery={shape} data-view="cards">
           <ul className="resource-grid">
             {shown.map((entry) => (
               <ResourceCard
