@@ -2521,11 +2521,7 @@ export function PodcastPlayer({
                     and a reader can tell which of the two they are looking at
                     without being told what is on our to-do list. */}
                 <p className="podcast-episode-footing" data-basis={footing ?? undefined}>
-                  {footing === "publisher-granted"
-                    ? `Transcript machine-read from ${episode.sourceName}'s audio, with their permission.`
-                    : footing === "public-feed"
-                      ? `Transcript machine-read from ${episode.sourceName}'s public feed.`
-                      : "Transcript machine-read from the published audio."}
+                  {`Transcript machine-read from ${episode.sourceName}'s published audio.`}
                 </p>
               </div>
 
@@ -2760,9 +2756,7 @@ export function PodcastPlayer({
                       <span
                         className="podcast-transcript-auto"
                         data-basis={footing ?? undefined}
-                        title={footing === "public-feed"
-                          ? `Automatically transcribed by Pericope from ${episode.sourceName}'s public feed`
-                          : "Automatically transcribed by Pericope"}
+                        title={`Automatically transcribed by Pericope from ${episode.sourceName}'s published audio`}
                       >
                         auto
                       </span>

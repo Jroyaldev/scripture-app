@@ -4,7 +4,6 @@ import { readFileSync } from "node:fs";
 import {
   TRANSCRIPT_SOURCES,
   TRANSCRIPT_ENABLED_SOURCES,
-  TRANSCRIPT_UNASKED_SOURCES,
   transcriptBasis,
   isTranscriptEnabledSource,
   readTranscript,
@@ -118,34 +117,26 @@ test("only an enabled source can have a transcript loaded", () => {
 });
 
 /**
- * The footing is the part worth guarding now that there are two of them.
+ * FLATTENED 2026-07-31. This guarded the TWO footings — a source read from a
+ * public feed against one whose publisher said yes — on the reasoning that the
+ * difference must not stop being visible. The maintainer removed the
+ * distinction that day: every publisher is carried on one basis, approvals are
+ * sought before any public listing, and takedowns are honoured on request.
  *
- * A source read from a public feed and a source whose publisher said yes are
- * different claims, and the danger is not that the wrong one is enforced — the
- * gate treats them alike on purpose — but that the difference stops being
- * visible and the whole list gets remembered as "approved". So every id must
- * carry a basis, and the unasked ones must be enumerable: that list is the
- * agenda for the permission conversations, and an empty one is the condition
- * for a public listing.
+ * What is still worth guarding is what the map does rather than what it
+ * claims: a source listed is carried, a source absent has no path to being
+ * displayed, and deleting a line is how a publisher leaves the app.
  */
-test("every source states its footing, and the unasked ones can be counted", () => {
+test("every carried source states its basis, and an absent one has no path", () => {
   for (const [id, basis] of Object.entries(TRANSCRIPT_SOURCES)) {
-    assert.ok(
-      basis === "publisher-granted" || basis === "public-feed",
-      `${id} carries no recognised basis`,
-    );
+    assert.equal(basis, "carried", `${id} carries no recognised basis`);
     assert.equal(transcriptBasis(`${id}:podcast:x`), basis);
+    assert.ok(isTranscriptEnabledSource(`${id}:podcast:x`));
   }
   assert.equal(transcriptBasis("working-preacher:commentary:x"), null);
-  for (const granted of ["bibleproject", "naked-bible", "spoken-gospel"]) {
-    assert.equal(TRANSCRIPT_SOURCES[granted], "publisher-granted",
-      `${granted} was granted and the record must keep saying so`);
-    assert.ok(!TRANSCRIPT_UNASKED_SOURCES.includes(granted));
-  }
-  assert.deepEqual(
-    TRANSCRIPT_UNASKED_SOURCES,
-    TRANSCRIPT_ENABLED_SOURCES.filter((id) => TRANSCRIPT_SOURCES[id] === "public-feed"),
-  );
+  assert.ok(!isTranscriptEnabledSource("some-publisher-we-do-not-carry:podcast:x"),
+    "a source absent from the map has no path to being displayed");
+  assert.deepEqual(TRANSCRIPT_ENABLED_SOURCES, Object.keys(TRANSCRIPT_SOURCES));
 });
 
 /**
@@ -159,10 +150,9 @@ test("every enabled source is named in the permissions doc", () => {
   const amendment = doc.slice(doc.indexOf("## Transcripts"));
   assert.ok(amendment.length > 0, "the doc must carry a transcripts section");
   assert.match(amendment, /2026-07-28/, "the grant must carry the date it was given");
-  /* The doc must say the public-feed footing exists and what is owed under it.
-     A source read from a feed and never asked is the case a reader of this repo
-     is most likely to mistake for a grant, so the words have to be present. */
-  assert.match(amendment, /public.feed/i, "the doc must name the second footing");
+  /* The doc no longer names a second footing — that distinction was removed on
+     2026-07-31 — but it must still record what is owed, because that is the
+     standing position rather than the retired mechanism. */
   assert.match(amendment, /takedown/i, "the doc must record what is owed on request");
   /* Compared with every non-letter removed on both sides, so an id written
      "naked-bible" still matches a doc that calls it the Naked Bible Podcast.

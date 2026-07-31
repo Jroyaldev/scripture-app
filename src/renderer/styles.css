@@ -21181,11 +21181,25 @@ button.lang-phrase-diagram-node:focus-visible,
    tile's family, darkened by us until a light ink held on it, and the weakest
    colour claim of the eleven. #4F645B is the same family and is theirs. */
 .trusted-resource-card[data-source="five-minutes-church-history"],
+.trusted-resource-card[data-source="forty-minutes-ot"],
+.trusted-resource-card[data-source="radically-christian"],
 .trusted-resource-imprint[data-source="five-minutes-church-history"],
+.trusted-resource-imprint[data-source="forty-minutes-ot"],
+.trusted-resource-imprint[data-source="radically-christian"],
 .resource-source[data-source="five-minutes-church-history"],
+.resource-source[data-source="forty-minutes-ot"],
+.resource-source[data-source="radically-christian"],
 .resource-matrix-row[data-source="five-minutes-church-history"],
+.resource-matrix-row[data-source="forty-minutes-ot"],
+.resource-matrix-row[data-source="radically-christian"],
 .resource-card[data-source="five-minutes-church-history"],
+.resource-card[data-source="forty-minutes-ot"],
+.resource-card[data-source="radically-christian"],
 .podcast-dock[data-source="five-minutes-church-history"],
+.podcast-dock[data-source="forty-minutes-ot"],
+.podcast-dock[data-source="radically-christian"],
+.taught-here-plate[data-source="forty-minutes-ot"],
+.taught-here-plate[data-source="radically-christian"],
 .taught-here-plate[data-source="five-minutes-church-history"] {
   /* Ligonier primary-400. Their loudest published colour, which is what an
      accent is for; the surface alone made a deep sage disc of the play pill. */
@@ -21386,6 +21400,10 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="working-preacher"] .trusted-resource-source,
 .trusted-resource-imprint[data-source="bibleproject"] .trusted-resource-source,
 .trusted-resource-imprint[data-source="the-gospel-coalition"] .trusted-resource-source,
+.trusted-resource-card.is-featured[data-source="ask-nt-wright"] .trusted-resource-source,
+.trusted-resource-imprint[data-source="ask-nt-wright"] .trusted-resource-source,
+.trusted-resource-card.is-featured[data-source="listeners-commentary"] .trusted-resource-source,
+.trusted-resource-imprint[data-source="listeners-commentary"] .trusted-resource-source,
 /* The dock's masthead takes the same mark on the same terms — and takes it HERE
    rather than in styles/player.css where the rest of that surface is written.
    A relative url() inside a custom property resolves against the stylesheet
@@ -21426,6 +21444,10 @@ button.lang-phrase-diagram-node:focus-visible,
 .taught-here-plate[data-source="the-gospel-coalition"] .taught-here-mark,
 .taught-here-plate[data-source="enter-the-bible"] .taught-here-mark,
 .taught-here-plate[data-source="naked-bible"] .taught-here-mark,
+.podcast-dock[data-source="ask-nt-wright"] .podcast-mast-mark,
+.taught-here-plate[data-source="ask-nt-wright"] .taught-here-mark,
+.podcast-dock[data-source="listeners-commentary"] .podcast-mast-mark,
+.taught-here-plate[data-source="listeners-commentary"] .taught-here-mark,
 .taught-here-plate[data-source="spoken-gospel"] .taught-here-mark {
   display: block;
   width: calc(var(--player-mark-h) * var(--resource-mark-ratio));
@@ -21568,14 +21590,24 @@ button.lang-phrase-diagram-node:focus-visible,
    the device steps 17.6 / 14.5 / 11px down the dock, the shelf and a card
    without any of them restating a number. */
 .podcast-dock[data-source="five-minutes-church-history"] .podcast-mast-plate::before,
+.podcast-dock[data-source="forty-minutes-ot"] .podcast-mast-plate::before,
+.podcast-dock[data-source="radically-christian"] .podcast-mast-plate::before,
 .resource-shelf .trusted-resource-imprint[data-source="five-minutes-church-history"]::before,
+.resource-shelf .trusted-resource-imprint[data-source="forty-minutes-ot"]::before,
+.resource-shelf .trusted-resource-imprint[data-source="radically-christian"]::before,
 .trusted-resource-card.is-featured[data-source="five-minutes-church-history"] .trusted-resource-head::before,
+.trusted-resource-card.is-featured[data-source="forty-minutes-ot"] .trusted-resource-head::before,
+.trusted-resource-card.is-featured[data-source="radically-christian"] .trusted-resource-head::before,
 /* Added when the brand and room lanes merged, 2026-07-30: the room renamed the
    card's plate to .resource-card-plate while this rule was being written
    against the old name, so a Ligonier card would have drawn no tree at all.
    Both names are listed rather than one replaced — .taught-here-plate is still
    the margin row's own plate. */
 .resource-card .resource-card-plate[data-source="five-minutes-church-history"]::before,
+.resource-card .resource-card-plate[data-source="forty-minutes-ot"]::before,
+.resource-card .resource-card-plate[data-source="radically-christian"]::before,
+.taught-here-plate[data-source="forty-minutes-ot"]::before,
+.taught-here-plate[data-source="radically-christian"]::before,
 .taught-here-plate[data-source="five-minutes-church-history"]::before {
   flex: none;
   /* The fallback is not decoration: --player-mark-h is declared by the dock's
@@ -21594,6 +21626,10 @@ button.lang-phrase-diagram-node:focus-visible,
    that carries NO colour — and onto --resource-ink, which is the ink each of
    these palettes declares for its own ground. */
 .resource-card .resource-card-plate[data-source="five-minutes-church-history"],
+.resource-card .resource-card-plate[data-source="forty-minutes-ot"],
+.resource-card .resource-card-plate[data-source="radically-christian"],
+.taught-here-plate[data-source="forty-minutes-ot"],
+.taught-here-plate[data-source="radically-christian"],
 .taught-here-plate[data-source="five-minutes-church-history"] {
   --player-mark-h: calc(var(--resource-mark-height) * 0.5);
   gap: 4px;
@@ -21613,14 +21649,22 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 .resource-card .resource-card-plate[data-source="five-minutes-church-history"] .taught-here-mark,
+.resource-card .resource-card-plate[data-source="forty-minutes-ot"] .taught-here-mark,
+.resource-card .resource-card-plate[data-source="radically-christian"] .taught-here-mark,
+.taught-here-plate[data-source="forty-minutes-ot"] .taught-here-mark,
+.taught-here-plate[data-source="radically-christian"] .taught-here-mark,
 .taught-here-plate[data-source="five-minutes-church-history"] .taught-here-mark {
   color: var(--resource-ink);
 }
 
+.resource-shelf .trusted-resource-imprint[data-source="forty-minutes-ot"],
+.resource-shelf .trusted-resource-imprint[data-source="radically-christian"],
 .resource-shelf .trusted-resource-imprint[data-source="five-minutes-church-history"] {
   gap: 5px;
 }
 
+.podcast-dock[data-source="forty-minutes-ot"] .podcast-mast-plate,
+.podcast-dock[data-source="radically-christian"] .podcast-mast-plate,
 .podcast-dock[data-source="five-minutes-church-history"] .podcast-mast-plate {
   gap: 6px;
 }

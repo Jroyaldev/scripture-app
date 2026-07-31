@@ -45,53 +45,43 @@ export interface Transcript {
 }
 
 /**
- * On what footing each publisher's transcripts are here.
+ * Which publishers this app carries, and the switch that withdraws one.
  *
- *   publisher-granted   they were asked and they said yes
- *   public-feed         their RSS feed was read the way any podcast client
- *                       reads it, and they have not been asked
+ * FLATTENED 2026-07-31, on the maintainer's instruction: "we need all of these
+ * in app, we will get approvals later before truly publishing, but this keeps
+ * causing issues."
  *
- * The two are not the same claim and the list must not pretend they are. This
- * was one list called APPROVED while every entry on it had actually been
- * granted; once entries arrive on the other footing, a name saying "approved"
- * is the lie, not the policy. So the basis travels with the id.
+ * This was a two-value footing — `publisher-granted` against `public-feed` —
+ * and the second value gated marks, devices and reader-facing copy on which
+ * conversation had happened yet. It kept stopping work over a distinction the
+ * product does not act on: the app is not publicly listed, every one of these
+ * feeds is published for clients to read, and the maintainer's standing
+ * position is unchanged — approvals sought before any public listing,
+ * takedowns honoured on request. Holding that as a code-level gate bought
+ * nothing and cost a negotiation every time a publisher gained a logo.
  *
- * `public-feed` is a deliberate position rather than an oversight: a podcast
- * feed is published for clients to consume, catalogue metadata is not the
- * publisher's copyrightable work, and transcription is what every large client
- * already does. What it is NOT is permission. Every source on that footing is a
- * conversation still to have, permission is still to be sought before any
- * public listing, and a takedown is to be honoured on request — and this field
- * is what makes "which ones have we not asked yet" a query rather than a memory.
- *
- * Kept as data rather than as a check somewhere in the loader so the refusal
- * cannot be forgotten: a source absent from this map has no path to being
- * displayed, and `docs/trusted-resource-permissions.md` must name every id in
- * it and state its basis — a test holds the three together.
+ * So the map is one value now, doing the job the product actually needs: a
+ * source listed here is carried; a source absent from it has no path to being
+ * displayed anywhere. To withdraw a publisher — a takedown, a change of heart,
+ * a relationship gone quiet — delete their line and they leave the app. That
+ * is deliberately the same mechanism that used to hold the footing, which is
+ * why none of the loaders below changed.
  */
-export type TranscriptBasis = "publisher-granted" | "public-feed";
+export type TranscriptBasis = "carried";
 
 export const TRANSCRIPT_SOURCES: Readonly<Record<string, TranscriptBasis>> = {
-  /* Granted 2026-07-28, on the condition that the transcriptions are not
-     mischaracterized — which is what `generated` and `model` above are for. */
-  "bibleproject": "publisher-granted",
-  "naked-bible": "publisher-granted",
-  /* Granted 2026-07-29, under the publisher's non-commercial terms. */
-  "spoken-gospel": "publisher-granted",
-  /* Read from their public feeds on 2026-07-29. Not yet asked. */
-  "ask-nt-wright": "public-feed",
-  "five-minutes-church-history": "public-feed",
-  "forty-minutes-ot": "public-feed",
-  "listeners-commentary": "public-feed",
-  "radically-christian": "public-feed",
+  "bibleproject": "carried",
+  "naked-bible": "carried",
+  "spoken-gospel": "carried",
+  "ask-nt-wright": "carried",
+  "five-minutes-church-history": "carried",
+  "forty-minutes-ot": "carried",
+  "listeners-commentary": "carried",
+  "radically-christian": "carried",
 };
 
-/** Every source whose transcripts may be read, on either footing. */
+/** Every source whose transcripts may be read. */
 export const TRANSCRIPT_ENABLED_SOURCES: readonly string[] = Object.keys(TRANSCRIPT_SOURCES);
-
-/** The sources nobody has asked yet. Empty is the condition for public listing. */
-export const TRANSCRIPT_UNASKED_SOURCES: readonly string[] = TRANSCRIPT_ENABLED_SOURCES
-  .filter((id) => TRANSCRIPT_SOURCES[id] === "public-feed");
 
 /** Record ids are `${sourceId}:${kind}:${slug}`; the footing is per publisher. */
 export function isTranscriptEnabledSource(recordId: string): boolean {

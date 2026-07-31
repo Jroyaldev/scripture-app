@@ -415,52 +415,32 @@ test("the card's ground is derived, not picked", () => {
     "the card's quietest ink is the tertiary again, which does not clear 4.5 on a tinted ground");
 });
 
-test("the two footings reach the surfaces that show them, in a reader's language", () => {
-  /* docs/trusted-resource-permissions says the distinction "must stay
-     visible". Until 2026-07-30 the only places it was visible were a
-     TypeScript literal and a test, while 48% of every surfaced moment came
-     from a publisher nobody has asked. */
+test("the transcript disclosure reaches the surfaces that show it, in a reader's language", () => {
+  /* RESTATED 2026-07-31. This test held the TWO FOOTINGS — publisher-granted
+     against public-feed — and asserted the distinction reached the reader,
+     because docs/trusted-resource-permissions said it "must stay visible".
+     The maintainer flattened the footing that day (see TRANSCRIPT_SOURCES):
+     the app carries every publisher on one basis, approvals are sought before
+     any public listing, and takedowns are honoured on request — none of which
+     is a distinction a reading surface has to draw.
+
+     What the reader is still owed is the half that was never about permission:
+     these words were read by a machine, not by a person. That is what is
+     asserted now, on both surfaces that say it. */
   const index = read("src/core/passage-index.ts");
   assert.match(index, /basis: TranscriptBasis/);
-  assert.match(index, /transcriptBasis\(m\.id\) \?\? "public-feed"/,
-    "the footing must be attached from the map, never read from the artifact");
+  assert.match(index, /transcriptBasis\(m\.id\) \?\? "carried"/,
+    "the basis must be attached from the map, never read from the artifact");
 
   const room = read("src/renderer/components/Resources.tsx");
   assert.match(room, /className="taught-here-footing"/);
-  assert.match(room, /export function footingSentence/);
+  assert.match(room, /machine-read from published audio/,
+    "the room's colophon still says the transcripts are machine-read");
 
   const player = read("src/renderer/components/PodcastPlayer.tsx");
   assert.match(player, /className="podcast-episode-footing"/);
-  assert.match(player, /transcriptBasis\(episode\.recordId\)/);
-
-  /* THE DISTINCTION SURVIVES: one sentence names a permission, the other names
-     a public feed, and a reader can tell which they are looking at. */
-  assert.match(room, /with their permission/);
-  assert.match(room, /public feed/);
-  assert.match(player, /with their permission/);
-  assert.match(player, /public feed/);
-
-  /* AND THE OPS LANGUAGE IS OFF THE READING SURFACES. "We have not asked them
-     yet" and "1 of these 2 publishers gave permission; 1 has not been asked
-     yet" are facts about our outreach backlog, printed where a reader reads. */
-  for (const [name, path] of [
-    ["the room", "src/renderer/components/Resources.tsx"],
-    ["the dock", "src/renderer/components/PodcastPlayer.tsx"],
-  ] as const) {
-    assert.doesNotMatch(code(path), /not been asked|not asked them|have not asked|not yet asked/i,
-      `${name} is telling a reader what is on our to-do list`);
-  }
-
-  /* It is said once per surface. A notice repeated on every card stops being
-     read and starts being chrome — and it is a fact about a publisher rather
-     than about an episode. */
-  const card = room.slice(room.indexOf("function ResourceCard("), room.indexOf("* The two footings"));
-  assert.doesNotMatch(card, /basis|footing/,
-    "the footing is a fact about a publisher, not a badge on every card");
-
-  const doc = read("docs/trusted-resource-permissions.md");
-  assert.match(doc, /Made true in the product, 2026-07-30/,
-    "the doc still claims a visibility the product has to keep");
+  assert.match(player, /machine-read from \$\{episode\.sourceName\}'s published audio/,
+    "the episode still says whose audio it is and that a machine read it");
 });
 
 test("the walk is declared, finite, and never a radio", () => {

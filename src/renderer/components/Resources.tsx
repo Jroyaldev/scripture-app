@@ -480,43 +480,14 @@ function ResourceCard({
   );
 }
 
-/**
- * The two footings, at the foot, in the reader's language.
- *
- * docs/trusted-resource-permissions.md records that the distinction between a
- * publisher who granted us their transcripts and one nobody has asked "must
- * stay visible". It is one sentence, once, counted over the publishers
- * actually on screen — not a badge on every card, because it is a fact about a
- * publisher rather than about an episode, and a notice repeated twenty-five
- * times stops being read and starts being chrome.
- *
- * RESTATED 2026-07-30. It used to end "1 of these 2 publishers gave
- * permission; 1 has not been asked yet" — our outreach backlog, printed on a
- * reading surface. The distinction survives and the ops language does not: one
- * sentence names a permission, the other names a public feed, and a reader can
- * tell which of the two they are looking at without being handed our to-do
- * list.
- */
-export function footingSentence(granted: number, unasked: number): string | null {
-  if (granted === 0 && unasked === 0) return null;
-  if (unasked === 0) return "Transcripts machine-read from these publishers' audio, with their permission.";
-  if (granted === 0) {
-    return unasked === 1
-      ? "Transcript machine-read from this publisher's public feed."
-      : "Transcripts machine-read from these publishers' public feeds.";
-  }
-  return "Transcripts machine-read from published audio — some with the publisher's permission, some from their public feed.";
-}
-
-function footingOf(entries: readonly ResourceEntry[]): { granted: number; unasked: number } {
-  const granted = new Set<string>();
-  const unasked = new Set<string>();
-  for (const entry of entries) {
-    if (entry.basis === "publisher-granted") granted.add(entry.sourceId);
-    else if (entry.basis === "public-feed") unasked.add(entry.sourceId);
-  }
-  return { granted: granted.size, unasked: unasked.size };
-}
+/* The two footings that used to live here — a sentence naming whether each
+   publisher had granted their transcripts or merely published a feed — were
+   deleted on 2026-07-31 with the footing itself (see TRANSCRIPT_SOURCES). They
+   were `footingSentence` and `footingOf`, exported and, as it turned out,
+   rendered by nothing: the room never drew the sentence they composed. The
+   product's position did not change with them — approvals are sought before
+   any public listing, takedowns honoured on request — it simply stopped being
+   a distinction the reading surface had to carry. */
 
 /* ── THE PACKING OF THE REGISTER · 2026-07-31 ────────────────────────────────
  *
@@ -830,8 +801,6 @@ export function Resources({
     };
   }, [entries]);
 
-  const footing = useMemo(() => footingOf(entries), [entries]);
-  const footingLine = footingSentence(footing.granted, footing.unasked);
 
   const openLink = async (entry: ResourceEntry): Promise<void> => {
     const result = await safeCall(() => window.api.trustedResources.openOfficial(
@@ -1160,9 +1129,15 @@ export function Resources({
           the order they matter, and nothing that looks like another control.
 
           Drawn only where there is a room above it to close. */}
-      {entries.length > 0 && (footingLine || hiddenCount > 0) && (
+      {entries.length > 0 && (
         <footer className="resources-colophon">
-          {footingLine && <p className="taught-here-footing">{footingLine}</p>}
+          {/* One standing sentence, 2026-07-31. It used to be composed by
+              `footingSentence` out of how many publishers had granted their
+              transcripts against how many had not been asked — a distinction
+              the app no longer draws (see TRANSCRIPT_SOURCES). What survives is
+              the half a reader is actually owed: these words were read by a
+              machine, not by a person. */}
+          <p className="taught-here-footing">Transcripts machine-read from published audio.</p>
           {hiddenCount > 0 && (
             <p className="resources-colophon-hidden">{`${hiddenCount} hidden by your settings`}</p>
           )}

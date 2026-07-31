@@ -216,12 +216,12 @@ export function readPassageIndex(parsed: unknown): PassageIndexResult {
     const moments = (Array.isArray(e["moments"]) ? e["moments"] : [])
       .filter(isMoment)
       .filter((m) => isTranscriptEnabledSource(m.id))
-      /* The footing is attached here, from the map, rather than read from the
+      /* The basis is attached here, from the map, rather than read from the
          file — see PassageMoment. `isTranscriptEnabledSource` has already
-         passed, so the lookup cannot miss; the fallback exists so a future
-         source added to one list and not the other fails as a public feed
-         rather than as a grant. */
-      .map((m): PassageMoment => ({ ...m, basis: transcriptBasis(m.id) ?? "public-feed" }))
+         passed, so the lookup cannot miss, and the fallback is only a total
+         function's tail. Flattened to one value 2026-07-31 with the footing
+         itself. */
+      .map((m): PassageMoment => ({ ...m, basis: transcriptBasis(m.id) ?? "carried" }))
       /* Longest first, established here rather than trusted from the file. */
       .sort((a, b) => b.seconds - a.seconds);
     if (moments.length === 0) continue;
