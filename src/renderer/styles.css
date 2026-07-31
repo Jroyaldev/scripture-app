@@ -20746,6 +20746,16 @@ button.lang-phrase-diagram-node:focus-visible,
      tint, a yellow that fits to mud). */
   --resource-accent: var(--resource-source);
   --resource-mark: none;
+  /* THE DEVICE, added 2026-07-30 with the brand pass. A second, narrower form
+     of the same permission: --resource-mark is artwork that REPLACES the
+     publisher's name, and a device is artwork drawn BESIDE it. The distinction
+     is not decorative — the two marks that arrived on this pass are corporate
+     devices (Ligonier's tree, 1517's roundel) belonging to the publisher of a
+     show rather than to the show, so the show's own name has to stay in type
+     next to them or the chip identifies the wrong thing. Empty by default, for
+     the same reason --resource-mark is: artwork attaches by an explicit
+     per-source rule and nothing inherits it. */
+  --resource-device: none;
   --resource-mark-height: 18px;
   --resource-mark-ratio: 4;
   /* Dated 2026-07-30. These two were --text-primary and --text-tertiary, and
@@ -20814,9 +20824,17 @@ button.lang-phrase-diagram-node:focus-visible,
   --resource-line: rgb(5 48 63 / 0.3);
   --resource-pill-bg: #05303f;
   --resource-pill-ink: #dff4fc;
-  --resource-mark: url("./assets/brand/bp-mono-wht.png");
+  /* Vector, from 2026-07-30. This was `bp-mono-wht.png`, the publisher's own
+     supplied mono-white raster, and it was a PNG doing a wordmark's job — at
+     the 512px system-artwork size it was scaled well past its resolution. The
+     file here is BibleProject's OWN vector, the one their `<bp-logo>` element
+     loads, with the two fills set to white: the publisher's mono-white variant
+     drawn from the publisher's own outlines rather than traced. The supplied
+     raster is kept at pending/bibleproject-lockup-white-supplied.png as the
+     authority the ink was matched against. 208:48 is their own aspect. */
+  --resource-mark: url("./assets/brand/bibleproject-lockup-white.svg");
   --resource-mark-height: 18px;
-  --resource-mark-ratio: 4.353;
+  --resource-mark-ratio: 4.333;
 }
 
 /* Enter the Bible's mark is built for a light ground — a yellow tile, orange
@@ -20911,48 +20929,82 @@ button.lang-phrase-diagram-node:focus-visible,
   --resource-mark-ratio: 7.671;
 }
 
-/* The five read from public feeds take their publisher's colours and their name
-   in type. No mark: the rule that a mark ships only for a source approved in its
-   own right is unchanged, and none of these has been asked yet — the whole point
-   of the second footing recorded in docs/trusted-resource-permissions is that it
-   stays visibly different from a grant. Colour is not a mark; it is what stops
-   five publishers arriving as five identical gold cards.
+/* The five read from public feeds. AMENDED 2026-07-30 (second pass, the brand
+   lane): the maintainer lifted the name-in-type-only rule for these sources —
+   the decision and its reasoning are recorded at the head of
+   docs/trusted-resource-permissions.md, dated. So a mark may now be drawn for
+   any of the eleven where an honest one EXISTS, and the reason four of these
+   five still carry a name in type is no longer permission. It is that the
+   artwork does not survive the plate:
 
-   Each surface is sampled from the publisher's own artwork rather than chosen:
-   1517's brick, Ligonier's sage, Premier's blue and red, the Listener's navy on
-   pale blue, Radically Christian's oxblood and its ripple. */
+     · Ask N.T. Wright Anything — Premier's official lockup is a STACKED
+       colour lockup, 200:120, with a "Faith Explored" strapline. At the plate's
+       26px it is 43px wide and the strapline is under two pixels tall. The
+       vector is acquired and staged at pending/premier-unbelievable.svg; it is
+       not drawn because it cannot be read. (pending/reconstructed/ holds a
+       horizontal white lockup that is NOT Premier's file, and that one must
+       never ship on the strength of sitting in this repo.)
+     · The Listener's Bible Commentary — their site's wordmark ships with a
+       grey plate and a drop shadow baked into the pixels; keying it out would
+       make it our artwork. Staged unmodified at pending/ as the evidence.
+     · Radically Christian — their drop is oxblood on transparent, and this
+       card's ground is that same oxblood. It would vanish, and re-inking it is
+       the one modification these grants forbid.
 
-/* 40 Minutes in the Old Testament — published by 1517, whose mark is a white
-   wordmark on brick. Their tile's own colour, so the card is their imprint. */
+   Two of the five DO have a device that survives, and they take it below.
+
+   Surfaces here were sampled off artwork on 2026-07-29 and are corrected on
+   this pass to published values wherever the publisher states one. */
+
+/* 40 Minutes in the Old Testament — published by 1517, whose mark is a brick
+   roundel with "1517." reversed out of it. The roundel is acquired, official
+   and staged at pending/1517-roundel.png, and it is NOT drawn: the numeral is
+   20.6% of the roundel's own height, so at the 15px a shelf chip gives a
+   device it is 3.1px of ink and at the 8px a card gives one it is 1.6px. That
+   was measured off the publisher's file, not judged by eye. What survives of
+   1517 here is their colour, which is worth having on its own. */
 .trusted-resource-card[data-source="forty-minutes-ot"],
 .trusted-resource-imprint[data-source="forty-minutes-ot"],
 .resource-source[data-source="forty-minutes-ot"],
 .resource-matrix-row[data-source="forty-minutes-ot"],
 .podcast-dock[data-source="forty-minutes-ot"],
 .taught-here-plate[data-source="forty-minutes-ot"] {
-  --resource-source: #a8402a;
+  /* #A8402A until 2026-07-30, sampled off 1517's tile. #A73D2D is the value in
+     1517's own logo file (1517.org/hubfs/1517-logo-email-500x500-2021-Feb.png),
+     which is also the file this device is. */
+  --resource-source: #a73d2d;
   --resource-ink: #f9ede6;
   --resource-ink-soft: rgb(249 237 230 / 0.76);
   --resource-line: rgb(249 237 230 / 0.3);
   --resource-pill-bg: #f9ede6;
+  /* Their brick darkened, by us, so a light pill can carry ink on it. Kept as
+     a re-pick with a stated reason rather than passed off as their value. */
   --resource-pill-ink: #7d2c1b;
 }
 
-/* 5 Minutes in Church History — Ligonier. Their emblem is a black tree on white
-   and their app tile a sage gradient; the tile's family darkened until a light
-   ink holds on it. */
+/* 5 Minutes in Church History — Ligonier, whose device is the tree. Both
+   colours below are Ligonier's OWN design tokens, read off the stylesheet
+   ligonier.org serves, rather than sampled: primary-800 for the ground and
+   primary-400 for the accent. The ground had been #45696a — the show's app
+   tile's family, darkened by us until a light ink held on it, and the weakest
+   colour claim of the eleven. #4F645B is the same family and is theirs. */
 .trusted-resource-card[data-source="five-minutes-church-history"],
 .trusted-resource-imprint[data-source="five-minutes-church-history"],
 .resource-source[data-source="five-minutes-church-history"],
 .resource-matrix-row[data-source="five-minutes-church-history"],
 .podcast-dock[data-source="five-minutes-church-history"],
 .taught-here-plate[data-source="five-minutes-church-history"] {
-  --resource-source: #45696a;
+  /* Ligonier primary-400. Their loudest published colour, which is what an
+     accent is for; the surface alone made a deep sage disc of the play pill. */
+  --resource-accent: #859e3b;
+  --resource-source: #4f645b;
   --resource-ink: #eef4f2;
   --resource-ink-soft: rgb(238 244 242 / 0.76);
   --resource-line: rgb(238 244 242 / 0.3);
   --resource-pill-bg: #eef4f2;
-  --resource-pill-ink: #2f4d4e;
+  --resource-pill-ink: #4f645b;
+  --resource-device: url("./assets/brand/ligonier-tree-white.svg");
+  --resource-mark-height: 22px;
 }
 
 /* Ask N.T. Wright Anything — Premier Unbelievable?, whose identity is exactly
@@ -20964,6 +21016,17 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-matrix-row[data-source="ask-nt-wright"],
 .podcast-dock[data-source="ask-nt-wright"],
 .taught-here-plate[data-source="ask-nt-wright"] {
+  /* Their published blue, from their own logo file — the vector lifted off
+     premierunbelievable.com's masthead and staged at pending/. It is the
+     ACCENT rather than the surface because the surface has to carry a name in
+     type: white on #0086BA measures 4.10:1, under Law 6's floor, and the
+     accent is lightness-clamped by --player-accent so hue and chroma stay
+     theirs while the contrast becomes ours. Added 2026-07-30. */
+  --resource-accent: #0086ba;
+  /* #0079A8 is Premier's #0086BA darkened BY US until white clears 4.5 on it
+     (measured 4.88 in the engine). A re-pick with a reason, recorded as ours
+     in docs/trusted-resource-brand-inventory.md rather than passed off as a
+     published value. */
   --resource-source: #0079a8;
   /* White rather than the pale blue sampled from their artwork. Dated
      2026-07-30 with the shelf's ink fix: Premier's name has no approved mark,
@@ -20976,7 +21039,10 @@ button.lang-phrase-diagram-node:focus-visible,
   --resource-ink: #ffffff;
   --resource-ink-soft: rgb(234 246 251 / 0.78);
   --resource-line: rgb(234 246 251 / 0.3);
-  --resource-pill-bg: #d8183c;
+  /* Their published red, same file, same pass: #D8183C was a sample and
+     #E51F3F is the value Premier's own artwork carries. White on it is
+     4.57:1, so the pill keeps its ink. */
+  --resource-pill-bg: #e51f3f;
   --resource-pill-ink: #ffffff;
 }
 
@@ -20989,13 +21055,19 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-matrix-row[data-source="listeners-commentary"],
 .podcast-dock[data-source="listeners-commentary"],
 .taught-here-plate[data-source="listeners-commentary"] {
-  --resource-accent: #26518c;
-  --resource-source: #dfeaf8;
-  --resource-ink: #0a2450;
-  --resource-ink-soft: rgb(10 36 80 / 0.74);
-  --resource-line: rgb(10 36 80 / 0.24);
-  --resource-pill-bg: #0a2450;
-  --resource-pill-ink: #dfeaf8;
+  /* Their navy, read off the publisher's own current cover file (staged at
+     pending/listeners-commentary-cover.png) rather than off a screenshot: the
+     pair was #DFEAF8 / #0A2450 by eye and is #E9F3FF / #002558 in their file.
+     The accent is that same navy — a pale tint fitted to a light atmosphere is
+     not an accent, which is why this palette declares one at all, and the fit
+     raises the lightness while leaving the hue and chroma theirs. */
+  --resource-accent: #002558;
+  --resource-source: #e9f3ff;
+  --resource-ink: #002558;
+  --resource-ink-soft: rgb(0 37 88 / 0.74);
+  --resource-line: rgb(0 37 88 / 0.24);
+  --resource-pill-bg: #002558;
+  --resource-pill-ink: #e9f3ff;
 }
 
 /* Radically Christian — an oxblood drop over a blue ripple. The drop takes the
@@ -21006,12 +21078,19 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-matrix-row[data-source="radically-christian"],
 .podcast-dock[data-source="radically-christian"],
 .taught-here-plate[data-source="radically-christian"] {
-  --resource-accent: #3f6fb0;
-  --resource-source: #6d1409;
+  /* Both values are now the publisher's own, read out of their logo file
+     (staged at pending/radically-christian-drop.png): the drop is #721203 and
+     the ripple #00408D, where this block had #6D1409 and #1D4F8F sampled off a
+     rendering of it. The accent is the ripple rather than a blue we picked —
+     a near-black surface makes a dead accent, which is why this palette
+     declares one, and the app's own clamp is what makes the ripple hold
+     against our paper. */
+  --resource-accent: #00408d;
+  --resource-source: #721203;
   --resource-ink: #f6e9e5;
   --resource-ink-soft: rgb(246 233 229 / 0.76);
   --resource-line: rgb(246 233 229 / 0.28);
-  --resource-pill-bg: #1d4f8f;
+  --resource-pill-bg: #00408d;
   --resource-pill-ink: #f2f7fd;
 }
 
@@ -21145,6 +21224,79 @@ button.lang-phrase-diagram-node:focus-visible,
   border-radius: 4px;
   background: var(--resource-source);
   color: var(--resource-ink);
+}
+
+/* ── The device, at all four sizes ─────────────────────────────────────────
+   Added 2026-07-30 with the brand pass, on the maintainer's decision that the
+   five public-feed sources may carry their real marks (recorded and dated at
+   the head of docs/trusted-resource-permissions.md).
+
+   A device is not a smaller mark; it is a different relation to the name.
+   Ligonier's tree and 1517's roundel identify the PUBLISHER of a show, not the
+   show — so where the six lockups above replace "Spoken Gospel" with the
+   Spoken Gospel wordmark, these two sit beside "5 Minutes in Church History"
+   and leave it standing. A tree where a title was would say Ligonier and stop.
+
+   That relation is also why this stays a separate token from --resource-mark
+   rather than a flag on it: `grep -- '--resource-device'` is the list of
+   publishers whose device we draw, `grep -- '--resource-mark:'` is the list
+   whose wordmark we draw in place of their name, and
+   tests/trusted-resource-permissions holds both lists against the two footings
+   they were granted on. One property doing both jobs would lose that.
+
+   Both are single-ink reverses drawn for a dark or brand field, so they take
+   the same plate the marks do and never the app's paper. Sized off
+   --player-mark-h, which each surface already declares at its own scale, so
+   the device steps 17.6 / 14.5 / 11px down the dock, the shelf and a card
+   without any of them restating a number. */
+.podcast-dock[data-source="five-minutes-church-history"] .podcast-mast-plate::before,
+.resource-shelf .trusted-resource-imprint[data-source="five-minutes-church-history"]::before,
+.trusted-resource-card.is-featured[data-source="five-minutes-church-history"] .trusted-resource-head::before,
+.taught-here-plate[data-source="five-minutes-church-history"]::before {
+  flex: none;
+  /* The fallback is not decoration: --player-mark-h is declared by the dock's
+     plate, the shelf's chip and the row's plate, and NOT by the featured card
+     — which is the bug that left every shelf chip an empty colour swatch when
+     the shelf came back, because `calc(<invalid> × ratio)` is not a length. */
+  width: var(--player-mark-h, 16px);
+  height: var(--player-mark-h, 16px);
+  background: var(--resource-device) center / contain no-repeat;
+  content: "";
+}
+
+/* And the plate under it, at row scale, on the same terms as the six above:
+   the device is a reverse and a reverse needs the publisher's own ground. The
+   name beside it comes off --text-tertiary — which is the ink for a card plate
+   that carries NO colour — and onto --resource-ink, which is the ink each of
+   these palettes declares for its own ground. */
+.taught-here-plate[data-source="five-minutes-church-history"] {
+  --player-mark-h: calc(var(--resource-mark-height) * 0.5);
+  gap: 4px;
+  height: 16px;
+  /* NOT the six marks' 42%. That budget is for a plate carrying a WORDMARK,
+     which is artwork and shrinks by `contain`; this plate carries a name in
+     type, which shrinks by ellipsis — and at 42% "5 Minutes in Church History"
+     arrived as "5 MINUTES IN C…", which is less than the grey line this plate
+     replaced was saying. The head holds a play control and this, so there is
+     nothing for it to take room from; `flex: 0 1 auto` and `min-width: 0` on
+     the base rule still let it yield if a card is ever narrower. */
+  max-width: none;
+  padding: 0 5px;
+  border-radius: 4px;
+  background: var(--resource-source);
+  color: var(--resource-ink);
+}
+
+.taught-here-plate[data-source="five-minutes-church-history"] .taught-here-mark {
+  color: var(--resource-ink);
+}
+
+.resource-shelf .trusted-resource-imprint[data-source="five-minutes-church-history"] {
+  gap: 5px;
+}
+
+.podcast-dock[data-source="five-minutes-church-history"] .podcast-mast-plate {
+  gap: 6px;
 }
 
 .trusted-resource-kind {
@@ -21772,6 +21924,14 @@ button.lang-phrase-diagram-node:focus-visible,
     color: ButtonText;
     text-indent: 0;
   }
+  /* A device is a white reverse, and the rule above has just replaced the
+     publisher's ground on THIS surface with ButtonFace — which on the light
+     forced schemes is white. So it goes here, rather than ghosting; the name
+     it sits beside is already drawn and is the identity in a forced palette
+     anyway. The card's plate and the dock's keep their colour by
+     `forced-color-adjust: none`, which the pseudo-element inherits, so those
+     two devices stay on the ground they were drawn for. */
+  .trusted-resource-imprint::before { display: none; }
   .trusted-resource-imprint[aria-expanded="true"] { outline: 2px solid Highlight; box-shadow: none; }
   .trusted-resource-source,
   .trusted-resource-kind,
