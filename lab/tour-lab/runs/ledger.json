@@ -1,43 +1,43 @@
 {
-  "updatedAt": "2026-07-31T22:55:02.940Z",
+  "updatedAt": "2026-07-31T23:11:18.952Z",
   "models": {
     "deepseek-v4-flash": {
       "requestedSlug": "deepseek/deepseek-v4-flash-0731",
       "resolvedSlug": "deepseek/deepseek-v4-flash-0731",
-      "runs": 36,
-      "ok": 36,
+      "runs": 40,
+      "ok": 40,
       "failed": 0,
-      "promptTokens": 5841188,
-      "completionTokens": 684871,
-      "modelCalls": 300,
-      "toolCalls": 931,
-      "totalUsd": 0.535676,
+      "promptTokens": 6654608,
+      "completionTokens": 780088,
+      "modelCalls": 336,
+      "toolCalls": 1043,
+      "totalUsd": 0.582489,
       "costSources": {
         "price-table": 15,
-        "provider": 21
+        "provider": 25
       },
       "efforts": {
         "vendor-default": 18,
-        "max": 18
+        "max": 22
       }
     },
     "gpt-5.6-luna": {
       "requestedSlug": "openai/gpt-5.6-luna",
       "resolvedSlug": "openai/gpt-5.6-luna",
-      "runs": 32,
-      "ok": 31,
+      "runs": 37,
+      "ok": 36,
       "failed": 1,
-      "promptTokens": 6379360,
-      "completionTokens": 364078,
-      "modelCalls": 237,
-      "toolCalls": 1005,
-      "totalUsd": 0.524313,
+      "promptTokens": 7480600,
+      "completionTokens": 461178,
+      "modelCalls": 271,
+      "toolCalls": 1218,
+      "totalUsd": 0.625126,
       "costSources": {
-        "provider": 32
+        "provider": 37
       },
       "efforts": {
         "vendor-default": 28,
-        "max": 4
+        "max": 9
       }
     },
     "ling-3.0-flash-free": {
@@ -115,19 +115,19 @@
     "gpt-5.6-luna-pro": {
       "requestedSlug": "openai/gpt-5.6-luna-pro",
       "resolvedSlug": "openai/gpt-5.6-luna-pro",
-      "runs": 3,
-      "ok": 3,
+      "runs": 5,
+      "ok": 5,
       "failed": 0,
-      "promptTokens": 2814187,
-      "completionTokens": 250769,
-      "modelCalls": 22,
-      "toolCalls": 167,
-      "totalUsd": 0.215712,
+      "promptTokens": 3443684,
+      "completionTokens": 364634,
+      "modelCalls": 32,
+      "toolCalls": 234,
+      "totalUsd": 0.308471,
       "costSources": {
-        "provider": 3
+        "provider": 5
       },
       "efforts": {
-        "max": 3
+        "max": 5
       }
     },
     "gpt-5.6-luna-high": {
@@ -167,6 +167,6 @@
       }
     }
   },
-  "totalUsd": 1.748832,
-  "runs": 107
+  "totalUsd": 1.989217,
+  "runs": 118
 }

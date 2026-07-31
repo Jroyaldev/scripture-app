@@ -1,0 +1,538 @@
+{
+  "runId": "2026-07-31T23-02-34-219-gpt-5.6-luna",
+  "startedAt": "2026-07-31T23:02:34.219Z",
+  "promptId": "topic-divine-council",
+  "prompt": "Teach me the divine council worldview from scratch — what it is, where the Old Testament assumes it, and why it matters for reading the New Testament.",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "LUNA_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "The Divine Council: From Genesis to Paul",
+    "intro": "This tour builds the divine-council worldview from the ground up. You’ll begin with Genesis 1’s picture of God delegating rule in the heavens and on earth, then trace the Old Testament’s language about the nations, the heavenly host, and Psalm 82’s council. Daniel will give you a narrative example of that worldview at work, and Ephesians will show why it matters for hearing the New Testament’s language about powers and spiritual conflict.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "startSec": 1450,
+        "endSec": 1697,
+        "why": "Start here for the basic mental map. The hosts read Genesis 1 as presenting heavenly lights and humans as appointed representatives of God’s rule: “only two things rule in God’s world in Genesis 1,” and this is “the conception of God’s delegated authority.” The clip also explains the biblical distinction between the visible land realm and the nonphysical heavenly realm without treating the heavenly beings as rival uncreated gods.",
+        "episodeTitle": "Origin of Spiritual Beings + Mini Question & Response",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/d7e45e15-6a73-4ddc-a3a7-42e0547ef789/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=d7e45e15-6a73-4ddc-a3a7-42e0547ef789",
+        "durationSec": 4082,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "startSec": 2429,
+        "endSec": 2726,
+        "why": "Now the tour moves from the map to the Old Testament texts that assume it. The hosts connect Deuteronomy 4’s “hosts of heaven,” Deuteronomy 32’s allotment of the nations, Genesis 6, and Psalm 82. The key payoff is their observation that “the phrase divine council is actually a biblical phrase,” followed by Psalm 82’s scene in which God “stands in his council” and judges the other Elohim. They also acknowledge the translation and interpretive controversy rather than pretending every reader hears these verses identically.",
+        "episodeTitle": "Origin of Spiritual Beings + Mini Question & Response",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/d7e45e15-6a73-4ddc-a3a7-42e0547ef789/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=d7e45e15-6a73-4ddc-a3a7-42e0547ef789",
+        "durationSec": 4082,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:87ebc85c-302b-4636-b516-18dd0b0bb667",
+        "startSec": 1400,
+        "endSec": 1700,
+        "why": "Daniel 10 lets you watch this worldview function inside an Old Testament story. The speakers explain Daniel’s setting through the idea of national spiritual princes and hear the reassurance that “the spiritual being over Israel is still in control.” The clip lands on a crucial qualification: although the apocalyptic world assumes many spiritual beings, “God determines where the angels go, which kingdom rules when,” so the council worldview does not displace God’s sovereignty.",
+        "episodeTitle": "Daniel 10: A Shining Metal Man and the Prince of Persia",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG2585936839.mp3?updated=1664486068",
+        "durationSec": 2786,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:443675d9-com-1c505f52-8ecf-31f4-be17-93eac135f7c3",
+        "startSec": 400,
+        "endSec": 700,
+        "why": "Finish with the New Testament payoff in Ephesians 6. The commentator walks through Paul’s words—“our struggle is not against flesh and blood,” but against rulers, powers, and “spiritual beings of wickedness in the heavenly places”—and relates them to the powers mentioned earlier in Ephesians. The clip also keeps the focus on Christ: “Jesus has won the great victory,” and the heavenly places include the unseen side of reality where Christ reigns and these beings operate.",
+        "episodeTitle": "Ephesians 6:10-17",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/v54f7g/ephesians_610-1763dzi.mp3",
+        "durationSec": 1706,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "You should now be able to recognize the divine council worldview as a connected biblical picture: God’s rule is expressed through heavenly and human agents, the nations and their powers matter, and the unseen and seen realms are closely coupled. That background makes Paul’s language about rulers, authorities, darkness, and heavenly places sound less like a detached metaphor and more like part of the Bible’s continuing story—while keeping the final emphasis where these clips put it: God remains sovereign, and Jesus has triumphed.",
+    "totalSeconds": 1144
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3555,
+      "promptTokens": 1582,
+      "completionTokens": 84,
+      "reasoningTokens": 68,
+      "cachedPromptTokens": 1537,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00007132000000000002
+    },
+    {
+      "i": 1,
+      "latencyMs": 5404,
+      "promptTokens": 1877,
+      "completionTokens": 491,
+      "reasoningTokens": 230,
+      "cachedPromptTokens": 1579,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00034756500000000004
+    },
+    {
+      "i": 2,
+      "latencyMs": 12824,
+      "promptTokens": 17701,
+      "completionTokens": 1366,
+      "reasoningTokens": 948,
+      "cachedPromptTokens": 1874,
+      "toolCalls": 9,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0028166400000000005
+    },
+    {
+      "i": 3,
+      "latencyMs": 11929,
+      "promptTokens": 22805,
+      "completionTokens": 1390,
+      "reasoningTokens": 792,
+      "cachedPromptTokens": 17698,
+      "toolCalls": 14,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0016492800000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 104757,
+      "promptTokens": 34625,
+      "completionTokens": 11078,
+      "reasoningTokens": 10292,
+      "cachedPromptTokens": 22802,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.008352620000000002
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "divine council heavenly council worldview",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 112,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "sons of God spiritual beings Psalm 82",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 88,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Deuteronomy 32 sons of God nations Most High",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 77,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "heavenly host throne room 1 Kings 22 Job",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 80,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "divine beings gods Psalm 82 judgment",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 68,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "New Testament powers principalities rulers darkness spiritual forces",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 58,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "spiritual beings worldview Old Testament New Testament",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 77,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Ephesians 6 rulers authorities powers heavenly places",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 62,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "fromSec": 1500,
+        "toSec": 3300
+      },
+      "ms": 0,
+      "summary": "32 skim lines, 1500s–3000s of Origin of Spiritual Beings + Mini Question & Response"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:225",
+        "fromSec": 0,
+        "toSec": 1100
+      },
+      "ms": 0,
+      "summary": "22 skim lines, 0s–1100s of Naked Bible 37: Acts 2:1-21"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:moses-final-words",
+        "fromSec": 1500,
+        "toSec": 2500
+      },
+      "ms": 8,
+      "summary": "21 skim lines, 1500s–2500s of Deuteronomy: Moses’ Final Words"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:87ebc85c-302b-4636-b516-18dd0b0bb667",
+        "fromSec": 1000,
+        "toSec": 2050
+      },
+      "ms": 0,
+      "summary": "22 skim lines, 1000s–2050s of Daniel 10: A Shining Metal Man and the Prince of Persia"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:443675d9-com-1c505f52-8ecf-31f4-be17-93eac135f7c3",
+        "fromSec": 400,
+        "toSec": 1100
+      },
+      "ms": 0,
+      "summary": "15 skim lines, 400s–1100s of Ephesians 6:10-17"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:paul-and-powers",
+        "fromSec": 0,
+        "toSec": 750
+      },
+      "ms": 0,
+      "summary": "15 skim lines, 0s–750s of N.T. Wright Interview: Paul and the Powers in Acts"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:paul-and-powers",
+        "fromSec": 1200,
+        "toSec": 2100
+      },
+      "ms": 0,
+      "summary": "16 skim lines, 1200s–2100s of N.T. Wright Interview: Paul and the Powers in Acts"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:922",
+        "fromSec": 1300,
+        "toSec": 1900
+      },
+      "ms": 0,
+      "summary": "13 skim lines, 1300s–1900s of Naked Bible 109: John 10, gods or Men?"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:922",
+        "fromSec": 2350,
+        "toSec": 2924
+      },
+      "ms": 0,
+      "summary": "12 skim lines, 2350s–2924s of Naked Bible 109: John 10, gods or Men?"
+    },
+    {
+      "at": 3,
+      "name": "read_passage",
+      "args": {
+        "book": "Psalm",
+        "chapter": 82,
+        "fromVerse": 1,
+        "toVerse": 8
+      },
+      "ms": 2,
+      "summary": "Psalms 82:1–8 (WEB)"
+    },
+    {
+      "at": 3,
+      "name": "read_passage",
+      "args": {
+        "book": "Deuteronomy",
+        "chapter": 32,
+        "fromVerse": 7,
+        "toVerse": 12
+      },
+      "ms": 1,
+      "summary": "Deuteronomy 32:7–12 (WEB)"
+    },
+    {
+      "at": 3,
+      "name": "read_passage",
+      "args": {
+        "book": "Daniel",
+        "chapter": 10,
+        "fromVerse": 10,
+        "toVerse": 21
+      },
+      "ms": 1,
+      "summary": "Daniel 10:10–21 (WEB)"
+    },
+    {
+      "at": 3,
+      "name": "read_passage",
+      "args": {
+        "book": "Ephesians",
+        "chapter": 6,
+        "fromVerse": 10,
+        "toVerse": 18
+      },
+      "ms": 0,
+      "summary": "Ephesians 6:10–18 (WEB)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "fromSec": 1450,
+        "toSec": 1750
+      },
+      "ms": 0,
+      "summary": "1450s–1750s of Origin of Spiritual Beings + Mini Question & Response"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "fromSec": 1750,
+        "toSec": 2050
+      },
+      "ms": 0,
+      "summary": "1750s–2050s of Origin of Spiritual Beings + Mini Question & Response"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "fromSec": 2420,
+        "toSec": 2720
+      },
+      "ms": 0,
+      "summary": "2420s–2720s of Origin of Spiritual Beings + Mini Question & Response"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "fromSec": 2720,
+        "toSec": 3020
+      },
+      "ms": 0,
+      "summary": "2720s–3020s of Origin of Spiritual Beings + Mini Question & Response"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:moses-final-words",
+        "fromSec": 1650,
+        "toSec": 1950
+      },
+      "ms": 0,
+      "summary": "1650s–1950s of Deuteronomy: Moses’ Final Words"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:moses-final-words",
+        "fromSec": 1950,
+        "toSec": 2250
+      },
+      "ms": 0,
+      "summary": "1950s–2250s of Deuteronomy: Moses’ Final Words"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:87ebc85c-302b-4636-b516-18dd0b0bb667",
+        "fromSec": 1400,
+        "toSec": 1700
+      },
+      "ms": 0,
+      "summary": "1400s–1700s of Daniel 10: A Shining Metal Man and the Prince of Persia"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:443675d9-com-1c505f52-8ecf-31f4-be17-93eac135f7c3",
+        "fromSec": 400,
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "400s–700s of Ephesians 6:10-17"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:paul-and-powers",
+        "fromSec": 0,
+        "toSec": 300
+      },
+      "ms": 0,
+      "summary": "0s–300s of N.T. Wright Interview: Paul and the Powers in Acts"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 33,
+    "tapeSec": 2700,
+    "promptTokens": 78590,
+    "completionTokens": 14409,
+    "reasoningTokens": 12330,
+    "cachedPromptTokens": 45490,
+    "wallMs": 139111,
+    "modelLatencyMs": 138469,
+    "toolMs": 636
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.013237,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 0.2,
+      "outputPerMTokensUsd": 1.2,
+      "cachedInputPerMTokensUsd": 0.02,
+      "_note": "LIST price, read off openrouter.ai/openai/gpt-5.6-luna 2026-07-31. CAUTION: OpenRouter is running a 50% promotion on this model as of that date (billing $0.10/$0.60), and the provider-accounted cost in every run record is the DISCOUNTED figure — double the luna-family dollars for any list-price comparison, and re-check the page before trusting either number."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T23:04:53.331Z"
+}

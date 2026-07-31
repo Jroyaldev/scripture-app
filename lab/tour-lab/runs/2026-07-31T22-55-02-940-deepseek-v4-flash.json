@@ -1,0 +1,508 @@
+{
+  "runId": "2026-07-31T22-55-02-940-deepseek-v4-flash",
+  "startedAt": "2026-07-31T22:55:02.940Z",
+  "promptId": "word-study-hesed",
+  "prompt": "I keep hearing that the Hebrew word hesed can't be translated. What does hesed actually mean, and where does the Old Testament use it in a way that shows its range?",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolution": {
+      "slug": "deepseek/deepseek-v4-flash-0731",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek/deepseek-v4-flash-0731",
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash-0731"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "DEEPSEEK_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Hesed: What the \"Untranslatable\" Hebrew Word Actually Means",
+    "intro": "You've heard the claim, and it's half right: hesed doesn't have a single English equivalent, but it does have a shape you can learn. This tour starts with a BibleProject episode built entirely around the word — why translators reach for mercy, lovingkindness, steadfast love, and love — then follows hesed through the Old Testament at its most human (a son burying his father, Ruth's pledge, a king's kindness to a crippled rival), hears the one place it's withheld, and ends at the text where God names himself \"great in hesed\" and the moment Moses prays that name back at him. The teachers along the way don't fully agree on the best English rendering — that disagreement is part of the answer. By the end, every time you meet \"steadfast love\" in your Bible, you'll hear the whole word.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "startSec": 52,
+        "endSec": 352,
+        "why": "This is the on-ramp: Tim Mackie states your exact question — \"There's no word in any language that quite does all of the things that chesed is doing\" — then shows the history of the translation struggle (mercy in Tyndale and the King James, lovingkindness in the NASB, love in the NIV, steadfast love in the ESV) and explains why those differences are \"a flag... an opportunity to learn.\" He gives the working definition that the whole tour builds on: \"It's a covenant partner. You're motivated by love and affection. You do concrete acts. And as you do so, you are fulfilling a promise that you make. That's chesed.\" You also get the numbers: 245 occurrences, 127 of them in the Psalms.",
+        "episodeTitle": "The Loyal Love of God",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e530ba3f-428a-4ef5-828c-34800da4963f/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e530ba3f-428a-4ef5-828c-34800da4963f",
+        "durationSec": 4105,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "startSec": 1549,
+        "endSec": 1849,
+        "why": "The first showing-of-range step: hesed is not only God's word, it's demanded of humans. Here the hosts work Micah 6:8 — \"to do justice, to love chesed, and to walk humbly\" (rendered mercy by the KJV, kindness by the ESV) — and land the key sentence: \"Chesed is not a feeling. Chesed is a visible action that shows your posture in the relationship.\" Then a dying Jacob makes Joseph swear an oath: \"A son showing a father chesed is carrying his corpse hundreds of miles to go be buried with his ancestors. That's an act of chesed.\" Concrete, costly, promised — before God ever claims the word for himself.",
+        "episodeTitle": "The Loyal Love of God",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e530ba3f-428a-4ef5-828c-34800da4963f/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e530ba3f-428a-4ef5-828c-34800da4963f",
+        "durationSec": 4105,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+        "startSec": 880,
+        "endSec": 1180,
+        "why": "Ruth is the book-length demonstration of hesed. When Naomi blesses her daughters-in-law — \"May the Lord deal kindly with you\" — the hosts flag the word: \"It's the word Hesed, which we don't have a good English translation for, but it's covenant faithfulness is my favorite translation.\" They note the shock that Naomi invokes Yahweh's covenant faithfulness for a Moabite — \"she is speaking a blessing of Yahweh's covenant faithfulness to a Gentile\" — and read Ruth's \"your people shall be my people\" pledge as its own act of hesed-loyalty. Here the word crosses national lines and keeps a whole family alive.",
+        "episodeTitle": "Ruth 1-2: God Fills What's Empty",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG9761838334.mp3?updated=1664486106",
+        "durationSec": 3645,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:478e6896-2d24-4806-ac5f-4db234766229",
+        "startSec": 1542,
+        "endSec": 1800,
+        "why": "A different voice, a different register of the word. David asks whether anyone of Saul's house remains \"that I can show the kindness of God to him,\" and the teacher flags the detail: \"David's wanting to show Hesed, but the specific kind of Hesed he wants to show is the Hesed of God... whatever David is about to do, you can interpret as what David believes the kindness of God is like.\" The clip ends with crippled, terrified Mephibosheth prostrate before the throne — the setup for a hesed that looks like pure grace to the grandson of your enemy, and the teacher's rendering: \"covenant loyalty, loving kindness, however you want to translate Hesed.\"",
+        "episodeTitle": "2 Samuel 8:9-9:13 (Episode 267)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_Min_ep_667.mp3?dest-id=245197",
+        "durationSec": 2471,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:ca9d8621-5843-4e9e-bdd7-99fd418ad6a1",
+        "startSec": 800,
+        "endSec": 862,
+        "why": "The negative case, and it matters for range: Judges 8 says the Israelites \"did not show that Hesed to the household of Gideon\" — the teacher calls it \"this covenant loyalty, this covenant faithfulness, this covenant love,\" the same word that describes God, now withheld between humans, and the narrator uses that failure to launch the bloody Abimelech story. Hesed isn't just a divine feeling; it's an obligation you can fail to keep, with ruinous consequences.",
+        "episodeTitle": "Judges 8:29-9:29 (Episode 207)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_Min_ep_207.mp3?dest-id=245197",
+        "durationSec": 2438,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "startSec": 3220,
+        "endSec": 3562,
+        "why": "Now the word comes home to God. After the spies' rebellion in Numbers 14, Moses quotes the Exodus 34 creed back at Yahweh — \"you declared... great in chesed\" — and prays \"Forgive them because of your chesed. That's the logic.\" The hosts sit with the tension of the full creed (\"You won't declare innocent the guilty, but you also never give up on your promises\") and draw the moral: chesed is \"a long-enduring commitment to generosity and love and commitment,\" \"not based on the worthiness of any given generation,\" and \"a core character trait of God.\" This is the hinge where every human hesed story becomes a window onto God's.",
+        "episodeTitle": "The Loyal Love of God",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e530ba3f-428a-4ef5-828c-34800da4963f/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e530ba3f-428a-4ef5-828c-34800da4963f",
+        "durationSec": 4105,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:2693",
+        "startSec": 2100,
+        "endSec": 2400,
+        "why": "Michael Heiser goes to the fountainhead text itself, Exodus 34:6-7, the verse after the golden calf where God passes before Moses: \"God is chesed ve'emet. He's full of the steadfast love and faithfulness, and he extends chesed... God is reliable, durable, he's going to keep the covenant no matter what, even though we've just had this golden calf thing happen.\" He also handles the hard half of the creed — \"will by no means clear the guilty\" — showing it doesn't mean innocent children are punished, and he offers his own rendering: \"loving loyalty,\" which feels \"clunky, but it's still a good way to communicate the idea of the word.\" A second teacher's honest answer to the translation problem.",
+        "episodeTitle": "Naked Bible 310: Exodus 33-34",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2020/02/NakedBible310_Exodus33_34.mp3",
+        "durationSec": 4477,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "startSec": 3675,
+        "endSec": 3895,
+        "why": "The landing: the New Testament is Greek, so hesed never appears — but the Septuagint translated it as \"mercy,\" and the hosts show that Mary's Magnificat (\"his mercy extends to those who fear him from generation to generation\") and Ephesians 2's \"rich in mercy\" both read better with hesed behind them: \"mercy is just one aspect of chesed. And chesed is so much richer than just mercy.\" The episode closes by naming what the whole word adds up to: \"Across generations he remains faithful to his promises and keeps fulfilling them in surprising and generous ways. That's core to the biblical portrait of God.\"",
+        "episodeTitle": "The Loyal Love of God",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e530ba3f-428a-4ef5-828c-34800da4963f/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e530ba3f-428a-4ef5-828c-34800da4963f",
+        "durationSec": 4105,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "There's your answer to the \"can't be translated\" claim. Hesed isn't untranslatable because it's mysterious — it's untranslatable because it bundles things English keeps separate: commitment to a promise, affection, and concrete generosity, held together across generations and offered to people who don't deserve it. You've now heard it as a son's oath to a dying father, a Moabite's pledge, a king's kindness to a crippled rival, a failure that unleashes chaos, and finally the word God chooses for himself in Exodus 34 — and you've heard Moses turn that word into the basis of his prayer. When your translation says \"steadfast love\" or \"lovingkindness\" or \"mercy,\" let each of those be a single slice of the whole: loyal love, kept, at cost, on purpose.",
+    "totalSeconds": 2082
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2445,
+      "promptTokens": 2316,
+      "completionTokens": 237,
+      "reasoningTokens": 100,
+      "cachedPromptTokens": 2176,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0000920528
+    },
+    {
+      "i": 1,
+      "latencyMs": 9469,
+      "promptTokens": 6781,
+      "completionTokens": 860,
+      "reasoningTokens": 590,
+      "cachedPromptTokens": 2304,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008740312
+    },
+    {
+      "i": 2,
+      "latencyMs": 5486,
+      "promptTokens": 11423,
+      "completionTokens": 535,
+      "reasoningTokens": 317,
+      "cachedPromptTokens": 6656,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008358168
+    },
+    {
+      "i": 3,
+      "latencyMs": 6757,
+      "promptTokens": 13508,
+      "completionTokens": 685,
+      "reasoningTokens": 392,
+      "cachedPromptTokens": 11392,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0005199376
+    },
+    {
+      "i": 4,
+      "latencyMs": 3124,
+      "promptTokens": 17033,
+      "completionTokens": 193,
+      "reasoningTokens": 68,
+      "cachedPromptTokens": 13440,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000594692
+    },
+    {
+      "i": 5,
+      "latencyMs": 2779,
+      "promptTokens": 18105,
+      "completionTokens": 194,
+      "reasoningTokens": 88,
+      "cachedPromptTokens": 17024,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0002533272
+    },
+    {
+      "i": 6,
+      "latencyMs": 4876,
+      "promptTokens": 19351,
+      "completionTokens": 512,
+      "reasoningTokens": 172,
+      "cachedPromptTokens": 18048,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0003763144
+    },
+    {
+      "i": 7,
+      "latencyMs": 97233,
+      "promptTokens": 23455,
+      "completionTokens": 10303,
+      "reasoningTokens": 9966,
+      "cachedPromptTokens": 19328,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0035167384
+    },
+    {
+      "i": 8,
+      "latencyMs": 6999,
+      "promptTokens": 23922,
+      "completionTokens": 761,
+      "reasoningTokens": 452,
+      "cachedPromptTokens": 23424,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0003483872
+    },
+    {
+      "i": 9,
+      "latencyMs": 119474,
+      "promptTokens": 25471,
+      "completionTokens": 14084,
+      "reasoningTokens": 12052,
+      "cachedPromptTokens": 23808,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0042430024
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "hesed lovingkindness meaning Hebrew word",
+        "limit": 10
+      },
+      "ms": 100,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "chesed steadfast love covenant loyalty",
+        "limit": 10
+      },
+      "ms": 76,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god"
+      },
+      "ms": 1,
+      "summary": "The Loyal Love of God (4105s)"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 0,
+        "toSec": 1500
+      },
+      "ms": 0,
+      "summary": "31 skim lines, 0s–1500s of The Loyal Love of God"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "naked-bible:podcast:2693"
+      },
+      "ms": 1,
+      "summary": "Naked Bible 310: Exodus 33-34 (4477s)"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992"
+      },
+      "ms": 0,
+      "summary": "Ruth 1-2: God Fills What's Empty (3645s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "fromSec": 1500,
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "toSec": 4105
+      },
+      "ms": 0,
+      "summary": "30 skim lines, 1500s–3000s of The Loyal Love of God"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 52,
+        "toSec": 352
+      },
+      "ms": 0,
+      "summary": "52s–352s of The Loyal Love of God"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1549,
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "toSec": 1849
+      },
+      "ms": 0,
+      "summary": "1549s–1849s of The Loyal Love of God"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2828,
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "toSec": 3128
+      },
+      "ms": 0,
+      "summary": "2828s–3128s of The Loyal Love of God"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 3079,
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "toSec": 3379
+      },
+      "ms": 0,
+      "summary": "3079s–3379s of The Loyal Love of God"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 3375,
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "toSec": 3791
+      },
+      "ms": 0,
+      "summary": "3375s–3675s of The Loyal Love of God"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 3675,
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "toSec": 3975
+      },
+      "ms": 0,
+      "summary": "3675s–3975s of The Loyal Love of God"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 880,
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+        "toSec": 1180
+      },
+      "ms": 0,
+      "summary": "880s–1180s of Ruth 1-2: God Fills What's Empty"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1500,
+        "recordId": "forty-minutes-ot:podcast:478e6896-2d24-4806-ac5f-4db234766229",
+        "toSec": 1800
+      },
+      "ms": 0,
+      "summary": "1500s–1800s of 2 Samuel 8:9-9:13 (Episode 267)"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2100,
+        "recordId": "naked-bible:podcast:2693",
+        "toSec": 2400
+      },
+      "ms": 0,
+      "summary": "2100s–2400s of Naked Bible 310: Exodus 33-34"
+    },
+    {
+      "at": 8,
+      "name": "episode_skim",
+      "args": {
+        "fromSec": 1800,
+        "recordId": "forty-minutes-ot:podcast:478e6896-2d24-4806-ac5f-4db234766229",
+        "toSec": 2471
+      },
+      "ms": 0,
+      "summary": "14 skim lines, 1800s–2471s of 2 Samuel 8:9-9:13 (Episode 267)"
+    },
+    {
+      "at": 8,
+      "name": "episode_skim",
+      "args": {
+        "fromSec": 1960,
+        "recordId": "naked-bible:podcast:2693",
+        "toSec": 2470
+      },
+      "ms": 1,
+      "summary": "10 skim lines, 1960s–2470s of Naked Bible 310: Exodus 33-34"
+    },
+    {
+      "at": 8,
+      "name": "episode_skim",
+      "args": {
+        "fromSec": 700,
+        "recordId": "forty-minutes-ot:podcast:ca9d8621-5843-4e9e-bdd7-99fd418ad6a1",
+        "toSec": 1150
+      },
+      "ms": 0,
+      "summary": "9 skim lines, 700s–1150s of Judges 8:29-9:29 (Episode 207)"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 10,
+    "toolCalls": 24,
+    "tapeSec": 2700,
+    "promptTokens": 161365,
+    "completionTokens": 28364,
+    "reasoningTokens": 24197,
+    "cachedPromptTokens": 137600,
+    "wallMs": 258830,
+    "modelLatencyMs": 258642,
+    "toolMs": 180
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.011654,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T22:59:21.770Z"
+}

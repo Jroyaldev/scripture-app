@@ -1,0 +1,687 @@
+{
+  "runId": "2026-07-31T23-03-17-367-deepseek-v4-flash",
+  "startedAt": "2026-07-31T23:03:17.368Z",
+  "promptId": "doctrinal-atonement",
+  "prompt": "Did God pour out wrath on Jesus at the cross? I want to hear the different ways teachers explain what the crucifixion accomplished, including where they disagree.",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolution": {
+      "slug": "deepseek/deepseek-v4-flash-0731",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek/deepseek-v4-flash-0731",
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash-0731"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "DEEPSEEK_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Did God Pour Out His Wrath on Jesus? Six Voices on the Cross",
+    "intro": "The teachers in this corpus genuinely disagree about your question, and the disagreement turns on two things: what the wrath of God actually is, and what the Bible's atonement language is doing. This tour lets you hear the classic statement of wrath poured out on Jesus, the Isaiah 53 text that fuels it, a plain-language map of the theories, then two dissenting re-reads and one attempt at a synthesis. By the end you'll have heard the argument from each side in its own voice, including where they flatly contradict each other.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:bacb1fc2-com-e79bf8f7-6ab5-30f3-9e4f-46bbb41dd164",
+        "startSec": 1300,
+        "endSec": 1465,
+        "why": "Start with the classic answer, stated plainly over Romans 3:25. The teacher defines propitiation as standing 'over against the ideas of wrath and condemnation' from Romans 1:18, ties it to the Day of Atonement's mercy seat, and says God's just repayment for sin 'was caught up in and poured out on Jesus Himself' so that 'the wrath of God that sin deserves, in some sense, is satiated, in some sense satisfied.' He ends with the judge who pounds the gavel and acquits without sweeping sin under the carpet. This is the yes-he-did view in its clearest form.",
+        "episodeTitle": "Romans 3:21-26",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/zhvgac/romans_321-368t8hu.mp3",
+        "durationSec": 1954,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:12f63ece-495b-4477-99cb-d96db3f1d240",
+        "startSec": 1280,
+        "endSec": 1460,
+        "why": "The text the whole debate keeps returning to: Isaiah 53. Working line by line through 'Surely he has borne our griefs and carried our sorrows,' the hosts hear 'explicitly the substitutionary language. Our griefs and our sorrows were moved from us onto him.' They also sit with the uncomfortable line 'we esteemed him stricken, smitten by God' — the moment onlookers assume God turned against him — and note Jesus was taking on the world's griefs from his baptism onward, not just at the crucifixion. This is the biblical fuel for the view in step one, with the 'smitten by God' question left openly on the table.",
+        "episodeTitle": "Isaiah 53:1-12 (Episode 495)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_min_495.mp3?dest-id=245197",
+        "durationSec": 2522,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "startSec": 1767,
+        "endSec": 2067,
+        "why": "A plain-spoken tour of the theory map, so you can see where each view comes from. The hosts walk through the satisfaction model — God's wrath assuaged, a debt paid, 'God's justice has been violated, that's what must be atoned for' — then the penal substitutionary atonement developed in the Reformation: 'we were sinners, that we deserved punishment, God didn't want to kill us but to save us he had to make restitution, so he kills his son.' They even flag 'there's obviously some caricaturing going on here' and define penal in courtroom terms: 'there's a punishment that's due us and Jesus is taking the punishment that we deserve.' A good honest lay of the land before the dissents.",
+        "episodeTitle": "Theories of Atonement – CrossTalk S4E10",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682238/4202feae-310f-48d3-8260-2bd297e7ec54/transcoded.mp3?post_id=148682238&relation=podcast&Expires=1785437879&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=E81CSoqx5J2xZCnTPRkPrWvRg17tmjM-2SKhycuZSAMk4XOl732-KwOVFWlcApEglSliBQA4R8rvfsVLBkCl5wLrSJeFJE8YFypZehk1S-ztVhFWUOaXbBbN9Ljnj9yk4CxD8CvqZvUeUpm0st083KKQu8uajFMmkOZhz7FeZXgC6Xmc9frzupTiWp9gV1U1qj14AnTiRqjJoBIVkwTkQzHh0KCRmLXCs0pKbEAEz-H7qAjGYKr0-w04CQCM2GTYNZ2q8WWm8SHYOfihsTvcGwCbh48uSLygBXDGvyuPHDZzeDCDWp8K5zjgnJbXnWNCyt8aDP-dX-e4oZzV77TM1Q__",
+        "durationSec": 2917,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:1802",
+        "startSec": 1080,
+        "endSec": 1360,
+        "why": "Here the first serious dissent arrives, at the level of the Greek word. Dr. Heiser lays out the scholarly fight over hilasterion — Dodd's 'expiation' (removal of guilt) versus Morris's 'propitiation' (appeasing God's anger) — and then takes his own position: going back to the Hebrew root, 'it really doesn't mean propitiation, like appeasing the anger of God.' His point is that in Leviticus 16 the blood is never applied to a sinner at all: 'the blood is applied to the sanctuary... It's about purging, decontaminating the most sacred presence.' For him the cross restores permanent access to God's presence rather than absorbing God's anger.",
+        "episodeTitle": "Naked Bible 194: Hebrews 9",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2017/12/NakedBible194_Hebrews9.mp3",
+        "durationSec": 3549,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:two-men-named-jesus",
+        "startSec": 1884,
+        "endSec": 2130,
+        "why": "The strongest explicit challenge to the classic view, and it speaks directly to your question. Tim Mackie reads the Barabbas scene and the two Day of Atonement goats, then says Jesus drinking 'the cup of God's anger' means 'he's going to put himself in the place of rebellious Israel standing in the Roman court facing the Roman governor, and he will poke the bear and allow Rome to kill him instead of the whole people.' He insists this is 'totally different than these more modern conceptions... especially about Jesus bearing God's wrath on the cross,' and makes the sharp claim that 'there's never a moment in the Gospels or anywhere in the New Testament that says Jesus suffered the wrath of God. There's not one text.' Jesus is 'allowing himself to suffer the consequences that Israel is on a trajectory to experience' — wrath as being handed over to consequences, not anger transferred onto him.",
+        "episodeTitle": "Two Men Named Jesus",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/2d2b5ff7-d5a7-4f12-b496-d2e799ece9e0/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=2d2b5ff7-d5a7-4f12-b496-d2e799ece9e0",
+        "durationSec": 3582,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:e6604615-com-54149cc6-ab7e-5242-82b1-cc4e6c350870",
+        "startSec": 1290,
+        "endSec": 1560,
+        "why": "Close with the teacher most often accused of denying penal substitution, answering it. Wright takes 2 Corinthians 5:21 ('God made him to be sin') and says the proof-text reading misses that the passage is Paul's apostolic apologia — 'that's not what that passage is about.' He skewers the caricature ('we're sinners, God needed to punish somebody, here is Jesus, happened to be his own son, that'll do') and blames Gustav Aulén for polarizing substitution against Christus Victor. Then he fuses them: in John 12, 'Now is the judgment of this world, now is the ruler of this world cast out' — the cross wins victory over the powers of darkness, 'and the way the victory is won is by Jesus taking the place of the sinner,' with substitution 'woven into Luke's narrative.' The two camps meet here, without pretending they ever fully agreed.",
+        "episodeTitle": "#35 Qs on Crucifixion and Atonement",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR5281382814.mp3?updated=1736469708",
+        "durationSec": 2411,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "So the honest answer to your question is that the teachers you'll hear do not agree — one says the wrath sin deserves was 'poured out on Jesus Himself,' while another says the New Testament 'never' says Jesus bore God's wrath. But you've also heard why the disagreement exists: they are reading different background stories into the cross (the Day of Atonement's blood, the exile's cup, the courtroom, the battlefield) and different words (propitiation versus purge). What none of them dispute is that Jesus died for us and that the cross accomplished something real. Listen to these voices in conversation with each other, and you'll come away able to say what you believe and why, rather than just which slogan you were handed.",
+    "totalSeconds": 1441
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3004,
+      "promptTokens": 2310,
+      "completionTokens": 297,
+      "reasoningTokens": 164,
+      "cachedPromptTokens": 2176,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0001080128
+    },
+    {
+      "i": 1,
+      "latencyMs": 4139,
+      "promptTokens": 6901,
+      "completionTokens": 445,
+      "reasoningTokens": 228,
+      "cachedPromptTokens": 2304,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007746312
+    },
+    {
+      "i": 2,
+      "latencyMs": 11418,
+      "promptTokens": 15376,
+      "completionTokens": 1199,
+      "reasoningTokens": 976,
+      "cachedPromptTokens": 6784,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0015575952
+    },
+    {
+      "i": 3,
+      "latencyMs": 13083,
+      "promptTokens": 23656,
+      "completionTokens": 1434,
+      "reasoningTokens": 1168,
+      "cachedPromptTokens": 15360,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001605968
+    },
+    {
+      "i": 4,
+      "latencyMs": 22494,
+      "promptTokens": 31386,
+      "completionTokens": 2441,
+      "reasoningTokens": 2052,
+      "cachedPromptTokens": 23552,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0018461856
+    },
+    {
+      "i": 5,
+      "latencyMs": 5517,
+      "promptTokens": 35302,
+      "completionTokens": 576,
+      "reasoningTokens": 201,
+      "cachedPromptTokens": 31360,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000800968
+    },
+    {
+      "i": 6,
+      "latencyMs": 29296,
+      "promptTokens": 39529,
+      "completionTokens": 3236,
+      "reasoningTokens": 2658,
+      "cachedPromptTokens": 35200,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0016107
+    },
+    {
+      "i": 7,
+      "latencyMs": 5600,
+      "promptTokens": 46223,
+      "completionTokens": 620,
+      "reasoningTokens": 295,
+      "cachedPromptTokens": 39424,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012358472
+    },
+    {
+      "i": 8,
+      "latencyMs": 48684,
+      "promptTokens": 50232,
+      "completionTokens": 4808,
+      "reasoningTokens": 4489,
+      "cachedPromptTokens": 46208,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0020389824
+    },
+    {
+      "i": 9,
+      "latencyMs": 3408,
+      "promptTokens": 50681,
+      "completionTokens": 402,
+      "reasoningTokens": 111,
+      "cachedPromptTokens": 50176,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0003237528
+    },
+    {
+      "i": 10,
+      "latencyMs": 2210,
+      "promptTokens": 51781,
+      "completionTokens": 199,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 50560,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000368228
+    },
+    {
+      "i": 11,
+      "latencyMs": 43121,
+      "promptTokens": 52440,
+      "completionTokens": 5202,
+      "reasoningTokens": 3558,
+      "cachedPromptTokens": 51968,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0016681504
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "God poured out his wrath on Jesus",
+        "limit": 10
+      },
+      "ms": 86,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "penal substitution",
+        "limit": 10
+      },
+      "ms": 52,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "Christus Victor"
+      },
+      "ms": 66,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "why have you forsaken me"
+      },
+      "ms": 64,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "Jesus took our punishment"
+      },
+      "ms": 85,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Isaiah",
+        "chapter": 53
+      },
+      "ms": 2,
+      "summary": "25 of 175 moments"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "propitiation"
+      },
+      "ms": 80,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "the Father turned his back on Jesus"
+      },
+      "ms": 27,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "God made him to be sin"
+      },
+      "ms": 41,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "cup of wrath Jesus drank"
+      },
+      "ms": 64,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "atonement sacrifice for sins"
+      },
+      "ms": 104,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "God was in Christ reconciling the world"
+      },
+      "ms": 59,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "scapegoat carried away our sins"
+      },
+      "ms": 66,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "limit": 8,
+        "query": "wrath atonement",
+        "sourceId": "bibleproject"
+      },
+      "ms": 61,
+      "summary": "8 hits"
+    },
+    {
+      "at": 4,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 0,
+        "toSec": 1500
+      },
+      "ms": 3,
+      "summary": "29 skim lines, 0s–1500s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 4,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:two-men-named-jesus",
+        "fromSec": 1400,
+        "toSec": 2900
+      },
+      "ms": 0,
+      "summary": "31 skim lines, 1400s–2900s of Two Men Named Jesus"
+    },
+    {
+      "at": 4,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "fromSec": 0,
+        "toSec": 1500
+      },
+      "ms": 0,
+      "summary": "30 skim lines, 0s–1500s of Saved from God’s Wrath"
+    },
+    {
+      "at": 4,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:e6604615-com-54149cc6-ab7e-5242-82b1-cc4e6c350870",
+        "fromSec": 400,
+        "toSec": 1900
+      },
+      "ms": 3,
+      "summary": "30 skim lines, 400s–1900s of #35 Qs on Crucifixion and Atonement"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "fromSec": 0,
+        "toSec": 300
+      },
+      "ms": 0,
+      "summary": "0s–300s of Saved from God’s Wrath"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:two-men-named-jesus",
+        "fromSec": 1840,
+        "toSec": 2140
+      },
+      "ms": 0,
+      "summary": "1840s–2140s of Two Men Named Jesus"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 1470,
+        "toSec": 1770
+      },
+      "ms": 0,
+      "summary": "1470s–1770s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:e6604615-com-54149cc6-ab7e-5242-82b1-cc4e6c350870",
+        "fromSec": 680,
+        "toSec": 800
+      },
+      "ms": 0,
+      "summary": "680s–800s of #35 Qs on Crucifixion and Atonement"
+    },
+    {
+      "at": 6,
+      "name": "episode_skim",
+      "args": {
+        "fromSec": 0,
+        "recordId": "forty-minutes-ot:podcast:12f63ece-495b-4477-99cb-d96db3f1d240",
+        "toSec": 1500
+      },
+      "ms": 4,
+      "summary": "31 skim lines, 0s–1500s of Isaiah 53:1-12 (Episode 495)"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1250,
+        "recordId": "listeners-commentary:podcast:bacb1fc2-com-e79bf8f7-6ab5-30f3-9e4f-46bbb41dd164",
+        "toSec": 1550
+      },
+      "ms": 2,
+      "summary": "1250s–1550s of Romans 3:21-26"
+    },
+    {
+      "at": 6,
+      "name": "episode_skim",
+      "args": {
+        "fromSec": 1000,
+        "recordId": "ask-nt-wright:podcast:32b053a0-4d5c-11ee-8683-f1dd20c5e5ec",
+        "toSec": 2261
+      },
+      "ms": 4,
+      "summary": "26 skim lines, 1000s–2261s of #185 Questions on Crucifixion and Atonement (Classic)"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1767,
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "toSec": 2067
+      },
+      "ms": 0,
+      "summary": "1767s–2067s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1080,
+        "recordId": "naked-bible:podcast:1802",
+        "toSec": 1380
+      },
+      "ms": 3,
+      "summary": "1080s–1380s of Naked Bible 194: Hebrews 9"
+    },
+    {
+      "at": 6,
+      "name": "search_corpus",
+      "args": {
+        "limit": 8,
+        "query": "cosmic child abuse"
+      },
+      "ms": 87,
+      "summary": "8 hits"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1260,
+        "recordId": "ask-nt-wright:podcast:e6604615-com-54149cc6-ab7e-5242-82b1-cc4e6c350870",
+        "toSec": 1700
+      },
+      "ms": 0,
+      "summary": "1260s–1560s of #35 Qs on Crucifixion and Atonement"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1250,
+        "recordId": "forty-minutes-ot:podcast:12f63ece-495b-4477-99cb-d96db3f1d240",
+        "toSec": 1550
+      },
+      "ms": 0,
+      "summary": "1250s–1550s of Isaiah 53:1-12 (Episode 495)"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 760,
+        "recordId": "spoken-gospel:podcast:dab379a4-10da-4f98-964b-489199842df6",
+        "toSec": 1060
+      },
+      "ms": 7,
+      "summary": "760s–1060s of Numbers Introduction"
+    },
+    {
+      "at": 9,
+      "name": "episode_skim",
+      "args": {
+        "fromSec": 2380,
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "toSec": 2917
+      },
+      "ms": 0,
+      "summary": "10 skim lines, 2380s–2917s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 9,
+      "name": "episode_skim",
+      "args": {
+        "fromSec": 1520,
+        "recordId": "ask-nt-wright:podcast:e6604615-com-54149cc6-ab7e-5242-82b1-cc4e6c350870",
+        "toSec": 1700
+      },
+      "ms": 0,
+      "summary": "4 skim lines, 1520s–1700s of #35 Qs on Crucifixion and Atonement"
+    },
+    {
+      "at": 9,
+      "name": "episode_skim",
+      "args": {
+        "fromSec": 2120,
+        "recordId": "bibleproject:podcast:two-men-named-jesus",
+        "toSec": 2220
+      },
+      "ms": 0,
+      "summary": "3 skim lines, 2120s–2220s of Two Men Named Jesus"
+    },
+    {
+      "at": 10,
+      "name": "episode_skim",
+      "args": {
+        "fromSec": 1630,
+        "recordId": "ask-nt-wright:podcast:e6604615-com-54149cc6-ab7e-5242-82b1-cc4e6c350870",
+        "toSec": 1810
+      },
+      "ms": 0,
+      "summary": "5 skim lines, 1630s–1810s of #35 Qs on Crucifixion and Atonement"
+    },
+    {
+      "at": 10,
+      "name": "episode_skim",
+      "args": {
+        "fromSec": 2160,
+        "recordId": "bibleproject:podcast:two-men-named-jesus",
+        "toSec": 2320
+      },
+      "ms": 0,
+      "summary": "4 skim lines, 2160s–2320s of Two Men Named Jesus"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 12,
+    "toolCalls": 41,
+    "tapeSec": 2820,
+    "promptTokens": 405817,
+    "completionTokens": 20859,
+    "reasoningTokens": 15900,
+    "cachedPromptTokens": 355072,
+    "wallMs": 192949,
+    "modelLatencyMs": 191974,
+    "toolMs": 971
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.013939,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T23:06:30.317Z"
+}

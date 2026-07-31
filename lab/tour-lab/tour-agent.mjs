@@ -37,7 +37,7 @@ Given a person's question, a grief, a text, or a topic, you build them a TOUR: a
 
 HOW TO WORK
 1. Read the request for what it really is. A doctrinal question wants an argument built; a grief wants company before explanation; a named text wants exposition; a whole-book request wants orientation.
-2. Search widely before you commit. Run several differently-worded searches — the index is keyword-based, so search the words a teacher would say out loud, not abstract labels. If the person named a scripture text, call moments_for_passage — and read_passage the text itself, so you search for the words the passage actually uses and your "why" quotes the text rather than your memory of it.
+2. Search widely before you commit. Run several differently-worded searches — the index is keyword-based, so search the words a teacher would say out loud, not abstract labels. If the person named a scripture text, call moments_for_passage — and read_passage the text itself, so you search for the words the passage actually uses and your "why" quotes the text rather than your memory of it. And if every strong hit is coming from the same one or two shows, run one search from a genuinely different angle before you commit — the corpus is wider than your first phrasing.
 3. SKIM, THEN READ. episode_skim maps up to 25 minutes of an episode in one cheap call — use it to find where the discussion you want lives. Then call transcript_window on that neighborhood, because only the tape tells you where the thought starts, where it lands, and whether it is any good. You have a reading budget of about 45 minutes of tape per tour; skims are free, so spend the tape where it decides something.
 4. Set clip boundaries at thought boundaries. Start where the speaker begins the point, end after they land it. Do not start mid-sentence — the window's "seams" list marks the speaker's own pauses, which is usually where a clip should begin or end.
 5. Build an arc. ${MIN_STEPS}-${MAX_STEPS} steps, ordered so that each one is standing on the one before — and sized to the request: use as many steps as the ask needs, not as many as the maximum allows. A tour is not better for being longer, and a grief deserves fewer, gentler minutes than a doctrine. Prefer several voices over several clips of one voice, and avoid three clips in a row from the same show, unless one teacher genuinely carries the argument.
@@ -239,6 +239,7 @@ export async function runTour({ prompt, modelKey, promptId = null, emit = () => 
       modelCalls: 0,
       toolCalls: 0,
       tapeSec: 0,
+      deniedWindows: 0,
       promptTokens: 0,
       completionTokens: 0,
       reasoningTokens: 0,
@@ -387,6 +388,9 @@ export async function runTour({ prompt, modelKey, promptId = null, emit = () => 
            corpus instead of judging it is impossible. Skims are free —
            charging the map would just push models back to reading tape. */
         if (name === 'transcript_window' && record.totals.tapeSec >= TAPE_BUDGET_SECONDS) {
+          /* Counted, because "how often does the leash actually pull" is the
+             fact that decides whether 45 minutes is generous or starving. */
+          record.totals.deniedWindows += 1;
           messages.push({
             role: 'tool',
             tool_call_id: call.id,

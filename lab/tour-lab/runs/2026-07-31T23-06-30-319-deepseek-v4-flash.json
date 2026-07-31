@@ -1,0 +1,417 @@
+{
+  "runId": "2026-07-31T23-06-30-319-deepseek-v4-flash",
+  "startedAt": "2026-07-31T23:06:30.319Z",
+  "promptId": "pastoral-doubt",
+  "prompt": "I'm losing my faith and I'm frightened of it. Is doubt a failure? I want to hear people who take doubt seriously rather than scolding it.",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolution": {
+      "slug": "deepseek/deepseek-v4-flash-0731",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek/deepseek-v4-flash-0731",
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash-0731"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "DEEPSEEK_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Is Doubt a Failure? Mercy for the Frightened Believer",
+    "intro": "Here is what this tour does for you: it doesn't argue you out of your doubt, and it doesn't shame you into certainty. It lets you overhear people who have taken doubt seriously enough to sit inside it — teachers, a grieving father, a teenager who wrote to a stranger because he was on the brink of atheism, and a pastor who confessed he was losing his faith. Along the way you'll meet the Bible's own doubters — John the Baptist in prison and Thomas in the upper room — and you'll hear what Scripture actually says to the wavering: mercy, not rebuke. Six stops, about half an hour. Breathe; you are not late to this, and you are not alone in it.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:final-instructions-and-soaring-doxology",
+        "startSec": 1990,
+        "endSec": 2290,
+        "why": "The frame the whole tour stands on. Tim Mackie tells how Ukrainian pastors once quoted Jude 22 — 'rebuke those who are doubting' — against his habit of honoring doubt, and he pushes back: 'you got to help people because their questions are important.' He shows that the oldest manuscripts of Jude actually read 'show mercy on those who are wavering,' and that 'rebuke' likely crept in through a copyist's slip — the two words are 'just a couple letters different in Greek.' The letter's final instruction to the church, he says, is 'don't lay into them. Be gentle.' Scripture's own posture toward the doubter is mercy, so your question — is doubt a failure? — gets a no before you hear a single argument.",
+        "episodeTitle": "The Letter of Jude E6: Final Instructions and a Soaring Doxology",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/6a7451a1-26cf-4fa8-9199-4c212f7a23d9/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=6a7451a1-26cf-4fa8-9199-4c212f7a23d9",
+        "durationSec": 4137,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "startSec": 850,
+        "endSec": 1087,
+        "why": "Before any explanation, company. Jon and Cameron Cole — a father who lost his son — sit in Psalm 22, the psalm Jesus quoted from the cross. Jon says 'the very existence of the Lament Psalms in our Bibles shows us that suffering and faith are not at a conflict,' and that the Bible's answer to anguish is to 'confront it head on and talk about it honestly' rather than sweep it under the rug. Cameron brings Tim Keller's distinction between 'the actual presence of God versus the perceived presence of God' — the psalmist doesn't feel God there and still prays 'yet you are holy.' Doubt, and even the feeling of abandonment, has a native language in the Bible, and it is prayer.",
+        "episodeTitle": "Psalm 22: Lament Psalms (w/ Cameron Cole)",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG7303573431.mp3?updated=1686154567",
+        "durationSec": 2801,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:a3d7a33c-com-ac529e45-5610-37f1-b449-e952249dceaa",
+        "startSec": 250,
+        "endSec": 466,
+        "why": "The greatest of the prophets doubted. Teaching Matthew 11, this commentary walks through John the Baptist sitting in Herod's prison, having expected a Messiah who would end the very oppression John still feels — and so 'John just wants to make sure, are you really the one?' The teacher notes that Jesus never scolds him: he answers with the promises of Isaiah and adds 'blessed is any person who does not take offense at me' — don't 'trip over Jesus just because he's not the kind of Messiah you thought you should get based on what everyone else told you.' If John's doubt wasn't failure, yours isn't either — and notice where the answer points: back to the text, not to feelings.",
+        "episodeTitle": "Matthew 11:1-19",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/vyjwhp/matthew_111-196zav8.mp3",
+        "durationSec": 1295,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "startSec": 1200,
+        "endSec": 1500,
+        "why": "Then Thomas, the patron saint of this tour. In John 20, the teacher reads the disciple who wasn't in the room when Jesus came, who says he won't believe without the nail prints — and the striking thing is that Jesus 'graciously humors him': he invites the touch, never rebukes the demand for evidence, and comes back to meet him a week later at the same gathering. Thomas's reply, 'My Lord and my God,' is called 'the high point really of the Gospel of John.' In this telling, doubt is not the opposite of belief; it is the road John built his whole gospel to walk people down — 'do not continue in disbelief, but be a believer.'",
+        "episodeTitle": "John 20:1-31",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/z8yyjpv9fmtit6hd/john_201-3185o5y.mp3",
+        "durationSec": 1726,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "startSec": 289,
+        "endSec": 560,
+        "why": "Now the tour turns from the page to a real person in your exact place. Elijah, a teenager, writes in: 'I find myself doubting everything I knew' and 'I desperately want the deep shalom of God, but I keep finding myself at dead ends, seemingly abandoned.' NT Wright answers without a word of scolding — 'my heart goes out to Elijah' — and names intellectual inquiry 'a necessary part of the growing up process,' since Jesus taught us to love God with our minds. His central counsel: sort out 'the things that make a difference and the things that don't make a difference,' because churches often boost up peripheral positions 'as though they were part of the faith, but they aren't in fact.' What feels like losing your faith may be growing pains rather than death.",
+        "episodeTitle": "#131 Help! I’m on the brink of atheism... Deconstruction and suffering",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR6100001449.mp3?updated=1749725746",
+        "durationSec": 1357,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:705e2070-1a46-11ee-b53d-e1ada002761a",
+        "startSec": 1600,
+        "endSec": 1829,
+        "why": "The landing. Wright and his host Justin Briley answer a pastor who has written in about losing his faith, and the host offers what may be the most important sentence in the tour: 'don't expect to come back to the same feelings that you had before. You can get back, but it might feel different, and there's gonna be a different way, shape that that faith takes.' Then Wright tells of Marcus Borg, who left the faith in his twenties, wandered, and returned as 'a deeply praying man... a prayerful lover of Jesus' — changed, not destroyed. The counsel to the pastor is to find wise elders who will say, 'I'm having a real struggle at the moment, perhaps I need three months off.' Doubt here is not a verdict; it is a transition, and the shape of what comes after can be smaller and truer.",
+        "episodeTitle": "#175 Pastor losing faith writes in; personal Questions; Tom plays guitar! (Classic)",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR7281660466.mp3?updated=1749655293",
+        "durationSec": 2495,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "These six voices don't all agree on everything, and that is part of the point — none of them treats your doubt as something to be routed or explained away. What they keep saying is gentler: doubt has a place in the biblical story, in the psalms, in the church's own founding characters, and in the lives of people who came out the other side changed rather than destroyed. The last voice tells you not to expect to feel the same when you come back — and that coming back is real. In the meantime, the text you carry is the one Jude left the church: show mercy on those who doubt. That includes you.",
+    "totalSeconds": 1553
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3344,
+      "promptTokens": 2311,
+      "completionTokens": 353,
+      "reasoningTokens": 157,
+      "cachedPromptTokens": 2176,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0001238328
+    },
+    {
+      "i": 1,
+      "latencyMs": 10648,
+      "promptTokens": 8815,
+      "completionTokens": 1144,
+      "reasoningTokens": 834,
+      "cachedPromptTokens": 2304,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012383112
+    },
+    {
+      "i": 2,
+      "latencyMs": 12523,
+      "promptTokens": 17209,
+      "completionTokens": 1615,
+      "reasoningTokens": 1066,
+      "cachedPromptTokens": 8704,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0016672712
+    },
+    {
+      "i": 3,
+      "latencyMs": 7818,
+      "promptTokens": 23485,
+      "completionTokens": 896,
+      "reasoningTokens": 452,
+      "cachedPromptTokens": 17152,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0011855256
+    },
+    {
+      "i": 4,
+      "latencyMs": 41614,
+      "promptTokens": 28737,
+      "completionTokens": 4181,
+      "reasoningTokens": 3697,
+      "cachedPromptTokens": 23424,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0019800872
+    },
+    {
+      "i": 5,
+      "latencyMs": 100679,
+      "promptTokens": 30487,
+      "completionTokens": 11876,
+      "reasoningTokens": 10178,
+      "cachedPromptTokens": 28672,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0036596616
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 0,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "doubt is not the opposite of faith",
+        "limit": 10
+      },
+      "ms": 95,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "doubting Thomas blessed are those who have not seen",
+        "limit": 10
+      },
+      "ms": 51,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "crisis of faith losing my faith",
+        "limit": 10
+      },
+      "ms": 58,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "John the Baptist are you the one who is to come"
+      },
+      "ms": 61,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "why are you cast down O my soul"
+      },
+      "ms": 44,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "faith is trust not certainty"
+      },
+      "ms": 51,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "deconstruction losing faith honest questions"
+      },
+      "ms": 49,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46"
+      },
+      "ms": 0,
+      "summary": "27 skim lines, 0s–1500s of #131 Help! I’m on the brink of atheism... Deconstruction and suffering"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:final-instructions-and-soaring-doxology",
+        "fromSec": 1990,
+        "toSec": 2290
+      },
+      "ms": 7,
+      "summary": "1990s–2290s of The Letter of Jude E6: Final Instructions and a Soaring Doxology"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "fromSec": 1200,
+        "toSec": 1500
+      },
+      "ms": 2,
+      "summary": "1200s–1500s of John 20:1-31"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:38b54c4-com-5281cdd4-eabf-34d6-95e2-fb5b338f5e4f",
+        "fromSec": 700,
+        "toSec": 1000
+      },
+      "ms": 1,
+      "summary": "700s–1000s of #86 Deconstructing faith and answering atheism"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "fromSec": 850,
+        "toSec": 1150
+      },
+      "ms": 0,
+      "summary": "850s–1150s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 289,
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "toSec": 620
+      },
+      "ms": 0,
+      "summary": "289s–589s of #131 Help! I’m on the brink of atheism... Deconstruction and suffering"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1600,
+        "recordId": "ask-nt-wright:podcast:705e2070-1a46-11ee-b53d-e1ada002761a",
+        "toSec": 1900
+      },
+      "ms": 0,
+      "summary": "1600s–1900s of #175 Pastor losing faith writes in; personal Questions; Tom plays guitar! (Classic)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 650,
+        "recordId": "listeners-commentary:podcast:a3d7a33c-com-ac529e45-5610-37f1-b449-e952249dceaa",
+        "toSec": 950
+      },
+      "ms": 4,
+      "summary": "650s–950s of Matthew 11:1-19"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1800,
+        "recordId": "bibleproject:podcast:final-instructions-and-soaring-doxology",
+        "toSec": 2100
+      },
+      "ms": 0,
+      "summary": "1800s–2100s of The Letter of Jude E6: Final Instructions and a Soaring Doxology"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 250,
+        "recordId": "listeners-commentary:podcast:a3d7a33c-com-ac529e45-5610-37f1-b449-e952249dceaa",
+        "toSec": 550
+      },
+      "ms": 0,
+      "summary": "250s–550s of Matthew 11:1-19"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 6,
+    "toolCalls": 22,
+    "tapeSec": 2700,
+    "promptTokens": 111044,
+    "completionTokens": 20065,
+    "reasoningTokens": 16384,
+    "cachedPromptTokens": 82432,
+    "wallMs": 177052,
+    "modelLatencyMs": 176626,
+    "toolMs": 423
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.009855,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T23:09:27.371Z"
+}

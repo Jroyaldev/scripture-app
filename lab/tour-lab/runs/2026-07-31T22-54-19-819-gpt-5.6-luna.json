@@ -1,0 +1,696 @@
+{
+  "runId": "2026-07-31T22-54-19-819-gpt-5.6-luna",
+  "startedAt": "2026-07-31T22:54:19.819Z",
+  "promptId": "pastoral-grief",
+  "prompt": "My mother died three weeks ago and I cannot pray. I don't want tidy answers — I want to hear people talk honestly about grief and where God is in it.",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "LUNA_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "When Prayer Goes Quiet: A Listening Tour Through Fresh Grief",
+    "intro": "You are only three weeks into a loss, so this tour does not begin by trying to fix your prayer life or explain your mother’s death. It begins with the rawness itself: a broken heart that feels unimportant, Jesus weeping beside mourners, lament as a way to speak honestly when prayer feels impossible, and finally the question of where God is when the darkness does not lift. Listen slowly and stop whenever you need to; you do not have to turn any of these clips into a prayer.",
+    "steps": [
+      {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "startSec": 136,
+        "endSec": 370,
+        "why": "Begin here because the clip meets the exact shame and distance that can come with fresh grief. Wright says, “This is not selfish and it is not unimportant,” and even, “God loves your broken heart as much as he loved your unbroken heart before.” He does not rush past the sorrow; he points toward Jesus in Gethsemane and at Lazarus’s tomb, then toward Psalms that can hold doubt and darkness when you cannot find your own words.",
+        "episodeTitle": "#196 Pain and suffering Part 2 (Classic)",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR3879333769.mp3?updated=1749653312",
+        "durationSec": 1455,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:a1a084d1-com-06ada9f3-4c3f-3851-9ba5-35f817a4ee6f",
+        "startSec": 1307,
+        "endSec": 1507,
+        "why": "Stay with the scene at Lazarus’s tomb. The commentator lets Mary say the words grief often wants to say—“Lord, if you had been here, our brother wouldn’t have died”—and describes Jesus as emotionally “deeply agitated” by death before arriving at the plain sentence, “Jesus wept.” This clip gives you presence rather than a neat explanation: Jesus does not scold the mourners for their tears or hurry them past the horror of loss.",
+        "episodeTitle": "John 11:1-54",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/rhu2ccvr4rgf5c54/john_111-54bhwxv.mp3",
+        "durationSec": 2212,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "startSec": 1557,
+        "endSec": 1830,
+        "why": "Now hear Psalm 22 as permission not to pretend. The speakers note that David gives “11 verses of just here’s what I’m experiencing” before his first request, “Be not far from me.” They warn against either turning away from God or faking your emotions, and say of someone whose mother has just died, “it’s a godly thing to be honest with God about your emotions.” The clip treats bringing the pain itself to God as a form of prayer.",
+        "episodeTitle": "Psalm 22: Lament Psalms (w/ Cameron Cole)",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG7303573431.mp3?updated=1686154567",
+        "durationSec": 2801,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:efa1c31b-com-675da7aa-6691-5371-9a69-ace341ca3888",
+        "startSec": 1101,
+        "endSec": 1260,
+        "why": "End with the question of God’s location in the silence, without pretending to solve why this happened. Wright says that “the Spirit groans within us,” acknowledges a Psalm that ends with “darkness is my only companion,” and then describes God as “the God of all compassion, who comes to be with us in that darkness.” It leaves the mystery intact, but it refuses to equate your inability to pray with God’s absence.",
+        "episodeTitle": "#33 Tom on Coronavirus, self-isolating and praying through crisis",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR8934467240.mp3?updated=1736469733",
+        "durationSec": 2321,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "You may not finish this tour feeling better, and that is not its measure. For now, it is enough to let these voices hold a little space around your grief: your heart is not an inconvenience, lament need not be polished, and wordless darkness is not something you have to face alone. If a clip is too much today, stopping is part of listening too.",
+    "totalSeconds": 866
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 6379,
+      "promptTokens": 1585,
+      "completionTokens": 71,
+      "reasoningTokens": 55,
+      "cachedPromptTokens": 1537,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00006389500000000001
+    },
+    {
+      "i": 1,
+      "latencyMs": 4963,
+      "promptTokens": 1880,
+      "completionTokens": 308,
+      "reasoningTokens": 134,
+      "cachedPromptTokens": 1582,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00023779500000000004
+    },
+    {
+      "i": 2,
+      "latencyMs": 15619,
+      "promptTokens": 19950,
+      "completionTokens": 1668,
+      "reasoningTokens": 863,
+      "cachedPromptTokens": 1877,
+      "toolCalls": 15,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0032786200000000003
+    },
+    {
+      "i": 3,
+      "latencyMs": 12897,
+      "promptTokens": 32294,
+      "completionTokens": 964,
+      "reasoningTokens": 772,
+      "cachedPromptTokens": 19947,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0023211700000000004
+    },
+    {
+      "i": 4,
+      "latencyMs": 15222,
+      "promptTokens": 50384,
+      "completionTokens": 1434,
+      "reasoningTokens": 947,
+      "cachedPromptTokens": 32291,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0034448600000000005
+    },
+    {
+      "i": 5,
+      "latencyMs": 28191,
+      "promptTokens": 59220,
+      "completionTokens": 2092,
+      "reasoningTokens": 1934,
+      "cachedPromptTokens": 50381,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0028638100000000005
+    },
+    {
+      "i": 6,
+      "latencyMs": 25792,
+      "promptTokens": 73216,
+      "completionTokens": 2781,
+      "reasoningTokens": 2424,
+      "cachedPromptTokens": 59217,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.004010570000000001
+    },
+    {
+      "i": 7,
+      "latencyMs": 105119,
+      "promptTokens": 76136,
+      "completionTokens": 10800,
+      "reasoningTokens": 9998,
+      "cachedPromptTokens": 73213,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.007577430000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "grief God absent prayer",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 100,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "can't pray lament grief",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 62,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "when someone dies grief",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 74,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "where is God suffering death",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 95,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "mother died grief",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 65,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Jesus wept death sorrow",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 53,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01"
+      },
+      "ms": 6,
+      "summary": "#196 Pain and suffering Part 2 (Classic) (1455s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "fromSec": 0,
+        "toSec": 600
+      },
+      "ms": 0,
+      "summary": "13 skim lines, 0s–600s of #196 Pain and suffering Part 2 (Classic)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a1a084d1-com-06ada9f3-4c3f-3851-9ba5-35f817a4ee6f",
+        "fromSec": 1000,
+        "toSec": 1900
+      },
+      "ms": 0,
+      "summary": "19 skim lines, 1000s–1900s of John 11:1-54"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a1a084d1-com-06ada9f3-4c3f-3851-9ba5-35f817a4ee6f"
+      },
+      "ms": 1,
+      "summary": "John 11:1-54 (2212s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "fromSec": 1100,
+        "toSec": 2801
+      },
+      "ms": 5,
+      "summary": "30 skim lines, 1100s–2600s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6"
+      },
+      "ms": 0,
+      "summary": "Psalm 22: Lament Psalms (w/ Cameron Cole) (2801s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "fromSec": 1300,
+        "toSec": 2300
+      },
+      "ms": 0,
+      "summary": "19 skim lines, 1300s–2300s of Some Things I Wish Everyone Knew About Grief"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658"
+      },
+      "ms": 1,
+      "summary": "Some Things I Wish Everyone Knew About Grief (3241s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:b4eb4192-dfc0-11ee-bfef-8777c8532f4c",
+        "fromSec": 0,
+        "toSec": 700
+      },
+      "ms": 4,
+      "summary": "15 skim lines, 0s–700s of Lamentations Overview: What is a Lament?"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:b4eb4192-dfc0-11ee-bfef-8777c8532f4c",
+        "fromSec": 1900,
+        "toSec": 3323
+      },
+      "ms": 0,
+      "summary": "29 skim lines, 1900s–3323s of Lamentations Overview: What is a Lament?"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:b4eb4192-dfc0-11ee-bfef-8777c8532f4c"
+      },
+      "ms": 2,
+      "summary": "Lamentations Overview: What is a Lament? (3323s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:9e4f152c-com-c13413cf-7101-3c3e-bd46-89e56b4127f2",
+        "fromSec": 0,
+        "toSec": 800
+      },
+      "ms": 0,
+      "summary": "16 skim lines, 0s–800s of #105 The theology of death"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:9e4f152c-com-c13413cf-7101-3c3e-bd46-89e56b4127f2"
+      },
+      "ms": 1,
+      "summary": "#105 The theology of death (1350s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "radically-christian:podcast:5bbd952f-https-radicallychristian-com-p-7303",
+        "fromSec": 0,
+        "toSec": 2051
+      },
+      "ms": 0,
+      "summary": "29 skim lines, 0s–1500s of Dealing with Grief – CrossTalk S2E25"
+    },
+    {
+      "at": 2,
+      "name": "episode_info",
+      "args": {
+        "recordId": "radically-christian:podcast:5bbd952f-https-radicallychristian-com-p-7303"
+      },
+      "ms": 1,
+      "summary": "Dealing with Grief – CrossTalk S2E25 (2051s)"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "grief is not sinful not selfish",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 89,
+      "summary": "15 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "prayer in the dark God grief",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 50,
+      "summary": "15 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "spiritual failure lament emotions God",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 76,
+      "summary": "15 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "God grieves with us sorrow Spirit groans",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 60,
+      "summary": "15 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "grief never ends sit with Job friends",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 84,
+      "summary": "15 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "silence God grief funeral church sorrow",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 65,
+      "summary": "15 hits"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "fromSec": 70,
+        "toSec": 390
+      },
+      "ms": 5,
+      "summary": "70s–370s of #196 Pain and suffering Part 2 (Classic)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a1a084d1-com-06ada9f3-4c3f-3851-9ba5-35f817a4ee6f",
+        "fromSec": 1260,
+        "toSec": 1535
+      },
+      "ms": 0,
+      "summary": "1260s–1535s of John 11:1-54"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "fromSec": 700,
+        "toSec": 1100
+      },
+      "ms": 0,
+      "summary": "700s–1000s of Some Things I Wish Everyone Knew About Grief"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:a9baf6f-substack-post-151262658",
+        "fromSec": 1450,
+        "toSec": 1810
+      },
+      "ms": 0,
+      "summary": "1450s–1750s of Some Things I Wish Everyone Knew About Grief"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "fromSec": 1540,
+        "toSec": 1830
+      },
+      "ms": 6,
+      "summary": "1540s–1830s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:9e4f152c-com-c13413cf-7101-3c3e-bd46-89e56b4127f2",
+        "fromSec": 300,
+        "toSec": 500
+      },
+      "ms": 0,
+      "summary": "300s–500s of #105 The theology of death"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:efa1c31b-com-675da7aa-6691-5371-9a69-ace341ca3888",
+        "fromSec": 1060,
+        "toSec": 1250
+      },
+      "ms": 0,
+      "summary": "1060s–1250s of #33 Tom on Coronavirus, self-isolating and praying through crisis"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8f69bf0a-com-59af7369-e75d-395e-85a6-34ac29b8e25e",
+        "fromSec": 500,
+        "toSec": 750
+      },
+      "ms": 3,
+      "summary": "500s–750s of Romans 8:26-39"
+    },
+    {
+      "at": 5,
+      "name": "search_corpus",
+      "args": {
+        "query": "lost my mother mother died",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 106,
+      "summary": "15 hits"
+    },
+    {
+      "at": 5,
+      "name": "search_corpus",
+      "args": {
+        "query": "my mom died grief",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 100,
+      "summary": "15 hits"
+    },
+    {
+      "at": 5,
+      "name": "search_corpus",
+      "args": {
+        "query": "lost my wife grief every day alone",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 51,
+      "summary": "10 hits"
+    },
+    {
+      "at": 5,
+      "name": "search_corpus",
+      "args": {
+        "query": "wordless groanings cannot pray",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 74,
+      "summary": "15 hits"
+    },
+    {
+      "at": 5,
+      "name": "search_corpus",
+      "args": {
+        "query": "God is with us in grief death tears",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 66,
+      "summary": "15 hits"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:efa1c31b-com-675da7aa-6691-5371-9a69-ace341ca3888",
+        "fromSec": 1095,
+        "toSec": 1260
+      },
+      "ms": 0,
+      "summary": "1095s–1260s of #33 Tom on Coronavirus, self-isolating and praying through crisis"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:5bbd952f-https-radicallychristian-com-p-7303",
+        "fromSec": 1280,
+        "toSec": 1475
+      },
+      "ms": 0,
+      "summary": "1280s–1475s of Dealing with Grief – CrossTalk S2E25"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:5bbd952f-https-radicallychristian-com-p-7303",
+        "fromSec": 600,
+        "toSec": 850
+      },
+      "ms": 0,
+      "summary": "600s–850s of Dealing with Grief – CrossTalk S2E25"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 8,
+    "toolCalls": 48,
+    "tapeSec": 2715,
+    "promptTokens": 314665,
+    "completionTokens": 20118,
+    "reasoningTokens": 17127,
+    "cachedPromptTokens": 240045,
+    "wallMs": 215494,
+    "modelLatencyMs": 214182,
+    "toolMs": 1306
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.023798,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 0.2,
+      "outputPerMTokensUsd": 1.2,
+      "cachedInputPerMTokensUsd": 0.02,
+      "_note": "LIST price, read off openrouter.ai/openai/gpt-5.6-luna 2026-07-31. CAUTION: OpenRouter is running a 50% promotion on this model as of that date (billing $0.10/$0.60), and the provider-accounted cost in every run record is the DISCOUNTED figure — double the luna-family dollars for any list-price comparison, and re-check the page before trusting either number."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T22:57:55.313Z"
+}

@@ -1,0 +1,520 @@
+{
+  "runId": "2026-07-31T22-59-21-773-deepseek-v4-flash",
+  "startedAt": "2026-07-31T22:59:21.773Z",
+  "promptId": "book-orientation-romans",
+  "prompt": "I'm about to read Romans for the first time. Give me an orientation to the whole letter: what Paul is arguing, who he's arguing with, and how the parts fit together.",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolution": {
+      "slug": "deepseek/deepseek-v4-flash-0731",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek/deepseek-v4-flash-0731",
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash-0731"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "DEEPSEEK_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "First Time in Romans: Who Paul Is Arguing With, and How the Letter Fits Together",
+    "intro": "Romans can feel like a wall of theology when you walk into it cold. This tour gives you the lay of the land before you read: who Paul is writing to and what was actually happening in Rome, why this letter is shaped as one long argument, what its thesis sentence is, and how its four big movements fit together — including the chapters (9–11) that usually make first-time readers stop dead. By the end you'll have a map you can hold in your head, plus a warning about the one misreading almost everyone brings to the letter.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:63bf2f5f-com-6cd6a9f3-108c-38ad-b4b8-02550ba51633",
+        "startSec": 340,
+        "endSec": 604,
+        "why": "Before the argument, the city. This clip paints the Rome Paul is writing to — a million people, a melting pot where, as the satirist Juvenal put it, \"the Orontes has overflowed into the Tiber,\" with a Jewish community of some 40,000. It also tells the crucial backstory: the gospel likely arrived with Pentecost pilgrims from Rome (Acts 2), grew enough to stir a disturbance \"around a man named Chrestus,\" and got most Jewish Christians expelled by Emperor Claudius around 49 AD. That expulsion is the seed of everything Romans is trying to fix.",
+        "episodeTitle": "Backstory to Romans",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/i5pj3w/backstory.mp3",
+        "durationSec": 1197,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:63bf2f5f-com-6cd6a9f3-108c-38ad-b4b8-02550ba51633",
+        "startSec": 800,
+        "endSec": 1004,
+        "why": "Now the actual situation in the Roman churches — and Paul deliberately speaks of \"churches, not church.\" There were several house churches in the city, and after the Jewish Christians returned following Claudius's death, you had Gentile groups who \"tend to look down on the Jews\" and Jewish groups who had been through expulsion. This is who Paul is arguing with and for: a divided congregation. The clip ends with the letter's true destination, Romans 15:5-6 — that with \"one mind and one voice\" they would glorify God together.",
+        "episodeTitle": "Backstory to Romans",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/i5pj3w/backstory.mp3",
+        "durationSec": 1197,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:d09c8ed4-f6cf-11ee-8072-b7002c006746",
+        "startSec": 130,
+        "endSec": 360,
+        "why": "A different voice, and the single most important thing to know about Romans' shape: unlike his other letters, Paul isn't answering a list of problems — \"Romans doesn't really have that because it is a sustained thought. He is making a long argument from beginning to end.\" As one host puts it, it's \"hello, I have an argument to make.\" Paul has never visited this church, so the letter is his self-introduction, his fundraising pitch for Spain, and — written near the end of his life — \"the collected wisdom of his 20 plus years of ministry,\" all from a career Pharisee and Torah expert.",
+        "episodeTitle": "Romans Overview: Jesus is King",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG3092543348.mp3?updated=1712708592",
+        "durationSec": 2862,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "startSec": 80,
+        "endSec": 345,
+        "why": "The map itself. This clip names the four parts of the letter (1–4, 5–8, 9–11, 12–16) and plants the thesis — Romans 1:16-17, \"the righteousness of God is revealed from faith to faith\" — then walks chapters 1–4: the pagan world condemned, then \"really a Jew and maybe even a good moral Gentile\" condemned too, then the righteousness of God manifested apart from the law in 3:21ff, and Abraham in chapter 4 as the father of both Jew and Gentile believers. It closes by framing chapters 5–8: by faith, not Torah, \"doesn't mean that life is a moral free-for-all\" — we died to sin and now have the Spirit.",
+        "episodeTitle": "An Overview of the Letter to the Romans",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/x82wrk/overview.mp3",
+        "durationSec": 1242,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:bea0c93e-6be9-11f1-8ff5-13601660097d",
+        "startSec": 1262,
+        "endSec": 1476,
+        "why": "Just as the map is in your head, N.T. Wright warns you against the misreading that has dominated Romans since the Reformation: treating it as only about \"where is my standing with God.\" He insists right standing matters, but Paul's doctrine of justification \"is also about how God is creating the single family of Judean and Gentile together,\" because what characterizes them all is faith in Jesus, not circumcision or food laws — \"and that then is about community definition.\" This is the interpretive key that makes chapters 9–11 and 14 stop feeling like detours.",
+        "episodeTitle": "Are Catholics saved? Is the Bible missing books? And will there be a third temple?",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR9747918035.mp3",
+        "durationSec": 2510,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:784f6fd-com-593cbc4b-91c7-3c8e-8a92-5e869484507f",
+        "startSec": 145,
+        "endSec": 440,
+        "why": "Chapters 9–11 are where most first-time readers get lost, so this clip addresses that directly: after the crescendo of chapter 8, chapter 9 feels like a jarring change of key, and \"some have even been so bold as to say you could go from the end of chapter 8 to the beginning of chapter 12.\" The response: \"maybe we're reading it wrong.\" The real question of these chapters isn't individual predestination but whether Israel's widespread rejection of Jesus means \"God has forsaken his promises to Israel.\" That is the question about God's righteousness the whole letter has been circling.",
+        "episodeTitle": "Introduction to Romans 9-11",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/h8r443/romans_9-11_introb1psi.mp3",
+        "durationSec": 1071,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "startSec": 670,
+        "endSec": 873,
+        "why": "The landing. This clip shows that chapters 12–16 are the \"therefore\" the whole argument has been building toward — because you are the people of God by mercy, not performance, \"learn to live together as the people of God in shalom.\" It even grounds the famously tricky chapter 14 in the letter's actual situation (the bacon-and-ham version of the Jew-Gentile dispute), and ends with Paul's avalanche of greetings to house churches he's never visited — proof that his goal all along was one church worshiping \"with one voice.\" A fitting place to finish before you open chapter 1.",
+        "episodeTitle": "An Overview of the Letter to the Romans",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/x82wrk/overview.mp3",
+        "durationSec": 1242,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "That's your running start. When you open the letter itself, you'll be reading it the way Paul meant it to be heard: not a random collection of doctrines, but one sustained argument — the gospel as the power of God for salvation, for Jew and Gentile alike — aimed at a real, divided congregation in Rome, and landing in a call to live together as one people. Watch for the thesis in 1:16-17, slow down at the turn in 3:21, and when chapter 9 feels like a cliff, remember it's the question the whole letter has been asking. Happy reading.",
+    "totalSeconds": 1675
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3543,
+      "promptTokens": 2317,
+      "completionTokens": 365,
+      "reasoningTokens": 230,
+      "cachedPromptTokens": 2176,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0001280328
+    },
+    {
+      "i": 1,
+      "latencyMs": 7530,
+      "promptTokens": 6802,
+      "completionTokens": 826,
+      "reasoningTokens": 581,
+      "cachedPromptTokens": 2304,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008674512
+    },
+    {
+      "i": 2,
+      "latencyMs": 10542,
+      "promptTokens": 10723,
+      "completionTokens": 1087,
+      "reasoningTokens": 770,
+      "cachedPromptTokens": 6784,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008748152
+    },
+    {
+      "i": 3,
+      "latencyMs": 16520,
+      "promptTokens": 15166,
+      "completionTokens": 1972,
+      "reasoningTokens": 1507,
+      "cachedPromptTokens": 10624,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012177872
+    },
+    {
+      "i": 4,
+      "latencyMs": 41616,
+      "promptTokens": 18194,
+      "completionTokens": 4810,
+      "reasoningTokens": 4161,
+      "cachedPromptTokens": 15104,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0018216912
+    },
+    {
+      "i": 5,
+      "latencyMs": 28725,
+      "promptTokens": 25538,
+      "completionTokens": 3227,
+      "reasoningTokens": 2871,
+      "cachedPromptTokens": 18176,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0019851328
+    },
+    {
+      "i": 6,
+      "latencyMs": 89055,
+      "promptTokens": 27516,
+      "completionTokens": 9465,
+      "reasoningTokens": 9214,
+      "cachedPromptTokens": 25472,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0030076816
+    },
+    {
+      "i": 7,
+      "latencyMs": 37721,
+      "promptTokens": 28938,
+      "completionTokens": 4177,
+      "reasoningTokens": 2463,
+      "cachedPromptTokens": 27392,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014626976
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans overview introduction to the letter",
+        "limit": 10
+      },
+      "ms": 72,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "righteousness of God Romans",
+        "limit": 10
+      },
+      "ms": 35,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "Romans roundtable overview BibleProject",
+        "sourceId": "bibleproject"
+      },
+      "ms": 119,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7"
+      },
+      "ms": 1,
+      "summary": "An Overview of the Letter to the Romans (1242s)"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d09c8ed4-f6cf-11ee-8072-b7002c006746"
+      },
+      "ms": 2,
+      "summary": "Romans Overview: Jesus is King (2862s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "fromSec": 0,
+        "toSec": 1242
+      },
+      "ms": 0,
+      "summary": "24 skim lines, 0s–1242s of An Overview of the Letter to the Romans"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "limit": 8,
+        "query": "backstory to Romans Paul's letter to the Romans introduction",
+        "sourceId": "listeners-commentary"
+      },
+      "ms": 45,
+      "summary": "8 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "limit": 8,
+        "query": "Romans gospel covenant faithfulness justification Wright",
+        "sourceId": "ask-nt-wright"
+      },
+      "ms": 44,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:63bf2f5f-com-6cd6a9f3-108c-38ad-b4b8-02550ba51633",
+        "fromSec": 0,
+        "toSec": 1197
+      },
+      "ms": 0,
+      "summary": "24 skim lines, 0s–1197s of Backstory to Romans"
+    },
+    {
+      "at": 3,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d09c8ed4-f6cf-11ee-8072-b7002c006746",
+        "fromSec": 0,
+        "toSec": 1500
+      },
+      "ms": 0,
+      "summary": "30 skim lines, 0s–1500s of Romans Overview: Jesus is King"
+    },
+    {
+      "at": 3,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:bea0c93e-6be9-11f1-8ff5-13601660097d",
+        "fromSec": 1100,
+        "toSec": 2000
+      },
+      "ms": 0,
+      "summary": "18 skim lines, 1100s–2000s of Are Catholics saved? Is the Bible missing books? And will there be a third temple?"
+    },
+    {
+      "at": 3,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:784f6fd-com-593cbc4b-91c7-3c8e-8a92-5e869484507f",
+        "fromSec": 0,
+        "toSec": 1071
+      },
+      "ms": 2,
+      "summary": "21 skim lines, 0s–1071s of Introduction to Romans 9-11"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:63bf2f5f-com-6cd6a9f3-108c-38ad-b4b8-02550ba51633",
+        "fromSec": 340,
+        "toSec": 640
+      },
+      "ms": 0,
+      "summary": "340s–640s of Backstory to Romans"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "fromSec": 80,
+        "toSec": 345
+      },
+      "ms": 0,
+      "summary": "80s–345s of An Overview of the Letter to the Romans"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d09c8ed4-f6cf-11ee-8072-b7002c006746",
+        "fromSec": 120,
+        "toSec": 420
+      },
+      "ms": 0,
+      "summary": "120s–420s of Romans Overview: Jesus is King"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:bacb1fc2-com-e79bf8f7-6ab5-30f3-9e4f-46bbb41dd164",
+        "fromSec": 380,
+        "toSec": 680
+      },
+      "ms": 5,
+      "summary": "380s–680s of Romans 3:21-26"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:784f6fd-com-593cbc4b-91c7-3c8e-8a92-5e869484507f",
+        "fromSec": 140,
+        "toSec": 440
+      },
+      "ms": 1,
+      "summary": "140s–440s of Introduction to Romans 9-11"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:bea0c93e-6be9-11f1-8ff5-13601660097d",
+        "fromSec": 1260,
+        "toSec": 1520
+      },
+      "ms": 0,
+      "summary": "1260s–1520s of Are Catholics saved? Is the Bible missing books? And will there be a third temple?"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 800,
+        "recordId": "listeners-commentary:podcast:63bf2f5f-com-6cd6a9f3-108c-38ad-b4b8-02550ba51633",
+        "toSec": 1010
+      },
+      "ms": 0,
+      "summary": "800s–1010s of Backstory to Romans"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 655,
+        "recordId": "listeners-commentary:podcast:bacb1fc2-com-e79bf8f7-6ab5-30f3-9e4f-46bbb41dd164",
+        "toSec": 800
+      },
+      "ms": 0,
+      "summary": "655s–800s of Romans 3:21-26"
+    },
+    {
+      "at": 5,
+      "name": "episode_skim",
+      "args": {
+        "fromSec": 0,
+        "recordId": "five-minutes-church-history:podcast:2289",
+        "toSec": 300
+      },
+      "ms": 2,
+      "summary": "7 skim lines, 0s–300s of The Gates of Paradise"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 295,
+        "recordId": "listeners-commentary:podcast:63bf2f5f-com-6cd6a9f3-108c-38ad-b4b8-02550ba51633",
+        "toSec": 345
+      },
+      "ms": 0,
+      "summary": "295s–345s of Backstory to Romans"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 670,
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "toSec": 880
+      },
+      "ms": 0,
+      "summary": "670s–880s of An Overview of the Letter to the Romans"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 8,
+    "toolCalls": 25,
+    "tapeSec": 2340,
+    "promptTokens": 135194,
+    "completionTokens": 25929,
+    "reasoningTokens": 21797,
+    "cachedPromptTokens": 108032,
+    "wallMs": 235592,
+    "modelLatencyMs": 235252,
+    "toolMs": 329
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.011365,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T23:03:17.365Z"
+}
