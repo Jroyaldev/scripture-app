@@ -154,7 +154,10 @@ export const ATTRIBUTE_VOCABULARY = Object.freeze({
   },
   "data-paint-state": {
     source: "src/renderer/components/ConnectionUnderlay.tsx · the two paintState ternaries",
-    values: ["selection", "authoring", "selected", "needs-space"],
+    // dormant / preview / companion returned 2026-07-30 with the Era-3 wash
+    // ladder (the connections revival); a resting durable connection is a
+    // painted presence again.
+    values: ["selection", "authoring", "selected", "needs-space", "preview", "companion", "dormant"],
   },
   "data-anchor-resolution": {
     source: "src/renderer/components/ConnectionUnderlay.tsx",

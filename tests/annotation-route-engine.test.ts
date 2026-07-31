@@ -100,18 +100,27 @@ test("planRoute is deterministic across replay and anchor storage order", () => 
     score: first.diagnostics.score,
   }, {
     valid: true,
-    mode: "corridor",
+    // DATED REVERSAL, 2026-07-30 (the connection-lines revival). This pin
+    // previously read mode "corridor": the C0.5 bracket — level runs, two
+    // 6px corners at ports y 38/106, a straight rail spine 38..106, score
+    // 335.8. The reader asked for "s curves … not just underline with a
+    // line pointing at margin", so a two-line route now draws the BOW: the
+    // same level runs and the same corridor claims, with one horizontal-
+    // tangent cubic sweeping through a vertical apex 14px beyond the rail
+    // (spine.x 76 = rail 90 − apex 14). Contacts, corridors, rail, and
+    // claims are unchanged — the reversal is curvature, not routing.
+    mode: "bow",
     side: "left",
     contacts: [{ x: 180.5, y: 32 }, { x: 260.5, y: 112 }],
     corridors: [32, 112],
     marginRailX: 90,
-    ports: [{ x: 90, y: 38 }, { x: 90, y: 106 }],
-    spine: { x: 90, top: 38, bottom: 106 },
+    ports: [{ x: 90, y: 32 }, { x: 90, y: 112 }],
+    spine: { x: 76, top: 32, bottom: 112 },
     claimsOut: [
       { corridor: 1, y: 32, xMin: 90, xMax: 180.5, pad: 0 },
       { corridor: 3, y: 112, xMin: 90, xMax: 260.5, pad: 0 },
     ],
-    score: 335.8,
+    score: 351.4,
   });
 });
 

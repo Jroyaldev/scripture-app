@@ -196,6 +196,23 @@ interface ArtifactProvenance {
   backboneVersion: string;
   packageId?: string;
   targetTextSha256?: string;
+  /* SAID LOUDLY (2026-07-30, the connection-lines revival): a second
+   * alignment-artifact dialect is now admitted at read time. d3712ab
+   * shipped WEB/KJV/YLT occurrence alignments whose meta declares
+   * `alignment_provenance: "bootstrap-v1"` — statistically bootstrapped
+   * links carrying a calibrated per-word confidence — while this store's
+   * validators only knew the frozen BSB-tables dialect, so every non-BSB
+   * package refused wholesale. The dialect changes NOTHING about the
+   * durable anchor format (ANCHOR_KEYS stays closed; anchors remain
+   * canonical {verse, position} sets); it changes which read-side
+   * evidence rows are admitted, and admitted rows are link-gated: words
+   * whose confidence entry is null (no link received) are stripped to
+   * unaligned fragments, so a linkless word can only ever be quietly
+   * absent in that translation — never guessed. Numeric links are trusted
+   * for now; see the link-gate note in validateAlignmentRow for why the
+   * 0.95 display recommendation is deliberately NOT a binding gate. */
+  dialect?: "bootstrap-v1" | "clear-manual";
+  recommendedMinConfidence?: number;
 }
 
 interface LoadedArtifact {
@@ -378,6 +395,7 @@ export class OccurrenceAlignmentStore implements BackboneTokenCatalog {
         this.packageId,
         tokenResult.value.tokens.length,
         alignmentArtifact.value.path,
+        alignmentArtifact.value.provenance,
       );
       if (!recordResult.ok) return recordResult;
       this.cachePut(`alignment:${ref}`, recordResult.value, row.value.bytes);
@@ -971,6 +989,20 @@ function validateMeta(
   sourceSha256: string,
   path: string,
 ): ArtifactProvenance {
+  if (
+    kind === "alignment"
+    && isRecord(input)
+    && input["alignment_provenance"] === "bootstrap-v1"
+  ) {
+    return validateBootstrapAlignmentMeta(input, packageId, sourceSha256, path);
+  }
+  if (
+    kind === "alignment"
+    && isRecord(input)
+    && input["alignment_provenance"] === "clear-bible-manual-alignment"
+  ) {
+    return validateClearManualAlignmentMeta(input, packageId, sourceSha256, path);
+  }
   const common = parseMetaCommon(input, kind, path);
   if (common.sourceSha256 !== sourceSha256) {
     fail({
@@ -1135,11 +1167,171 @@ function parseMetaCommon(
   };
 }
 
+/**
+ * The bootstrap alignment-meta dialect (2026-07-30). Closed key set, exactly
+ * the shape d3712ab shipped for WEB/KJV/YLT. Provenance is self-referential:
+ * these artifacts were not built from the frozen BSB tables, so their index
+ * source_sha256 is the artifact's own digest and token-provenance equality
+ * is skipped — per-verse compatibility is still enforced mechanically, since
+ * every occurrence position in every row must fall inside that verse's
+ * canonical token inventory (validateAlignmentRow's tokenCount bound).
+ */
+function validateBootstrapAlignmentMeta(
+  input: Record<string, unknown>,
+  packageId: string,
+  sourceSha256: string,
+  path: string,
+): ArtifactProvenance {
+  const keys = [
+    "type",
+    "format_version",
+    "layer",
+    "package_id",
+    "target_offset_unit",
+    "target_fragment_unit",
+    "fragment_tuple",
+    "word_confidence",
+    "confidence_model",
+    "alignment_provenance",
+    "alignment_witnesses",
+    "recommended_min_confidence",
+    "recommended_min_confidence_note",
+    "quality_tier",
+    "not_equivalent_to",
+    "accuracy_note",
+  ] as const;
+  const minConfidence = input["recommended_min_confidence"];
+  if (
+    !hasOnlyKeys(input, keys)
+    || input["type"] !== ALIGNMENT_META_TYPE
+    || input["format_version"] !== 1
+    || input["layer"] !== BACKBONE_TOKEN_LAYER
+    || input["package_id"] !== packageId
+    || input["target_offset_unit"] !== "utf16-code-unit"
+    || input["target_fragment_unit"] !== "whitespace-delimited-word"
+    || !isRecord(input["fragment_tuple"])
+    || !hasOnlyKeys(input["fragment_tuple"], ["shape", "quote_derivation"])
+    || input["fragment_tuple"]["shape"] !== "[char_start,char_end,occurrence_positions,optional_group]"
+    || typeof input["word_confidence"] !== "string"
+    || typeof input["confidence_model"] !== "string"
+    || !Array.isArray(input["alignment_witnesses"])
+    || typeof minConfidence !== "number"
+    || !(minConfidence > 0 && minConfidence <= 1)
+    || typeof input["quality_tier"] !== "string"
+    || !Array.isArray(input["not_equivalent_to"])
+  ) {
+    invalidMeta("alignment", path);
+  }
+  return {
+    sourceSha256,
+    backboneSha256: "",
+    backboneVersion: "",
+    packageId,
+    dialect: "bootstrap-v1",
+    recommendedMinConfidence: minConfidence,
+  };
+}
+
+/**
+ * The Clear-Bible manual alignment-meta dialect (2026-07-30) — YLT ships
+ * with it. Closed key set; native quality tier; rows may carry the four
+ * declared row_extensions. Its inputs record the BACKBONE identity (no BSB
+ * tables TSV — it was not built from them), so provenance comparison checks
+ * backbone equality with the token inventory and skips source equality.
+ */
+function validateClearManualAlignmentMeta(
+  input: Record<string, unknown>,
+  packageId: string,
+  sourceSha256: string,
+  path: string,
+): ArtifactProvenance {
+  const keys = [
+    "type",
+    "format_version",
+    "layer",
+    "package_id",
+    "source_inventory_semantics",
+    "cross_corpus_position_equivalence",
+    "target_offset_unit",
+    "target_fragment_unit",
+    "fragment_group",
+    "fragment_tuple",
+    "gap_policy",
+    "absent_target_policy",
+    "detached_postscript_policy",
+    "provenance",
+    "row_extensions",
+    "inputs",
+    "quality_tier",
+    "alignment_provenance",
+    "alignment_license",
+    "fragment_normalisation",
+    "quarantine_note",
+  ] as const;
+  const inputs = input["inputs"];
+  if (
+    !hasOnlyKeys(input, keys)
+    || input["type"] !== ALIGNMENT_META_TYPE
+    || input["format_version"] !== 1
+    || input["layer"] !== BACKBONE_TOKEN_LAYER
+    || input["package_id"] !== packageId
+    || input["source_inventory_semantics"] !== "frozen-edition-inclusive-bsb-table-source-slots"
+    || input["cross_corpus_position_equivalence"] !== "none"
+    || input["target_offset_unit"] !== "utf16-code-unit"
+    || typeof input["target_fragment_unit"] !== "string"
+    || !isRecord(input["fragment_tuple"])
+    || typeof input["gap_policy"] !== "string"
+    || typeof input["quality_tier"] !== "string"
+    || !isRecord(input["provenance"])
+    || !isRecord(input["row_extensions"])
+    || !isRecord(inputs)
+    || !hasOnlyKeys(inputs, ["backbone"])
+    || !isRecord(inputs["backbone"])
+    || !hasOnlyKeys(inputs["backbone"], ["version", "sha256"])
+    || typeof inputs["backbone"]["version"] !== "string"
+    || inputs["backbone"]["version"].length === 0
+    || typeof inputs["backbone"]["sha256"] !== "string"
+    || !SHA256_PATTERN.test(inputs["backbone"]["sha256"])
+  ) {
+    invalidMeta("alignment", path);
+  }
+  return {
+    sourceSha256,
+    backboneSha256: inputs["backbone"]["sha256"],
+    backboneVersion: inputs["backbone"]["version"],
+    packageId,
+    dialect: "clear-manual",
+  };
+}
+
 function compareProvenance(
   token: LoadedArtifact,
   alignment: LoadedArtifact,
   ref: string,
 ): OccurrenceArtifactResult<void> {
+  /* Bootstrap alignments carry self-referential provenance (see
+   * validateBootstrapAlignmentMeta); the per-verse token-count bound is
+   * their compatibility check, not frozen-input equality. */
+  if (alignment.provenance.dialect === "bootstrap-v1") return ok(undefined);
+  /* Clear-manual alignments declare the backbone they were built against.
+   * Byte-equality of that snapshot does NOT hold across build epochs (the
+   * shipped YLT meta records c912cf…, the token inventory 4b79cd…), and
+   * the repo's own arbiters — verify-alignment-freshness and
+   * verify-alignment-conformance, both green on these artifacts — never
+   * demanded it. Version equality plus the per-verse token-count bound is
+   * the enforced compatibility here; sha drift is build-epoch drift. */
+  if (alignment.provenance.dialect === "clear-manual") {
+    if (token.provenance.backboneVersion !== alignment.provenance.backboneVersion) {
+      return refused({
+        code: "provenance-mismatch",
+        message: "Clear-manual alignment was built against a different backbone version.",
+        artifact: "alignment",
+        path: alignment.path,
+        ref,
+      });
+    }
+    return ok(undefined);
+  }
   if (
     token.provenance.sourceSha256 !== alignment.provenance.sourceSha256
     || token.provenance.backboneSha256 !== alignment.provenance.backboneSha256
@@ -1241,7 +1433,25 @@ function validateAlignmentRow(
   packageId: string,
   tokenCount: number,
   path: string,
+  provenance?: ArtifactProvenance,
 ): OccurrenceArtifactResult<OccurrenceAlignmentVerseRecord> {
+  const bootstrap = provenance?.dialect === "bootstrap-v1";
+  const clearManual = provenance?.dialect === "clear-manual";
+  /* Dialect rows may carry extra read-side evidence, all OPTIONAL:
+   * bootstrap rows a calibrated per-word confidence and provenance tag;
+   * clear-manual rows the meta's four declared row_extensions ("suspect
+   * rather than absent" — positions are kept as shipped). None of it ever
+   * reaches the frozen record below. */
+  const dialectKeys: readonly string[] = bootstrap
+    ? ["word_confidence", "alignment_provenance"]
+    : clearManual
+      ? [
+        "nt_source_confidence",
+        "low_confidence_positions",
+        "realigned_positions",
+        "alignment_quarantine",
+      ]
+      : [];
   const keys = [
     "type",
     "format_version",
@@ -1252,6 +1462,7 @@ function validateAlignmentRow(
     "text_sha256",
     "text_utf16_length",
     "fragments",
+    ...dialectKeys,
   ] as const;
   if (!isRecord(input)) {
     return invalidRow("alignment", path, expectedRef, "Alignment verse row has an invalid or open shape.");
@@ -1313,7 +1524,7 @@ function validateAlignmentRow(
       fragments: Object.freeze([]) as readonly [],
     }));
   }
-  if (input["target_state"] !== "present" || !hasOnlyKeys(input, keys)) {
+  if (input["target_state"] !== "present" || !hasOnlyKeys(input, keys, dialectKeys)) {
     return invalidRow("alignment", path, expectedRef, "Present alignment row has an invalid target state or open shape.");
   }
   if (
@@ -1327,6 +1538,31 @@ function validateAlignmentRow(
   if (input["fragments"].length > MAX_OCCURRENCE_ALIGNMENT_FRAGMENTS_PER_VERSE) {
     return invalidRow("alignment", path, expectedRef, "Alignment verse row exceeds the bounded fragment count.");
   }
+  /* Link gate (bootstrap dialect only), decided 2026-07-30 after measuring
+   * the shipped data: a word whose confidence entry is NULL received no
+   * link at all — its positions are stripped, so capture refuses honestly
+   * and projection reports it absent. Numeric links are TRUSTED, whatever
+   * their value. The meta's recommended_min_confidence (0.95) was tried as
+   * a binding/display gate first and rejected for two reasons, recorded so
+   * the next hand does not re-fight it blind: (1) KJV's calibrated values
+   * put ordinary content words at 0.69–0.93, so a 0.95 gate made whole-
+   * chapter KJV authoring practically impossible — "works individually for
+   * all versions" died; (2) durable anchors are translation-free by INV-5,
+   * so projection cannot tell the authoring package from any other — a
+   * display-side gate would un-paint the very words a reader had just
+   * selected in their own translation. The threshold is still validated
+   * and carried on provenance (recommendedMinConfidence) as the lever for
+   * a future lab-calibrated policy; the selection round-trip admission
+   * remains the precision screen for authoring. */
+  const rawConfidence = bootstrap ? input["word_confidence"] : undefined;
+  if (rawConfidence !== undefined
+    && (!Array.isArray(rawConfidence)
+      || rawConfidence.some((entry) => entry !== null
+        && (typeof entry !== "number" || !(entry >= 0 && entry <= 1))))) {
+    return invalidRow("alignment", path, expectedRef, "Alignment word_confidence must be numbers in [0,1] or null.");
+  }
+  const confidence = Array.isArray(rawConfidence) ? rawConfidence : null;
+  let wordIndex = 0;
   const fragments: OccurrenceAlignmentFragment[] = [];
   let cursor = 0;
   for (let index = 0; index < input["fragments"].length; index += 1) {
@@ -1360,12 +1596,29 @@ function validateAlignmentRow(
       occurrencePositions.push(position);
       prior = position;
     }
+    /* A word fragment in the bootstrap dialect is a four-field tuple; its
+     * confidence entry is consumed positionally. A null entry is a word
+     * with no link: stripped to an unaligned lexical fragment. */
+    let gatedPositions: readonly number[] = Object.freeze(occurrencePositions);
+    let gatedGroup = group;
+    if (confidence && raw.length === 4) {
+      const wordConfidence = confidence[wordIndex];
+      wordIndex += 1;
+      if (typeof wordConfidence !== "number") {
+        gatedPositions = Object.freeze([]);
+        gatedGroup = undefined;
+      }
+    }
     fragments.push(Object.freeze(
-      typeof group === "number"
-        ? [start, end, Object.freeze(occurrencePositions), group] as const
-        : [start, end, Object.freeze(occurrencePositions)] as const,
+      typeof gatedGroup === "number"
+        ? [start, end, gatedPositions, gatedGroup] as const
+        : [start, end, gatedPositions] as const,
     ));
     cursor = end;
+  }
+  if (confidence && wordIndex !== confidence.length) {
+    return invalidRow("alignment", path, expectedRef,
+      `Alignment word_confidence has ${confidence.length} entries for ${wordIndex} word fragments.`);
   }
   if (cursor !== input["text_utf16_length"]) {
     return invalidRow("alignment", path, expectedRef, "Alignment fragment tuples do not cover the frozen UTF-16 target length.");

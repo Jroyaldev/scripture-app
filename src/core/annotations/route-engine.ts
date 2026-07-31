@@ -21,6 +21,7 @@ export type RouteMode =
   | "middle-shaft"
   | "tag"
   | "corridor"
+  | "bow"
   | "multipoint";
 export type RouteCradleVariant = "facing" | "embrace";
 
@@ -707,7 +708,36 @@ function segmentsLength(segs: readonly RouteSegment[]): number {
 const DROP_MIN = 3.2;    // minimum level change between a contact and its run
 const CONTACT_LEAD = 6;  // straight, colinear horizontal lead at every phrase dot
 const CONTACT_LEAD_MIN = 3; // the lead may shrink this far for measured room, never vanish
-const CORNER = 6;        // the one shared rounded-corner token (section crossings)
+const CORNER = 6;        // the C0.5 corner token — still measures section handoffs
+/* THE SWEPT GRAMMAR — DATED REVERSAL, 2026-07-30 (the connection-lines
+ * revival). C0.5 (eda2d11) ruled: "One drawn vocabulary remains: horizontals
+ * colinear with underlines, verticals, and one soft rounded right-angle
+ * corner" — and that one corner measured 6px. The reader has now asked for
+ * the full connection lines back: "s curves left and right logic; not just
+ * underline with a line pointing at margin." So the drawn vocabulary regains
+ * disciplined curvature, in exactly two places:
+ *   1. SWEEP replaces CORNER as the radius token wherever a route's level
+ *      run meets its rail or cradle wall — same construction, same caps
+ *      (never past runGap-1, never half the port gap), so a dense stack
+ *      degrades toward the old bracket instead of colliding.
+ *   2. A route of exactly two single-line groups may draw one BOW: both
+ *      level runs extend colinearly to the rail datum and one cubic with
+ *      horizontal end-tangents sweeps through a vertical apex just beyond
+ *      the rail. Level → S → level, one continuous stroke, no corner-rail-
+ *      corner bracket, no separate margin pointer.
+ * What C0.5 rejected stays rejected: offset parallels, vertical-tangent pin
+ * turns, below-line return loops, ornament. Departures remain colinear with
+ * their underlines, landings remain on the 0.00px datum, and curvature
+ * exists only where level travel becomes rail travel. (The ribbons era had
+ * retired the mirror-S itself — 44f8ab3: "wobbly brackets at short range, a
+ * knee at long range, hockey-stick terminals." Those modes cannot recur
+ * here: the S never touches a terminal — leads and dots stay straight — and
+ * beyond BOW_SPAN_MAX the straight rail still carries the journey.) */
+const SWEEP = 16;        // swept-corner token: route curvature at the rail
+const BOW_SPAN_MIN = 12; // a bow needs real vertical travel to read as an S
+const BOW_SPAN_MAX = 132; // beyond ~4 lines the straight rail carries better
+const BOW_APEX_MIN = 6;  // shallowest apex that still reads as a sweep
+const BOW_APEX_MAX = 14; // deepest apex — an S is a passage, not an ornament
 const UNDERLINE_STRIP = 2.25; // bottom strip of a box where underlines (and runs) live
 const SETTLE_MIN = 3.5;  // narrowest legal settle width
 const SETTLE_MAX = 14;   // widest — a settle is a level change, not a journey
@@ -1560,8 +1590,10 @@ export function planRoute(
       const dA = y - c.ay, dB = y - c.by;
       if (dA < DROP_MIN || dB < DROP_MIN) return null;
       const lead = Math.min(CONTACT_LEAD, Math.max(CONTACT_LEAD_MIN, avail * 0.16));
-      const rA = Math.min(CORNER, dA / 2);
-      const rB = Math.min(CORNER, dB / 2);
+      /* swept 2026-07-30: the hammock's turns share the SWEEP token, still
+       * capped by half the available drop so shallow slots stay shallow */
+      const rA = Math.min(SWEEP, dA / 2);
+      const rB = Math.min(SWEEP, dB / 2);
       const aFloor = c.ax + lead + 2 * rA;
       const bFloor = c.bx - lead - 2 * rB;
       if (bFloor - aFloor < FLOOR_MIN) return null;
@@ -1854,7 +1886,10 @@ export function planRoute(
       g.pins = pins;
       g.runY = runY;
       g.innerPinX = innerPinX;
-      g.r = Math.min(CORNER, Math.max(2.5, runGap - 1));
+      /* swept 2026-07-30: the rail turn takes the SWEEP token (was CORNER).
+       * The runGap cap keeps a cramped rail honest, and the adjacent-corner
+       * cap below still halves it wherever two turns would meet. */
+      g.r = Math.min(SWEEP, Math.max(2.5, runGap - 1));
       g.up = g === returnG;
       g.claim = claim;
     }
@@ -1864,6 +1899,115 @@ export function planRoute(
     for (let i = 1; i < gs.length; i++) {
       const cap = Math.max(2.5, (gs[i]!.runY - gs[i - 1]!.runY) / 2 - 1);
       for (const g of gs) g.r = Math.min(g.r, cap);
+    }
+
+    /* ── the bow (added 2026-07-30, the connection-lines revival) ──
+     * Exactly two single-line groups within bow span: the rail contracts to
+     * a point and the drawing becomes one S. Each run leaves its underline
+     * colinearly, travels level to the rail datum, and ONE cubic with
+     * horizontal end-tangents sweeps down through a vertical apex pinned
+     * BOW apex px beyond the rail — entirely in proven margin air, outside
+     * every obstacle the rail itself already cleared. Tangent-clean at both
+     * junctions; the only free parameter is the apex depth, one-third of
+     * the drop inside [BOW_APEX_MIN, BOW_APEX_MAX]. Falls through to the
+     * swept bracket whenever its span or its air is not honestly there. */
+    if (!sectionContext && gs.length === 2) {
+      const gTop = gs[0]!;
+      const gBottom = gs[1]!;
+      const drop = gBottom.runY - gTop.runY;
+      const apex = Math.max(BOW_APEX_MIN, Math.min(BOW_APEX_MAX, drop / 3));
+      const apexX = strandX + outward * apex;
+      const apexLegal = right
+        ? apexX <= Math.min(block.bounds.right - 2,
+          block.bounds.right + (block.availableRightMargin ?? 60) - 2)
+        : apexX >= Math.max(block.bounds.left + 2,
+          block.bounds.left - (block.availableLeftMargin ?? 60) + 2);
+      if (drop >= BOW_SPAN_MIN && drop <= BOW_SPAN_MAX && apexLegal
+        && !spineClaims.some((claim) => Number.isFinite(claim?.x) &&
+          Math.abs(claim.x - apexX) < SPINE_SEP &&
+          Math.min(claim.top, claim.bottom) - 2.6 < gBottom.runY &&
+          gTop.runY < Math.max(claim.top, claim.bottom) + 2.6)) {
+        const contacts: RoutePoint[] = [];
+        const contactOwners: Array<{ anchorId: string }> = [];
+        const centerline: RouteSegment[] = [];
+        const exempts: SegmentExemption[] = [];
+        const groupEx = (g: PreparedMarginGroup): TerminalExemption[] => [
+          ...g.members.map((m, i) => ({
+            rect: expandRect(m.frag, expand),
+            cx: g.pins[i]!.x,
+            cy: g.pins[i]!.y,
+          })),
+          { rect: { left: Math.min(strandX, g.innerPinX) - 0.5,
+            right: Math.max(strandX, g.innerPinX) + 0.5,
+            top: g.runY - 0.75, bottom: g.runY + 0.75 },
+            cx: g.innerPinX, cy: g.runY, guardRaw: true },
+        ];
+        const pushRun = (g: PreparedMarginGroup, toRail: boolean): void => {
+          const ordered = [...g.members].sort((a, b) =>
+            right ? b.frag.right - a.frag.right : a.frag.left - b.frag.left);
+          for (const m of ordered) {
+            contacts.push(pinOf(m.frag, side));
+            contactOwners.push({ anchorId: m.anchor.id });
+          }
+          const ex = groupEx(g);
+          const stops = [...new Set(g.pins.map((p) => p.x))]
+            .filter((x) => (x - strandX) * textward > 0.01)
+            .sort((a, b) => right ? a - b : b - a);
+          const orderedStops = toRail ? stops : [...stops].reverse();
+          if (toRail) {
+            let atX = orderedStops[0]!;
+            for (const stop of orderedStops.slice(1)) {
+              centerline.push(L(atX, g.runY, stop, g.runY));
+              exempts.push(ex);
+              atX = stop;
+            }
+            centerline.push(L(atX, g.runY, strandX, g.runY));
+            exempts.push(ex);
+          } else {
+            let atX = strandX;
+            for (const stop of orderedStops) {
+              centerline.push(L(atX, g.runY, stop, g.runY));
+              exempts.push(ex);
+              atX = stop;
+            }
+          }
+        };
+        pushRun(gTop, true);
+        const reach = apex * (4 / 3);
+        centerline.push(C(
+          strandX, gTop.runY,
+          strandX + outward * reach, gTop.runY,
+          strandX + outward * reach, gBottom.runY,
+          strandX, gBottom.runY,
+        ));
+        /* the bow rides at and beyond the rail — genuinely clear, no
+         * privileges — but its first and last samples sit inside the run
+         * envelopes it departs from, so it carries both */
+        exempts.push([...groupEx(gTop), ...groupEx(gBottom)]);
+        pushRun(gBottom, false);
+        const spine: RouteSpine = { x: apexX, top: gTop.runY, bottom: gBottom.runY };
+        const bowPorts: RoutePoint[] = [
+          { x: strandX, y: gTop.runY },
+          { x: strandX, y: gBottom.runY },
+        ];
+        const plan = finalize(centerline, "bow", contacts,
+          [gTop.runY, gBottom.runY], [gTop.li + 1, gBottom.li + 1],
+          strandX, spine, bowPorts, undefined, exempts,
+          [gTop.claim, gBottom.claim]);
+        if (plan.valid) {
+          plan.strand = strand;
+          plan.side = side;
+          plan.diagnostics.laneIndex = strand;
+          plan.diagnostics.side = side;
+          plan.diagnostics.exits = gs.map(() => "level");
+          plan.rawLength = segmentsLength(centerline);
+          plan.semCenter = annotationCenter;
+          plan.spineClaimOut = { x: apexX, top: gTop.runY, bottom: gBottom.runY };
+          plan.strandClaimOut = { side, strand, top: gTop.runY, bottom: gBottom.runY };
+          return plan as MarginRoutePlan;
+        }
+        /* an illegal bow is not a refusal — the swept bracket still stands */
+      }
     }
 
     const contacts: RoutePoint[] = [];

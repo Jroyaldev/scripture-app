@@ -210,11 +210,20 @@ test("right routes keep level, comb, tag, corridor, multipoint, and wrapped-anch
     },
     /* C0.5c: every group is one colinear level run and one soft corner.
      * The bottommost group's corner turns UP into the rail (the bracket);
-     * all exits are honest "level" — no drop family exists. */
+     * all exits are honest "level" — no drop family exists.
+     *
+     * DATED REVERSAL, 2026-07-30 (the connection-lines revival): this case
+     * previously pinned mode "corridor" — two runs, two 6px corners, a
+     * straight rail. The reader asked for "s curves … not just underline
+     * with a line pointing at margin", so a route of exactly two
+     * single-line groups within bow span now draws the BOW: the same
+     * colinear level runs to the rail datum, joined by one horizontal-
+     * tangent cubic through a vertical apex beyond the rail. Exits stay
+     * honest "level"; three-plus groups keep the swept bracket below. */
     {
-      name: "two-line corridor",
+      name: "two-line bow",
       anchors: [[rect(220, 250, 20, 30)], [rect(260, 290, 60, 70)]],
-      mode: "corridor",
+      mode: "bow",
       exits: ["level", "level"],
     },
     {
@@ -233,7 +242,8 @@ test("right routes keep level, comb, tag, corridor, multipoint, and wrapped-anch
         [rect(210, 250, 20, 30), rect(150, 200, 60, 70)],
         [rect(240, 280, 100, 110)],
       ],
-      mode: "corridor",
+      /* two representative groups within bow span → bow (2026-07-30) */
+      mode: "bow",
       exits: ["level", "level"],
     },
   ];
@@ -254,11 +264,20 @@ test("right routes keep level, comb, tag, corridor, multipoint, and wrapped-anch
     /* C0.5c bracket semantics, independent of the golden digests: every run
      * is genuinely colinear with an underline, and in a multi-group route
      * the bottommost corner turns UP (port above its run) while every other
-     * corner turns down (port below its run). */
+     * corner turns down (port below its run).
+     *
+     * REVISED 2026-07-30 (the connection-lines revival): a two-group bow
+     * has no corners at all — the rail contracts to a point, so both ports
+     * sit EXACTLY on their run levels and the S carries the whole turn.
+     * The bracket's up/down law still governs every multi-group route. */
     const ports = [...plan.ports].sort((a: Point, b: Point) => a.y - b.y);
     const runYs = [...new Set(plan.contacts.map((contact: Point) => contact.y))]
       .sort((a: number, b: number) => a - b);
-    if (ports.length > 1) {
+    if (plan.mode === "bow") {
+      assert.equal(ports.length, 2, `${fixture.name}: a bow joins exactly two runs`);
+      assert.deepEqual(ports.map((port: Point) => port.y), runYs,
+        `${fixture.name}: bow ports sit exactly on their run levels`);
+    } else if (ports.length > 1) {
       const bottomRunY = runYs[runYs.length - 1]!;
       const bottomPort = ports[ports.length - 1]!;
       assert.ok(bottomPort.y < bottomRunY,

@@ -17,8 +17,14 @@ test("Electron owns exact capture and package projection behind a closed bridge"
   assert.match(main, /new OccurrenceAlignmentStore\(\{[\s\S]*scriptureRoot: DATA_DIR,[\s\S]*packageId: "bsb"/);
   assert.match(main, /new LibraryEngine\([\s\S]*nextOccurrenceAlignmentStore/);
   assert.match(main, /occurrenceAlignmentStore: nextOccurrenceAlignmentStore/);
-  assert.match(main, /runtime\.occurrenceAlignmentStore\.close\(\)/);
-  assert.match(main, /nextOccurrenceAlignmentStore\.close\(\)/);
+  /* REVISED 2026-07-30 (the connection-lines revival): the runtime now owns
+   * one exact-word store PER installed package (bsb plus every discovered
+   * occurrence-alignments artifact), so lifecycle close walks the whole map
+   * — the two literal single-store close() calls this contract used to pin
+   * became loops over occurrenceAlignmentStores.values(). The closed-bridge
+   * claim is unchanged: stores open and close inside the runtime only. */
+  assert.match(main, /for \(const store of runtime\.occurrenceAlignmentStores\.values\(\)\) store\.close\(\)/);
+  assert.match(main, /for \(const store of nextOccurrenceAlignmentStores\.values\(\)\) store\.close\(\)/);
 
   assert.match(main, /registerRuntimeReadIpc\("capture-connection-selection"/);
   assert.match(main, /normalizeOccurrenceSelections\(rawRequest\["selections"\]\)/);

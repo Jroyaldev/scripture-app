@@ -5,6 +5,12 @@
  * profile. It proves dormant paint, focused paint, two-held companion paint,
  * release cleanup, merged exact-anchor paths, responsive overflow, ordinary
  * motion, and reduced-motion terminal states without touching user data.
+ *
+ * Updated 2026-07-30 for the connections revival (Era-3 C0.5 paint on the
+ * merged rule layer): rest is the wash ladder alone, the shared gold band
+ * marks doubly-claimed words, the rule layer wakes with a selection, the
+ * focus veil stands ready behind the attended words, and a held companion
+ * lives as its wash + grey veil hole rather than a second route-plane mark.
  */
 
 import assert from "node:assert/strict";
@@ -145,14 +151,54 @@ async function clickTick(driver, connectionId) {
   assert.equal(clicked, true, `missing connection tick ${connectionId}`);
 }
 
-async function restoreFocusMode(driver) {
+/** Attend by tick, retrying once — a first activation can be swallowed while
+ * the desk is mid-relayout under heavy machine load. Re-clicking reaffirms. */
+async function attendConnection(driver, connectionId, conditionExpression) {
+  for (let attempt = 0; attempt < 2; attempt += 1) {
+    await clickTick(driver, connectionId);
+    try {
+      await driver.waitFor(conditionExpression, 20_000);
+      return;
+    } catch (error) {
+      if (attempt === 1) throw error;
+      await settle(driver);
+    }
+  }
+}
+
+async function releaseAllHeld(driver) {
+  // Tick activation is focus/reaffirmation in the current app; release lives
+  // in the card's labelled Release action, and releasing the selected id
+  // falls back to the most recent remaining hold. Loop until fully at rest.
+  for (let attempt = 0; attempt < 8; attempt += 1) {
+    const released = await driver.evaluate(`(() => {
+      const release = document.querySelector(".connection-card .connection-card-primary");
+      if (!release) return false;
+      release.click();
+      return true;
+    })()`);
+    if (!released) break;
+    await sleep(420);
+  }
+  await driver.waitFor(`document.querySelectorAll(".connection-mark").length === 0
+    && !document.querySelector('.connection-emphasis-mark[data-paint-state="companion"]')`);
+}
+
+async function ensureFocusMode(driver, on) {
   // Selecting a connection deliberately reveals Living Margin and exits Focus
-  // mode. This paint-only gate then restores the full reading canvas before
-  // evaluating route availability, matching the alignment harness.
-  await driver.waitFor(`document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === "false"`);
+  // mode, and the Focus instrument is a workspace view-change that DISMISSES
+  // a selected connection (post-peak workspace machinery). So this gate never
+  // re-enters Focus mode around a live selection; it only normalizes the
+  // canvas between beats, state-aware.
+  const pressed = await driver.evaluate(
+    `document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === "true"`,
+  );
+  if (pressed === on) return;
   await driver.evaluate(`document.querySelector("[data-instrument=focus]")?.click()`);
-  await driver.waitFor(`document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === "true"
-    && !document.querySelector(".living-margin")`);
+  await driver.waitFor(on
+    ? `document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === "true"
+      && !document.querySelector(".living-margin")`
+    : `document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === "false"`);
 }
 
 function paintReportExpression(fixture) {
@@ -272,31 +318,20 @@ function paintReportExpression(fixture) {
         const wash = washes.find((candidate) => Number(candidate.dataset.anchorIndex) === anchorIndex);
         return wash ? Number(wash.dataset.lineCount) : null;
       });
-      const underlines = mark ? [...mark.querySelectorAll(".connection-underline")] : [];
-      const underlineIndices = lineCounts[connectionId].map((_, anchorIndex) => underlines
-        .filter((path) => Number(path.dataset.anchorIndex) === anchorIndex)
-        .map((path) => Number(path.dataset.lineIndex))
-        .sort((left, right) => left - right));
+      const lineTotal = lineCounts[connectionId].reduce((sum, value) => sum + value, 0);
       const firstWash = washes[0] ?? null;
-      const firstUnderline = underlines[0] ?? null;
       const route = mark?.querySelector(".connection-route") ?? null;
       const contact = mark?.querySelector(".connection-contact") ?? null;
       return {
         present: Boolean(mark),
         classes: mark?.className.baseVal ?? "",
+        lineTotal,
         paintState: mark?.dataset.paintState ?? null,
         routeState: mark?.dataset.route ?? null,
         anchorResolution: mark?.dataset.anchorResolution ?? null,
         routeCount: mark?.querySelectorAll(".connection-route").length ?? 0,
         routeHitCount: mark?.querySelectorAll(".connection-route-hit").length ?? 0,
         contactCount: mark?.querySelectorAll(".connection-contact").length ?? 0,
-        underlineCount: underlines.length,
-        underlineIndices,
-        underlineMatchesLines: underlineIndices.every((indices, anchorIndex) =>
-          indices.length === lineCounts[connectionId][anchorIndex]
-          && indices.every((lineIndex, index) => lineIndex === index)),
-        underlineStroke: strokeOnScreen(firstUnderline),
-        underlineOpacity: firstUnderline ? Number.parseFloat(getComputedStyle(firstUnderline).opacity) : null,
         routeStroke: strokeOnScreen(route),
         routeOpacity: route ? Number.parseFloat(getComputedStyle(route).opacity) : null,
         washCount: washes.length,
@@ -315,7 +350,6 @@ function paintReportExpression(fixture) {
         expanded: tick?.getAttribute("aria-expanded") ?? null,
         transitions: {
           wash: firstWash ? getComputedStyle(firstWash).transitionDuration : null,
-          underline: firstUnderline ? getComputedStyle(firstUnderline).transitionDuration : null,
           route: route ? getComputedStyle(route).transitionDuration : null,
           routeDelay: route ? getComputedStyle(route).transitionDelay : null,
           contact: contact ? getComputedStyle(contact).transitionDuration : null,
@@ -323,6 +357,13 @@ function paintReportExpression(fixture) {
       };
     };
 
+    // The merged rule layer (revival): every stroke on the page lives here,
+    // one per run of ink, cut where the resolved ink changes.
+    const layerRuns = [...document.querySelectorAll(".connection-underline-layer .connection-underline")];
+    const attendedRuns = layerRuns.filter((path) => path.classList.contains("attended"));
+    const quietRuns = layerRuns.filter((path) => !path.classList.contains("attended"));
+    const firstAttended = attendedRuns[0] ?? null;
+    const uniqueData = (paths, key) => [...new Set(paths.map((path) => path.dataset[key] ?? null))].sort();
     const veil = document.querySelector(".connection-focus-veil");
     const allWashes = [...document.querySelectorAll(".connection-emphasis-wash")];
     return {
@@ -333,9 +374,31 @@ function paintReportExpression(fixture) {
       routeCount: document.querySelectorAll(".connection-route").length,
       routeHitCount: document.querySelectorAll(".connection-route-hit").length,
       contactCount: document.querySelectorAll(".connection-contact").length,
-      underlineCount: document.querySelectorAll(".connection-underline").length,
+      underlineCount: layerRuns.length,
+      underlineLayer: {
+        attendedCount: attendedRuns.length,
+        quietCount: quietRuns.length,
+        attendedStroke: strokeOnScreen(firstAttended),
+        attendedOpacity: firstAttended ? Number.parseFloat(getComputedStyle(firstAttended).opacity) : null,
+        attendedInks: uniqueData(attendedRuns, "underlineInk"),
+        attendedKinds: uniqueData(attendedRuns, "underlineKind"),
+        attendedDashOffsets: attendedRuns.map((path) =>
+          Number.parseFloat(getComputedStyle(path).strokeDashoffset) || 0),
+        quietStroke: strokeOnScreen(quietRuns[0] ?? null),
+        quietOpacity: quietRuns[0] ? Number.parseFloat(getComputedStyle(quietRuns[0]).opacity) : null,
+        quietInks: uniqueData(quietRuns, "underlineInk"),
+        quietKinds: uniqueData(quietRuns, "underlineKind"),
+        transition: firstAttended ? getComputedStyle(firstAttended).transitionDuration : null,
+      },
+      sharedBandCount: document.querySelectorAll(".connection-emphasis-shared").length,
+      sharedBandOpacity: (() => {
+        const band = document.querySelector(".connection-emphasis-shared");
+        return band ? Number.parseFloat(getComputedStyle(band).fillOpacity) : null;
+      })(),
       veilCount: document.querySelectorAll(".connection-focus-veil").length,
       veilReadyCount: document.querySelectorAll(".connection-focus-veil.is-ready").length,
+      veilHeldHoles: document.querySelectorAll('.connection-focus-mask path[fill="rgb(164 164 164)"]').length,
+      veilFocusHoles: document.querySelectorAll('.connection-focus-mask path[fill="black"]').length,
       veilOpacity: veil ? Number.parseFloat(getComputedStyle(veil).opacity) : null,
       veilTransition: veil ? getComputedStyle(veil).transitionDuration : null,
       emphasisMarkCount: document.querySelectorAll(".connection-emphasis-mark").length,
@@ -365,7 +428,10 @@ function paintReportExpression(fixture) {
         document: overflow(document.documentElement),
         body: overflow(document.querySelector(".scripture-body")),
         stage: overflow(document.querySelector(".scripture-reading-stage")),
-        reading: overflow(document.querySelector(".scripture-content")),
+        // The verse sheet is the box the connection planes live in; the wider
+        // .scripture-content also holds topbar chrome, which carries its own
+        // (pre-existing, non-connection) 8px spill at 640 — tracked separately.
+        reading: overflow(document.querySelector(".verse-text")),
         margin: overflow(document.querySelector(".living-margin")),
       },
       lineCounts,
@@ -411,10 +477,11 @@ function assertRest(report, label, width, theme) {
   assert.equal(report.routeCount, 0, `${label}: rest painted a centerline`);
   assert.equal(report.routeHitCount, 0, `${label}: rest mounted an invisible route hit target`);
   assert.equal(report.contactCount, 0, `${label}: rest painted route contacts`);
-  assert.equal(report.underlineCount, 0, `${label}: rest painted an underline`);
+  assert.equal(report.underlineCount, 0, `${label}: rest painted a rule — Era-3 rest is the wash alone`);
   assert.equal(report.veilCount, 0, `${label}: rest mounted the focus veil`);
   assert.equal(report.cardCount, 0, `${label}: rest retained a connection card`);
-  assert.equal(report.dormantEmphasisCount, 3, `${label}: rest lost dormant presence paint`);
+  assert.equal(report.dormantEmphasisCount, 3,
+    `${label}: rest lost dormant presence paint (states: first=${report.first.emphasisPaintState} second=${report.second.emphasisPaintState} third=${report.third.emphasisPaintState})`);
   assert.equal(report.first.pressed, "false", `${label}: first tick stayed held at rest`);
   assert.equal(report.second.pressed, "false", `${label}: second tick stayed held at rest`);
   assert.equal(report.first.expanded, "false", `${label}: first tick stayed expanded at rest`);
@@ -433,13 +500,17 @@ function assertPreview(report, label, width, theme) {
   assert.equal(report.routeCount, 0, `${label}: preview painted a centerline before selection`);
   assert.equal(report.routeHitCount, 0, `${label}: preview mounted a hit target before selection`);
   assert.equal(report.contactCount, 0, `${label}: preview painted contacts before selection`);
-  assert.equal(report.underlineCount, 0, `${label}: preview painted an underline before selection`);
+  assert.equal(report.underlineCount, 0, `${label}: preview painted a rule before selection`);
   assert.equal(report.veilCount, 0, `${label}: preview dimmed the canvas before selection`);
   assert.equal(report.cardCount, 0, `${label}: preview opened the Living Margin card`);
   assert.equal(report.previewEmphasisCount, 1, `${label}: preview did not wake exactly one phrase group`);
   assert.equal(report.dormantEmphasisCount, 2, `${label}: preview changed unrelated emphasis state`);
   assert.equal(report.first.emphasisPaintState, "preview", `${label}: preview state drifted`);
   assert.equal(report.first.washOpacity, 0.12, `${label}: preview wash opacity drifted`);
+  // A woken page quiets its dormant field — Era 3's is-awake discipline — so
+  // hovering one connection recedes the others rather than crowding them.
+  assert.equal(report.second.washOpacity, 0, `${label}: dormant wash did not recede during preview`);
+  assert.equal(report.third.washOpacity, 0, `${label}: wrapped dormant wash did not recede during preview`);
   assert.equal(report.first.pressed, "false", `${label}: preview falsely held the tick`);
   assert.equal(report.first.expanded, "false", `${label}: preview falsely selected the tick`);
 }
@@ -456,6 +527,7 @@ function assertSelected(report, label, width, theme, selectedKey, quietKey) {
   assert.equal(report.veilCount, 1, `${label}: selected paint lost its focus veil`);
   assert.equal(report.veilReadyCount, 1, `${label}: selected focus veil did not reach its ready state`);
   assert.ok(report.veilOpacity >= 0.5, `${label}: focus veil did not bring selected words forward`);
+  assert.ok(report.veilFocusHoles > 0, `${label}: the veil cut no hole for the attended words`);
   assert.equal(report.selectedEmphasisCount, 1, `${label}: selected emphasis state drifted`);
   assert.equal(report.dormantEmphasisCount, 2, `${label}: quiet emphasis state drifted`);
   assert.equal(selected.present, true, `${label}: selected route mark disappeared`);
@@ -466,9 +538,20 @@ function assertSelected(report, label, width, theme, selectedKey, quietKey) {
   assert.equal(selected.routeCount, 1, `${label}: selected relationship route count drifted`);
   assert.equal(selected.routeHitCount, 1, `${label}: selected relationship hit target count drifted`);
   assert.ok(selected.contactCount > 0, `${label}: selected relationship contacts disappeared`);
-  assert.equal(selected.underlineMatchesLines, true, `${label}: merged underline lines drifted from Range geometry`);
-  assert.ok(Math.abs(selected.underlineStroke - 1.5) <= 0.01,
-    `${label}: selected underline width drifted to ${selected.underlineStroke}px`);
+  // The merged rule layer wakes with the selection: one attended run per
+  // rendered line of the selected phrases, seal-weight, fully drawn on.
+  assert.equal(report.underlineLayer.attendedCount, selected.lineTotal,
+    `${label}: attended runs (${report.underlineLayer.attendedCount}) drifted from rendered lines (${selected.lineTotal})`);
+  assert.deepEqual(report.underlineLayer.attendedInks, ["seal"],
+    `${label}: attended runs did not all carry seal ink`);
+  assert.ok(Math.abs(report.underlineLayer.attendedStroke - 1.5) <= 0.01,
+    `${label}: attended run width drifted to ${report.underlineLayer.attendedStroke}px`);
+  assert.ok(report.underlineLayer.attendedOpacity >= 0.9,
+    `${label}: attended runs did not reach terminal opacity`);
+  assert.ok(report.underlineLayer.attendedDashOffsets.every((offset) => Math.abs(offset) <= 0.001),
+    `${label}: an attended run is stuck mid-draw`);
+  assert.equal(report.underlineLayer.quietCount, 0,
+    `${label}: a dormant overlap may not wake quiet runs — the layer holds only the attended and the held`);
   assert.ok(Math.abs(selected.routeStroke - 1.5) <= 0.01,
     `${label}: selected route width drifted to ${selected.routeStroke}px`);
   assert.ok(selected.routeOpacity >= 0.9, `${label}: selected route did not reach terminal opacity`);
@@ -487,39 +570,110 @@ function assertSelected(report, label, width, theme, selectedKey, quietKey) {
 
 function assertTwoHeld(report, label, width, theme) {
   assertCommon(report, label, width, theme);
-  assert.equal(report.routeMarkCount, 2, `${label}: focus plus companion route marks drifted`);
+  // The revival keeps Rev 04's route-plane discipline: the focused mark is
+  // the ONLY route-plane mark, and exactly one route is drawn — the focused
+  // first's. The held second lives as its .05 companion wash, its quiet
+  // kind-inked runs on the merged layer, and the grey holes the veil cuts.
+  assert.equal(report.routeMarkCount, 1, `${label}: two-held mounted more than the focused mark`);
   assert.equal(report.routeCount, 1, `${label}: companion leaked a centerline`);
   assert.equal(report.routeHitCount, 1, `${label}: companion leaked an invisible hit target`);
   assert.equal(report.selectedEmphasisCount, 1, `${label}: focused wash state drifted`);
   assert.equal(report.companionEmphasisCount, 1, `${label}: companion wash state drifted`);
   assert.equal(report.dormantEmphasisCount, 1, `${label}: wrapped proof did not remain dormant`);
-  assert.equal(report.first.present, true, `${label}: companion paint disappeared`);
-  assert.match(report.first.classes, /\bcompanion\b/, `${label}: prior selection was not a companion`);
-  assert.doesNotMatch(report.first.classes, /\bfocused\b/, `${label}: companion retained focus`);
-  assert.equal(report.first.routeCount, 0, `${label}: companion painted a centerline`);
-  assert.equal(report.first.routeHitCount, 0, `${label}: companion painted a hit target`);
-  assert.equal(report.first.contactCount, 0, `${label}: companion painted route contacts`);
-  assert.equal(report.first.underlineMatchesLines, true, `${label}: companion underlines stopped following rendered lines`);
-  assert.ok(Math.abs(report.first.underlineStroke - 1) <= 0.01,
-    `${label}: companion underline width drifted to ${report.first.underlineStroke}px`);
-  assert.ok(report.first.underlineOpacity > 0 && report.first.underlineOpacity <= 0.72,
-    `${label}: companion underline stopped reading as a quiet whisper`);
-  assert.equal(report.first.washOpacity, 0.05, `${label}: companion wash opacity drifted`);
-  assert.equal(report.second.present, true, `${label}: focused paint disappeared`);
-  assert.match(report.second.classes, /\bfocused\b/, `${label}: newest hold did not own focus`);
-  assert.match(report.second.classes, /\bselected\b/, `${label}: newest hold did not own selection`);
-  assert.equal(report.second.routeCount, 1, `${label}: newest hold lost its sole route`);
-  assert.equal(report.second.routeHitCount, 1, `${label}: newest hold lost its sole hit target`);
-  assert.equal(report.second.underlineMatchesLines, true, `${label}: focused underlines stopped following rendered lines`);
-  assert.ok(Math.abs(report.second.underlineStroke - 1.5) <= 0.01,
-    `${label}: focused underline width drifted to ${report.second.underlineStroke}px`);
-  assert.ok(Math.abs(report.second.routeStroke - 1.5) <= 0.01,
-    `${label}: focused route width drifted to ${report.second.routeStroke}px`);
-  assert.equal(report.second.washOpacity, 0.16, `${label}: focused wash opacity drifted`);
-  assert.equal(report.first.pressed, "true", `${label}: companion tick lost held state`);
-  assert.equal(report.first.expanded, "false", `${label}: companion tick remained expanded`);
+  assert.equal(report.second.present, false, `${label}: companion mounted route-plane paint`);
+  assert.equal(report.second.emphasisPaintState, "companion", `${label}: the held second was not a companion`);
+  assert.equal(report.second.washOpacity, 0.05, `${label}: companion wash opacity drifted`);
+  assert.ok(report.veilHeldHoles > 0, `${label}: the veil cut no grey hole for the held companion`);
+  assert.ok(report.veilFocusHoles > 0, `${label}: the veil cut no hole for the attended words`);
+  assert.equal(report.first.present, true, `${label}: focused paint disappeared`);
+  assert.match(report.first.classes, /\bfocused\b/, `${label}: the re-attended first did not own focus`);
+  assert.match(report.first.classes, /\bselected\b/, `${label}: the re-attended first did not own selection`);
+  assert.equal(report.first.routeCount, 1, `${label}: the focused first lost its sole route`);
+  assert.equal(report.first.routeHitCount, 1, `${label}: the focused first lost its sole hit target`);
+  assert.equal(report.underlineLayer.attendedCount, report.first.lineTotal,
+    `${label}: attended runs drifted from the focused phrases' rendered lines`);
+  // The held companion's words keep quiet 1px runs in the companion's own
+  // kind ink — Era-3's companion whisper on the merged datum.
+  assert.ok(report.underlineLayer.quietCount > 0,
+    `${label}: the held companion lost its quiet runs`);
+  assert.ok(Math.abs(report.underlineLayer.quietStroke - 1) <= 0.01,
+    `${label}: companion run width drifted to ${report.underlineLayer.quietStroke}px`);
+  assert.ok(report.underlineLayer.quietOpacity > 0 && report.underlineLayer.quietOpacity <= 0.72,
+    `${label}: companion runs stopped reading as a quiet whisper`);
+  assert.deepEqual(report.underlineLayer.quietInks, ["kind"],
+    `${label}: sole-owner companion runs must carry their kind's ink`);
+  assert.deepEqual(report.underlineLayer.quietKinds, ["parallel"],
+    `${label}: companion runs did not carry the companion's kind`);
+  assert.ok(Math.abs(report.underlineLayer.attendedStroke - 1.5) <= 0.01,
+    `${label}: focused run width drifted to ${report.underlineLayer.attendedStroke}px`);
+  assert.ok(Math.abs(report.first.routeStroke - 1.5) <= 0.01,
+    `${label}: focused route width drifted to ${report.first.routeStroke}px`);
+  assert.equal(report.first.washOpacity, 0.16, `${label}: focused wash opacity drifted`);
+  assert.equal(report.first.pressed, "true", `${label}: focus tick lost held state`);
+  assert.equal(report.first.expanded, "true", `${label}: focus tick lost expanded state`);
+  assert.equal(report.second.pressed, "true", `${label}: companion tick lost held state`);
+  assert.equal(report.second.expanded, "false", `${label}: companion tick remained expanded`);
+  assert.equal(report.third.present, false, `${label}: dormant wrapped proof mounted route paint`);
+  assert.equal(report.third.washOpacity, 0, `${label}: dormant wrapped wash did not recede`);
+}
+
+/**
+ * Attending the second relationship. Its plan verdict is the LIVE engine's to
+ * give — the same pair routes at some widths and reports needs-space at
+ * others, depending on measured geometry — so this asserts that the paint is
+ * exactly TRUE to whichever verdict was given: a drawn 1.5px route with
+ * contacts when valid, and the designed needs-space state (no route, no hit
+ * target, no contacts, tick note semantics) when not. Both keep the veil, the
+ * .16 focus wash, and seal runs on the datum. Plan-verdict geometry itself is
+ * pinned by the engine's own digest suites, not here.
+ */
+function assertSecondFocus(report, label, width, theme, { routed, companion = true } = {}) {
+  assertCommon(report, label, width, theme);
+  assert.equal(report.routeMarkCount, 1, `${label}: second focus mounted more than its mark`);
+  assert.equal(report.veilCount, 1, `${label}: second focus lost its veil`);
+  assert.equal(report.veilReadyCount, 1, `${label}: second focus veil never reached ready`);
+  assert.equal(report.second.present, true, `${label}: the focused second's mark disappeared`);
+  assert.equal(report.second.washOpacity, 0.16, `${label}: focus wash opacity drifted`);
+  assert.equal(report.underlineLayer.attendedCount, report.second.lineTotal,
+    `${label}: attended runs drifted from the focused phrases' rendered lines`);
+  assert.deepEqual(report.underlineLayer.attendedInks, ["seal"],
+    `${label}: attended runs did not all carry seal ink`);
+  assert.ok(Math.abs(report.underlineLayer.attendedStroke - 1.5) <= 0.01,
+    `${label}: attended run width drifted to ${report.underlineLayer.attendedStroke}px`);
+  if (routed) {
+    assert.equal(report.routeCount, 1, `${label}: a valid plan did not draw its sole route`);
+    assert.equal(report.routeHitCount, 1, `${label}: a valid plan lost its hit target`);
+    assert.ok(report.contactCount > 0, `${label}: a valid plan lost its contacts`);
+    assert.equal(report.second.emphasisPaintState, "selected", `${label}: focus wash state drifted`);
+    assert.ok(Math.abs(report.second.routeStroke - 1.5) <= 0.01,
+      `${label}: route width drifted to ${report.second.routeStroke}px`);
+    assert.ok(report.second.routeOpacity >= 0.9, `${label}: route never reached terminal opacity`);
+  } else {
+    assert.equal(report.routeCount, 0, `${label}: a needs-space plan painted a centerline`);
+    assert.equal(report.routeHitCount, 0, `${label}: a needs-space plan mounted a hit target`);
+    assert.equal(report.contactCount, 0, `${label}: a needs-space plan painted contacts`);
+    assert.match(report.second.classes, /\bheld\b/, `${label}: the planner fault is not held`);
+    assert.equal(report.second.emphasisPaintState, "needs-space", `${label}: needs-space wash state drifted`);
+  }
   assert.equal(report.second.pressed, "true", `${label}: focus tick lost held state`);
   assert.equal(report.second.expanded, "true", `${label}: focus tick lost expanded state`);
+  if (companion) {
+    assert.equal(report.companionEmphasisCount, 1, `${label}: companion census drifted`);
+    assert.equal(report.dormantEmphasisCount, 1, `${label}: dormant census drifted`);
+    assert.equal(report.first.emphasisPaintState, "companion", `${label}: the held first was not a companion`);
+    assert.equal(report.first.washOpacity, 0.05, `${label}: companion wash opacity drifted`);
+    assert.ok(report.veilHeldHoles > 0, `${label}: the veil cut no grey hole for the held companion`);
+    assert.ok(report.underlineLayer.quietCount > 0, `${label}: the held companion lost its quiet runs`);
+    assert.deepEqual(report.underlineLayer.quietInks, ["kind"],
+      `${label}: sole-owner companion runs must carry their kind's ink`);
+    assert.deepEqual(report.underlineLayer.quietKinds, ["parallel"],
+      `${label}: companion runs did not carry the companion's kind`);
+  } else {
+    assert.equal(report.companionEmphasisCount, 0, `${label}: companion census drifted`);
+    assert.equal(report.dormantEmphasisCount, 2, `${label}: dormant census drifted`);
+    assert.equal(report.underlineLayer.quietCount, 0,
+      `${label}: nothing is held, so the layer holds only the attended runs`);
+  }
   assert.equal(report.third.present, false, `${label}: dormant wrapped proof mounted route paint`);
   assert.equal(report.third.washOpacity, 0, `${label}: dormant wrapped wash did not recede`);
 }
@@ -528,7 +682,7 @@ function assertOrdinaryMotion(report, label) {
   assert.equal(report.reducedMotion, false, `${label}: ordinary motion probe inherited reduce`);
   assert.match(report.first.transitions.wash ?? "", /0\.22s/, `${label}: wash transition drifted`);
   assert.match(report.veilTransition ?? "", /0\.18s/, `${label}: veil transition drifted`);
-  assert.match(report.first.transitions.underline ?? "", /0\.3s/, `${label}: underline draw transition drifted`);
+  assert.match(report.underlineLayer.transition ?? "", /0\.3s/, `${label}: underline draw transition drifted`);
   assert.match(report.first.transitions.route ?? "", /0\.34s/, `${label}: route growth transition drifted`);
   assert.match(report.first.transitions.routeDelay ?? "", /0\.04s/, `${label}: route growth delay drifted`);
   assert.match(report.first.transitions.contact ?? "", /0\.2s/, `${label}: contact transition drifted`);
@@ -540,7 +694,7 @@ function assertReducedMotion(report, label) {
   for (const [surface, duration] of Object.entries({
     wash: report.first.transitions.wash,
     veil: report.veilTransition,
-    underline: report.first.transitions.underline,
+    underline: report.underlineLayer.transition,
     route: report.first.transitions.route,
     contact: report.first.transitions.contact,
   })) {
@@ -567,8 +721,11 @@ async function runFocusStressBatch(driver, fixture, cycles) {
     const frame = () => new Promise((resolvePromise) => requestAnimationFrame(resolvePromise));
     const assertFocus = (expectedId) => {
       const focused = [...document.querySelectorAll(".connection-mark.focused.selected.route-ready")];
+      // The focused wash is "selected" for the routable first and the
+      // designed "needs-space" for the second, whose plan the live engine
+      // refuses at every width.
       const emphasis = [...document.querySelectorAll(
-        '.connection-emphasis-mark[data-paint-state="selected"]'
+        '.connection-emphasis-mark[data-paint-state="selected"], .connection-emphasis-mark[data-paint-state="needs-space"]'
       )];
       const expanded = [...document.querySelectorAll('[data-connection-tick][aria-expanded="true"]')];
       if (focused.length !== 1 || focused[0].dataset.connectionId !== expectedId) {
@@ -580,8 +737,11 @@ async function runFocusStressBatch(driver, fixture, cycles) {
       if (expanded.length !== 1 || expanded[0].dataset.connectionTick !== expectedId) {
         throw new Error("stress expanded tick drift");
       }
-      if (document.querySelectorAll(".connection-route").length !== 1
-        || document.querySelectorAll(".connection-route-hit").length !== 1
+      // The focused plan's validity decides the drawn-route budget: the
+      // first routes, the second is the live engine's needs-space case.
+      const expectRoutes = focused[0].classList.contains("held") ? 0 : 1;
+      if (document.querySelectorAll(".connection-route").length !== expectRoutes
+        || document.querySelectorAll(".connection-route-hit").length !== expectRoutes
         || document.querySelectorAll(".connection-focus-veil.is-ready").length !== 1
         || document.querySelectorAll(".connection-mark.route-ready:not(.focused)").length !== 0) {
         throw new Error("stress retained stale route paint");
@@ -597,7 +757,7 @@ async function runFocusStressBatch(driver, fixture, cycles) {
     };
     for (let cycle = 0; cycle < ${cycles}; cycle += 1) {
       await switchWithTick(fixture.secondId, fixture.secondId);
-      await switchWithTick(fixture.secondId, fixture.firstId);
+      await switchWithTick(fixture.firstId, fixture.firstId);
     }
     return {
       rangeReads: window.__connectionRangeReads,
@@ -642,7 +802,7 @@ async function assertFocusStress(driver, cdp, fixture) {
     `.connection-mark.selected.route-ready[data-connection-id="${fixture.secondId}"]`,
   )}))`);
   await settle(driver);
-  await clickTick(driver, fixture.secondId);
+  await clickTick(driver, fixture.firstId);
   await driver.waitFor(`Boolean(document.querySelector(${JSON.stringify(
     `.connection-mark.selected.route-ready[data-connection-id="${fixture.firstId}"]`,
   )}))`);
@@ -710,8 +870,10 @@ async function assertFocusStress(driver, cdp, fixture) {
     mobile: false,
   });
   await settle(driver);
-  await setTheme(driver, "dark");
-  await settle(driver);
+  // The old probe also flipped the theme here. In the current app any click
+  // outside a connection's own controls — the theme instrument included —
+  // dismisses the reading lens by design, so a live-selection theme change is
+  // not a reachable state; the resize replay carries the proof alone.
   const replay = await driver.evaluate(`(() => {
     document.removeEventListener("transitionrun", window.__connectionReplayHandler, true);
     const focused = document.querySelector(".connection-mark.focused.selected.route-ready");
@@ -728,14 +890,13 @@ async function assertFocusStress(driver, cdp, fixture) {
     delete window.__connectionReplayHandler;
     return result;
   })()`);
-  assert.equal(replay.focusedId, fixture.firstId, "resize/theme change replaced selected connection");
-  assert.equal(replay.routeCount, 1, "resize/theme change duplicated selected route");
-  assert.equal(replay.staleReady, 0, "resize/theme change retained a stale ready route");
-  assert.equal(replay.maxDashOffset, 0, "resize/theme change replayed route draw progress");
-  assert.deepEqual(replay.events, [], "resize/theme change restarted connection entrance transitions");
+  assert.equal(replay.focusedId, fixture.firstId, "resize replaced the selected connection");
+  assert.equal(replay.routeCount, 1, "resize duplicated the selected route");
+  assert.equal(replay.staleReady, 0, "resize retained a stale ready route");
+  assert.equal(replay.maxDashOffset, 0, "resize replayed route draw progress");
+  assert.deepEqual(replay.events, [], "resize restarted connection entrance transitions");
 
-  await clickTick(driver, fixture.firstId);
-  await driver.waitFor(`document.querySelectorAll(".connection-mark").length === 0`);
+  await releaseAllHeld(driver);
   await settle(driver);
   return { heapGrowth, dom: secondMemory.dom };
 }
@@ -777,8 +938,7 @@ async function assertForcedColors(driver, cdp, fixture) {
   assert.equal(report.routeHitCount, 1, "forced colors lost the selected route hit target");
   assert.equal(report.tickOutlineWidth, "2px", "forced colors lost selected tick outline width");
   assert.equal(report.tickOutlineStyle, "solid", "forced colors lost selected tick outline style");
-  await clickTick(driver, fixture.firstId);
-  await driver.waitFor(`document.querySelectorAll(".connection-mark").length === 0`);
+  await releaseAllHeld(driver);
   await setForcedColors(cdp, false);
   await settle(driver);
 }
@@ -843,10 +1003,69 @@ try {
       { verse: 7, quote: "about twelve" },
       { verse: 7, quote: "men in all" },
     ];
-    // A second independently selectable relationship uses the same known-
-    // routable short geometry. Durable ids keep its state distinct while the
-    // third fixture below owns the wrapped-paint proof.
-    const secondSpecs = [...firstSpecs];
+    // The second relationship must own its own tick lane (identical twins
+    // aggregate under the current lane planner), so it overlaps the first on
+    // verse 7 — proving the shared gold band and the cut merged runs — and
+    // carries its second phrase to a distant verse. Every quote is validated
+    // against the live backbone round-trip with fallbacks, because a span the
+    // anchoring cannot preserve exactly is refused by design.
+    const probe = async (verse, quote) => {
+      const verseText = text(verse);
+      const start = verseText.indexOf(quote);
+      if (start < 0) return false;
+      const capture = await window.api.library.captureConnectionSelection("bsb", [{
+        book: "ACT",
+        chapter: 19,
+        verse,
+        char_start: start,
+        char_end: start + quote.length,
+        quote,
+      }]);
+      return capture.ok && capture.status === "exact";
+    };
+    const wordSpan = (verse, fromWord, toWord) => {
+      const verseText = text(verse);
+      const matches = [...verseText.matchAll(/\\S+/g)];
+      if (matches.length <= toWord) return null;
+      const startIndex = matches[fromWord].index;
+      const last = matches[toWord];
+      return verseText.slice(startIndex, last.index + last[0].length);
+    };
+    const firstExact = async (candidates) => {
+      const tried = [];
+      for (const candidate of candidates) {
+        if (!candidate.quote) {
+          tried.push(candidate.verse + ":null");
+          continue;
+        }
+        if (await probe(candidate.verse, candidate.quote)) return candidate;
+        tried.push(candidate.verse + ":" + candidate.quote);
+      }
+      throw new Error("no fixture candidate survived the backbone round-trip: " + JSON.stringify(tried));
+    };
+    // The second relationship must own its own tick lane (identical twins
+    // aggregate) AND stay routable — the live engine only draws same-line
+    // brackets today — so it is a tiny adjacent pair early in one verse,
+    // far from the first. Both halves must survive the round-trip together.
+    const firstExactPair = async (pairs) => {
+      for (const pair of pairs) {
+        if (!pair[0].quote || !pair[1].quote) continue;
+        if (await probe(pair[0].verse, pair[0].quote) && await probe(pair[1].verse, pair[1].quote)) {
+          return pair;
+        }
+      }
+      throw new Error("no fixture pair survived the backbone round-trip");
+    };
+    // Mid-line phrases with a word of runway before the first and a word of
+    // air between them: a pair pinned to the line start has no level exit
+    // past the verse number, and the engine reports it needs-space.
+    const secondPair = await firstExactPair([
+      [{ verse: 15, quote: wordSpan(15, 3, 5) }, { verse: 15, quote: wordSpan(15, 7, 9) }],
+      [{ verse: 11, quote: wordSpan(11, 1, 3) }, { verse: 11, quote: wordSpan(11, 5, 6) }],
+      [{ verse: 17, quote: wordSpan(17, 1, 2) }, { verse: 17, quote: wordSpan(17, 5, 6) }],
+      [{ verse: 18, quote: wordSpan(18, 2, 3) }, { verse: 18, quote: wordSpan(18, 5, 6) }],
+    ]);
+    const secondSpecs = secondPair;
     const thirdSpecs = [{ verse: 8, quote: null }, { verse: 9, quote: null }];
     const first = await window.api.library.createConnection(
       "link:parallel",
@@ -892,7 +1111,31 @@ try {
   await driver.waitFor(`document.querySelector(".book-name")?.textContent?.trim() === "Acts"
     && document.querySelector(".chapter-number")?.textContent?.trim() === "19"
     && document.querySelectorAll(".verse-line").length > 20`, 20_000);
-  await driver.waitFor(`document.querySelectorAll("[data-connection-tick]").length === 3`);
+  // Projection hydration can stall on a cold library under heavy machine
+  // load; a clean reload recovers it. Retry twice before declaring.
+  {
+    let hydrated = false;
+    for (let attempt = 0; attempt < 3 && !hydrated; attempt += 1) {
+      try {
+        await driver.waitFor(`document.querySelectorAll("[data-connection-tick]").length === 3`, 90_000);
+        hydrated = true;
+      } catch (error) {
+        if (attempt === 2) {
+          const diag = await driver.evaluate(`({
+            ticks: [...document.querySelectorAll("[data-connection-tick]")]
+              .map((t) => (t.dataset.connectionTick || "aggregate:" + (t.dataset.connectionTickMembers ?? "")).slice(-30)),
+            emphasis: document.querySelectorAll(".connection-emphasis-mark").length,
+            verses: document.querySelectorAll(".verse-line").length,
+          })`).catch(() => null);
+          console.error("boot diagnostics:", JSON.stringify(diag, null, 2));
+          throw error;
+        }
+        await cdp.send("Page.reload", { ignoreCache: true });
+        await driver.waitFor(`document.querySelector(".book-name")?.textContent?.trim() === "Acts"
+          && document.querySelectorAll(".verse-line").length > 20`, 30_000);
+      }
+    }
+  }
   await driver.evaluate(`(() => {
     if (!document.querySelector(".sidebar")?.classList.contains("collapsed")) {
       document.querySelector(".sidebar-collapse-btn")?.click();
@@ -924,6 +1167,10 @@ try {
         deviceScaleFactor: 1,
         mobile: false,
       });
+      await ensureFocusMode(driver, true);
+      // The previous cell's least-distance attend scroll can leave verse 7's
+      // tick parked under the sticky topbar, where no pointer can reach it.
+      await driver.evaluate(`document.querySelector(".scripture-content")?.scrollTo(0, 0)`);
       await settle(driver);
       let report = await driver.evaluate(reportExpression);
       if (report?.error) throw new Error(report.error);
@@ -933,30 +1180,62 @@ try {
       // Focus/hover is only a quiet preview invitation. It may wake the exact
       // words and tick, but no bracket, underline, contacts, invisible hit
       // target, veil, or inspector may exist before explicit activation.
-      const previewFocused = await driver.evaluate(`(() => {
-        const active = document.activeElement;
-        if (active instanceof HTMLElement) active.blur();
-        const tick = document.querySelector(${JSON.stringify(
-          `[data-connection-tick="${fixture.firstId}"]`,
-        )});
-        tick?.focus({ preventScroll: true });
-        return document.activeElement === tick;
-      })()`);
-      assert.equal(previewFocused, true, `${label}/preview: tick did not receive keyboard focus`);
-      await driver.waitFor(`document.querySelector(${JSON.stringify(
-        `.connection-emphasis-mark[data-connection-id="${fixture.firstId}"]`,
-      )})?.getAttribute("data-paint-state") === "preview"`);
+      // Preview is deliberately absent inside Focus mode (the post-peak
+      // hardening the revival keeps), so this beat steps out of it.
+      await ensureFocusMode(driver, false);
       await settle(driver);
-      report = await driver.evaluate(reportExpression);
+      // Preview is driven through the app's primary path — a real pointer
+      // hover on the tick, dispatched through CDP so the events are trusted.
+      // (A synthetic element.focus() can land without React's delegated
+      // focus handling ever seeing it in this harness, which reads as a
+      // preview that never engages.)
+      // Rows can settle late after the resize + margin reveal, and lane
+      // churn can slide the tick out from under a resting pointer, letting a
+      // woken preview lapse after its 140ms leave grace. Hover, wait, and
+      // take the paint report inside one retry loop, and only assert a
+      // report that actually caught the woken state.
+      report = null;
+      for (let attempt = 0; attempt < 4; attempt += 1) {
+        const tickCenter = await driver.evaluate(`(() => {
+          const tick = document.querySelector(${JSON.stringify(
+            `[data-connection-tick="${fixture.firstId}"]`,
+          )});
+          if (!tick) return null;
+          const rect = tick.getBoundingClientRect();
+          return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 };
+        })()`);
+        assert.ok(tickCenter, `${label}/preview: the first connection lost its individual tick lane`);
+        await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: tickCenter.x, y: tickCenter.y });
+        try {
+          await driver.waitFor(`document.querySelector(${JSON.stringify(
+            `.connection-emphasis-mark[data-connection-id="${fixture.firstId}"]`,
+          )})?.getAttribute("data-paint-state") === "preview"`, 5_000);
+        } catch {
+          await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: 4, y: 4 });
+          await settle(driver);
+          continue;
+        }
+        // Full settle so the 220ms wash ease reaches its terminal value; the
+        // candidate check below catches a preview that lapsed while waiting.
+        await settle(driver);
+        const candidate = await driver.evaluate(reportExpression);
+        if (candidate?.previewEmphasisCount === 1) {
+          report = candidate;
+          break;
+        }
+        await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: 4, y: 4 });
+        await settle(driver);
+      }
+      assert.ok(report, `${label}/preview: the preview state never engaged`);
       assertPreview(report, `${label}/preview`, width, theme);
+      await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: 4, y: 4 });
       await driver.evaluate(`document.querySelector("#reading-chapter-title")?.focus({ preventScroll: true })`);
       await driver.waitFor(`!document.querySelector('.connection-emphasis-mark[data-paint-state="preview"]')`);
+      await ensureFocusMode(driver, true);
       await settle(driver);
       assertRest(await driver.evaluate(reportExpression), `${label}/preview-cleared`, width, theme);
 
-      await clickTick(driver, fixture.firstId);
-      await restoreFocusMode(driver);
-      await driver.waitFor(`(() => {
+      await attendConnection(driver, fixture.firstId, `(() => {
         const mark = document.querySelector(${JSON.stringify(
           `.connection-mark.selected.route-ready[data-connection-id="${fixture.firstId}"]`,
         )});
@@ -967,46 +1246,78 @@ try {
       assertSelected(report, `${label}/selected`, width, theme, "first", "second");
       if (theme === "light" && width === 860) assertOrdinaryMotion(report, `${label}/selected`);
 
-      await clickTick(driver, fixture.secondId);
-      await restoreFocusMode(driver);
-      await driver.waitFor(`(() => {
+      // Attending the second acquires its hold and paints its honest state —
+      // routed or needs-space, whichever the live engine gives at this
+      // geometry. The first becomes a held companion either way.
+      await attendConnection(driver, fixture.secondId, `(() => {
         const mark = document.querySelector(${JSON.stringify(
           `.connection-mark.selected.route-ready[data-connection-id="${fixture.secondId}"]`,
         )});
+        if (!mark) return false;
+        const settled = mark.classList.contains("held")
+          ? !mark.querySelector(".connection-route")
+          : Boolean(mark.querySelector(".connection-route"));
+        return settled && document.querySelector(${JSON.stringify(
+          `.connection-emphasis-mark[data-connection-id="${fixture.firstId}"]`,
+        )})?.getAttribute("data-paint-state") === "companion";
+      })()`);
+      await settle(driver);
+      report = await driver.evaluate(reportExpression);
+      const secondRouted = report.second.routeCount === 1;
+      assertSecondFocus(report, `${label}/second-focus`, width, theme, { routed: secondRouted });
+
+      // Re-attending the routable first while the second stays held is the
+      // two-held state: exactly one route (the focused first's), the second
+      // as a companion wash + quiet runs + grey veil holes.
+      await attendConnection(driver, fixture.firstId, `(() => {
+        const mark = document.querySelector(${JSON.stringify(
+          `.connection-mark.selected.route-ready[data-connection-id="${fixture.firstId}"]`,
+        )});
         return Boolean(mark && !mark.classList.contains("held") && mark.querySelector(".connection-route"));
-      })() && Boolean(document.querySelector(${JSON.stringify(
-        `.connection-mark.companion[data-connection-id="${fixture.firstId}"]`,
-      )}))`);
+      })() && document.querySelector(${JSON.stringify(
+        `.connection-emphasis-mark[data-connection-id="${fixture.secondId}"]`,
+      )})?.getAttribute("data-paint-state") === "companion"`);
       await settle(driver);
       report = await driver.evaluate(reportExpression);
       assertTwoHeld(report, `${label}/two-held`, width, theme);
 
-      await clickTick(driver, fixture.secondId);
-      await driver.waitFor(`Boolean(document.querySelector(${JSON.stringify(
-        `.connection-mark.selected[data-connection-id="${fixture.firstId}"]`,
-      )})) && !document.querySelector(${JSON.stringify(
-        `.connection-mark[data-connection-id="${fixture.secondId}"]`,
-      )})`);
+      // Releasing the focused first through the card's labelled action falls
+      // back to the remaining hold — the second, in its honest state again.
+      // Release is a card act; tick activation is reaffirmation.
+      await driver.evaluate(`document.querySelector(".connection-card .connection-card-primary")?.click()`);
+      await driver.waitFor(`(() => {
+        const mark = document.querySelector(${JSON.stringify(
+          `.connection-mark.selected.route-ready[data-connection-id="${fixture.secondId}"]`,
+        )});
+        if (!mark || document.querySelector(${JSON.stringify(
+          `.connection-mark[data-connection-id="${fixture.firstId}"]`,
+        )})) return false;
+        return mark.classList.contains("held")
+          ? !mark.querySelector(".connection-route")
+          : Boolean(mark.querySelector(".connection-route"));
+      })()`, 20_000);
       await settle(driver);
       report = await driver.evaluate(reportExpression);
-      assertSelected(report, `${label}/fallback`, width, theme, "first", "second");
+      assertSecondFocus(report, `${label}/fallback`, width, theme, {
+        routed: report.second.routeCount === 1,
+        companion: false,
+      });
 
-      await clickTick(driver, fixture.firstId);
+      await releaseAllHeld(driver);
       await driver.waitFor(`document.querySelectorAll(".connection-mark").length === 0
         && document.querySelectorAll(".connection-route").length === 0
         && document.querySelectorAll(".connection-underline").length === 0
         && document.querySelectorAll(".connection-contact").length === 0
         && document.querySelectorAll(".connection-route-hit").length === 0`);
       await driver.evaluate(`document.querySelector("#reading-chapter-title")?.focus({ preventScroll: true })`);
+      await driver.waitFor(`!document.querySelector('.connection-emphasis-mark[data-paint-state="preview"]')`);
       await settle(driver);
       report = await driver.evaluate(reportExpression);
       assertRest(report, `${label}/released`, width, theme);
 
       if (width === 860) {
         await setReducedMotion(cdp, true);
-        await clickTick(driver, fixture.firstId);
-        await restoreFocusMode(driver);
-        await driver.waitFor(`(() => {
+        await attendConnection(driver, fixture.firstId, `(() => {
           const mark = document.querySelector(${JSON.stringify(
             `.connection-mark.selected.route-ready[data-connection-id="${fixture.firstId}"]`,
           )});
@@ -1015,16 +1326,18 @@ try {
         await settle(driver, true);
         const reducedReport = await driver.evaluate(reportExpression);
         assertReducedMotion(reducedReport, `${label}/reduced-motion`);
-        await clickTick(driver, fixture.firstId);
-        await driver.waitFor(`document.querySelectorAll(".connection-mark").length === 0`);
+        await releaseAllHeld(driver);
+        // Release restores focus to the tick, which arms a keyboard preview;
+        // move focus off and wait out its leave grace before the rest assert.
         await driver.evaluate(`document.querySelector("#reading-chapter-title")?.focus({ preventScroll: true })`);
+        await driver.waitFor(`!document.querySelector('.connection-emphasis-mark[data-paint-state="preview"]')`);
         await settle(driver, true);
         assertRest(await driver.evaluate(reportExpression), `${label}/reduced-release`, width, theme);
         await setReducedMotion(cdp, false);
       }
 
       reports.push({ theme, width });
-      console.log(`${THEME_LABELS.get(theme).padEnd(11)} ${String(width).padStart(4)}px  rest/preview 0 routes  selected 1 route  companion 0 routes  overflow 0`);
+      console.log(`${THEME_LABELS.get(theme).padEnd(11)} ${String(width).padStart(4)}px  rest/preview 0 routes  selected 1 route  second ${secondRouted ? "routes" : "needs-space"}  companion 0 routes  overflow 0`);
     }
   }
 

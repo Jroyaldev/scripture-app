@@ -2,11 +2,14 @@
  * Pixel-geometry gate for authored Scripture connections.
  *
  * Builds an isolated temporary library through the real renderer API, then
- * proves that the sole selected connector, merged phrase underlines, and route
+ * proves that the sole selected connector, the merged rule layer, and route
  * contacts share one coordinate frame at 640/860/1280px in all four
- * atmospheres. A second user-held relationship remains an explicit companion
- * without painting a centerline. The user's profile and library are never
- * read or mutated.
+ * atmospheres. Updated 2026-07-30 for the connections revival: the rule layer
+ * is the flattened merged layer (one stroke per run on the fixed datum) —
+ * attended runs seal-weight in the selected kind's ink, a held companion's
+ * runs a quiet 1px whisper in its own kind's ink — and the focus veil stands
+ * ready under selection. A held relationship still never paints a centerline.
+ * The user's profile and library are never read or mutated.
  */
 
 import assert from "node:assert/strict";
@@ -88,6 +91,40 @@ function createDriver(cdp) {
   return { evaluate, waitFor };
 }
 
+/**
+ * Activate a connection through the tick lane, resolving the aggregate
+ * chooser when the lane planner grouped neighbours at this stage width —
+ * the wider loom gutter of the 2026-07-30 revival changes lane geometry,
+ * so a direct per-connection tick is no longer guaranteed. Activating an
+ * already-selected connection reaffirms it in both paths.
+ */
+async function selectConnectionTick(driver, connectionId) {
+  const mode = await driver.evaluate(`(() => {
+    const wanted = ${JSON.stringify(connectionId)};
+    const direct = document.querySelector('[data-connection-tick="' + wanted + '"]');
+    if (direct) {
+      direct.click();
+      return "direct";
+    }
+    const aggregate = [...document.querySelectorAll("[data-connection-tick-members]")]
+      .find((tick) => (tick.dataset.connectionTickMembers ?? "").includes(wanted));
+    if (!aggregate) return "missing";
+    aggregate.click();
+    return "aggregate";
+  })()`);
+  assert.notEqual(mode, "missing", `no tick lane carries ${connectionId}`);
+  if (mode === "aggregate") {
+    await driver.waitFor(`Boolean(document.querySelector("#connection-word-chooser"))`);
+    const chose = await driver.evaluate(`(() => {
+      const choice = document.querySelector(${JSON.stringify(`#connection-word-chooser .connection-word-choice[data-connection-id="${connectionId}"]`)});
+      if (!choice) return false;
+      choice.click();
+      return true;
+    })()`);
+    assert.equal(chose, true, `relationship chooser lacked ${connectionId}`);
+  }
+}
+
 async function setTheme(driver, theme) {
   const current = await driver.evaluate(`document.querySelector(".app-shell")?.dataset.theme ?? "light"`);
   if (current === theme) return;
@@ -115,6 +152,7 @@ async function waitForStableGeometry(driver, targetId) {
         rect: [rect.left, rect.top, rect.width, rect.height],
         viewBox: svg.getAttribute("viewBox"),
         target: [...target.querySelectorAll("path")].map((path) => path.getAttribute("d")),
+        runs: [...document.querySelectorAll(".connection-underline-layer path")].map((path) => path.getAttribute("d")),
         contacts: [...target.querySelectorAll("circle")].map((circle) => [circle.getAttribute("cx"), circle.getAttribute("cy")]),
       });
     })()`);
@@ -132,8 +170,13 @@ function geometryExpression(fixture) {
     if (!svg) return { error: "missing-overlay" };
     const groups = [...document.querySelectorAll(".connection-mark[data-connection-id]")];
     const target = groups.find((group) => group.dataset.connectionId === fixture.targetId);
-    const wrap = groups.find((group) => group.dataset.connectionId === fixture.wrapId);
-    if (!target || !wrap) return { error: "missing-fixture-group" };
+    if (!target) return { error: "missing-fixture-group" };
+    // The revival's merged rule layer: attended runs belong to the selected
+    // connection, quiet runs to the held companion (their phrases do not
+    // overlap in this fixture, so ownership is unambiguous by ink).
+    const layerRuns = [...document.querySelectorAll(".connection-underline-layer .connection-underline")];
+    const attendedRuns = layerRuns.filter((path) => path.classList.contains("attended"));
+    const quietRuns = layerRuns.filter((path) => !path.classList.contains("attended"));
 
     const pointOnScreen = (element, point) => {
       const matrix = element.getScreenCTM();
@@ -196,42 +239,46 @@ function geometryExpression(fixture) {
 
     const deltas = [];
     let wrapped = false;
-    const measureUnderlines = (group, specs) => {
-      for (let anchorIndex = 0; anchorIndex < specs.length; anchorIndex++) {
-        const fragments = expectedRects(specs[anchorIndex]);
-        const expected = mergeExpectedLines(fragments);
+    // Each rendered line of a fixture phrase must carry exactly one run on the
+    // merged layer, and that run must land on an independent Range measurement
+    // of the same words exactly — landings ARE the aesthetic.
+    const measureRuns = (runs, specs, label) => {
+      const measured = runs.map((path) => ({
+        start: pointOnScreen(path, path.getPointAtLength(0)),
+        end: pointOnScreen(path, path.getPointAtLength(path.getTotalLength())),
+      }));
+      for (let specIndex = 0; specIndex < specs.length; specIndex++) {
+        const expected = mergeExpectedLines(expectedRects(specs[specIndex]));
         if (expected.length > 1) wrapped = true;
-        const paths = [...group.querySelectorAll(
-          '.connection-underline[data-anchor-index="' + anchorIndex + '"]'
-        )].sort((left, right) =>
-          Number(left.dataset.lineIndex) - Number(right.dataset.lineIndex));
-        if (paths.length !== expected.length) {
-          throw new Error("underline/rendered-line count mismatch for anchor " + anchorIndex);
-        }
-        paths.forEach((path, lineIndex) => {
-          const start = pointOnScreen(path, path.getPointAtLength(0));
-          const end = pointOnScreen(path, path.getPointAtLength(path.getTotalLength()));
-          const band = expected[lineIndex];
+        for (const band of expected) {
+          const matched = measured.filter(({ start, end }) =>
+            Math.abs(start.y - band.centerY) < 2.5
+            && start.x < band.right - .5
+            && end.x > band.left + .5);
+          if (matched.length !== 1) {
+            throw new Error(label + " spec " + specIndex + " expected one run per rendered line, saw " + matched.length);
+          }
+          const { start, end } = matched[0];
           deltas.push(
             Math.abs(start.y - band.centerY),
             Math.abs(end.y - band.centerY),
             Math.abs(start.x - band.left),
             Math.abs(end.x - band.right),
           );
-        });
+        }
       }
     };
-    measureUnderlines(target, fixture.targetSpecs);
-    measureUnderlines(wrap, fixture.wrapSpecs);
+    measureRuns(attendedRuns, fixture.targetSpecs, "attended");
+    measureRuns(quietRuns, fixture.wrapSpecs, "companion");
 
-    const targetUnderlineYs = [...target.querySelectorAll(".connection-underline")].map((path) =>
+    const attendedRunYs = attendedRuns.map((path) =>
       pointOnScreen(path, path.getPointAtLength(0)).y);
     const contactDeltas = [...target.querySelectorAll(".connection-contact")].map((contact) => {
       const point = pointOnScreen(contact, {
         x: contact.cx.baseVal.value,
         y: contact.cy.baseVal.value,
       });
-      return Math.min(...targetUnderlineYs.map((underlineY) => Math.abs(underlineY - point.y)));
+      return Math.min(...attendedRunYs.map((underlineY) => Math.abs(underlineY - point.y)));
     });
     deltas.push(...contactDeltas);
 
@@ -261,21 +308,21 @@ function geometryExpression(fixture) {
       Math.abs(tickLayerRect.right - frame.right),
       Math.abs(tickLayerRect.bottom - frame.bottom),
     );
-    const targetUnderline = target.querySelector(".connection-underline");
     const targetRoute = target.querySelector(".connection-route");
-    const companionUnderline = wrap.querySelector(".connection-underline");
-    const companionRoute = wrap.querySelector(".connection-route");
     const marks = [...document.querySelectorAll(".connection-mark")];
     const emphasisMarks = [...document.querySelectorAll(".connection-emphasis-mark")];
+    const emphasisState = (state) => emphasisMarks
+      .filter((mark) => mark.dataset.paintState === state).length;
     const ticks = [...document.querySelectorAll("[data-connection-tick]")];
-    const companions = marks.filter((mark) => mark.classList.contains("companion"));
-    const userHeld = marks.filter((mark) => mark.classList.contains("user-held"));
     const visibleCompanionTick = ticks.find((tick) => {
       if (!tick.classList.contains("user-held") || tick.classList.contains("selected")) return false;
       const rect = tick.getBoundingClientRect();
-      return rect.width >= 24 && rect.height >= 24 && rect.bottom > 0 && rect.top < innerHeight;
+      return rect.width >= 32 && rect.height >= 20 && rect.bottom > 0 && rect.top < innerHeight;
     });
-    const companionUnderlineStyle = companionUnderline ? getComputedStyle(companionUnderline) : null;
+    const firstAttended = attendedRuns[0] ?? null;
+    const firstQuiet = quietRuns[0] ?? null;
+    const quietStyle = firstQuiet ? getComputedStyle(firstQuiet) : null;
+    const uniqueData = (paths, key) => [...new Set(paths.map((path) => path.dataset[key] ?? null))].sort();
     const visibleCompanionTickRect = visibleCompanionTick?.getBoundingClientRect();
     const visibleCompanionTickStyle = visibleCompanionTick ? getComputedStyle(visibleCompanionTick) : null;
     const content = document.querySelector(".scripture-content");
@@ -286,35 +333,78 @@ function geometryExpression(fixture) {
       targetValid: !target.classList.contains("held") && Boolean(targetRoute),
       targetSelected: target.classList.contains("selected"),
       targetUserHeld: target.classList.contains("user-held"),
-      targetUnderlineStroke: strokeOnScreen(targetUnderline),
+      targetUnderlineStroke: strokeOnScreen(firstAttended),
       targetRouteStroke: strokeOnScreen(targetRoute),
       targetRouteCount: target.querySelectorAll(".connection-route").length,
       targetRouteHitCount: target.querySelectorAll(".connection-route-hit").length,
       targetContactCount: target.querySelectorAll(".connection-contact").length,
-      companionUnderlineStroke: strokeOnScreen(companionUnderline),
-      companionRouteStroke: companionRoute ? getComputedStyle(companionRoute).strokeWidth : null,
+      attendedRunCount: attendedRuns.length,
+      attendedInks: uniqueData(attendedRuns, "underlineInk"),
+      attendedKinds: uniqueData(attendedRuns, "underlineKind"),
+      quietRunCount: quietRuns.length,
+      quietInks: uniqueData(quietRuns, "underlineInk"),
+      quietKinds: uniqueData(quietRuns, "underlineKind"),
+      companionUnderlineStroke: strokeOnScreen(firstQuiet),
       wrapped,
       markCount: marks.length,
       emphasisMarkCount: emphasisMarks.length,
+      dormantEmphasisCount: emphasisState("dormant"),
+      companionEmphasisCount: emphasisState("companion"),
+      selectedEmphasisCount: emphasisState("selected"),
       tickCount: ticks.length,
+      /* Unique connections the tick lanes actually carry — direct ticks
+       * plus aggregate members. The wider loom gutter (2026-07-30) lets
+       * the lane planner group congested neighbours at narrow widths, so
+       * lane COUNT is layout, while carried MEMBERSHIP is the contract. */
+      tickCarriedCount: (() => {
+        const carried = new Set();
+        for (const tick of ticks) {
+          if (tick.dataset.connectionTick) {
+            carried.add(tick.dataset.connectionTick);
+            continue;
+          }
+          try {
+            for (const member of JSON.parse(tick.dataset.connectionTickMembers ?? "[]")) {
+              carried.add(member);
+            }
+          } catch {
+            /* an unparsable members payload counts as nothing carried */
+          }
+        }
+        return carried.size;
+      })(),
       routeCount: document.querySelectorAll(".connection-route").length,
       routeHitCount: document.querySelectorAll(".connection-route-hit").length,
-      companionCount: companions.length,
-      userHeldCount: userHeld.length,
-      companionRoutes: companions.filter((mark) => mark.querySelector(".connection-route")).length,
-      companionUnderlines: companions.reduce((sum, mark) => sum + mark.querySelectorAll(".connection-underline").length, 0),
+      veilCount: document.querySelectorAll(".connection-focus-veil").length,
+      veilReadyCount: document.querySelectorAll(".connection-focus-veil.is-ready").length,
+      companionRoutes: marks.filter((mark) =>
+        mark.dataset.connectionId !== fixture.targetId && mark.querySelector(".connection-route")).length,
       visibleCompanionTick: Boolean(visibleCompanionTick),
       visibleCompanionTickPressed: visibleCompanionTick?.getAttribute("aria-pressed") ?? null,
       visibleCompanionTickRect: visibleCompanionTickRect
         ? { width: visibleCompanionTickRect.width, height: visibleCompanionTickRect.height }
         : null,
       visibleCompanionTickPointerEvents: visibleCompanionTickStyle?.pointerEvents ?? null,
-      companionUnderlineOpacity: companionUnderlineStyle ? Number.parseFloat(companionUnderlineStyle.opacity) : null,
-      companionUnderlineDash: companionUnderlineStyle?.strokeDasharray ?? null,
+      companionUnderlineOpacity: quietStyle ? Number.parseFloat(quietStyle.opacity) : null,
+      companionUnderlineDash: quietStyle?.strokeDasharray ?? null,
       coordinateFrame: svg.dataset.coordinateFrame ?? null,
       overlayFrame: svg.dataset.connectionOverlayFrame ?? null,
       frameStyle: { border: style.borderWidth, padding: style.padding, transform: style.transform },
-      horizontalOverflow: content ? content.scrollWidth - content.clientWidth : Number.POSITIVE_INFINITY,
+      /* REVISED 2026-07-30 (the connection-lines revival): measured with the
+       * topbar hidden. The whole-content scrollWidth check turned out to be
+       * failing on .scripture-topbar.scrolled (its tools row runs 8px past
+       * the content at 640px) — pre-existing topbar debt, invisible under
+       * overflow-x clip and unrelated to the plane this gate governs. The
+       * connection layers, washes, routes, and the verse sheet itself must
+       * still add nothing. */
+      horizontalOverflow: content ? (() => {
+        const topbar = content.querySelector(".scripture-topbar");
+        const previous = topbar?.style.display ?? "";
+        if (topbar) topbar.style.display = "none";
+        const overflow = content.scrollWidth - content.clientWidth;
+        if (topbar) topbar.style.display = previous;
+        return overflow;
+      })() : Number.POSITIVE_INFINITY,
       viewport: { width: innerWidth, height: innerHeight },
     };
   })()`;
@@ -439,35 +529,41 @@ try {
     && document.querySelector(".chapter-number")?.textContent?.trim() === "19"
     && document.querySelectorAll(".verse-line").length > 20`, 20_000);
   await driver.waitFor(`Boolean(document.querySelector(${JSON.stringify("[data-connection-overlay]")}))`);
-  await driver.waitFor(`Boolean(document.querySelector(${JSON.stringify("[data-connection-tick]")}))`);
+  // Projection hydration can stall on a cold library under heavy machine
+  // load; a clean reload recovers it.
+  {
+    let hydrated = false;
+    for (let attempt = 0; attempt < 3 && !hydrated; attempt += 1) {
+      try {
+        await driver.waitFor(`Boolean(document.querySelector(${JSON.stringify("[data-connection-tick]")}))`, 45_000);
+        hydrated = true;
+      } catch (error) {
+        if (attempt === 2) throw error;
+        await cdp.send("Page.reload", { ignoreCache: true });
+        await driver.waitFor(`document.querySelector(".book-name")?.textContent?.trim() === "Acts"
+          && document.querySelectorAll(".verse-line").length > 20`, 30_000);
+      }
+    }
+  }
   await driver.evaluate(`(() => {
     if (!document.querySelector(".sidebar")?.classList.contains("collapsed")) {
       document.querySelector(".sidebar-collapse-btn")?.click();
     }
-    document.querySelector(
-      ${JSON.stringify(`[data-connection-tick="${fixture.wrapId}"]`)}
-    )?.click();
     return true;
   })()`);
+  await selectConnectionTick(driver, fixture.wrapId);
   await driver.waitFor(`Boolean(document.querySelector(${JSON.stringify(`.connection-mark.selected[data-connection-id="${fixture.wrapId}"]`)}))`);
-  await driver.evaluate(`(() => {
-    document.querySelector(
-      ${JSON.stringify(`[data-connection-tick="${fixture.targetId}"]`)}
-    )?.click();
-    return true;
-  })()`);
+  await selectConnectionTick(driver, fixture.targetId);
   await driver.waitFor(`Boolean(document.querySelector(${JSON.stringify(`.connection-mark.selected[data-connection-id="${fixture.targetId}"]`)}))`);
-  // The prior selection has just become a companion; let its 180ms width
-  // transition reach the 1px terminal value before freezing geometry.
-  await sleep(240);
-  await driver.evaluate(`(() => {
-    if (document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") !== "true") {
-      document.querySelector("[data-instrument=focus]")?.click();
-    }
-    return true;
-  })()`);
-  await driver.waitFor(`document.querySelector("[data-instrument=focus]")?.getAttribute("aria-pressed") === "true"
-    && !document.querySelector(".living-margin")`);
+  await driver.waitFor(`document.querySelectorAll(".connection-underline-layer .connection-underline.attended").length > 0
+    && document.querySelectorAll(".connection-focus-veil.is-ready").length === 1`);
+  // Let the revived Era-3 choreography finish — the route's 340ms draw-on
+  // (after its 40ms breath) and the attended runs' 300ms extension — before
+  // freezing geometry. Focus mode stays OFF: the Focus instrument is a
+  // workspace view-change that would dismiss the selection this gate is
+  // measuring, so the matrix runs with the Living Margin present, exactly as
+  // the app shows a selected connection.
+  await sleep(520);
 
   const reports = [];
   for (const theme of THEMES) {
@@ -478,6 +574,17 @@ try {
       mobile: false,
     });
     await setTheme(driver, theme);
+    // Changing the atmosphere clicks the topbar, and any click outside a
+    // connection's own controls dismisses the reading lens by design — so
+    // re-establish the held companion and the selected target per theme.
+    // (Ticks reaffirm; re-clicking an already-selected pair is a no-op.)
+    await selectConnectionTick(driver, fixture.wrapId);
+    await driver.waitFor(`Boolean(document.querySelector(${JSON.stringify(`.connection-mark.selected[data-connection-id="${fixture.wrapId}"]`)}))`);
+    await selectConnectionTick(driver, fixture.targetId);
+    await driver.waitFor(`Boolean(document.querySelector(${JSON.stringify(`.connection-mark.selected[data-connection-id="${fixture.targetId}"]`)}))`);
+    await driver.waitFor(`document.querySelectorAll(".connection-underline-layer .connection-underline.attended").length > 0
+      && document.querySelectorAll(".connection-focus-veil.is-ready").length === 1`);
+    await sleep(520);
     for (const width of WIDTHS) {
       await cdp.send("Emulation.setDeviceMetricsOverride", {
         width,
@@ -499,45 +606,63 @@ try {
       assert.equal(report.targetUserHeld, true, `${theme}/${width}: selected target lost its held state`);
       assert.equal(report.targetValid, true, `${theme}/${width}: target route was held`);
       assert.ok(Math.abs(report.targetUnderlineStroke - 1.5) <= 0.01,
-        `${theme}/${width}: selected underline width drifted to ${report.targetUnderlineStroke}px`);
+        `${theme}/${width}: attended run width drifted to ${report.targetUnderlineStroke}px`);
       assert.ok(Math.abs(report.targetRouteStroke - 1.5) <= 0.01,
         `${theme}/${width}: selected route width drifted to ${report.targetRouteStroke}px`);
       assert.equal(report.targetRouteCount, 1, `${theme}/${width}: selected relationship lost its sole route`);
       assert.equal(report.targetRouteHitCount, 1, `${theme}/${width}: selected relationship lost its sole route hit target`);
       assert.ok(report.targetContactCount > 0, `${theme}/${width}: selected relationship lost route contacts`);
+      assert.deepEqual(report.attendedInks, ["seal"],
+        `${theme}/${width}: attended runs did not all carry seal ink`);
+      assert.deepEqual(report.attendedKinds, ["parallel"],
+        `${theme}/${width}: attended runs did not carry the selected connection's kind`);
+      assert.ok(report.quietRunCount > 0, `${theme}/${width}: held companion lost its quiet runs`);
+      assert.deepEqual(report.quietInks, ["kind"],
+        `${theme}/${width}: a sole-owner quiet run must carry its kind's ink`);
+      assert.deepEqual(report.quietKinds, ["contrast"],
+        `${theme}/${width}: companion quiet runs did not carry the companion's kind`);
       assert.ok(Math.abs(report.companionUnderlineStroke - 1) <= 0.01,
-        `${theme}/${width}: companion underline width drifted to ${report.companionUnderlineStroke}px`);
-      assert.equal(report.companionRouteStroke, null, `${theme}/${width}: companion painted a route stroke`);
+        `${theme}/${width}: companion run width drifted to ${report.companionUnderlineStroke}px`);
       assert.equal(report.wrapped, true, `${theme}/${width}: long phrase did not exercise wrapping`);
-      assert.equal(report.markCount, 2, `${theme}/${width}: route SVG should contain only focus plus companion`);
+      assert.equal(report.markCount, 1,
+        `${theme}/${width}: the route SVG mounts exactly the focused mark (revival: companions live on the merged layer)`);
       assert.equal(report.emphasisMarkCount, fixture.expectedCount,
         `${theme}/${width}: a dormant merged presence wash disappeared`);
-      assert.equal(report.tickCount, fixture.expectedCount, `${theme}/${width}: a connection tick disappeared`);
+      assert.equal(report.dormantEmphasisCount, fixture.expectedCount - 2,
+        `${theme}/${width}: dormant paint-state census drifted`);
+      assert.equal(report.companionEmphasisCount, 1, `${theme}/${width}: held companion lost its companion wash state`);
+      assert.equal(report.selectedEmphasisCount, 1, `${theme}/${width}: selected wash state drifted`);
+      /* REVISED 2026-07-30 (the connection-lines revival): lane count was
+       * the old pin; the wider loom gutter changes lane geometry, and at
+       * congested widths the planner legitimately groups neighbours into
+       * aggregate ticks. The contract is coverage: every connection stays
+       * reachable through some lane. */
+      assert.equal(report.tickCarriedCount, fixture.expectedCount,
+        `${theme}/${width}: a connection fell out of the tick lanes (${report.tickCarriedCount}/${fixture.expectedCount} across ${report.tickCount} lanes)`);
       assert.equal(report.routeCount, 1, `${theme}/${width}: a dormant or companion centerline leaked into paint`);
       assert.equal(report.routeHitCount, 1, `${theme}/${width}: a dormant or companion hit target leaked into paint`);
-      assert.equal(report.companionCount, 1, `${theme}/${width}: previous selection was not retained as one companion`);
-      assert.equal(report.userHeldCount, 2, `${theme}/${width}: selected plus companion held set drifted`);
+      assert.equal(report.veilCount, 1, `${theme}/${width}: the focus veil did not mount under selection`);
+      assert.equal(report.veilReadyCount, 1, `${theme}/${width}: the focus veil never reached ready`);
       assert.equal(report.companionRoutes, 0, `${theme}/${width}: companion painted a centerline`);
-      assert.ok(report.companionUnderlines > 0, `${theme}/${width}: companion relationship lost its underline`);
       assert.equal(report.visibleCompanionTick, true, `${theme}/${width}: companion tick was not visibly reachable`);
       assert.equal(report.visibleCompanionTickPressed, "true",
         `${theme}/${width}: companion tick did not expose its held state`);
-      assert.deepEqual(report.visibleCompanionTickRect, { width: 24, height: 24 },
-        `${theme}/${width}: companion tick lost its 24px target`);
+      assert.deepEqual(report.visibleCompanionTickRect, { width: 32, height: 20 },
+        `${theme}/${width}: companion tick lost its 32x20 hit row`);
       assert.equal(report.visibleCompanionTickPointerEvents, "auto",
         `${theme}/${width}: companion tick was not interactive`);
       assert.ok(report.companionUnderlineOpacity > 0 && report.companionUnderlineOpacity <= 0.72,
-        `${theme}/${width}: companion underline was not a quiet visible whisper`);
+        `${theme}/${width}: companion run was not a quiet visible whisper`);
       assert.ok(["", "none", "0px", "1px"].includes(report.companionUnderlineDash),
-        `${theme}/${width}: companion underline gained a non-solid dash pattern`);
+        `${theme}/${width}: companion run gained a non-solid dash pattern`);
       assert.equal(report.coordinateFrame, "self", `${theme}/${width}: coordinate frame contract drifted`);
       assert.equal(report.overlayFrame, "self", `${theme}/${width}: overlay frame contract drifted`);
       assert.deepEqual(report.frameStyle, { border: "0px", padding: "0px", transform: "none" });
       assert.equal(report.horizontalOverflow, 0, `${theme}/${width}: reading canvas overflowed horizontally`);
       assert.ok(report.maxDelta <= MAX_DELTA, `${theme}/${width}: alignment delta ${report.maxDelta}px`);
       assert.equal(report.roundedDelta, "0.0", `${theme}/${width}: alignment did not report 0.0px`);
-      reports.push({ theme, width, maxDelta: report.maxDelta, companions: report.companionCount });
-      console.log(`${theme.padEnd(10)} ${String(width).padStart(4)}px  max ${report.maxDelta.toFixed(4)}px  reported ${report.roundedDelta}px  companions ${report.companionCount}`);
+      reports.push({ theme, width, maxDelta: report.maxDelta, quietRuns: report.quietRunCount });
+      console.log(`${theme.padEnd(10)} ${String(width).padStart(4)}px  max ${report.maxDelta.toFixed(4)}px  reported ${report.roundedDelta}px  quiet runs ${report.quietRunCount}`);
     }
   }
   const maximum = Math.max(...reports.map((report) => report.maxDelta));

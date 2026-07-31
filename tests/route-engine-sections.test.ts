@@ -224,20 +224,31 @@ const c03GoldenExpected = {
     sampleSha256: "372daf46dd5e0b96ada55b2432d222d1eb2f073758b31fc28ef6d2faf6ca47f7",
     sha256: "398b8e3ac8d1fbb3bca7ef6d982cf1c2ba4e29c164affe8e115b4f0d75794138",
   },
+  /* DATED REVERSAL, 2026-07-30 (the connection-lines revival). The three
+   * margin goldens below were rebaselined from the C0.5 bracket (mode
+   * "corridor"/"multipoint": level runs, 6px corners, straight rail) to
+   * the BOW: any route of exactly two single-line groups within bow span
+   * now joins its two colinear level runs with one horizontal-tangent
+   * cubic through a vertical apex beyond the rail — the reader's "s curves
+   * … not just underline with a line pointing at margin". Route CHOICE
+   * (side, strand, claims, corridors) is unchanged; only the silhouette
+   * moved. cradle/local/middle SHAs above are bytewise identical to the
+   * 2026-07-19 C0.5 baseline — proof the reversal touched nothing whose
+   * drop never earned curvature. */
   leftMargin: {
-    mode: "corridor", side: "left", strand: 0, samples: 345,
-    sampleSha256: "ea6bf0f23afae9cf3091211ac2de0fce8aa4f882a6a6efe5c804a78926ea0cb8",
-    sha256: "dcf7702bcecca67256eeb418372ee803687a8e4e65d0137b3d00a72fbe3da427",
+    mode: "bow", side: "left", strand: 0, samples: 383,
+    sampleSha256: "a8618848b0fb1a9c30399c90a5a63895e9705d3d365bd248ffae53600a2ee943",
+    sha256: "5449d0ac1fd8e1e449f33042873a4f4e7e5675913e3b71469478db537100ef03",
   },
   rightMargin: {
-    mode: "corridor", side: "right", strand: 0, samples: 345,
-    sampleSha256: "148222cadebc8ab5211c176b5e50dccadaf424f7db3ba0d6949aace4c4352bdd",
-    sha256: "87f0ed490fd04f8acc2acceb9a976e9f27d75ae4f174f3f664b6e82808006d45",
+    mode: "bow", side: "right", strand: 0, samples: 383,
+    sampleSha256: "a6fe0c07ba63d7695e3f1d0c978c543225a85197fe576725b8c57a55d1686c02",
+    sha256: "d84bf4eb4bb17ab73265a669bcb2da4d843d1fb861a7b0f7fba8adcfbc26f0be",
   },
   multipoint: {
-    mode: "multipoint", side: "left", strand: 0, samples: 256,
-    sampleSha256: "d4c497d16bc2aa0790e05a53a9d07f2bf3f07781c1edd3ceeffb8e582e5ca12f",
-    sha256: "6ccf6e7db76614900c2878a46cc5a756cd879d622455d4ee13db8a6371e4857f",
+    mode: "bow", side: "left", strand: 0, samples: 292,
+    sampleSha256: "b003b58e857701dfe8e0425b8453b4139db01afc12c0842128a9f4ef16ce534f",
+    sha256: "a8f892cba8a8988ae587b434599b39d76ece883805d39e1436a3ad203f5b5365",
   },
 } as const;
 
