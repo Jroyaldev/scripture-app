@@ -446,7 +446,16 @@ export function momentsForPassage({ book, chapter, verse = null, limit = 25 }) {
 
 // ---------------------------------------------------------------- windows
 
-export const MAX_WINDOW_SECONDS = 180;
+/* 300, not the original 180. The first two benches showed 82% of window
+   requests asking for the cap or more and models paging through the same
+   episode in chains of 2.7 calls — each continuation a full thinking
+   episode. 300s of tape is ~1,000 tokens of transcript, the read unit the
+   agentic-retrieval literature converged on (A-RAG, arXiv:2602.03442, whose
+   precise-read agents beat bulk loading on quality, not just cost; GRASP,
+   arXiv:2607.10463, on why much coarser reads blur the agent's next move).
+   The anti-slurp value the old cap defended now lives where it belongs: the
+   per-run tape budget in tour-agent. */
+export const MAX_WINDOW_SECONDS = 300;
 
 export function transcriptWindow({ recordId, fromSec, toSec }) {
   const tr = loadTranscript(recordId);
@@ -460,9 +469,18 @@ export function transcriptWindow({ recordId, fromSec, toSec }) {
     truncated = true;
   }
   const parts = [];
+  /* Speech pauses between segments are where thoughts breathe — the
+     clip-boundary candidates a model was previously re-reading to find.
+     0.5s is tuned to the corpus, not guessed: across 4,111 measured gaps
+     the median is 0.24s and p90 is 0.64s, so 0.5 keeps roughly the longest
+     sixth of pauses — about five seams per full window. */
+  const seams = [];
+  let prevEnd = null;
   for (const s of tr.segments) {
     if (s.e < from) continue;
     if (s.s > to) break;
+    if (prevEnd != null && s.s - prevEnd >= 0.5 && seams.length < 12) seams.push(Math.round(s.s));
+    prevEnd = s.e;
     parts.push(s.t);
   }
   return {
@@ -473,7 +491,50 @@ export function transcriptWindow({ recordId, fromSec, toSec }) {
     durationSec: tr.audioSeconds,
     truncated,
     truncationNote: truncated ? `windows are capped at ${MAX_WINDOW_SECONDS}s of transcript` : undefined,
+    seams: seams.length ? seams : undefined,
+    seamsNote: seams.length ? 'timestamps where the speaker pauses — natural clip boundaries' : undefined,
     text: parts.join(' ').trim() || '(no transcript text in that span)',
+  };
+}
+
+/* The coarse layer above transcript_window: one line per ~45s over up to 25
+   minutes of tape, for a tenth of the tokens. Skim to find the neighborhood,
+   window to find the boundary — the hierarchical read pattern both A-RAG and
+   GRASP found beats flat windowing on answer quality. */
+export const MAX_SKIM_SECONDS = 1500;
+const SKIM_BUCKET_SECONDS = 45;
+
+export function episodeSkim({ recordId, fromSec, toSec }) {
+  const tr = loadTranscript(recordId);
+  if (!tr) return { error: `unknown recordId "${recordId}"` };
+  const from = Math.max(0, Math.floor(Number(fromSec) || 0));
+  let to = Math.ceil(Number(toSec));
+  if (!Number.isFinite(to) || to <= from) to = from + MAX_SKIM_SECONDS;
+  let truncated = false;
+  if (to - from > MAX_SKIM_SECONDS) {
+    to = from + MAX_SKIM_SECONDS;
+    truncated = true;
+  }
+  const lines = [];
+  let bucketEnd = -Infinity;
+  for (const s of tr.segments) {
+    if (s.e < from) continue;
+    if (s.s > to) break;
+    if (s.s >= bucketEnd) {
+      bucketEnd = s.s + SKIM_BUCKET_SECONDS;
+      lines.push({ at: Math.round(s.s), text: clip(String(s.t), 110) });
+    }
+  }
+  return {
+    recordId: tr.id,
+    title: tr.title,
+    fromSec: from,
+    toSec: to,
+    durationSec: tr.audioSeconds,
+    truncated,
+    truncationNote: truncated ? `skims are capped at ${MAX_SKIM_SECONDS}s per call` : undefined,
+    note: 'one line per ~45s — a map, not the tape; transcript_window before committing a clip',
+    lines: lines.length ? lines : [{ at: from, text: '(no transcript text in that span)' }],
   };
 }
 

@@ -14,9 +14,11 @@ import {
   episodeMeta,
   sourceDrifts,
   sourceName,
+  episodeSkim,
   MAX_WINDOW_SECONDS,
+  MAX_SKIM_SECONDS,
 } from './corpus.mjs';
-import { readPassage } from './scripture.mjs';
+import { readPassage, resolveBookCode } from './scripture.mjs';
 
 export const MIN_CLIP_SECONDS = 20;
 export const MAX_CLIP_SECONDS = 900; // 15 minutes
@@ -84,6 +86,22 @@ export const TOOL_SCHEMAS = [
           toSec: { type: 'integer' },
         },
         required: ['recordId', 'fromSec', 'toSec'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'episode_skim',
+      description: `A compressed map of up to ${MAX_SKIM_SECONDS / 60} minutes of one episode: one transcript line per ~45 seconds. Use this to find WHERE in an episode the discussion you want lives, then transcript_window that neighborhood to read it properly. A skim is a tenth of the tokens of the tape it covers and does not count against your reading budget.`,
+      parameters: {
+        type: 'object',
+        properties: {
+          recordId: { type: 'string' },
+          fromSec: { type: 'integer', description: 'Start of the stretch to map. Default 0.' },
+          toSec: { type: 'integer', description: 'End of the stretch. Capped at fromSec + 1500.' },
+        },
+        required: ['recordId'],
       },
     },
   },
@@ -245,6 +263,25 @@ export function decorateTour(tour) {
 
 const truncate = (s, n) => (s.length > n ? `${s.slice(0, n)}… [truncated]` : s);
 
+/* When a search query names a scripture passage, the purpose-built index is
+   almost always the better first move — but the first two benches showed
+   models text-searching "Genesis 6 sons of God" six times for every
+   moments_for_passage call. The tip rides an answer the model already paid
+   for, so steering costs zero extra calls (deliberately a hint on an
+   existing response rather than another tool — each added tool taxes every
+   decision, arXiv:2605.00136). */
+function attachPassageTip(result, query) {
+  if (!result || result.error) return;
+  const m = query.match(/\b([1-3]?\s?[A-Za-z]{2,})\.?\s+(\d{1,3})\b/);
+  if (!m) return;
+  const code = resolveBookCode(m[1]);
+  if (!code) return;
+  const chapter = Number(m[2]);
+  const moments = momentsForPassage({ book: code, chapter, limit: 1 });
+  if (!moments || moments.error || !moments.total) return;
+  result.tip = `the corpus has ${moments.total} timestamped treatments of ${code} ${chapter} — moments_for_passage("${code}", ${chapter}) lists them with dwell times`;
+}
+
 /** Run one tool call. Returns { name, args, ms, result, summary }. */
 export function runTool(name, args) {
   const started = Date.now();
@@ -258,6 +295,14 @@ export function runTool(name, args) {
         query: String(args.query ?? ''),
         sourceId: args.sourceId ? String(args.sourceId) : null,
         limit: Math.min(15, Math.max(1, Number(args.limit) || 8)),
+      });
+      attachPassageTip(result, String(args.query ?? ''));
+      break;
+    case 'episode_skim':
+      result = episodeSkim({
+        recordId: String(args.recordId ?? ''),
+        fromSec: args.fromSec == null ? 0 : Number(args.fromSec),
+        toSec: args.toSec == null ? undefined : Number(args.toSec),
       });
       break;
     case 'moments_for_passage':
@@ -297,6 +342,7 @@ export function summarizeToolResult(name, result) {
   if (!result || typeof result !== 'object') return '';
   if (result.error) return `error: ${result.error}`;
   if (name === 'search_corpus') return `${(result.hits || []).length} hits`;
+  if (name === 'episode_skim') return `${(result.lines || []).length} skim lines, ${result.fromSec}s–${result.toSec}s of ${result.title || ''}`;
   if (name === 'moments_for_passage') return `${(result.moments || []).length} of ${result.total ?? 0} moments`;
   if (name === 'transcript_window') return `${result.fromSec}s–${result.toSec}s of ${result.title || ''}`;
   if (name === 'episode_info') return `${result.title || ''} (${result.durationSec || 0}s)`;

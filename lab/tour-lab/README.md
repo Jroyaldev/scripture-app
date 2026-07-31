@@ -41,13 +41,27 @@ A cold query is ~100ms, a warm one ~20ms.
 | `list_sources()` | the eight shows, episode counts, hours, which ones drift |
 | `search_corpus(query, sourceId?, limit?)` | ranked hits: `recordId`, best-matching timestamp, surrounding transcript |
 | `moments_for_passage(book, chapter, verse?)` | every timestamped treatment of a text, with relation + dwell time |
-| `transcript_window(recordId, fromSec, toSec)` | the tape between two timestamps, **capped at 180s** so an episode cannot be slurped |
+| `episode_skim(recordId, fromSec?, toSec?)` | a map of up to 25 min of one episode — one line per ~45s, a tenth of the tokens of the tape it covers |
+| `transcript_window(recordId, fromSec, toSec)` | the tape between two timestamps, up to 300s per call, with `seams` marking the speaker's own pauses (clip-boundary candidates) |
 | `episode_info(recordId)` | title, show, duration, coarse outline, every scripture moment detected |
 | `read_passage(book, chapter, fromVerse?, toVerse?)` | the scripture text itself (WEB, public domain) — so a "why" quotes the text, not the model's memory of it |
 | `submit_tour(...)` | the only exit |
 
 `transcript_window` is the tool that makes this experiment different from a search ranking: the model has
 to read before it can commit a clip boundary.
+
+The reading economy was retuned on 2026-07-31 after two benches and a literature pass. The old 180s
+per-call cap made models page through episodes in chains (2.7 consecutive windows on average, each a full
+thinking episode); 300s is the ~1,000-token read unit the agentic-retrieval work converged on (A-RAG,
+arXiv:2602.03442; GRASP, arXiv:2607.10463 — precise hierarchical reads beat bulk loading on *quality*,
+and overly coarse reads blur the agent's next move). The anti-slurp line the per-call cap was defending
+moved to where it belongs: a **45-minute per-run tape budget** (`totals.tapeSec` in every run record) —
+generous enough that no honest run has approached it, hard enough that bulk cannot substitute for
+judgement. Skims are free: charging for the map would push models back to reading tape. `search_corpus`
+answers also carry a `tip` when the query names a passage the moments index covers, because the first two
+benches showed models text-searching "Genesis 6 sons of God" six times for every `moments_for_passage`
+call; a hint on a response already paid for steers without adding a tool (each added tool taxes every
+decision — arXiv:2605.00136).
 
 ## The contract
 

@@ -29,6 +29,7 @@ const LEDGER_FILE = path.join(RUNS_DIR, 'ledger.json');
 
 export const MAX_MODEL_CALLS = 16;
 export const MAX_TOOL_CALLS = 45;
+export const TAPE_BUDGET_SECONDS = 2700; // 45 min of transcript_window reads per run; see the guard below
 
 const SYSTEM_PROMPT = `You are a listening guide for a corpus of 3,521 Bible-teaching podcast episodes (about 1,200 hours) that has been transcribed with word-level timestamps.
 
@@ -37,13 +38,14 @@ Given a person's question, a grief, a text, or a topic, you build them a TOUR: a
 HOW TO WORK
 1. Read the request for what it really is. A doctrinal question wants an argument built; a grief wants company before explanation; a named text wants exposition; a whole-book request wants orientation.
 2. Search widely before you commit. Run several differently-worded searches — the index is keyword-based, so search the words a teacher would say out loud, not abstract labels. If the person named a scripture text, call moments_for_passage — and read_passage the text itself, so you search for the words the passage actually uses and your "why" quotes the text rather than your memory of it.
-3. READ THE TAPE before you pick a clip. Call transcript_window around every candidate timestamp. A search snippet tells you a topic is present; only the window tells you where the thought starts, where it lands, and whether it is any good.
-4. Set clip boundaries at thought boundaries. Start where the speaker begins the point, end after they land it. Do not start mid-sentence.
-5. Build an arc. ${MIN_STEPS}-${MAX_STEPS} steps, ordered so that each one is standing on the one before. Prefer several voices over several clips of one voice, unless one teacher genuinely carries the argument.
+3. SKIM, THEN READ. episode_skim maps up to 25 minutes of an episode in one cheap call — use it to find where the discussion you want lives. Then call transcript_window on that neighborhood, because only the tape tells you where the thought starts, where it lands, and whether it is any good. You have a reading budget of about 45 minutes of tape per tour; skims are free, so spend the tape where it decides something.
+4. Set clip boundaries at thought boundaries. Start where the speaker begins the point, end after they land it. Do not start mid-sentence — the window's "seams" list marks the speaker's own pauses, which is usually where a clip should begin or end.
+5. Build an arc. ${MIN_STEPS}-${MAX_STEPS} steps, ordered so that each one is standing on the one before — and sized to the request: use as many steps as the ask needs, not as many as the maximum allows. A tour is not better for being longer, and a grief deserves fewer, gentler minutes than a doctrine. Prefer several voices over several clips of one voice, and avoid three clips in a row from the same show, unless one teacher genuinely carries the argument.
 6. Call submit_tour. That is the only way to finish.
 
 CLIP RULES (the server enforces these and will reject the tour)
 - Every clip is at least ${MIN_CLIP_SECONDS}s and at most ${MAX_CLIP_SECONDS}s (15 minutes).
+- Aim for three to six minutes a clip; go longer only when the speaker genuinely needs the time to land the point, never to fill space.
 - endSec must not run past the episode's duration.
 - recordId must be exactly as returned by the tools.
 
@@ -236,6 +238,7 @@ export async function runTour({ prompt, modelKey, promptId = null, emit = () => 
     totals: {
       modelCalls: 0,
       toolCalls: 0,
+      tapeSec: 0,
       promptTokens: 0,
       completionTokens: 0,
       reasoningTokens: 0,
@@ -374,8 +377,31 @@ export async function runTour({ prompt, modelKey, promptId = null, emit = () => 
           continue;
         }
 
+        /* The per-run tape budget is what now defends the design line "a
+           model cannot substitute bulk for judgement" — the old 180s
+           per-call cap was a proxy for it that taxed honest reading into
+           2.7-call page-turning chains. 45 minutes is roughly ten times the
+           tape a finished tour keeps: generous enough that no honest run
+           has hit it (the benched runs averaged ~54 min requested, most of
+           it re-reads the seams now obviate), tight enough that reading the
+           corpus instead of judging it is impossible. Skims are free —
+           charging the map would just push models back to reading tape. */
+        if (name === 'transcript_window' && record.totals.tapeSec >= TAPE_BUDGET_SECONDS) {
+          messages.push({
+            role: 'tool',
+            tool_call_id: call.id,
+            content: JSON.stringify({
+              error: `reading budget exhausted (${TAPE_BUDGET_SECONDS / 60} minutes of tape) — you have read enough to decide; use episode_skim to check anything remaining, then submit_tour`,
+            }),
+          });
+          emit('tool', { name, ok: false, summary: 'reading budget exhausted' });
+          continue;
+        }
         const out = runTool(name, args);
         record.totals.toolMs += out.ms;
+        if (name === 'transcript_window' && !out.result?.error) {
+          record.totals.tapeSec += Math.max(0, (out.result.toSec || 0) - (out.result.fromSec || 0));
+        }
         const summary = summarizeToolResult(name, out.result);
         record.toolLog.push({ at: step, name, args, ms: out.ms, summary });
         messages.push({ role: 'tool', tool_call_id: call.id, content: out.payload });
