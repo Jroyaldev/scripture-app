@@ -7,6 +7,13 @@ This is a product-engineering boundary, not a grant of rights or a substitute
 for legal review. Re-check the live publisher terms before expanding any source
 beyond the capabilities recorded in its versioned manifest.
 
+`docs/trusted-resource-brand-inventory.md` is the stock-take that sits beside
+this file, added 2026-07-30: which publishers have an approved mark and which
+are colour-only, whose reverse needs a dark field, whose accent was hand-picked
+and why, what each palette measures against its own ground, and what asset
+would close each gap. That file records state and asks questions; **this file
+is what says what may be shown.**
+
 ## Approved sources
 
 Marks are approved for the sources listed here, and for no others:
