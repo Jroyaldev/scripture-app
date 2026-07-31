@@ -1,0 +1,1508 @@
+{
+  "Genesis 1": {
+    "width": 332,
+    "track": 163,
+    "sizingLeft": null,
+    "chips": [
+      {
+        "source": "spoken-gospel",
+        "tracks": "1",
+        "rank": 0,
+        "y": 0,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "bibleproject",
+        "tracks": "1",
+        "rank": 1,
+        "y": 0,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "listeners-commentary",
+        "tracks": "2",
+        "rank": 2,
+        "y": 32,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "forty-minutes-ot",
+        "tracks": "2",
+        "rank": 3,
+        "y": 64,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "naked-bible",
+        "tracks": "1",
+        "rank": 4,
+        "y": 96,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "radically-christian",
+        "tracks": "1",
+        "rank": 5,
+        "y": 96,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "ask-nt-wright",
+        "tracks": "2",
+        "rank": 6,
+        "y": 128,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "five-minutes-church-history",
+        "tracks": "2",
+        "rank": 7,
+        "y": 160,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "the-gospel-coalition",
+        "tracks": "1",
+        "rank": 8,
+        "y": 192,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "enter-the-bible",
+        "tracks": "1",
+        "rank": 9,
+        "y": 192,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "working-preacher",
+        "tracks": "1",
+        "rank": 10,
+        "y": 224,
+        "w": 163,
+        "quant": 1
+      }
+    ],
+    "rows": [
+      {
+        "plates": [
+          "spoken-gospel(1)",
+          "bibleproject(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "listeners-commentary(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "forty-minutes-ot(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "naked-bible(1)",
+          "radically-christian(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "ask-nt-wright(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "five-minutes-church-history(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "the-gospel-coalition(1)",
+          "enter-the-bible(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "working-preacher(1)"
+        ],
+        "hole": 169
+      }
+    ]
+  },
+  "Genesis 6": {
+    "width": 332,
+    "track": 163,
+    "sizingLeft": null,
+    "chips": [
+      {
+        "source": "bibleproject",
+        "tracks": "1",
+        "rank": 0,
+        "y": 0,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "spoken-gospel",
+        "tracks": "1",
+        "rank": 4,
+        "y": 0,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "forty-minutes-ot",
+        "tracks": "2",
+        "rank": 1,
+        "y": 32,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "ask-nt-wright",
+        "tracks": "2",
+        "rank": 2,
+        "y": 64,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "listeners-commentary",
+        "tracks": "2",
+        "rank": 3,
+        "y": 96,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "radically-christian",
+        "tracks": "1",
+        "rank": 5,
+        "y": 128,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "naked-bible",
+        "tracks": "1",
+        "rank": 6,
+        "y": 128,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "five-minutes-church-history",
+        "tracks": "2",
+        "rank": 7,
+        "y": 160,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "the-gospel-coalition",
+        "tracks": "1",
+        "rank": 8,
+        "y": 192,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "enter-the-bible",
+        "tracks": "1",
+        "rank": 9,
+        "y": 192,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "working-preacher",
+        "tracks": "1",
+        "rank": 10,
+        "y": 224,
+        "w": 163,
+        "quant": 1
+      }
+    ],
+    "rows": [
+      {
+        "plates": [
+          "bibleproject(1)",
+          "spoken-gospel(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "forty-minutes-ot(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "ask-nt-wright(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "listeners-commentary(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "radically-christian(1)",
+          "naked-bible(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "five-minutes-church-history(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "the-gospel-coalition(1)",
+          "enter-the-bible(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "working-preacher(1)"
+        ],
+        "hole": 169
+      }
+    ]
+  },
+  "1 Samuel 30": {
+    "width": 332,
+    "track": 163,
+    "sizingLeft": null,
+    "chips": [
+      {
+        "source": "forty-minutes-ot",
+        "tracks": "2",
+        "rank": 0,
+        "y": 0,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "naked-bible",
+        "tracks": "1",
+        "rank": 1,
+        "y": 32,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "bibleproject",
+        "tracks": "1",
+        "rank": 2,
+        "y": 32,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "spoken-gospel",
+        "tracks": "1",
+        "rank": 3,
+        "y": 64,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "enter-the-bible",
+        "tracks": "1",
+        "rank": 4,
+        "y": 64,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "the-gospel-coalition",
+        "tracks": "1",
+        "rank": 5,
+        "y": 96,
+        "w": 163,
+        "quant": 1
+      }
+    ],
+    "rows": [
+      {
+        "plates": [
+          "forty-minutes-ot(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "naked-bible(1)",
+          "bibleproject(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "spoken-gospel(1)",
+          "enter-the-bible(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "the-gospel-coalition(1)"
+        ],
+        "hole": 169
+      }
+    ]
+  },
+  "Acts 19": {
+    "width": 332,
+    "track": 163,
+    "sizingLeft": null,
+    "chips": [
+      {
+        "source": "listeners-commentary",
+        "tracks": "2",
+        "rank": 0,
+        "y": 0,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "naked-bible",
+        "tracks": "1",
+        "rank": 1,
+        "y": 32,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "radically-christian",
+        "tracks": "1",
+        "rank": 2,
+        "y": 32,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "bibleproject",
+        "tracks": "1",
+        "rank": 3,
+        "y": 64,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "spoken-gospel",
+        "tracks": "1",
+        "rank": 5,
+        "y": 64,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "ask-nt-wright",
+        "tracks": "2",
+        "rank": 4,
+        "y": 96,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "five-minutes-church-history",
+        "tracks": "2",
+        "rank": 6,
+        "y": 128,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "forty-minutes-ot",
+        "tracks": "2",
+        "rank": 7,
+        "y": 160,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "the-gospel-coalition",
+        "tracks": "1",
+        "rank": 8,
+        "y": 192,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "working-preacher",
+        "tracks": "1",
+        "rank": 9,
+        "y": 192,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "enter-the-bible",
+        "tracks": "1",
+        "rank": 10,
+        "y": 224,
+        "w": 163,
+        "quant": 1
+      }
+    ],
+    "rows": [
+      {
+        "plates": [
+          "listeners-commentary(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "naked-bible(1)",
+          "radically-christian(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "bibleproject(1)",
+          "spoken-gospel(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "ask-nt-wright(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "five-minutes-church-history(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "forty-minutes-ot(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "the-gospel-coalition(1)",
+          "working-preacher(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "enter-the-bible(1)"
+        ],
+        "hole": 169
+      }
+    ]
+  },
+  "Romans 5": {
+    "width": 332,
+    "track": 163,
+    "sizingLeft": null,
+    "chips": [
+      {
+        "source": "listeners-commentary",
+        "tracks": "2",
+        "rank": 0,
+        "y": 0,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "spoken-gospel",
+        "tracks": "1",
+        "rank": 1,
+        "y": 32,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "bibleproject",
+        "tracks": "1",
+        "rank": 2,
+        "y": 32,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "radically-christian",
+        "tracks": "1",
+        "rank": 3,
+        "y": 64,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "naked-bible",
+        "tracks": "1",
+        "rank": 6,
+        "y": 64,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "ask-nt-wright",
+        "tracks": "2",
+        "rank": 4,
+        "y": 96,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "forty-minutes-ot",
+        "tracks": "2",
+        "rank": 5,
+        "y": 128,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "five-minutes-church-history",
+        "tracks": "2",
+        "rank": 7,
+        "y": 160,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "the-gospel-coalition",
+        "tracks": "1",
+        "rank": 8,
+        "y": 192,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "working-preacher",
+        "tracks": "1",
+        "rank": 9,
+        "y": 192,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "enter-the-bible",
+        "tracks": "1",
+        "rank": 10,
+        "y": 224,
+        "w": 163,
+        "quant": 1
+      }
+    ],
+    "rows": [
+      {
+        "plates": [
+          "listeners-commentary(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "spoken-gospel(1)",
+          "bibleproject(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "radically-christian(1)",
+          "naked-bible(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "ask-nt-wright(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "forty-minutes-ot(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "five-minutes-church-history(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "the-gospel-coalition(1)",
+          "working-preacher(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "enter-the-bible(1)"
+        ],
+        "hole": 169
+      }
+    ]
+  },
+  "Psalms 23": {
+    "width": 332,
+    "track": 163,
+    "sizingLeft": null,
+    "chips": [
+      {
+        "source": "forty-minutes-ot",
+        "tracks": "2",
+        "rank": 0,
+        "y": 0,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "bibleproject",
+        "tracks": "1",
+        "rank": 1,
+        "y": 32,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "radically-christian",
+        "tracks": "1",
+        "rank": 2,
+        "y": 32,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "ask-nt-wright",
+        "tracks": "2",
+        "rank": 3,
+        "y": 64,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "spoken-gospel",
+        "tracks": "1",
+        "rank": 4,
+        "y": 96,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "naked-bible",
+        "tracks": "1",
+        "rank": 6,
+        "y": 96,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "listeners-commentary",
+        "tracks": "2",
+        "rank": 5,
+        "y": 128,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "working-preacher",
+        "tracks": "1",
+        "rank": 7,
+        "y": 160,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "the-gospel-coalition",
+        "tracks": "1",
+        "rank": 8,
+        "y": 160,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "enter-the-bible",
+        "tracks": "1",
+        "rank": 9,
+        "y": 192,
+        "w": 163,
+        "quant": 1
+      }
+    ],
+    "rows": [
+      {
+        "plates": [
+          "forty-minutes-ot(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "bibleproject(1)",
+          "radically-christian(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "ask-nt-wright(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "spoken-gospel(1)",
+          "naked-bible(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "listeners-commentary(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "working-preacher(1)",
+          "the-gospel-coalition(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "enter-the-bible(1)"
+        ],
+        "hole": 169
+      }
+    ]
+  },
+  "Jude 1": {
+    "width": 332,
+    "track": 163,
+    "sizingLeft": null,
+    "chips": [
+      {
+        "source": "spoken-gospel",
+        "tracks": "1",
+        "rank": 0,
+        "y": 0,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "bibleproject",
+        "tracks": "1",
+        "rank": 1,
+        "y": 0,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "listeners-commentary",
+        "tracks": "2",
+        "rank": 2,
+        "y": 32,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "naked-bible",
+        "tracks": "1",
+        "rank": 3,
+        "y": 64,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "the-gospel-coalition",
+        "tracks": "1",
+        "rank": 7,
+        "y": 64,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "ask-nt-wright",
+        "tracks": "2",
+        "rank": 4,
+        "y": 96,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "forty-minutes-ot",
+        "tracks": "2",
+        "rank": 5,
+        "y": 128,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "five-minutes-church-history",
+        "tracks": "2",
+        "rank": 6,
+        "y": 160,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "enter-the-bible",
+        "tracks": "1",
+        "rank": 8,
+        "y": 192,
+        "w": 163,
+        "quant": 1
+      }
+    ],
+    "rows": [
+      {
+        "plates": [
+          "spoken-gospel(1)",
+          "bibleproject(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "listeners-commentary(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "naked-bible(1)",
+          "the-gospel-coalition(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "ask-nt-wright(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "forty-minutes-ot(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "five-minutes-church-history(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "enter-the-bible(1)"
+        ],
+        "hole": 169
+      }
+    ]
+  },
+  "Genesis 6 · ink": {
+    "width": 332,
+    "track": 163,
+    "sizingLeft": null,
+    "chips": [
+      {
+        "source": "bibleproject",
+        "tracks": "1",
+        "rank": 0,
+        "y": 0,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "spoken-gospel",
+        "tracks": "1",
+        "rank": 4,
+        "y": 0,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "forty-minutes-ot",
+        "tracks": "2",
+        "rank": 1,
+        "y": 32,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "ask-nt-wright",
+        "tracks": "2",
+        "rank": 2,
+        "y": 64,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "listeners-commentary",
+        "tracks": "2",
+        "rank": 3,
+        "y": 96,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "radically-christian",
+        "tracks": "1",
+        "rank": 5,
+        "y": 128,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "naked-bible",
+        "tracks": "1",
+        "rank": 6,
+        "y": 128,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "five-minutes-church-history",
+        "tracks": "2",
+        "rank": 7,
+        "y": 160,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "the-gospel-coalition",
+        "tracks": "1",
+        "rank": 8,
+        "y": 192,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "enter-the-bible",
+        "tracks": "1",
+        "rank": 9,
+        "y": 192,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "working-preacher",
+        "tracks": "1",
+        "rank": 10,
+        "y": 224,
+        "w": 163,
+        "quant": 1
+      }
+    ],
+    "rows": [
+      {
+        "plates": [
+          "bibleproject(1)",
+          "spoken-gospel(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "forty-minutes-ot(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "ask-nt-wright(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "listeners-commentary(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "radically-christian(1)",
+          "naked-bible(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "five-minutes-church-history(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "the-gospel-coalition(1)",
+          "enter-the-bible(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "working-preacher(1)"
+        ],
+        "hole": 169
+      }
+    ]
+  },
+  "Genesis 6 · onyx": {
+    "width": 332,
+    "track": 163,
+    "sizingLeft": null,
+    "chips": [
+      {
+        "source": "bibleproject",
+        "tracks": "1",
+        "rank": 0,
+        "y": 0,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "spoken-gospel",
+        "tracks": "1",
+        "rank": 4,
+        "y": 0,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "forty-minutes-ot",
+        "tracks": "2",
+        "rank": 1,
+        "y": 32,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "ask-nt-wright",
+        "tracks": "2",
+        "rank": 2,
+        "y": 64,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "listeners-commentary",
+        "tracks": "2",
+        "rank": 3,
+        "y": 96,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "radically-christian",
+        "tracks": "1",
+        "rank": 5,
+        "y": 128,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "naked-bible",
+        "tracks": "1",
+        "rank": 6,
+        "y": 128,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "five-minutes-church-history",
+        "tracks": "2",
+        "rank": 7,
+        "y": 160,
+        "w": 332,
+        "quant": 2
+      },
+      {
+        "source": "the-gospel-coalition",
+        "tracks": "1",
+        "rank": 8,
+        "y": 192,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "enter-the-bible",
+        "tracks": "1",
+        "rank": 9,
+        "y": 192,
+        "w": 163,
+        "quant": 1
+      },
+      {
+        "source": "working-preacher",
+        "tracks": "1",
+        "rank": 10,
+        "y": 224,
+        "w": 163,
+        "quant": 1
+      }
+    ],
+    "rows": [
+      {
+        "plates": [
+          "bibleproject(1)",
+          "spoken-gospel(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "forty-minutes-ot(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "ask-nt-wright(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "listeners-commentary(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "radically-christian(1)",
+          "naked-bible(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "five-minutes-church-history(2)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "the-gospel-coalition(1)",
+          "enter-the-bible(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "working-preacher(1)"
+        ],
+        "hole": 169
+      }
+    ]
+  },
+  "narrow 900": {
+    "width": 868,
+    "track": 431,
+    "sizingLeft": null,
+    "chips": [
+      {
+        "source": "bibleproject",
+        "tracks": "1",
+        "rank": 0,
+        "y": 0,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "forty-minutes-ot",
+        "tracks": "1",
+        "rank": 1,
+        "y": 0,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "ask-nt-wright",
+        "tracks": "1",
+        "rank": 2,
+        "y": 32,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "listeners-commentary",
+        "tracks": "1",
+        "rank": 3,
+        "y": 32,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "spoken-gospel",
+        "tracks": "1",
+        "rank": 4,
+        "y": 64,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "radically-christian",
+        "tracks": "1",
+        "rank": 5,
+        "y": 64,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "naked-bible",
+        "tracks": "1",
+        "rank": 6,
+        "y": 96,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "five-minutes-church-history",
+        "tracks": "1",
+        "rank": 7,
+        "y": 96,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "the-gospel-coalition",
+        "tracks": "1",
+        "rank": 8,
+        "y": 128,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "enter-the-bible",
+        "tracks": "1",
+        "rank": 9,
+        "y": 128,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "working-preacher",
+        "tracks": "1",
+        "rank": 10,
+        "y": 160,
+        "w": 431,
+        "quant": 1
+      }
+    ],
+    "rows": [
+      {
+        "plates": [
+          "bibleproject(1)",
+          "forty-minutes-ot(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "ask-nt-wright(1)",
+          "listeners-commentary(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "spoken-gospel(1)",
+          "radically-christian(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "naked-bible(1)",
+          "five-minutes-church-history(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "the-gospel-coalition(1)",
+          "enter-the-bible(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "working-preacher(1)"
+        ],
+        "hole": 437
+      }
+    ]
+  },
+  "narrow 900 · Genesis 1": {
+    "width": 868,
+    "track": 431,
+    "sizingLeft": null,
+    "chips": [
+      {
+        "source": "spoken-gospel",
+        "tracks": "1",
+        "rank": 0,
+        "y": 0,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "bibleproject",
+        "tracks": "1",
+        "rank": 1,
+        "y": 0,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "listeners-commentary",
+        "tracks": "1",
+        "rank": 2,
+        "y": 32,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "forty-minutes-ot",
+        "tracks": "1",
+        "rank": 3,
+        "y": 32,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "naked-bible",
+        "tracks": "1",
+        "rank": 4,
+        "y": 64,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "radically-christian",
+        "tracks": "1",
+        "rank": 5,
+        "y": 64,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "ask-nt-wright",
+        "tracks": "1",
+        "rank": 6,
+        "y": 96,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "five-minutes-church-history",
+        "tracks": "1",
+        "rank": 7,
+        "y": 96,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "the-gospel-coalition",
+        "tracks": "1",
+        "rank": 8,
+        "y": 128,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "enter-the-bible",
+        "tracks": "1",
+        "rank": 9,
+        "y": 128,
+        "w": 431,
+        "quant": 1
+      },
+      {
+        "source": "working-preacher",
+        "tracks": "1",
+        "rank": 10,
+        "y": 160,
+        "w": 431,
+        "quant": 1
+      }
+    ],
+    "rows": [
+      {
+        "plates": [
+          "spoken-gospel(1)",
+          "bibleproject(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "listeners-commentary(1)",
+          "forty-minutes-ot(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "naked-bible(1)",
+          "radically-christian(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "ask-nt-wright(1)",
+          "five-minutes-church-history(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "the-gospel-coalition(1)",
+          "enter-the-bible(1)"
+        ],
+        "hole": 0
+      },
+      {
+        "plates": [
+          "working-preacher(1)"
+        ],
+        "hole": 437
+      }
+    ]
+  }
+}

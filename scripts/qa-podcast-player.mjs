@@ -87,6 +87,108 @@ const SOURCES = [
    these twelve sources and four atmospheres is BibleProject's cyan on Paper. */
 const ACCENT_FLOOR = 4.5;
 
+/* src/renderer/components/Resources.tsx · SHELF_LIFT. Restated here rather than
+   imported because this tour is plain ESM driving a running engine and has no
+   build step; tests/resource-shelf-packing holds the same number against the
+   module itself, so the two cannot drift silently. */
+const SHELF_LIFT = 3;
+
+/**
+ * THE REGISTER'S PACKING, read off the running shelf · added 2026-07-31.
+ *
+ * Added because the reader looked at Genesis 6 and asked "why do these stack
+ * differently; what decides". Nothing did: flexbox broke the ranking into lines
+ * with no sight of what came next, so a one-track plate whose next-ranked
+ * neighbour needed two tracks sat alone with half a row empty, and a one-track
+ * plate alone on a row grew into a slab it had not earned.
+ *
+ * Both are decided now (see `packShelf` in Resources.tsx), and both are gated
+ * below. The gate re-states the RULE against rendered geometry rather than
+ * re-running the packer — a gate that ran the same function twice would agree
+ * with itself no matter what shipped.
+ */
+const SHELF_PACKING = `(() => {
+  const lens = document.querySelector("#margin-resources-panel:not([hidden])");
+  const shelf = lens?.querySelector(".resource-shelf");
+  if (!shelf) return null;
+  const box = shelf.getBoundingClientRect();
+  const gap = parseFloat(getComputedStyle(shelf).columnGap) || 0;
+  const track = (box.width - gap) / 2;
+  return {
+    measure: Math.round(box.width),
+    /* The sizing beat drops the track floor for one synchronous beat inside a
+       layout effect. If it is ever found ON, the shelf has been PAINTED in a
+       measuring state, which is a different bug wearing this one's clothes. */
+    sizing: shelf.dataset.sizing ?? null,
+    plates: [...shelf.querySelectorAll(".trusted-resource-imprint")].map((chip) => {
+      const rect = chip.getBoundingClientRect();
+      return {
+        source: chip.dataset.source,
+        rank: chip.dataset.rank == null ? null : Number(chip.dataset.rank),
+        tracks: chip.dataset.tracks == null ? null : Number(chip.dataset.tracks),
+        drawn: Math.abs(rect.width - track) < 1.5 ? 1
+          : (Math.abs(rect.width - box.width) < 1.5 ? 2 : Math.round(rect.width)),
+        row: Math.round(rect.y - box.y),
+      };
+    }),
+  };
+})()`;
+
+/** The whole packing rule, held against what the engine actually drew. */
+function assertShelfPacking(packing, where) {
+  assert.ok(packing, `${where}: there is no shelf to check the packing of`);
+  assert.equal(packing.sizing, null,
+    `${where}: the shelf was painted mid-measurement — the sizing beat outlived its layout effect`);
+  const plates = packing.plates;
+  assert.ok(plates.length > 1,
+    `${where}: only ${plates.length} plate on the shelf; the packing gate is looking at nothing`);
+
+  /* 1 · EVERY PLATE KNOWS ITS OWN WIDTH, AND IS DRAWN AT IT. `drawn` is one
+     track, two tracks, or a raw pixel count — and a raw pixel count is the
+     register justified again. A plate drawn wider than it declared is the
+     stretch the reader rejected: a slab of brand colour with nothing in it. */
+  for (const plate of plates) {
+    assert.ok(plate.tracks === 1 || plate.tracks === 2,
+      `${where}: ${plate.source} declares no track count; the shelf is packing against widths it never measured`);
+    assert.equal(plate.drawn, plate.tracks,
+      `${where}: ${plate.source} declares ${plate.tracks} track(s) and is drawn at ${plate.drawn} — nothing may be stretched to fill a row it did not earn`);
+  }
+
+  /* 2 · THE RANKING IS STILL THE ORDER. The shelf opens with the publisher rank
+     put first; plates of one width stay in rank order among themselves, so a
+     plate is only ever lifted past the OTHER width; nothing passes the bound. */
+  assert.equal(plates[0].rank, 0,
+    `${where}: the shelf opens with ${plates[0].source}, which is not the publisher the ranking put first`);
+  for (const width of [1, 2]) {
+    const ranks = plates.filter((plate) => plate.tracks === width).map((plate) => plate.rank);
+    assert.deepEqual(ranks, [...ranks].sort((left, right) => left - right),
+      `${where}: the ${width}-track publishers left rank order among themselves — the pass is sorting by width, not packing`);
+  }
+  plates.forEach((plate, at) => {
+    assert.ok(plate.rank - at <= SHELF_LIFT,
+      `${where}: ${plate.source} was lifted ${plate.rank - at} places to ${at}; the bound is ${SHELF_LIFT}`);
+  });
+
+  /* 3 · NO ROW KEEPS A HOLE ANOTHER PLATE COULD HAVE FILLED. A one-track plate
+     alone on its row is allowed only where the next few plates in the register
+     are all two-track, which is the rule verbatim. */
+  const rows = [];
+  for (const plate of plates) {
+    const last = rows[rows.length - 1];
+    if (last && last[0].row === plate.row) last.push(plate);
+    else rows.push([plate]);
+  }
+  for (const row of rows) {
+    if (row.length !== 1 || row[0].tracks !== 1) continue;
+    const from = plates.indexOf(row[0]) + 1;
+    const reach = plates.slice(from, from + SHELF_LIFT + 1);
+    const filler = reach.find((plate) => plate.tracks === 1);
+    assert.equal(filler, undefined,
+      `${where}: ${row[0].source} sits alone while ${filler?.source} — ${reach.indexOf(filler) + 1} place(s) later — would have filled the row`);
+  }
+  return { rows: rows.length, order: plates.map((plate) => `${plate.source}:${plate.tracks}@${plate.rank}`) };
+}
+
 async function connect(url) {
   const ws = new WebSocket(url);
   await new Promise((resolve, reject) => {
@@ -860,6 +962,11 @@ assert.ok(room.shelfTracks.every((track) => track === "one" || track === "two"),
   `the register is justified again — a plate is one track or two, never ${room.shelfTracks.join(", ")}`);
 assert.equal(room.shelfTallies, room.shelfChips,
   `${room.shelfChips - room.shelfTallies} plates carry no tally; a numeral column with holes in it is not a column`);
+/* AND HOW THE REGISTER PACKS. The reference chapter is the thin composition —
+   six publishers, one of them two tracks — which is the case a packing tuned on
+   a dense chapter strands. See `assertShelfPacking` above for the rule. */
+console.log("shelf packing · reference",
+  assertShelfPacking(await evaluate(SHELF_PACKING), `${PASSAGE}'s shelf`));
 /* The reference chapter's shelf is short and may hold only approved marks; the
    dense chapter below carries all eleven and is where the count is gated. */
 for (const plate of room.shelfInk) {
@@ -1330,6 +1437,14 @@ for (const plate of shelfTally) {
     `${plate.source} sets its tally on its own ground at ${plate.ratio}:1`);
 }
 console.log("shelf tally", shelfTally);
+
+/* ── AND THE PACKING, ON ALL ELEVEN · added 2026-07-31 ─────────────────────
+   The dense chapter is the only place the register runs to eight rows, which
+   is the only place a packing rule can be seen to hold or fail more than once.
+   The same rule is gated on the reference chapter's six above; a rule that
+   only ever meets one composition is a coincidence. */
+console.log("shelf packing · dense",
+  assertShelfPacking(await evaluate(SHELF_PACKING), `${DENSE}'s shelf`));
 
 await screenshot("paper-resources-dense", ".living-margin");
 

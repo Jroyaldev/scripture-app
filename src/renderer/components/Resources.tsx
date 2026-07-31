@@ -1,5 +1,5 @@
 import type React from "react";
-import { useMemo, useState, useSyncExternalStore } from "react";
+import { useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 import type { PassageMoment } from "../../core/passage-index.js";
 import { verseSpan } from "../../core/passage-index.js";
 import type { ReferenceRelation } from "../../core/references.js";
@@ -518,6 +518,179 @@ function footingOf(entries: readonly ResourceEntry[]): { granted: number; unaske
   return { granted: granted.size, unasked: unasked.size };
 }
 
+/* ── THE PACKING OF THE REGISTER · 2026-07-31 ────────────────────────────────
+ *
+ * WHAT THE READER ASKED, looking at Genesis 6's shelf: "why do these stack
+ * differently; what decides; how come we're not optimizing for gap placement
+ * and how to have no gaps when 2 small can go together or when not to stretch
+ * one out". Three questions, and the third one is the answer to the first two.
+ *
+ * WHAT DECIDED, until this. Nothing did. The register's geometry is a floor —
+ * `min-width: calc(50% - gap/2)` on a growing flex item, see `.resource-shelf`
+ * in styles.css — so a plate is one track wide or two, and flexbox then broke
+ * the ranking into lines the way it breaks any sequence: greedily, left to
+ * right, with no sight of what comes next. Two consequences, both of them
+ * things the reader could see and neither of them decided by anybody:
+ *
+ *   · A HOLE. A one-track plate whose next-ranked neighbour needs two tracks
+ *     is alone on its line with the other half of the line empty — on Genesis 6
+ *     that stranded BibleProject at the very top of the register and Naked
+ *     Bible in the middle of it, while Spoken Gospel + Radically Christian and
+ *     TGC + Working Preacher paired for no reason except that rank happened to
+ *     stand them next to each other. Luck of adjacency is not a rhythm.
+ *   · A STRETCH. Worse, and invisible as a fault: a plate whose identity is a
+ *     NAME still grew, so a one-track publisher alone on a line silently
+ *     became a two-track slab. Radically Christian is one track on Genesis 1
+ *     and was two on Romans 5 — the same publisher, the same name, at two
+ *     different widths, because of who happened to be ranked above it.
+ *
+ * Flexbox cannot look ahead, so a line-breaker that can is the only place this
+ * can be fixed. The floor stays exactly as it was: CSS is still what makes a
+ * track real, and this pass only decides the ORDER the floor is handed.
+ *
+ * ── THE RULE, IN PLAIN WORDS ────────────────────────────────────────────────
+ *
+ * A row is two tracks. Walk the ranking:
+ *
+ *   1. A TWO-TRACK PLATE TAKES A ROW OF ITS OWN. It earned both tracks by not
+ *      fitting one, and nothing is ellipsed to make it fit.
+ *   2. A ONE-TRACK PLATE WANTS A PARTNER. The next plate in rank, if that is
+ *      also one track; otherwise the NEAREST LATER one-track plate, provided
+ *      it is no more than three places further down the ranking.
+ *   3. IF THERE IS NONE WITHIN THREE, THE PLATE KEEPS ITS SINGLE TRACK and the
+ *      row keeps its gap. Nothing is stretched to fill a row it did not earn —
+ *      that is the reader's second condition, and it is the half of this that
+ *      lives in styles.css (`[data-tracks="1"] { flex-grow: 0 }`).
+ *
+ * ── WHY THREE, AND WHY BOUNDED AT ALL ───────────────────────────────────────
+ *
+ * Unbounded, this stops being a ranking and becomes a shape: sort eleven
+ * publishers by width and the register is a tidy arrangement of colour that no
+ * longer says who is first. So the lift is bounded, and the bound is three:
+ *
+ *   · ONE (that is, only the immediate neighbour) is the behaviour this
+ *     replaces. It can never fix anything, because the orphan is by definition
+ *     the plate whose neighbour is wide.
+ *   · THREE is the longest unbroken RUN of two-track publishers the corpus
+ *     produces. Measured 2026-07-31 across Genesis 1, Genesis 6, 1 Samuel 30,
+ *     Acts 19, Romans 5, Psalm 23 and Jude: the longest run is three — Genesis
+ *     6's 40 Minutes / Ask N.T. Wright / The Listener's Commentary. A lift of
+ *     three clears every run in the corpus; a lift of four clears nothing that
+ *     three did not, on any of the seven.
+ *   · AND THE RANKING SURVIVES INSIDE EACH WIDTH. The search takes the FIRST
+ *     one-track plate it finds, so a plate is only ever lifted past plates of
+ *     the OTHER width — never past another one-track plate. The one-track
+ *     publishers therefore stay in rank order among themselves, and so do the
+ *     two-track ones. Only the interleaving of the two gives, which is the
+ *     smallest thing that could have given. The first plate on the shelf is
+ *     still the publisher the ranking put first, always: rule 1 and rule 2 both
+ *     begin by taking the head of the queue.
+ *
+ * Measured on the same seven chapters: six of the seven come out in EXACTLY
+ * rank order or with one plate moved one place; the two that pay three places
+ * are Genesis 6 (Spoken Gospel, 5th → 2nd) and Jude (TGC, 8th → 5th), and both
+ * of those buy back a hole at the top of the register.
+ *
+ * ── ODD COUNTS, AND THE END OF THE SHELF ────────────────────────────────────
+ *
+ * An odd number of one-track plates leaves exactly one of them without a
+ * partner. That is arithmetic and not a packing failure — no ordering of an
+ * odd number of half-width things fills every row — and the count of lone rows
+ * always has the same parity as the count of one-track plates. Every one of
+ * the seven chapters sampled has an odd count, so the register always ends
+ * with one plate that has no partner.
+ *
+ * The walk leaves it LAST, because it pairs greedily from the top and the only
+ * plate left over is the last one-track plate in the ranking. A single plate on
+ * the final row is not a hole: it is a short last line, which is what the last
+ * line of a set paragraph is, and stretching it would break the reader's other
+ * condition to satisfy this one. Before this pass Genesis 6 had three holes and
+ * two of them were interior; after it there is one, at the foot.
+ */
+export const SHELF_LIFT = 3;
+
+/** How many tracks a plate occupies. Measured from the DOM — see `shelfTracks`. */
+export type ShelfTracks = 1 | 2;
+
+/**
+ * The line-breaking pass. Pure, and exported so `tests/resource-shelf-packing`
+ * can hold the rule above against the compositions it was written for.
+ *
+ * `lift` is the bound defended above and is a parameter only so the test can
+ * show what other bounds would have done.
+ */
+export function packShelf<T>(
+  ranked: readonly T[],
+  tracksOf: (chip: T) => ShelfTracks,
+  lift: number = SHELF_LIFT,
+): T[] {
+  const queue = [...ranked];
+  const packed: T[] = [];
+  while (queue.length > 0) {
+    const head = queue.shift() as T;
+    packed.push(head);
+    // Rule 1: a two-track plate has the whole row and takes nothing with it.
+    if (tracksOf(head) === 2) continue;
+    /* Rules 2 and 3: the nearest later one-track plate within the bound. `at`
+       is exactly how many places that plate is lifted, so `at <= lift` IS the
+       bound — and the loop stops at the first one-track plate it meets, which
+       is what keeps a plate from ever being lifted past its own width. */
+    const furthest = Math.min(lift, queue.length - 1);
+    for (let at = 0; at <= furthest; at += 1) {
+      if (tracksOf(queue[at] as T) !== 1) continue;
+      packed.push(...queue.splice(at, 1));
+      break;
+    }
+  }
+  return packed;
+}
+
+/**
+ * How wide each publisher's plate wants to be, in tracks, read off the running
+ * engine.
+ *
+ * IT HAS TO BE MEASURED, and this is the whole reason the pass needs a layout
+ * effect rather than a memo. A plate is two tracks when its own content will
+ * not fit one, and what its content is worth is decided by the stylesheet: the
+ * name's size comes off a clamped ramp on `--imprint-measure`, the mark's off
+ * the publisher's declared aspect ratio, the tally is one or two digits, and
+ * the track itself is half of whatever width the study column happens to have.
+ * Every one of those is a number this file deliberately does not know — the
+ * ramp "is the stylesheet's", as the comment on the plate says — and a second
+ * copy of them here is the kind of duplicate that goes quietly wrong.
+ *
+ * So the plates are asked. `data-sizing` on the shelf drops the track floor for
+ * one synchronous beat (see styles.css), every plate reports its natural width,
+ * and the floor goes straight back on — inside `useLayoutEffect`, so nothing is
+ * ever painted in the sizing state. Natural width does not depend on where a
+ * plate sits, so the measurement cannot oscillate with the order it feeds.
+ */
+function measureShelfTracks(shelf: HTMLElement): Map<string, ShelfTracks> {
+  const gap = Number.parseFloat(getComputedStyle(shelf).columnGap) || 0;
+  const track = (shelf.getBoundingClientRect().width - gap) / 2;
+  const plates = [...shelf.querySelectorAll<HTMLElement>(".trusted-resource-imprint")];
+  shelf.dataset["sizing"] = "true";
+  const widths = plates.map((plate) => plate.getBoundingClientRect().width);
+  delete shelf.dataset["sizing"];
+  const tracks = new Map<string, ShelfTracks>();
+  plates.forEach((plate, at) => {
+    const source = plate.dataset["source"];
+    /* Half a pixel of tolerance, not none: a track is half of a fractional
+       width and a plate's own width is fractional too, so an exact `>` turns a
+       plate that fits into a plate that does not on some window widths. */
+    if (source) tracks.set(source, (widths[at] ?? 0) > track + 0.5 ? 2 : 1);
+  });
+  return tracks;
+}
+
+function sameTracks(left: ReadonlyMap<string, ShelfTracks>, right: ReadonlyMap<string, ShelfTracks>): boolean {
+  if (left.size !== right.size) return false;
+  for (const [source, tracks] of left) if (right.get(source) !== tracks) return false;
+  return true;
+}
+
+const NO_TRACKS: ReadonlyMap<string, ShelfTracks> = new Map();
+
 /**
  * The room.
  *
@@ -577,7 +750,9 @@ export function Resources({
   );
 
   /* The shelf: one chip per publisher, in the order the room is in, so the
-     first chip is the publisher the ranking already put first. */
+     first chip is the publisher the ranking already put first. This is the
+     RANKING — what the packing pass below treats as intent and never as a
+     licence to sort. */
   const shelf = useMemo(() => {
     const order: Array<{ id: string; name: string; count: number }> = [];
     const seen = new Map<string, { id: string; name: string; count: number }>();
@@ -590,6 +765,45 @@ export function Resources({
     }
     return order;
   }, [entries]);
+
+  /* ── The register's line-breaker ────────────────────────────────────────
+     The rule and its defence are at `packShelf` above; this is only the
+     plumbing that gets it the one fact it cannot compute — how many tracks
+     each plate wants — and re-asks whenever the column changes width, because
+     a track is half the column and a name that fits one at 332px need not at
+     240. Measurement happens in a layout effect and is idempotent, so the
+     first paint is already the packed one and the second measurement stops. */
+  const shelfRef = useRef<HTMLDivElement | null>(null);
+  const [tracks, setTracks] = useState<ReadonlyMap<string, ShelfTracks>>(NO_TRACKS);
+  const shelfKey = shelf.map((chip) => `${chip.id}:${chip.count}`).join(" ");
+  useLayoutEffect(() => {
+    const element = shelfRef.current;
+    if (!element) { setTracks(NO_TRACKS); return; }
+    /* The guard is not paranoia: the sizing beat changes the shelf's own
+       height, and an observer that answered its own measurement would measure
+       forever. */
+    let measuring = false;
+    const remeasure = (): void => {
+      if (measuring) return;
+      measuring = true;
+      const next = measureShelfTracks(element);
+      measuring = false;
+      setTracks((held) => (sameTracks(held, next) ? held : next));
+    };
+    remeasure();
+    const observer = new ResizeObserver(remeasure);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [shelfKey]);
+
+  /* Until every plate has been measured the shelf is the ranking, untouched —
+     which is the behaviour this replaces, and the right thing to fall back to.
+     A half-measured shelf would pack against widths it had guessed. */
+  const register = useMemo(() => {
+    const ranked = shelf.map((chip, rank) => ({ chip, rank, tracks: tracks.get(chip.id) ?? null }));
+    if (ranked.some((plate) => plate.tracks === null)) return ranked;
+    return packShelf(ranked, (plate) => plate.tracks as ShelfTracks);
+  }, [shelf, tracks]);
 
   const shown = useMemo(
     () => (only ? entries.filter((entry) => entry.sourceId === only) : entries),
@@ -722,8 +936,18 @@ export function Resources({
           tallies fall into two true numeral columns. The rhythm is modular
           instead of accidental, and no publisher is dropped to buy it. The
           mechanism is one line of CSS (`min-width: calc(50% - gap/2)` on a
-          growing flex item), so nothing is reordered and no cell is left
-          empty. See `.resource-shelf` in styles.css.
+          flex item). See `.resource-shelf` in styles.css.
+
+          RESTATED 2026-07-31. This note ended "so nothing is reordered and no
+          cell is left empty", and the second half of that was never true:
+          flexbox breaks lines with no sight of what comes next, so a one-track
+          plate whose next-ranked neighbour needed two tracks sat alone with
+          half its row empty — and a one-track plate alone on a row grew into a
+          slab it had not earned. Both are now decided by a bounded
+          line-breaking pass over the ranking, written out in full at
+          `packShelf` above: rank is the intent, a plate is never lifted more
+          than three places nor past another plate of its own width, and a plate
+          fills the tracks it earned and no more.
 
           THE FILTER SAYS SO NOW. Every plate looked equally "on", the way back
           to all was a chip that appeared mid-shelf and pushed the row it
@@ -790,13 +1014,20 @@ export function Resources({
               </button>
             </div>
           </div>
-          <div className="trusted-resource-imprints resource-shelf" role="group" aria-label="Publishers on this passage">
-            {shelf.map((chip) => (
+          <div className="trusted-resource-imprints resource-shelf" ref={shelfRef} role="group" aria-label="Publishers on this passage">
+            {register.map(({ chip, rank, tracks: wide }) => (
               <button
                 aria-label={`${chip.name} — ${chip.count} ${chip.count === 1 ? "item" : "items"} for this passage`}
                 aria-pressed={only === chip.id}
                 className="trusted-resource-imprint"
+                /* The ranking, on the plate. The reader will ask what decides
+                   the order again, and a register whose rank is only in this
+                   file's memo cannot answer; with this, the answer is in the
+                   engine and `qa:player` can hold the packing rule against it
+                   without being told the ranking twice. */
+                data-rank={rank}
                 data-source={chip.id}
+                {...(wide === null ? {} : { "data-tracks": wide })}
                 key={chip.id}
                 onClick={() => setOnly(only === chip.id ? null : chip.id)}
                 /* THE OPTICAL SIZE OF A NAME, which is the other half of the

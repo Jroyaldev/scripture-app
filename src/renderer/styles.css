@@ -19992,8 +19992,29 @@ button.lang-phrase-diagram-node:focus-visible,
    grows. Flexbox breaks lines on the hypothetical main size, which that floor
    raises to half the shelf, so at most two fit a line; whatever lands on a
    line then grows to fill it, which for two items is exactly half each and for
-   one is the whole measure. Nothing is reordered — so rank survives — and no
-   line is left with a hole in it.
+   one is the whole measure.
+
+   ── RESTATED 2026-07-31 · THE LAST TWO CLAUSES ARE WITHDRAWN ───────────────
+
+   They said: "Nothing is reordered — so rank survives — and no line is left
+   with a hole in it." The first was true and the second was not, and the two
+   were the same mistake: flexbox breaks lines greedily with no sight of what
+   comes next, so a one-track plate whose next-ranked neighbour needs two
+   tracks sat alone with half a line empty. On Genesis 6 that stranded
+   BibleProject at the head of the register and Naked Bible in the middle of
+   it, while two other pairs formed by nothing but luck of adjacency. And
+   "grows to fill it … for one is the whole measure" was the other half of the
+   fault: a plate that fitted one track became a two-track slab whenever the
+   ranking happened to leave it alone.
+
+   BOTH ARE NOW DECIDED RATHER THAN FALLEN OUT OF. A small line-breaking pass
+   in the component orders the plates before flexbox sees them — rank is still
+   the intent, and a plate is never lifted more than three places nor past
+   another plate of its own width; the rule and its defence are written out at
+   `packShelf` in Resources.tsx. A plate fills the tracks it earned and no more
+   (`[data-tracks]` below). The geometry here did not change: this floor is
+   still the entire mechanism, and it is still the thing that makes a track
+   real.
 
    THE COLOUR IS UNTOUCHED AND UNMUTED. What left is empty brand colour, which
    was never brand presence. */
@@ -20096,8 +20117,14 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 /* THE TRACK. See the register note above — this floor is the entire mechanism.
-   `flex: 1 1 auto` keeps every line flush at both edges; the floor keeps the
-   line from holding three, and keeps a two-plate line at exactly half each. */
+   The floor keeps a line from holding three, and keeps a two-plate line at
+   exactly half each.
+
+   `flex: 1 1 auto` was noted here as what "keeps every line flush at both
+   edges", and that is restated 2026-07-31: a line of two is flush because two
+   floors and a gap are the whole measure, with no growth needed. Growth only
+   ever decided what happened to a plate left ALONE on a line, and it decided
+   it wrongly — see `[data-tracks]` below, which is what decides it now. */
 .resource-shelf .trusted-resource-imprint {
   flex: 1 1 auto;
   position: relative;
@@ -21385,6 +21412,65 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-shelf .trusted-resource-imprint[data-source="naked-bible"],
 .resource-shelf .trusted-resource-imprint[data-source="spoken-gospel"] {
   flex-grow: 0;
+}
+
+/* ── WHAT A PLATE MAY FILL · RESTATED 2026-07-31 ───────────────────────────
+   The rule above said, of the plates it does NOT name: "a plate whose identity
+   is TYPE fills whatever measure it is given." Half of that is now withdrawn,
+   and the half that stands is the artwork pin, which is untouched above.
+
+   WHY. "Whatever measure it is given" was decided by luck of adjacency rather
+   than by anything about the publisher. A name-in-type plate that fits one
+   track grew to two whenever the ranking happened to leave it alone on a line,
+   so Radically Christian was one track on Genesis 1 and two on Romans 5 — the
+   same name at two widths, and the wider of them a slab of the publisher's
+   colour with nothing in it but the name it already fitted. That is the
+   highlighter bar the register was built to end, arriving from the other side.
+
+   THE RULE NOW, and it is the reader's own second condition: A PLATE FILLS THE
+   TRACKS IT EARNED AND NEVER ONE IT DID NOT. Two tracks are earned by not
+   fitting one. A plate that fits one track keeps one track — artwork or type,
+   partnered or alone — and a row with a single one-track plate on it keeps its
+   gap rather than papering over it.
+
+   `data-tracks` is written by the component, which is the only thing that can
+   measure a plate against a track (see `measureShelfTracks` in Resources.tsx),
+   and the ORDER those plates arrive in is the packing pass documented at
+   `packShelf` in the same file. This stylesheet is still the floor that makes a
+   track real; it has only stopped guessing which plates wanted two of them.
+
+   Both selectors are (0,3,0), the same weight as the artwork pin above, and
+   they sit after it so the two-track case wins where they meet — an artwork
+   plate whose mark will not fit a track at some narrow column must still be
+   allowed to take both, or it would render at neither one track nor two and
+   the register would be justified again. */
+.resource-shelf .trusted-resource-imprint[data-tracks="1"] { flex-grow: 0; }
+.resource-shelf .trusted-resource-imprint[data-tracks="2"] { flex-grow: 1; }
+
+/* ── THE SIZING BEAT ───────────────────────────────────────────────────────
+   How the component is allowed to ask a plate how wide it actually wants to
+   be. The track floor is the whole mechanism of this register, and it is also
+   what makes the question unanswerable: with `min-width: calc(50% - gap/2)` on
+   every plate, every plate measures at least half the shelf whatever its
+   content is worth.
+
+   So the floor comes off for one synchronous beat and goes straight back on,
+   inside a layout effect — nothing is ever PAINTED in this state, and the
+   attribute is removed before the effect returns. It is a measuring state, not
+   a rendering state, which is why it is written on the shelf rather than
+   toggled per plate: one attribute, one reflow, all eleven answers.
+
+   `max-content` rather than a computed number on purpose. What a plate is
+   worth is the sum of a clamped type ramp, a mark normalised against the
+   publisher's own aspect ratio, one or two digits of tally, and this
+   stylesheet's own padding and gaps — every one of them declared here and
+   nowhere else. The engine already knows the answer; the component only has to
+   be allowed to read it. */
+.resource-shelf[data-sizing="true"] .trusted-resource-imprint {
+  flex: 0 0 max-content;
+  width: max-content;
+  min-width: 0;
+  max-width: none;
 }
 
 /* And the plate itself, at row scale, for exactly those six. A source with no
