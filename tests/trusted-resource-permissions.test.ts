@@ -29,7 +29,11 @@ const ALL_APPROVED_MARK_SOURCES = [...APPROVED_MARK_SOURCES, ...APPROVED_MARK_SO
  * artwork's treatment differs; what differs is which conversation is still
  * owed, and this constant is where the code says so.
  */
-const DEVICE_SOURCES_PUBLIC_FEED = ["five-minutes-church-history", "forty-minutes-ot"];
+const DEVICE_SOURCES_PUBLIC_FEED = [
+  "five-minutes-church-history",
+  "forty-minutes-ot",
+  "radically-christian",
+];
 
 /**
  * The public-feed footing, drawing a full MARK — 2026-07-31.

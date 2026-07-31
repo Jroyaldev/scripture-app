@@ -21294,17 +21294,30 @@ button.lang-phrase-diagram-node:focus-visible,
 .podcast-dock[data-source="radically-christian"],
 .taught-here-plate[data-source="radically-christian"] {
   /* Both values are now the publisher's own, read out of their logo file
-     (staged at pending/radically-christian-drop.png): the drop is #721203 and
+     (their own logo file): the drop is #721203 and
      the ripple #00408D, where this block had #6D1409 and #1D4F8F sampled off a
      rendering of it. The accent is the ripple rather than a blue we picked —
      a near-black surface makes a dead accent, which is why this palette
      declares one, and the app's own clamp is what makes the ripple hold
      against our paper. */
   --resource-accent: #00408d;
-  --resource-source: #721203;
-  --resource-ink: #f6e9e5;
-  --resource-ink-soft: rgb(246 233 229 / 0.76);
-  --resource-line: rgb(246 233 229 / 0.28);
+  /* THE PLATE TURNS OVER, 2026-07-31, so their own artwork can be drawn on it.
+     The drop is a TWO-COLOUR mark on white — #721203 above #00408D — and the
+     reason it sat staged for a day is written in the inventory: a #721203 drop
+     on a #721203 ground is not a quiet mark, it is no mark. There is no
+     reverse of it to reach for, so the ground goes where the artwork already
+     lives. The near-white is OURS and is not claimed as a published value;
+     both inks below are theirs, out of the file. Their maroon on it measures
+     better than 10:1. */
+  --resource-source: #f7f3f1;
+  --resource-ink: #721203;
+  --resource-ink-soft: rgb(114 18 3 / 0.76);
+  --resource-line: rgb(114 18 3 / 0.24);
+  /* The drop identifies the show BESIDE its name rather than instead of it —
+     it carries no wordmark, so it is a device, the relation Ligonier's tree
+     and the 40 Minutes emblem already take. Square, so the ratio is 1. */
+  --resource-device: url("./assets/brand/radically-christian-drop.png");
+  --resource-mark-ratio: 1;
   --resource-pill-bg: #00408d;
   --resource-pill-ink: #f2f7fd;
 }
