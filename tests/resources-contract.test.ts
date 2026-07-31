@@ -266,47 +266,68 @@ test("the publisher shelf is a register: quantised, one optical scale, and a fil
   assert.doesNotMatch(room, /chip\.count > 1 &&/,
     "the tally is conditional again; a one is a fact");
 
-  /* The marks need a height to be drawn at, and the imprint had never been
-     given one — the shared mark rule sizes artwork from --player-mark-h, which
-     only the dock's plate and the row's declared. Every chip was an empty
-     coloured pill with the name indented off-screen behind it. */
+  /* ── THE LOGO-ONLY RACK · RESTATED 2026-07-31 ────────────────────────────
+     Four assertions stood here and all four are quoted, because each was true
+     of the shelf it was written for and none survives the reader's
+     instruction: "what if shelf we did just logos so we can get them closer to
+     same size and polish and made them bigger so each logo is bigger and not
+     fighting against different word sizes".
+
+       assert.match(shelfPlate, /pow\(var\(--resource-mark-ratio\)/,
+         "the shelf sizes marks by nominal height again; logos of different
+          aspect ratios do not read equal at equal height");
+       assert.match(room, /"--imprint-measure": chip\.name\.length/,
+         "the names lost their optical size; CSS cannot count characters");
+       assert.match(shelfPlate, /min-width: calc\(50% - var\(--shelf-gap\) \/ 2\)/,
+         "the register lost its track; the shelf is justified again");
+       assert.match(imprint, /height: 26px/, …);
+
+     The optical scale is KEPT and is the first assertion below — it is the one
+     idea from the two-track register that a logo-only shelf needs more, not
+     less. What it reads changed: --resource-symbol-ratio, the aspect of the
+     publisher's symbol, where it read --resource-mark-ratio, the aspect of
+     their whole lockup. That is the crop, and the crop is what made one box
+     possible: eleven lockups run 0.768 to 8.015, eleven symbols 0.768 to
+     3.266.
+
+     The name ramp is gone because there are no names. The track floor is gone
+     because there are no widths — see tests/resource-shelf-packing for the
+     retirement. And the plate's height is 56 rather than 26, which is what
+     "made them bigger" cost and bought. */
   const styles = read("src/renderer/styles.css");
   const shelfPlate = styles.slice(
-    styles.indexOf(".resource-shelf .trusted-resource-imprint {"),
     styles.indexOf(".resource-shelf .trusted-resource-imprint .trusted-resource-source"),
+    styles.indexOf("/* ── The one narrowed to"),
   );
-  assert.match(shelfPlate, /--player-mark-h:/);
-
-  /* ONE OPTICAL SCALE, both species. The marks are normalised against the
-     publisher's own declared aspect ratio rather than drawn at a nominal
-     height, and the names are stepped by their length — which is the whole of
-     "the marks are not on a common scale" and half of "two species in one
-     row". Both CONSUME what the palettes declare; neither redefines it. */
-  assert.match(shelfPlate, /pow\(var\(--resource-mark-ratio\)/,
+  assert.match(shelfPlate, /pow\(var\(--resource-symbol-ratio\)/,
     "the shelf sizes marks by nominal height again; logos of different aspect ratios do not read equal at equal height");
-  assert.match(room, /"--imprint-measure": chip\.name\.length/,
-    "the names lost their optical size; CSS cannot count characters");
+  assert.match(shelfPlate, /background: var\(--resource-symbol\) center \/ contain no-repeat/,
+    "the shelf is drawing something other than the publisher's symbol");
+  assert.doesNotMatch(room, /--imprint-measure/,
+    "the shelf is setting a name in type again; that is the thing the marks were fighting");
 
-  /* THE TRACK. An imprint is one track or two and nothing between — this floor
-     is the whole mechanism, and without it the shelf is justified again: one
-     plate on a row, then two, then three, at eleven widths. */
-  assert.match(shelfPlate, /min-width: calc\(50% - var\(--shelf-gap\) \/ 2\)/,
-    "the register lost its track; the shelf is justified again");
+  /* EVERY PUBLISHER, BY TOKEN AND NEVER BY NAME. The rule that paints the
+     shelf and the rule that paints a card must both be enumeration-free: a
+     per-source list is what left The Listener's cards drawing an empty plate,
+     because one of the two lists that had to agree did not. */
+  assert.doesNotMatch(shelfPlate, /\[data-source="/,
+    "the shelf's drawing rule is enumerating publishers again");
+  assert.equal((styles.match(/--resource-symbol: url\(/g) ?? []).length, 11,
+    "every publisher in the app declares a symbol, or the rack has a hole in it");
 
-  /* ── THE PLATE LAW · added 2026-07-30 ─────────────────────────────────────
-     The chip is the dock's plate and takes the dock's own geometry. It was
-     30px with --radius-page (14 of a possible 15, so a full-round pill) on a
-     frame whose stated law is radius ≈ 0.22 × the shorter dimension, capped at
-     8 — which is why the identical brand colours read as premium on
-     .podcast-mast-plate and as a rack in the shelf. The colour was never the
-     defect; the geometry was. */
+  /* ── THE PLATE LAW · RESTATED 2026-07-31 ─────────────────────────────────
+     The law is unchanged and the numbers moved: radius ≈ 0.22 × the shorter
+     dimension, rounded even, CAPPED AT 8. At 26px that gave 6; at 56 it gives
+     12.3, and the cap takes it to 8 — which is --radius-md, and is what stops
+     a 56px plate becoming the full-round pill this shelf's first composition
+     was rejected for. */
   const imprint = styles.slice(
     styles.indexOf("\n.trusted-resource-imprint {"),
     styles.indexOf("\n.trusted-resource-imprint:hover"),
   );
-  assert.match(imprint, /height: 26px/, "the shelf plate left the dock's own height");
-  assert.match(imprint, /border-radius: var\(--radius-sm\)/,
-    "the shelf plate is a pill again; 0.22 × 26 is 6, which is --radius-sm");
+  assert.match(imprint, /height: 56px/, "the shelf plate left the size the reader asked for");
+  assert.match(imprint, /border-radius: var\(--radius-md\)/,
+    "the shelf plate is a pill again; 0.22 × 56 is 12.3, and the canon's cap is 8");
   assert.doesNotMatch(imprint, /--radius-page/);
   /* And the ink on that ground is DECLARED. Its absence is what set a
      <button>'s initial black on five publishers' own colours. */
@@ -377,12 +398,37 @@ test("every card carries its publisher's mark", () => {
      being the whole of the identity. */
   assert.match(styles, /--resource-ground: oklch\(from var\(--resource-source\)/,
     "the card's ground is no longer derived from the publisher's own colour");
-  /* The five unmarked sources have no artwork and keep their name in type —
-     that is docs/trusted-resource-permissions' own generic treatment, and a
-     permission decision rather than a design one. It must stay in the
-     stylesheet beside the marks it is the fallback for. */
   assert.doesNotMatch(room, /APPROVED_MARKS|MARKED_SOURCES/,
     "the mark list is being duplicated out of the stylesheet into the component");
+
+  /* ── ONE PLATE, ALL ELEVEN · added 2026-07-31 ────────────────────────────
+     RESTATES the sentence that stood here: "The five unmarked sources have no
+     artwork and keep their name in type — that is
+     docs/trusted-resource-permissions' own generic treatment, and a permission
+     decision rather than a design one."
+
+     Neither half of that is true any more. There is no unmarked source — every
+     publisher in the app declares --resource-symbol — and the footing that
+     made it a permission question was flattened by the maintainer on
+     2026-07-31 (see TRANSCRIPT_SOURCES). What the reader saw while both halves
+     were still assumed was three kinds of plate in one grid and two kinds of
+     nothing: an empty box for The Listener's and for Ask N.T. Wright, and "40
+     MINUTES IN THE OLD TE…" for the sources that set a name.
+
+     So the card's plate is ONE FIXED BOX painted from ONE RULE THAT NAMES
+     NOBODY, and these three assertions are what hold that: a size, a token,
+     and the absence of an enumeration. */
+  const cardPlateAt = styles.indexOf(".resource-card .resource-card-plate[data-source] {");
+  const cardPlate = styles.slice(
+    cardPlateAt,
+    styles.indexOf("\n}", styles.indexOf(".resource-card .resource-card-plate .taught-here-mark {", cardPlateAt)),
+  );
+  assert.match(cardPlate, /width: 56px;\s*\n\s*height: 28px;/,
+    "the card's plate is not one box any more; a plate whose size follows its content is the ragged head the reader rejected");
+  assert.match(cardPlate, /background: var\(--resource-symbol\) center \/ contain no-repeat/,
+    "the card is drawing something other than the publisher's symbol");
+  assert.doesNotMatch(cardPlate, /\[data-source="/,
+    "the card's plate is enumerating publishers again; that is how two of them ended up with an empty box");
 });
 
 test("the card's ground is derived, not picked", () => {

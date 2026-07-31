@@ -320,3 +320,85 @@ kept, and each carries its reason in a comment beside it:
   longer gated on having asked; it does not mean anybody has been asked. The
   outreach backlog is unchanged and it is still the condition for a public
   listing.
+
+---
+
+## Revised 2026-07-31 · THE SYMBOL, and the five crops that made it
+
+The reader looked at Genesis 6 and asked for a shelf of **logos and nothing
+else**: "what if shelf we did just logos so we can get them closer to same size
+and polish and made them bigger so each logo is bigger and not fighting against
+different word sizes and also tertiary constraints; but still good size."
+
+That is only possible if eleven identities can be made to sit in one box, and
+**eleven lockups cannot**: they run 0.768 to 8.015 in aspect, and no
+normalisation makes a 8:1 strip and a 1:1 emblem read as one family. The
+maintainer's own steer was the answer — *"you may need to crop some logos away
+from wordmarks"* — and it is asset work rather than a CSS trick.
+
+### A third token, beside the mark and the device
+
+| Form | What it is | Who has it |
+| --- | --- | --- |
+| **Mark** (`--resource-mark`) | The publisher's lockup, drawn **instead of** their name. Still what the **dock's masthead** draws — a masthead has the measure for a wordmark and is the one surface that should carry one. | The eight with a lockup |
+| **Device** (`--resource-device`) | The publisher's emblem, drawn **beside** a name that stays in type. Now the **dock's alone**: the shelf and the card set no names for a device to stand beside. | The three named by the 2026-07-30 decision |
+| **Symbol** (`--resource-symbol`) | The identity **cropped to its symbol**, drawn alone in a fixed box. **All eleven.** | Every publisher in the app |
+
+`grep -- '--resource-symbol:'` returns eleven of eleven, which is the point: no
+rule downstream has to ask which publishers have artwork, so no publisher can
+be missed off a list. That failure mode is not hypothetical — two enumerations
+of the "sources with a mark" set disagreed by two publishers, and The
+Listener's cards and Ask N.T. Wright's drew an **empty plate** for a day
+because of it.
+
+### Provenance — the five files derived on this pass
+
+Every one is a **crop of supplied artwork**, which is still supplied artwork —
+and it is a crop, and that is said here and in each file's own header.
+
+| File | Cropped from | How the frame was chosen | Ratio |
+| --- | --- | --- | --- |
+| `bibleproject-flag-white.svg` | `bibleproject-lockup-white.svg` (their own vector) | Their lockup is one flag path followed by the wordmark's letter paths. This is that first path **byte for byte**, in a viewBox read off the path data: 0,0 to 47.5,48. | 0.99 |
+| `etb-tile-colour.svg` | `etb-main-logo-colour.svg` (their own vector) | The wordmark groups and the ® are removed from the export; the frame is the **tile path's own square**, 0,0 to 358.73,358.73 once its translate is applied. Nothing redrawn, no colour changed. | 1.00 |
+| `etb-book-colour.svg` | `etb-tile-colour.svg` | A second crop, and it holds **the same drawing** — the tile still paints — with the viewBox pulled to the ink's bounds, 53.25,81.97 to 305.5,318.1, measured off a render. Needed because the tile's fill is `rgb(254,209,65)` and the plate it sits on is `#FED141`: the tile is *invisible on its own surface*, so the mark a reader sees is the book, and in the tile's frame that book drew at 21px where every other symbol drew at 28–36. | 1.068 |
+| `spoken-gospel-emblem-white.png` | `spoken-gospel-lockup-white.png` | Cut at the lockup's **own 29px gutter** between emblem and wordmark, then trimmed to the emblem's alpha bounds. 63×82. This is the crop that most earns the pass: the lockup is 7.671 wide, the widest artwork in the app, and its emblem drew at about four pixels inside it. | 0.768 |
+| `ask-nt-wright-bubble-white.png` | `ask-nt-wright-horizontal-white.png` | Cut at the lockup's own 17px gutter, trimmed to alpha bounds. 127×66. **The accuracy caveat carries over and is not softened by the crop**: WE drew the horizontal reconstruction, Premier did not supply it. Premier's official stacked vector stays staged. | 1.924 |
+| `listeners-commentary-diamond-black.png` | `listeners-commentary-lockup-black.png` (supplied by the maintainer) | The halftone diamond, trimmed to alpha bounds at 207×205. **Not new** — it was cut on 2026-07-31 and staged at `pending/`; what is new is that the shelf has a use for it. Promoted. | 1.010 |
+
+### Four publishers needed no crop
+
+Their supplied artwork carries no wordmark, so the symbol slot takes the same
+file: `naked-bible-emblem-white.png` (1.583), `forty-minutes-emblem.svg`
+(1.051), `ligonier-tree-white.svg` (1.000), `radically-christian-drop.png`
+(1.000).
+
+### Two publishers have NO separable symbol, and nothing was invented for them
+
+- **The Gospel Coalition.** Their mark *is* a monogram — "TGC" in their own
+  letterform at 2.273 — and there is no device beside it to crop to. Same file
+  in both slots, deliberately.
+- **Working Preacher.** Their identity is the stacked wordmark. The burst at
+  its left is two clusters of rays; cropped out it is 95×161 of tapered white
+  slivers that identify nobody, and it is **cut by the lockup's own edge**, so
+  a crop would be a crop of half a device. The stacked form is the most compact
+  thing they have and is legible at the 22px the shelf draws it. Same file in
+  both slots, deliberately. It is also the one publisher this pass does not
+  enlarge on a card — 11px before, 9.7px after — which is the honest cost of a
+  brand with no symbol, paid by the only publisher who has that problem.
+
+### What the crops bought, measured
+
+Aspect spread **0.768–3.266 (4.2×)** against the lockups' **0.768–8.015
+(10.4×)**. Drawn mark height on the shelf **22.1–37px** against **10.4–16px**
+before, on a shelf that is **shorter** — 242px for eleven publishers against
+258. Seven of the eleven land within a pixel and a half of each other.
+
+### Still open
+
+- The Naked Bible lockup is still ours, and the emblem is still lifted from
+  cover art. A crop does not change either.
+- The ASK bubble is still a reconstruction. A supplied horizontal lockup from
+  Premier would close it and would also give a better crop.
+- Enter the Bible's tile crop is the right file for any surface that ever gives
+  them a ground that is not their own yellow; nothing draws it today.
+- **Nothing here is a permission.** The outreach backlog is unchanged.

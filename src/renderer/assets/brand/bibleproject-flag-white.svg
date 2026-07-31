@@ -1,0 +1,10 @@
+<!-- BibleProject — THE FLAG ALONE. A CROP, by us, of the publisher's own
+     horizontal lockup (bibleproject-lockup-white.svg, kept beside this file
+     unaltered and still what the dock's masthead draws). The lockup is one
+     flag path followed by the wordmark's letter paths; this file is that first
+     path, byte for byte, in the flag's own box. Its extent is 0,0 to 47.5,48 —
+     read off the path data, not measured by eye — so the viewBox is the
+     artwork's own bounds. Ratio 47.5:48 = 0.99.
+     Reverse artwork: draw on the brand plate, never on app paper, never
+     re-inked. Derived 2026-07-31 for the logo-only shelf. -->
+<svg viewBox="0 0 47.5 48" xmlns="http://www.w3.org/2000/svg"><path d="m47.5 0-23.7 4.5-23.8-4.5v39.9l9.8-1.8v9.9l14-12.6 23.7 4.5z" fill="#ffffff"/></svg>

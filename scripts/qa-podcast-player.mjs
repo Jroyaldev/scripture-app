@@ -87,106 +87,106 @@ const SOURCES = [
    these twelve sources and four atmospheres is BibleProject's cyan on Paper. */
 const ACCENT_FLOOR = 4.5;
 
-/* src/renderer/components/Resources.tsx · SHELF_LIFT. Restated here rather than
-   imported because this tour is plain ESM driving a running engine and has no
-   build step; tests/resource-shelf-packing holds the same number against the
-   module itself, so the two cannot drift silently. */
-const SHELF_LIFT = 3;
-
 /**
- * THE REGISTER'S PACKING, read off the running shelf · added 2026-07-31.
+ * THE RACK, read off the running shelf · RESTATED 2026-07-31.
  *
- * Added because the reader looked at Genesis 6 and asked "why do these stack
- * differently; what decides". Nothing did: flexbox broke the ranking into lines
- * with no sight of what came next, so a one-track plate whose next-ranked
- * neighbour needed two tracks sat alone with half a row empty, and a one-track
- * plate alone on a row grew into a slab it had not earned.
+ * WHAT THIS WAS. `SHELF_LIFT = 3` and `assertShelfPacking`, a gate over the
+ * two-track register's bounded line-breaking pass. Its claim, verbatim:
  *
- * Both are decided now (see `packShelf` in Resources.tsx), and both are gated
- * below. The gate re-states the RULE against rendered geometry rather than
- * re-running the packer — a gate that ran the same function twice would agree
- * with itself no matter what shipped.
+ *   "1 · EVERY PLATE KNOWS ITS OWN WIDTH, AND IS DRAWN AT IT. `drawn` is one
+ *    track, two tracks, or a raw pixel count — and a raw pixel count is the
+ *    register justified again. … 2 · THE RANKING IS STILL THE ORDER … nothing
+ *    passes the bound. 3 · NO ROW KEEPS A HOLE ANOTHER PLATE COULD HAVE
+ *    FILLED."
+ *
+ * WHY IT IS GONE. Every clause of it is about a shelf with two plate widths on
+ * it, and the widths were decided by the NAMES the plates carried. The reader
+ * asked for a shelf that carries no names, so there is one width, so there is
+ * nothing to pack and no bound to defend. See the retirement note at the head
+ * of components/Resources and tests/resource-shelf-packing.
+ *
+ * WHAT REPLACES IT is the same gate one claim stronger. The three rules above
+ * were an approximation of "the register should read in rank order"; a grid of
+ * equal cells simply IS that, so the gate asserts it exactly — every plate at
+ * one size, in rank order, with no plate moved — and adds the two facts the
+ * logo-only rack introduced: that every plate draws artwork rather than a
+ * name, and that the artwork lands inside the one box.
  */
-const SHELF_PACKING = `(() => {
+const SHELF_RACK = `(() => {
   const lens = document.querySelector("#margin-resources-panel:not([hidden])");
   const shelf = lens?.querySelector(".resource-shelf");
   if (!shelf) return null;
   const box = shelf.getBoundingClientRect();
-  const gap = parseFloat(getComputedStyle(shelf).columnGap) || 0;
-  const track = (box.width - gap) / 2;
+  const px = (v) => Math.round(v * 10) / 10;
   return {
     measure: Math.round(box.width),
-    /* The sizing beat drops the track floor for one synchronous beat inside a
-       layout effect. If it is ever found ON, the shelf has been PAINTED in a
-       measuring state, which is a different bug wearing this one's clothes. */
-    sizing: shelf.dataset.sizing ?? null,
     plates: [...shelf.querySelectorAll(".trusted-resource-imprint")].map((chip) => {
       const rect = chip.getBoundingClientRect();
+      const mark = chip.querySelector(".trusted-resource-source");
+      const art = mark.getBoundingClientRect();
       return {
         source: chip.dataset.source,
         rank: chip.dataset.rank == null ? null : Number(chip.dataset.rank),
-        tracks: chip.dataset.tracks == null ? null : Number(chip.dataset.tracks),
-        drawn: Math.abs(rect.width - track) < 1.5 ? 1
-          : (Math.abs(rect.width - box.width) < 1.5 ? 2 : Math.round(rect.width)),
+        cell: px(rect.width) + "x" + px(rect.height),
         row: Math.round(rect.y - box.y),
+        /* The artwork, and whether it is artwork at all. A plate that draws no
+           background image is drawing a NAME, which is the thing the rack
+           exists to have stopped drawing. */
+        art: getComputedStyle(mark).backgroundImage === "none" ? null : px(art.height),
+        /* And it must be INSIDE the cell: background-size contain cannot clip,
+           so an oversize box paints over its neighbour and its own tally. */
+        inside: art.width <= rect.width + 0.5 && art.height <= rect.height + 0.5,
+        tally: chip.querySelector(".trusted-resource-imprint-count")?.textContent ?? null,
       };
     }),
   };
 })()`;
 
-/** The whole packing rule, held against what the engine actually drew. */
-function assertShelfPacking(packing, where) {
-  assert.ok(packing, `${where}: there is no shelf to check the packing of`);
-  assert.equal(packing.sizing, null,
-    `${where}: the shelf was painted mid-measurement — the sizing beat outlived its layout effect`);
-  const plates = packing.plates;
+/** The rack's whole claim, held against what the engine actually drew. */
+function assertShelfRack(rack, where) {
+  assert.ok(rack, `${where}: there is no shelf to check`);
+  const plates = rack.plates;
   assert.ok(plates.length > 1,
-    `${where}: only ${plates.length} plate on the shelf; the packing gate is looking at nothing`);
+    `${where}: only ${plates.length} plate on the shelf; the rack gate is looking at nothing`);
 
-  /* 1 · EVERY PLATE KNOWS ITS OWN WIDTH, AND IS DRAWN AT IT. `drawn` is one
-     track, two tracks, or a raw pixel count — and a raw pixel count is the
-     register justified again. A plate drawn wider than it declared is the
-     stretch the reader rejected: a slab of brand colour with nothing in it. */
-  for (const plate of plates) {
-    assert.ok(plate.tracks === 1 || plate.tracks === 2,
-      `${where}: ${plate.source} declares no track count; the shelf is packing against widths it never measured`);
-    assert.equal(plate.drawn, plate.tracks,
-      `${where}: ${plate.source} declares ${plate.tracks} track(s) and is drawn at ${plate.drawn} — nothing may be stretched to fill a row it did not earn`);
-  }
+  /* 1 · ONE CELL. Every plate is the same box — which is the whole of "closer
+     to same size", and the thing three compositions of this shelf could not
+     deliver while a plate's width was decided by the name inside it. */
+  const cells = [...new Set(plates.map((plate) => plate.cell))];
+  assert.equal(cells.length, 1,
+    `${where}: the rack is drawing ${cells.length} different plate sizes (${cells.join(", ")})`);
 
-  /* 2 · THE RANKING IS STILL THE ORDER. The shelf opens with the publisher rank
-     put first; plates of one width stay in rank order among themselves, so a
-     plate is only ever lifted past the OTHER width; nothing passes the bound. */
-  assert.equal(plates[0].rank, 0,
-    `${where}: the shelf opens with ${plates[0].source}, which is not the publisher the ranking put first`);
-  for (const width of [1, 2]) {
-    const ranks = plates.filter((plate) => plate.tracks === width).map((plate) => plate.rank);
-    assert.deepEqual(ranks, [...ranks].sort((left, right) => left - right),
-      `${where}: the ${width}-track publishers left rank order among themselves — the pass is sorting by width, not packing`);
-  }
+  /* 2 · THE REGISTER IS THE RANKING, EXACTLY. No lift, no reorder, no
+     interleaving — the claim the packing pass could only approximate. */
   plates.forEach((plate, at) => {
-    assert.ok(plate.rank - at <= SHELF_LIFT,
-      `${where}: ${plate.source} was lifted ${plate.rank - at} places to ${at}; the bound is ${SHELF_LIFT}`);
+    assert.equal(plate.rank, at,
+      `${where}: ${plate.source} is drawn at ${at} and ranks ${plate.rank}; nothing may move on a shelf of one width`);
   });
 
-  /* 3 · NO ROW KEEPS A HOLE ANOTHER PLATE COULD HAVE FILLED. A one-track plate
-     alone on its row is allowed only where the next few plates in the register
-     are all two-track, which is the rule verbatim. */
-  const rows = [];
+  /* 3 · LOGOS ONLY, AND ALL OF THEM. A plate with no artwork is a publisher
+     whose symbol was missed off a palette, which is exactly the failure that
+     left two publishers' cards drawing an empty box. */
   for (const plate of plates) {
-    const last = rows[rows.length - 1];
-    if (last && last[0].row === plate.row) last.push(plate);
-    else rows.push([plate]);
+    assert.ok(plate.art !== null,
+      `${where}: ${plate.source} draws no symbol; every publisher in the app declares one`);
+    assert.ok(plate.inside,
+      `${where}: ${plate.source}'s artwork is drawn outside its own plate`);
+    assert.ok(plate.tally,
+      `${where}: ${plate.source} carries no tally; a numeral column with holes in it is not a column`);
   }
-  for (const row of rows) {
-    if (row.length !== 1 || row[0].tracks !== 1) continue;
-    const from = plates.indexOf(row[0]) + 1;
-    const reach = plates.slice(from, from + SHELF_LIFT + 1);
-    const filler = reach.find((plate) => plate.tracks === 1);
-    assert.equal(filler, undefined,
-      `${where}: ${row[0].source} sits alone while ${filler?.source} — ${reach.indexOf(filler) + 1} place(s) later — would have filled the row`);
-  }
-  return { rows: rows.length, order: plates.map((plate) => `${plate.source}:${plate.tracks}@${plate.rank}`) };
+
+  /* 4 · AND THEY ARE ON ONE OPTICAL SCALE. The exponent is a partial
+     correction, so the family is not expected to be flat — but a shelf whose
+     largest mark is more than twice its smallest is the "different word sizes"
+     problem wearing artwork. Measured on the reference compositions the spread
+     is 36.1 to 22.1, a factor of 1.63. */
+  const heights = plates.map((plate) => plate.art);
+  const spread = Math.max(...heights) / Math.min(...heights);
+  assert.ok(spread <= 1.9,
+    `${where}: the marks span ${spread.toFixed(2)}× (${Math.min(...heights)}–${Math.max(...heights)}px); they are not on one optical scale`);
+
+  const rows = [...new Set(plates.map((plate) => plate.row))].length;
+  return { rows, cell: cells[0], spread: Number(spread.toFixed(2)), order: plates.map((plate) => `${plate.source}@${plate.rank}`) };
 }
 
 async function connect(url) {
@@ -862,37 +862,37 @@ const room = await evaluate(`(() => {
        route exists on this surface. It is in the shelf's head now, with the
        way back to everything, in the app's quiet action voice. */
     settings: Boolean(lens.querySelector(".resource-shelf-action.is-library")),
-    /* And the register's own two facts, added with it. Every plate is exactly
-       one track or exactly two — never an intrinsic width, which is what made
-       the shelf read as a chart of bars — and the tally is on every one of
-       them, which it was not: "count > 1" left a numeral column with holes. */
-    shelfTracks: (() => {
-      const measure = lens.querySelector(".resource-shelf")?.getBoundingClientRect().width ?? 0;
-      const track = (measure - 6) / 2;
-      return [...new Set(shelf.map((chip) => {
-        const width = chip.getBoundingClientRect().width;
-        if (Math.abs(width - track) < 1.5) return "one";
-        if (Math.abs(width - measure) < 1.5) return "two";
-        return String(Math.round(width));
-      }))].sort();
-    })(),
+    /* RESTATED 2026-07-31 with the logo-only rack. shelfTracks stood here —
+       "every plate is exactly one track or exactly two, never an intrinsic
+       width, which is what made the shelf read as a chart of bars" — and the
+       claim under it is now stronger and is asserted by assertShelfRack
+       above: ONE cell, not two widths. This is the tally alone, which the
+       register kept and the rack keeps: "count > 1" left a numeral column with
+       holes in it, and a column with holes is not a column. */
     shelfTallies: shelf.filter((chip) => chip.querySelector(".trusted-resource-imprint-count")).length,
-    /* THE PLATE LAW, on the shelf · added 2026-07-30 with the taste pass. The
-       chips were 30px with a 14px corner — a full-round pill on a frame whose
-       radius law is 0.22 × the shorter dimension — which is why the same brand
-       colours read as premium on the dock's 26px plate and as a rack here. One
-       object, one law: 26 and 6, the same numbers .podcast-mast-plate takes. */
+    /* THE PLATE LAW, on the shelf · RESTATED 2026-07-31. It read "one object,
+       one law: 26 and 6, the same numbers .podcast-mast-plate takes", and both
+       numbers moved when the plate stopped being a strip beside a name and
+       became a cell holding a logo. The LAW did not: radius ≈ 0.22 × the
+       shorter dimension, rounded even, capped at 8. 0.22 × 56 is 12.3; the cap
+       makes it 8, which is what stops a 56px plate becoming the full-round
+       pill this shelf's first composition was rejected for. */
     shelfPlate: [...new Set(shelf.map((chip) => {
       const box = getComputedStyle(chip);
       /* Concatenated rather than interpolated: this whole probe is a template
          literal on the driver's side, so a nested one is evaluated in Node. */
       return String(Math.round(parseFloat(box.height))) + "/" + box.borderTopLeftRadius;
     }))],
-    /* AND THE INK ON IT. The chip declared a ground and no colour, so a
-       <button>'s initial ButtonText — flat black — was set on the publisher's
-       own colour: four of the five name-in-type plates measured under 4.5 and
-       one under 2. Measured here rather than asserted from the palette,
-       because the failure was the ABSENCE of a declaration. */
+    /* AND THE INK ON IT · RESTATED 2026-07-31. This measured the five plates
+       that set a NAME on the publisher's own ground, because "the chip declared
+       a ground and no colour, so a <button>'s initial ButtonText — flat black —
+       was set on the publisher's own colour: four of the five name-in-type
+       plates measured under 4.5 and one under 2."
+
+       No plate sets a name now, so that filter would return an empty list and
+       the gate would pass by measuring nothing — which is the worst way for a
+       contrast gate to end. The TALLY is the text that is left, on all eleven,
+       and it is what is measured: same floor, same reason, more plates. */
     shelfInk: (() => {
       const channel = (v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
       const luminance = (colour) => {
@@ -904,19 +904,13 @@ const room = await evaluate(`(() => {
         return Math.round(((high + 0.05) / (low + 0.05)) * 100) / 100;
       };
       return shelf
-        .filter((chip) => {
-          /* Only the plates that draw a NAME. An approved mark is artwork with
-             its own indent, and its ink is never painted. */
-          const name = chip.querySelector(".trusted-resource-source");
-          const ground = getComputedStyle(chip).backgroundColor;
-          return name && getComputedStyle(name).backgroundImage === "none"
-            && ground !== "rgba(0, 0, 0, 0)";
-        })
+        .filter((chip) => getComputedStyle(chip).backgroundColor !== "rgba(0, 0, 0, 0)")
         .map((chip) => {
-          const box = getComputedStyle(chip);
-          const after = getComputedStyle(chip, "::after");
-          const ink = after.content !== "none" ? after.color : box.color;
-          return { source: chip.dataset.source, ratio: against(ink, box.backgroundColor) };
+          const tally = chip.querySelector(".trusted-resource-imprint-count");
+          return {
+            source: chip.dataset.source,
+            ratio: against(getComputedStyle(tally).color, getComputedStyle(chip).backgroundColor),
+          };
         });
     })(),
     /* THE MARK ON EVERY CARD · REVERSED 2026-07-30. What stood here for one
@@ -953,25 +947,27 @@ assert.ok(room.spoken > 0, "no card says its claim in its accessible name");
 assert.ok(room.shelfChips > 1, "the publisher shelf is missing");
 assert.ok(room.shelfColoured >= room.shelfChips - 1,
   `${room.shelfChips - room.shelfColoured} shelf chips have no colour on them`);
-assert.ok(room.shelfMarked > 0, "no approved mark is drawn on the shelf");
+/* RESTATED 2026-07-31: "no approved mark is drawn on the shelf" was `> 0`,
+   because six of eleven publishers had artwork. All eleven do, so the rack must
+   be entirely artwork — one missed palette is one empty plate. */
+assert.equal(room.shelfMarked, room.shelfChips,
+  `${room.shelfChips - room.shelfMarked} shelf plates draw no symbol; the rack is logos or it is nothing`);
 assert.equal(room.filter, true, "the shelf is a drawer again rather than a filter");
 assert.equal(room.settings, true, "the route into resource settings is missing from the shelf");
-assert.deepEqual(room.shelfPlate, ["26/6px"],
-  `the shelf left the plate law: ${room.shelfPlate.join(", ")} (want 26px tall, 6px corner)`);
-assert.ok(room.shelfTracks.every((track) => track === "one" || track === "two"),
-  `the register is justified again — a plate is one track or two, never ${room.shelfTracks.join(", ")}`);
+assert.deepEqual(room.shelfPlate, ["56/8px"],
+  `the shelf left the plate law: ${room.shelfPlate.join(", ")} (want 56px tall, 8px corner — 0.22 × 56 capped at 8)`);
 assert.equal(room.shelfTallies, room.shelfChips,
   `${room.shelfChips - room.shelfTallies} plates carry no tally; a numeral column with holes in it is not a column`);
-/* AND HOW THE REGISTER PACKS. The reference chapter is the thin composition —
-   six publishers, one of them two tracks — which is the case a packing tuned on
-   a dense chapter strands. See `assertShelfPacking` above for the rule. */
-console.log("shelf packing · reference",
-  assertShelfPacking(await evaluate(SHELF_PACKING), `${PASSAGE}'s shelf`));
-/* The reference chapter's shelf is short and may hold only approved marks; the
-   dense chapter below carries all eleven and is where the count is gated. */
+/* AND THE RACK'S WHOLE GEOMETRY. The reference chapter is the thin composition,
+   which is the case a rule tuned on a dense chapter strands. See
+   `assertShelfRack` above for what it holds. */
+console.log("shelf rack · reference",
+  assertShelfRack(await evaluate(SHELF_RACK), `${PASSAGE}'s shelf`));
+/* The tally is the only text on this shelf, and it is set on the publisher's
+   own ground — so it is the one thing here Law 6 has anything to say about. */
 for (const plate of room.shelfInk) {
   assert.ok(plate.ratio >= ACCENT_FLOOR,
-    `${plate.source} sets its name on its own ground at ${plate.ratio}:1`);
+    `${plate.source} sets its tally on its own ground at ${plate.ratio}:1`);
 }
 assert.equal(room.unmarked, 0,
   `${room.unmarked} cards do not name their publisher; the mark is on every card`);
@@ -1001,7 +997,7 @@ await screenshot("paper-resources", ".living-margin");
 const family = await evaluate(`(() => {
   const lens = document.querySelector("#margin-resources-panel:not([hidden])");
   const card = [...lens.querySelectorAll(".resource-card-face")]
-    .find((candidate) => candidate.querySelector('.taught-here-plate[data-source="naked-bible"]'));
+    .find((candidate) => candidate.querySelector('.resource-card-plate[data-source="naked-bible"]'));
   const mark = card?.querySelector(".resource-card-play");
   const style = mark ? getComputedStyle(mark) : null;
   return {
@@ -1051,7 +1047,7 @@ await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
 await evaluate(`(() => {
   const lens = document.querySelector("#margin-resources-panel:not([hidden])");
   const cards = [...lens.querySelectorAll('.resource-card-face')]
-    .filter((card) => card.querySelector('.taught-here-plate[data-source="naked-bible"]'))
+    .filter((card) => card.querySelector('.resource-card-plate[data-source="naked-bible"]'))
     .filter((card) => /worked through/.test(card.getAttribute("aria-label") ?? ""));
   cards[0]?.setAttribute("data-qa-target", "press");
   return cards.length;
@@ -1311,6 +1307,25 @@ await navigatePassage(DENSE);
 await evaluate(`[...document.querySelectorAll(".margin-tab")].find((tab) => tab.textContent.startsWith("Resources"))?.click()`);
 await waitFor(`Boolean(document.querySelector('#margin-resources-panel:not([hidden]) .resources'))`, 10_000);
 await waitFor(`document.querySelectorAll(".resource-card").length > 100`, 25_000);
+/* AND THE SHELF HAS ITS WHOLE LIBRARY ON IT · added 2026-07-31. The room's
+   cards arrive in two waves — the timed moments first, then the publisher
+   index's link-only records over IPC — and the shelf grows a plate when the
+   second lands. Measured while writing the rack's gate: the probe below caught
+   nine publishers where the chapter has eleven, twice, and passed a "looking at
+   nothing" bound that had been written when the second wave happened to have
+   arrived first. A gate that races the thing it measures is a coin toss with a
+   pass message on it. */
+await waitFor(`(() => {
+  /* SETTLED, not counted. A fixed number here would assert a LIBRARY rather
+     than a load order — a reader with two publishers muted has a shorter shelf
+     and is not a failure — so what is waited on is two consecutive reads that
+     agree. The composition itself is asserted below, where it belongs. */
+  const held = window.__shelfSettle;
+  const now = document.querySelectorAll(".resource-shelf .trusted-resource-imprint").length;
+  window.__shelfSettle = now;
+  return now > 0 && held === now;
+})()`, 25_000);
+await evaluate(`delete window.__shelfSettle`);
 /* From the top, so what is captured is the room a reader arrives in: the shelf
    over the walk over the first screen of cards. The tour has scrolled this
    panel to reach a card by name further up. */
@@ -1349,49 +1364,20 @@ assert.match(density.firstSays ?? "", /worked through/,
   "the room opens on something other than a treatment of this chapter");
 console.log("density", density);
 
-/* ── THE SHELF, WHERE ALL ELEVEN ARE ON IT · added 2026-07-30 ───────────────
-   The reference chapter carries two or three publishers; Genesis 1 carries the
-   whole library, which is the only place the shelf's own composition and its
-   ink can be measured against every palette at once.
+/* ── THE SHELF, WHERE ALL ELEVEN ARE ON IT · RESTATED 2026-07-31 ───────────
+   A second contrast sweep stood here, over "the five plates that draw a NAME".
+   Its finding is still the reason this file measures colour in the engine at
+   all — "the chip declared a ground and no colour, so a <button>'s initial
+   ButtonText — flat black — was painted on five publishers' own colours:
+   Radically Christian measured 1.75:1 here" — and it is retired because the
+   shelf sets no names: the filter would return an empty list and the gate
+   would pass by measuring nothing, which is the worst way for a contrast gate
+   to end.
 
-   THE INK is the gate that matters. The chip declared a ground and no colour,
-   so a <button>'s initial ButtonText — flat black — was painted on five
-   publishers' own colours: Radically Christian measured 1.75:1 here. Measured
-   in the engine rather than read off the palette, because the failure was the
-   ABSENCE of a declaration and a palette audit would have found nothing. */
-const shelfInk = await evaluate(`(() => {
-  const lens = document.querySelector("#margin-resources-panel:not([hidden])");
-  const chips = [...lens.querySelectorAll(".resource-shelf .trusted-resource-imprint")];
-  const channel = (v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
-  const luminance = (colour) => {
-    const [r, g, b] = colour.match(/[\\d.]+/g).map(Number);
-    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
-  };
-  const against = (ink, ground) => {
-    const [high, low] = [luminance(ink), luminance(ground)].sort((a, b) => b - a);
-    return Math.round(((high + 0.05) / (low + 0.05)) * 100) / 100;
-  };
-  return chips
-    .filter((chip) => {
-      const name = chip.querySelector(".trusted-resource-source");
-      const ground = getComputedStyle(chip).backgroundColor;
-      return name && getComputedStyle(name).backgroundImage === "none"
-        && ground !== "rgba(0, 0, 0, 0)";
-    })
-    .map((chip) => {
-      const box = getComputedStyle(chip);
-      const after = getComputedStyle(chip, "::after");
-      const ink = after.content !== "none" ? after.color : box.color;
-      return { source: chip.dataset.source, ratio: against(ink, box.backgroundColor) };
-    });
-})()`);
-assert.ok(shelfInk.length >= 4,
-  `only ${shelfInk.length} name-in-type plates on the dense chapter's shelf; the ink gate is looking at nothing`);
-for (const plate of shelfInk) {
-  assert.ok(plate.ratio >= ACCENT_FLOOR,
-    `${plate.source} sets its name on its own ground at ${plate.ratio}:1`);
-}
-console.log("shelf ink", shelfInk);
+   Nothing is lost. The TALLY is the only text left on this surface, and the
+   sweep immediately below already measures it on EVERY plate rather than on
+   five — which is strictly more than the retired one covered. Two sweeps over
+   one string would have been a gate agreeing with itself. */
 
 /* ── AND THE TALLY, ON EVERY PLATE · added 2026-07-30 ───────────────────────
    The ink gate above only sees the five plates that draw a NAME — an approved
@@ -1438,13 +1424,14 @@ for (const plate of shelfTally) {
 }
 console.log("shelf tally", shelfTally);
 
-/* ── AND THE PACKING, ON ALL ELEVEN · added 2026-07-31 ─────────────────────
-   The dense chapter is the only place the register runs to eight rows, which
-   is the only place a packing rule can be seen to hold or fail more than once.
-   The same rule is gated on the reference chapter's six above; a rule that
-   only ever meets one composition is a coincidence. */
-console.log("shelf packing · dense",
-  assertShelfPacking(await evaluate(SHELF_PACKING), `${DENSE}'s shelf`));
+/* ── AND THE RACK, ON ALL ELEVEN · RESTATED 2026-07-31 ────────────────────
+   The dense chapter is the only place every palette is on the shelf at once,
+   which is the only place "all eleven land in one box on one optical scale"
+   can be seen to hold or fail. The same claim is gated on the reference
+   chapter's few above; a rule that only ever meets one composition is a
+   coincidence. */
+console.log("shelf rack · dense",
+  assertShelfRack(await evaluate(SHELF_RACK), `${DENSE}'s shelf`));
 
 await screenshot("paper-resources-dense", ".living-margin");
 
@@ -1848,18 +1835,41 @@ assert.match(moment.extent ?? "", /from \d+:\d\d$/, "a moment is a place in a fi
 assert.equal(moment.opens, true, "the moment's passage must be openable");
 console.log("moment", moment);
 
-/* The footing, on the surface rather than in a literal. 48% of everything
-   these surfaces show comes from publishers nobody has asked; the permissions
-   doc says the distinction must stay visible, and until this build the only
-   places it was visible were a TypeScript constant and a test. */
+/* ── THE FOOTING · RESTATED 2026-07-31 ─────────────────────────────────────
+   WHAT STOOD HERE, and what it asserted:
+
+     "The footing, on the surface rather than in a literal. 48% of everything
+      these surfaces show comes from publishers nobody has asked; the
+      permissions doc says the distinction must stay visible, and until this
+      build the only places it was visible were a TypeScript constant and a
+      test."
+
+     assert.ok(["publisher-granted", "public-feed"].includes(footing.basis));
+     assert.match(footing.says,
+       footing.basis === "publisher-granted" ? /permission/ : /not asked/);
+
+   The maintainer FLATTENED the two footings on 2026-07-31 — see
+   TRANSCRIPT_SOURCES in src/core/transcripts.ts, one value, "carried" — and
+   this gate was not restated with them, so it has been asserting a
+   distinction the app stopped drawing. Its twin in tests/resources-contract
+   was restated that day and says why: the app carries every publisher on one
+   basis, approvals are sought before any public listing, takedowns honoured on
+   request, and none of that is a distinction a reading surface has to draw.
+
+   WHAT THE READER IS STILL OWED is the half that was never about permission —
+   these words were read by a machine, not by a person — and that is what is
+   gated now, on the surface that says it and in the reader's own language. */
 const footing = await evaluate(`(() => {
   const line = document.querySelector(".podcast-episode-footing");
   return line ? { basis: line.getAttribute("data-basis"), says: line.textContent.trim() } : null;
 })()`);
-assert.ok(footing, "the episode does not say which footing its transcript rests on");
-assert.ok(["publisher-granted", "public-feed"].includes(footing.basis ?? ""),
-  `unknown footing on the surface: ${footing.basis}`);
-assert.match(footing.says, footing.basis === "publisher-granted" ? /permission/ : /not asked/);
+assert.ok(footing, "the episode does not say where its transcript came from");
+assert.equal(footing.basis, "carried",
+  `unknown footing on the surface: ${footing.basis} (the two footings were flattened to one on 2026-07-31)`);
+assert.match(footing.says, /machine-read from .+'s published audio/,
+  "the episode no longer says whose audio it is and that a machine read it");
+assert.doesNotMatch(footing.says, /not asked/,
+  "the reading surface is telling a reader what is on our outreach backlog");
 console.log("footing", footing);
 
 /* The rail's ticks. The mechanism has been coded and styled since the first
