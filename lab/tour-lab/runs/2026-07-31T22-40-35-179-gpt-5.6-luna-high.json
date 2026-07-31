@@ -1,0 +1,369 @@
+{
+  "runId": "2026-07-31T22-40-35-179-gpt-5.6-luna-high",
+  "startedAt": "2026-07-31T22:40:35.179Z",
+  "promptId": "pastoral-grief",
+  "prompt": "My mother died three weeks ago and I cannot pray. I don't want tidy answers — I want to hear people talk honestly about grief and where God is in it.",
+  "model": {
+    "key": "gpt-5.6-luna-high",
+    "label": "GPT-5.6 Luna (high)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "high",
+      "source": "per-model default for gpt-5.6-luna-high",
+      "envVar": "LUNA_HIGH_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "When Prayer Won’t Come: A Listening Tour Through Grief",
+    "intro": "You are only three weeks into a loss, and this tour will not ask you to make peace with it on schedule. It begins with quiet companionship, stays with Jesus at a graveside, then offers lament—not forced positivity—as a possible language when prayer feels impossible, before asking where God might be in suffering without pretending to explain why your mother died.",
+    "steps": [
+      {
+        "recordId": "forty-minutes-ot:podcast:444302a2-d904-43b3-a21f-4c7fb0a30dd7",
+        "startSec": 764,
+        "endSec": 821,
+        "why": "Begin with company rather than explanation. The teachers say that, at first, it is better to “just sit with them in it,” and one speaker remembers that when Luke died, “it wasn’t the words much that mattered,” but that people were there. This is a brief permission not to have words right now.",
+        "episodeTitle": "Job 2:11-3:26 (Episode 387)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_ep_387.mp3?dest-id=245197",
+        "durationSec": 2435,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:a1a084d1-com-06ada9f3-4c3f-3851-9ba5-35f817a4ee6f",
+        "startSec": 1307,
+        "endSec": 1507,
+        "why": "This stays close to grief without making Jesus emotionally distant from it. The speaker describes Mary saying, “Lord, if you had been here, our brother wouldn’t have died,” then says Jesus is “deeply agitated” by death and its pain before dwelling on the simple words, “Jesus wept.”",
+        "episodeTitle": "John 11:1-54",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/rhu2ccvr4rgf5c54/john_111-54bhwxv.mp3",
+        "durationSec": 2212,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:aa93fe68-dfc1-11ee-8d8c-1b5a7e037e3d",
+        "startSec": 3392,
+        "endSec": 3532,
+        "why": "For the days when you cannot compose a prayer, this clip offers lament as honest speech rather than spiritual failure. It says, “Give yourself permission to lament,” and suggests putting words such as “look and see my suffering” into your own mouth, because “God can handle it.”",
+        "episodeTitle": "Lamentations Overview: Mercy Every Morning",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG8477051140.mp3?updated=1710173642",
+        "durationSec": 3616,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:94aafd63-com-ed4952df-b7f0-3e15-be5c-b4ceb800e7a9",
+        "startSec": 1205,
+        "endSec": 1427,
+        "why": "End with a careful answer to “where is God?” rather than a tidy reason for the loss. Wright points to “the Jesus who weeps at the tomb,” and to the Spirit “groaning within us,” while explicitly admitting, “I haven’t answered the question.” His emphasis is God with people in trouble, not an explanation that makes grief disappear.",
+        "episodeTitle": "#51 Pain and suffering Part 1",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR6696807751.mp3?updated=1751028726",
+        "durationSec": 1838,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "You do not have to turn these clips into a conclusion, or even into a prayer. For now, perhaps it is enough to be accompanied, to hear that tears and protest belong in the biblical story, and to borrow words—or silence—until your own begin to return.",
+    "totalSeconds": 619
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 4687,
+      "promptTokens": 1585,
+      "completionTokens": 58,
+      "reasoningTokens": 42,
+      "cachedPromptTokens": 1537,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000056095000000000004
+    },
+    {
+      "i": 1,
+      "latencyMs": 4575,
+      "promptTokens": 1880,
+      "completionTokens": 196,
+      "reasoningTokens": 32,
+      "cachedPromptTokens": 1582,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00017059500000000003
+    },
+    {
+      "i": 2,
+      "latencyMs": 7381,
+      "promptTokens": 12197,
+      "completionTokens": 766,
+      "reasoningTokens": 265,
+      "cachedPromptTokens": 1877,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0017682950000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 10889,
+      "promptTokens": 22119,
+      "completionTokens": 1293,
+      "reasoningTokens": 1022,
+      "cachedPromptTokens": 12194,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00213829
+    },
+    {
+      "i": 4,
+      "latencyMs": 13970,
+      "promptTokens": 24707,
+      "completionTokens": 1481,
+      "reasoningTokens": 843,
+      "cachedPromptTokens": 22116,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014335600000000002
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "grief when someone dies where is God",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 79,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "I cannot pray lament silence God suffering",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 95,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "death of a loved one mourning honest grief",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 64,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Jesus wept death resurrection grief",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 40,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Psalms lament God absent crying out",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 71,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:444302a2-d904-43b3-a21f-4c7fb0a30dd7",
+        "fromSec": 610,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "610s–900s of Job 2:11-3:26 (Episode 387)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:444302a2-d904-43b3-a21f-4c7fb0a30dd7",
+        "fromSec": 1320,
+        "toSec": 1600
+      },
+      "ms": 0,
+      "summary": "1320s–1600s of Job 2:11-3:26 (Episode 387)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:aa93fe68-dfc1-11ee-8d8c-1b5a7e037e3d",
+        "fromSec": 2780,
+        "toSec": 3100
+      },
+      "ms": 0,
+      "summary": "2780s–3080s of Lamentations Overview: Mercy Every Morning"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:aa93fe68-dfc1-11ee-8d8c-1b5a7e037e3d",
+        "fromSec": 3310,
+        "toSec": 3590
+      },
+      "ms": 0,
+      "summary": "3310s–3590s of Lamentations Overview: Mercy Every Morning"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a1a084d1-com-06ada9f3-4c3f-3851-9ba5-35f817a4ee6f",
+        "fromSec": 1240,
+        "toSec": 1570
+      },
+      "ms": 0,
+      "summary": "1240s–1540s of John 11:1-54"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:94aafd63-com-ed4952df-b7f0-3e15-be5c-b4ceb800e7a9",
+        "fromSec": 1180,
+        "toSec": 1450
+      },
+      "ms": 0,
+      "summary": "1180s–1450s of #51 Pain and suffering Part 1"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:5bbd952f-https-radicallychristian-com-p-7303",
+        "fromSec": 1450,
+        "toSec": 1760
+      },
+      "ms": 0,
+      "summary": "1450s–1750s of Dealing with Grief – CrossTalk S2E25"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "fromSec": 2100,
+        "toSec": 2450
+      },
+      "ms": 0,
+      "summary": "2100s–2400s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:444302a2-d904-43b3-a21f-4c7fb0a30dd7",
+        "fromSec": 560,
+        "toSec": 890
+      },
+      "ms": 0,
+      "summary": "560s–860s of Job 2:11-3:26 (Episode 387)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a1a084d1-com-06ada9f3-4c3f-3851-9ba5-35f817a4ee6f",
+        "fromSec": 1280,
+        "toSec": 1520
+      },
+      "ms": 0,
+      "summary": "1280s–1520s of John 11:1-54"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 19,
+    "tapeSec": 2860,
+    "promptTokens": 62488,
+    "completionTokens": 3794,
+    "reasoningTokens": 2204,
+    "cachedPromptTokens": 39306,
+    "wallMs": 41858,
+    "modelLatencyMs": 41502,
+    "toolMs": 350
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.005567,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort high). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T22:41:17.037Z"
+}

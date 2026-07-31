@@ -60,16 +60,26 @@ export const MODELS = [
     defaultBaseUrl: OPENROUTER_URL,
     defaultReasoning: 'medium',
   },
+  {
+    key: 'gpt-5.6-luna-pro',
+    requestedSlug: 'openai/gpt-5.6-luna-pro',
+    label: 'GPT-5.6 Luna Pro',
+    env: { ...OPENROUTER, model: 'LUNA_PRO_MODEL', reasoning: 'LUNA_PRO_REASONING' },
+    defaultBaseUrl: OPENROUTER_URL,
+    /* Left the roster on cost 2026-07-31, recalled the same evening for the
+       post-rebuild luna-family grid — whether the pro tier earns its rate
+       is exactly the kind of question the rebuild re-opened. */
+  },
 /* Departed rosters, kept on record because runs/ still names them:
    — Laguna S 2.1 (free) and Gemini 3.5 Flash Lite, 2026-07-31, one probe
      each: both burned all 16 model calls without ever submitting a valid
      tour (NO_TOUR), while Ling — also free — passed. Capable of chat, not
      of driving this tool loop.
-   — Grok 4.5 (pinned high) and GPT-5.6 Luna Pro, later the same day, on
-     cost — grok's one probe made the best single tour of the afternoon at
-     $0.188, but that is ~40× luna's per-tour spend on the defaults arm.
-     Ling left with them to focus the grid on deepseek-versus-luna; its
-     probes were coherent but descriptive, four of five single-source. */
+   — Grok 4.5 (pinned high), the same day, on cost — its one probe made the
+     best single tour of the afternoon at $0.188, but that is ~40× luna's
+     per-tour spend on the defaults arm. Ling left with it to focus the
+     grid on deepseek-versus-luna; its probes were coherent but
+     descriptive, four of five single-source. */
 ];
 
 export const modelByKey = (key) => MODELS.find((m) => m.key === key || m.requestedSlug === key) || null;

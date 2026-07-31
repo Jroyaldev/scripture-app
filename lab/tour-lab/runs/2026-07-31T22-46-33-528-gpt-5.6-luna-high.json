@@ -1,0 +1,502 @@
+{
+  "runId": "2026-07-31T22-46-33-528-gpt-5.6-luna-high",
+  "startedAt": "2026-07-31T22:46:33.529Z",
+  "promptId": "pastoral-doubt",
+  "prompt": "I'm losing my faith and I'm frightened of it. Is doubt a failure? I want to hear people who take doubt seriously rather than scolding it.",
+  "model": {
+    "key": "gpt-5.6-luna-high",
+    "label": "GPT-5.6 Luna (high)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "high",
+      "source": "per-model default for gpt-5.6-luna-high",
+      "envVar": "LUNA_HIGH_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "When Doubt Feels Like Failure",
+    "intro": "You do not have to settle your fear before you are allowed to speak about it. This tour moves from a larger biblical picture of honest questioning to voices that distinguish doubt from rejection, then gives you words for mixed faith, grief, and the need for evidence. None of these clips treats uncertainty as something to hide or scold out of you.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:intro-wisdom-literature",
+        "startSec": 1383,
+        "endSec": 1460,
+        "why": "Begin here for a wide-angle frame: the speakers say the wisdom writings are meant to lead us toward “an honest faith” that acknowledges doubts and questions we cannot fully answer. They also say that complexity does not automatically mean “God’s not real or faithful,” which gives you room to examine your fear without pretending life is simpler than it is.",
+        "episodeTitle": "Intro to the Wisdom Literature",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/21fcf5ab-5d75-48ae-868c-19d7a7197c21/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=21fcf5ab-5d75-48ae-868c-19d7a7197c21",
+        "durationSec": 1912,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:1702",
+        "startSec": 3219,
+        "endSec": 3387,
+        "why": "This clip addresses your question most directly. The speaker carefully separates “having questions” and wondering what God is doing from “throwing your believing loyalty away altogether,” and then argues that even someone who has turned away can hear God’s invitation: “Come back.” It is a sustained answer to the fear that doubt has already made return impossible.",
+        "episodeTitle": "Naked Bible 181: Hebrews 3",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2017/10/NakedBible181_Hebrews3.mp3",
+        "durationSec": 3898,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:1021fa12-com-1051a66c-213d-3b7f-9cb6-be4eaede94cb",
+        "startSec": 1197,
+        "endSec": 1304,
+        "why": "Now listen for a prayer rather than a verdict. While explaining the father’s words in Mark 9, the teacher calls “I do believe, help my unbelief” an “incredible prayer” and says this is often where we find ourselves: belief and unbelief held together while asking Jesus for help.",
+        "episodeTitle": "Mark 9:2-29",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/b6masi/mark_92-2996qgm.mp3",
+        "durationSec": 1547,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:444302a2-d904-43b3-a21f-4c7fb0a30dd7",
+        "startSec": 1369,
+        "endSec": 1475,
+        "why": "This gives doubt and pain a biblical form of speech. The hosts point out that Job, Jeremiah, the Psalms, and even Jesus’ cry from the cross do not read like an instruction manual for the correct emotional response. Their conclusion is striking: “lament rather than being a signal of the absence of faith is actually a sign that faith is very much present.”",
+        "episodeTitle": "Job 2:11-3:26 (Episode 387)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_ep_387.mp3?dest-id=245197",
+        "durationSec": 2435,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "startSec": 1321,
+        "endSec": 1475,
+        "why": "End with Thomas, whose doubts are not erased by being mocked. The teacher says Thomas wants evidence because resurrection is not easy to believe, and emphasizes that Jesus “graciously humors him” by meeting his request. The clip leaves you with a picture of doubt being met by patient encounter, not shame, and with Thomas moving toward the confession “My Lord and my God.”",
+        "episodeTitle": "John 20:1-31",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/z8yyjpv9fmtit6hd/john_201-3185o5y.mp3",
+        "durationSec": 1726,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these voices do not promise that every question will receive a quick answer. They offer something gentler and more durable: questions can be brought into faith, mixed belief can become prayer, lament can still be directed toward God, and the frightened person who needs evidence is not beyond Jesus’ patience. For now, you might borrow the smallest prayer in the tour: “I do believe; help my unbelief.”",
+    "totalSeconds": 612
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2430,
+      "promptTokens": 1582,
+      "completionTokens": 41,
+      "reasoningTokens": 25,
+      "cachedPromptTokens": 1537,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000045520000000000005
+    },
+    {
+      "i": 1,
+      "latencyMs": 3490,
+      "promptTokens": 1877,
+      "completionTokens": 242,
+      "reasoningTokens": 60,
+      "cachedPromptTokens": 1579,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00019816500000000004
+    },
+    {
+      "i": 2,
+      "latencyMs": 6464,
+      "promptTokens": 13949,
+      "completionTokens": 617,
+      "reasoningTokens": 271,
+      "cachedPromptTokens": 1874,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0018982400000000003
+    },
+    {
+      "i": 3,
+      "latencyMs": 2725,
+      "promptTokens": 17048,
+      "completionTokens": 338,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 13946,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007299350000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 8988,
+      "promptTokens": 22613,
+      "completionTokens": 837,
+      "reasoningTokens": 735,
+      "cachedPromptTokens": 17045,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0013685750000000001
+    },
+    {
+      "i": 5,
+      "latencyMs": 5080,
+      "promptTokens": 28638,
+      "completionTokens": 315,
+      "reasoningTokens": 254,
+      "cachedPromptTokens": 22610,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0011685250000000001
+    },
+    {
+      "i": 6,
+      "latencyMs": 6428,
+      "promptTokens": 29145,
+      "completionTokens": 521,
+      "reasoningTokens": 460,
+      "cachedPromptTokens": 28635,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000662625
+    },
+    {
+      "i": 7,
+      "latencyMs": 11929,
+      "promptTokens": 30012,
+      "completionTokens": 1342,
+      "reasoningTokens": 582,
+      "cachedPromptTokens": 29142,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001205295
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 0,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "doubt faith fear losing my faith",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 83,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "questions God silence uncertainty",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 44,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Thomas doubt believe seeing",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 36,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Mark 9 believe help my unbelief",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 51,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "lament where are you God faith",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 58,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Job doubt faith suffering God",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 50,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "fromSec": 0,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "18 skim lines, 0s–900s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:1702",
+        "fromSec": 3000,
+        "toSec": 3898
+      },
+      "ms": 0,
+      "summary": "18 skim lines, 3000s–3898s of Naked Bible 181: Hebrews 3"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:1021fa12-com-1051a66c-213d-3b7f-9cb6-be4eaede94cb",
+        "fromSec": 1050,
+        "toSec": 1500
+      },
+      "ms": 3,
+      "summary": "10 skim lines, 1050s–1500s of Mark 9:2-29"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "fromSec": 1100,
+        "toSec": 1726
+      },
+      "ms": 3,
+      "summary": "14 skim lines, 1100s–1726s of John 20:1-31"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:444302a2-d904-43b3-a21f-4c7fb0a30dd7",
+        "fromSec": 1200,
+        "toSec": 2100
+      },
+      "ms": 0,
+      "summary": "15 skim lines, 1200s–2100s of Job 2:11-3:26 (Episode 387)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:intro-wisdom-literature",
+        "fromSec": 1150,
+        "toSec": 1700
+      },
+      "ms": 0,
+      "summary": "12 skim lines, 1150s–1700s of Intro to the Wisdom Literature"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "fromSec": 240,
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "240s–540s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:1702",
+        "fromSec": 3190,
+        "toSec": 3455
+      },
+      "ms": 1,
+      "summary": "3190s–3455s of Naked Bible 181: Hebrews 3"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:1021fa12-com-1051a66c-213d-3b7f-9cb6-be4eaede94cb",
+        "fromSec": 1175,
+        "toSec": 1325
+      },
+      "ms": 0,
+      "summary": "1175s–1325s of Mark 9:2-29"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "fromSec": 1260,
+        "toSec": 1515
+      },
+      "ms": 0,
+      "summary": "1260s–1515s of John 20:1-31"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:444302a2-d904-43b3-a21f-4c7fb0a30dd7",
+        "fromSec": 1340,
+        "toSec": 1535
+      },
+      "ms": 0,
+      "summary": "1340s–1535s of Job 2:11-3:26 (Episode 387)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:intro-wisdom-literature",
+        "fromSec": 1325,
+        "toSec": 1460
+      },
+      "ms": 0,
+      "summary": "1325s–1460s of Intro to the Wisdom Literature"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "doubt is not sin questions faith",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 90,
+      "summary": "10 hits"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "honest faith doubts cannot answer",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 39,
+      "summary": "10 hits"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "God welcomes questions doubt",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 42,
+      "summary": "10 hits"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "fromSec": 180,
+        "toSec": 260
+      },
+      "ms": 0,
+      "summary": "180s–260s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "fromSec": 500,
+        "toSec": 680
+      },
+      "ms": 0,
+      "summary": "500s–680s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 8,
+    "toolCalls": 25,
+    "tapeSec": 1560,
+    "promptTokens": 144864,
+    "completionTokens": 4253,
+    "reasoningTokens": 2387,
+    "cachedPromptTokens": 116368,
+    "wallMs": 48041,
+    "modelLatencyMs": 47534,
+    "toolMs": 500
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.007277,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort high). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T22:47:21.570Z"
+}

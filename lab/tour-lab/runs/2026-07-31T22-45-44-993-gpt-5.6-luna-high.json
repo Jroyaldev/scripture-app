@@ -1,0 +1,470 @@
+{
+  "runId": "2026-07-31T22-45-44-993-gpt-5.6-luna-high",
+  "startedAt": "2026-07-31T22:45:44.993Z",
+  "promptId": "doctrinal-atonement",
+  "prompt": "Did God pour out wrath on Jesus at the cross? I want to hear the different ways teachers explain what the crucifixion accomplished, including where they disagree.",
+  "model": {
+    "key": "gpt-5.6-luna-high",
+    "label": "GPT-5.6 Luna (high)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "high",
+      "source": "per-model default for gpt-5.6-luna-high",
+      "envVar": "LUNA_HIGH_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Wrath, Victory, and Love at the Cross",
+    "intro": "This tour lets you hear the central disagreement rather than giving you a single compressed answer. It begins with the cross as Christ’s victory over sin, death, and the powers; then tests the familiar courtroom picture, hears a teacher defend Jesus bearing our punishment, and finally returns to the New Testament’s language about God’s wrath and love. As you listen, notice whether each teacher treats “wrath” as punishment directly placed on Jesus, the consequences of Israel’s rebellion that Jesus willingly enters, or a larger reality the cross defeats and transforms.",
+    "steps": [
+      {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "startSec": 361,
+        "endSec": 791,
+        "why": "Start here for a map of the territory. The hosts explain that atonement theories ask “how does the death of one innocent man…cover or take away the guilt of the entire world?” and then develop Christus Victor: Jesus’ ministry and death are an “onslaught over spiritual evil,” breaking “death’s bond and hold” and confronting the powers of darkness. This gives you a cross-centered explanation that is not reducible to God punishing Jesus instead of us.",
+        "episodeTitle": "Theories of Atonement – CrossTalk S4E10",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682238/4202feae-310f-48d3-8260-2bd297e7ec54/transcoded.mp3?post_id=148682238&relation=podcast&Expires=1785437879&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=E81CSoqx5J2xZCnTPRkPrWvRg17tmjM-2SKhycuZSAMk4XOl732-KwOVFWlcApEglSliBQA4R8rvfsVLBkCl5wLrSJeFJE8YFypZehk1S-ztVhFWUOaXbBbN9Ljnj9yk4CxD8CvqZvUeUpm0st083KKQu8uajFMmkOZhz7FeZXgC6Xmc9frzupTiWp9gV1U1qj14AnTiRqjJoBIVkwTkQzHh0KCRmLXCs0pKbEAEz-H7qAjGYKr0-w04CQCM2GTYNZ2q8WWm8SHYOfihsTvcGwCbh48uSLygBXDGvyuPHDZzeDCDWp8K5zjgnJbXnWNCyt8aDP-dX-e4oZzV77TM1Q__",
+        "durationSec": 2917,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:justice-q-r",
+        "startSec": 204,
+        "endSec": 458,
+        "why": "This clip raises the justice objection directly: an innocent person taking a guilty person’s punishment “doesn’t seem just.” The hosts call the legal model a standard metaphor they were taught, but say the cross is “like a diamond with many, many facets,” not a mathematical formula with one exhaustive explanation. It earns its place here because it makes the disagreement explicit before you hear a strong penal-substitution account.",
+        "episodeTitle": "Justice Question & Response",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/7b43d386-b3ea-4dfe-805b-0e422ba8d429/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=7b43d386-b3ea-4dfe-805b-0e422ba8d429",
+        "durationSec": 3907,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:two-men-named-jesus",
+        "startSec": 1725,
+        "endSec": 1950,
+        "why": "Here the teachers give a concrete alternative reading of Jesus drinking “the cup of God’s anger.” Through the contrast between Jesus and Barabbas, they say Jesus “puts himself in the place of rebellious Israel” and allows Rome to kill him in place of the people. They specifically challenge the modern idea that Jesus bears God’s wrath, noting that the New Testament never directly says that phrase and instead presents Jesus as entering the consequences of Israel’s trajectory.",
+        "episodeTitle": "Two Men Named Jesus",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/2d2b5ff7-d5a7-4f12-b496-d2e799ece9e0/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=2d2b5ff7-d5a7-4f12-b496-d2e799ece9e0",
+        "durationSec": 3582,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:88dc6984-fc40-42bc-9cd0-ef97c6952a9f",
+        "startSec": 1655,
+        "endSec": 1940,
+        "why": "Now hear the clearest defense of the view the earlier clips question. The preacher presents Jesus as the glory of God rejected and murdered, then says he “also bore the spiritual punishment in his physical body that we all deserve” and was “consumed by the wrath of God” so that sinners would not be. The imagery of Moses’ cleft rock makes the claimed accomplishment vivid: Jesus is the one behind whom people can hide and through whom they behold God’s glory.",
+        "episodeTitle": "Sermon Special: David Preaches Exodus 32-34",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG1835878195.mp3?updated=1664486123",
+        "durationSec": 2527,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "startSec": 1550,
+        "endSec": 1850,
+        "why": "Use this as a vocabulary-and-comparison pass after hearing the positions in narrative form. The hosts describe moral influence as the cross displaying divine love, satisfaction as addressing “a great debt” and making restitution, and penal substitution as a courtroom model in which Jesus takes “the punishment that we deserve legally.” They also say love is “the primary engine behind the cross,” which lets you hear how one teacher can affirm penal language while refusing to make wrath or bare retribution the whole meaning of the crucifixion.",
+        "episodeTitle": "Theories of Atonement – CrossTalk S4E10",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682238/4202feae-310f-48d3-8260-2bd297e7ec54/transcoded.mp3?post_id=148682238&relation=podcast&Expires=1785437879&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=E81CSoqx5J2xZCnTPRkPrWvRg17tmjM-2SKhycuZSAMk4XOl732-KwOVFWlcApEglSliBQA4R8rvfsVLBkCl5wLrSJeFJE8YFypZehk1S-ztVhFWUOaXbBbN9Ljnj9yk4CxD8CvqZvUeUpm0st083KKQu8uajFMmkOZhz7FeZXgC6Xmc9frzupTiWp9gV1U1qj14AnTiRqjJoBIVkwTkQzHh0KCRmLXCs0pKbEAEz-H7qAjGYKr0-w04CQCM2GTYNZ2q8WWm8SHYOfihsTvcGwCbh48uSLygBXDGvyuPHDZzeDCDWp8K5zjgnJbXnWNCyt8aDP-dX-e4oZzV77TM1Q__",
+        "durationSec": 2917,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "startSec": 2100,
+        "endSec": 2390,
+        "why": "End with this nuanced reading of Romans 5. The teachers emphasize that Paul foregrounds not anger but that “the cross is a demonstration of God’s love,” while still saying Jesus’ death rescues people “from God’s wrath.” They argue that the phrase must be read in light of Romans 1 rather than reduced to “God was gonna kill me, but instead he killed Jesus.” This closing clip leaves you with the live tension: judgment and rescue are present, but teachers disagree about how directly the Father’s wrath is said to fall on Jesus.",
+        "episodeTitle": "Saved from God’s Wrath",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/2c920bb5-7256-4ada-b28c-d39f072152d5/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=2c920bb5-7256-4ada-b28c-d39f072152d5",
+        "durationSec": 3397,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these teachers agree that Jesus’ death is substitutionary in some sense, that it deals decisively with sin and death, and that it reveals God’s love. They disagree about the controlling picture: Christ’s victory over the powers, Jesus entering the consequences of rebellious humanity, or Jesus receiving the punishment and wrath sinners deserve. The tour is meant to help you hear those claims in their own voices—and decide which biblical images you think should carry the most weight.",
+    "totalSeconds": 1784
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3126,
+      "promptTokens": 1584,
+      "completionTokens": 70,
+      "reasoningTokens": 54,
+      "cachedPromptTokens": 1537,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00006317
+    },
+    {
+      "i": 1,
+      "latencyMs": 2584,
+      "promptTokens": 1879,
+      "completionTokens": 241,
+      "reasoningTokens": 43,
+      "cachedPromptTokens": 1581,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00019758500000000004
+    },
+    {
+      "i": 2,
+      "latencyMs": 3822,
+      "promptTokens": 14278,
+      "completionTokens": 321,
+      "reasoningTokens": 110,
+      "cachedPromptTokens": 1876,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0017615350000000003
+    },
+    {
+      "i": 3,
+      "latencyMs": 4604,
+      "promptTokens": 27515,
+      "completionTokens": 484,
+      "reasoningTokens": 178,
+      "cachedPromptTokens": 14275,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0020880750000000004
+    },
+    {
+      "i": 4,
+      "latencyMs": 5385,
+      "promptTokens": 34411,
+      "completionTokens": 573,
+      "reasoningTokens": 250,
+      "cachedPromptTokens": 27512,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00148122
+    },
+    {
+      "i": 5,
+      "latencyMs": 28046,
+      "promptTokens": 38229,
+      "completionTokens": 3368,
+      "reasoningTokens": 2325,
+      "cachedPromptTokens": 34408,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0028424300000000004
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "wrath poured out on Jesus cross penal substitution",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 81,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "did God punish Jesus at the cross",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 57,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "atonement crucifixion accomplished victory Satan death resurrection",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 52,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "cross sacrifice temple Passover blood forgiveness",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 94,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "God abandoned forsaken Jesus Psalm 22 wrath cross",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 75,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "penal substitution disagreement wrath of God",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 47,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Jesus bore the wrath of God on the cross",
+        "sourceId": "",
+        "limit": 12
+      },
+      "ms": 126,
+      "summary": "12 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "God's wrath Christ bore our punishment",
+        "sourceId": "",
+        "limit": 12
+      },
+      "ms": 88,
+      "summary": "12 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Jesus died in our place punishment sin cross",
+        "sourceId": "",
+        "limit": 12
+      },
+      "ms": 91,
+      "summary": "12 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "atonement theories Christus Victor moral influence ransom satisfaction",
+        "sourceId": "radically-christian",
+        "limit": 10
+      },
+      "ms": 51,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "cross is not about appeasing God's anger wrath Jesus",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 82,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "what did Jesus accomplish by dying cross atonement",
+        "sourceId": "bibleproject",
+        "limit": 10
+      },
+      "ms": 96,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 300,
+        "toSec": 850
+      },
+      "ms": 4,
+      "summary": "300s–600s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:two-men-named-jesus",
+        "fromSec": 1650,
+        "toSec": 2150
+      },
+      "ms": 0,
+      "summary": "1650s–1950s of Two Men Named Jesus"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "fromSec": 2100,
+        "toSec": 2600
+      },
+      "ms": 0,
+      "summary": "2100s–2400s of Saved from God’s Wrath"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:justice-q-r",
+        "fromSec": 180,
+        "toSec": 750
+      },
+      "ms": 0,
+      "summary": "180s–480s of Justice Question & Response"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:32b053a0-4d5c-11ee-8683-f1dd20c5e5ec",
+        "fromSec": 1000,
+        "toSec": 1700
+      },
+      "ms": 5,
+      "summary": "1000s–1300s of #185 Questions on Crucifixion and Atonement (Classic)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:88dc6984-fc40-42bc-9cd0-ef97c6952a9f",
+        "fromSec": 1640,
+        "toSec": 2070
+      },
+      "ms": 4,
+      "summary": "1640s–1940s of Sermon Special: David Preaches Exodus 32-34"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 600,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "600s–900s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:e9106bdd-https-radicallychristian-com-p-9457",
+        "fromSec": 1550,
+        "toSec": 1850
+      },
+      "ms": 0,
+      "summary": "1550s–1850s of Theories of Atonement – CrossTalk S4E10"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:3016",
+        "fromSec": 3000,
+        "toSec": 3500
+      },
+      "ms": 4,
+      "summary": "3000s–3300s of Naked Bible 369: Revelation 5"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 6,
+    "toolCalls": 26,
+    "tapeSec": 2700,
+    "promptTokens": 117896,
+    "completionTokens": 5057,
+    "reasoningTokens": 2960,
+    "cachedPromptTokens": 81189,
+    "wallMs": 48533,
+    "modelLatencyMs": 47567,
+    "toolMs": 958
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.008434,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort high). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T22:46:33.526Z"
+}
