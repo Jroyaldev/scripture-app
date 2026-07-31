@@ -221,7 +221,7 @@ test("density is a room, not a drawer", () => {
   assert.doesNotMatch(room, /scrollIntoView|carousel|marquee/);
 });
 
-test("the publisher shelf is back, with its colours, its marks and its filter", () => {
+test("the publisher shelf is a register: quantised, one optical scale, and a filter that says so", () => {
   /* The merge deleted more than it meant to: six full-colour imprints in one
      glance, the `All` control, the publisher filter and the route into
      resource settings all went with the duplication, and what replaced them
@@ -231,16 +231,67 @@ test("the publisher shelf is back, with its colours, its marks and its filter", 
   assert.match(room, /data-source=\{chip\.id\}/,
     "a shelf chip must carry its own source, or it cannot carry its own colour");
   assert.match(room, /aria-pressed=\{only === chip\.id\}/, "the shelf is a filter, not a drawer");
-  assert.match(room, /className="trusted-resource-imprint is-all"/);
-  assert.match(room, /className="trusted-resource-imprint is-settings"/);
   assert.match(room, /<ResourceLibraryMatrix/, "the route into settings is part of the shelf");
+
+  /* ── THE REGISTER · 2026-07-30 ────────────────────────────────────────────
+     RESTATES two assertions that stood here for one build:
+
+       assert.match(room, /className="trusted-resource-imprint is-all"/);
+       assert.match(room, /className="trusted-resource-imprint is-settings"/);
+
+     Both held that the way back to everything and the way into the library
+     were PLATES in the row of publishers. On screen that made the shelf's two
+     non-publishers look like publishers: `All` appeared mid-row and shoved
+     whatever line it landed on, and "Your library" was an outlined pill among
+     filled plates — the one control in the row that is not a publisher, and it
+     read as a publisher that had failed to load.
+
+     What those assertions were really guarding is that both routes EXIST on
+     this surface. They still do, in the shelf's head, in the app's quiet
+     action voice — so the claim survives and the shape does not. The register
+     below the head is publishers and nothing else, which is what makes it a
+     register. */
+  assert.match(room, /className="resource-shelf-head"/,
+    "the shelf's head is where its status and its two routes live");
+  assert.match(room, /className="resource-shelf-action"[\s\S]{0,400}Show all/,
+    "the way back to everything left the shelf");
+  assert.match(room, /className="resource-shelf-action is-library"/,
+    "the route into the library left the shelf");
+  assert.doesNotMatch(room, /trusted-resource-imprint is-(all|settings)/,
+    "a control that is not a publisher is wearing a publisher's plate again");
+
+  /* The tally is unconditional. `chip.count > 1` left four of six plates on
+     the reference chapter with no numeral at all, and a numeral column with
+     holes in it is not a column. */
+  assert.doesNotMatch(room, /chip\.count > 1 &&/,
+    "the tally is conditional again; a one is a fact");
 
   /* The marks need a height to be drawn at, and the imprint had never been
      given one — the shared mark rule sizes artwork from --player-mark-h, which
      only the dock's plate and the row's declared. Every chip was an empty
      coloured pill with the name indented off-screen behind it. */
   const styles = read("src/renderer/styles.css");
-  assert.match(styles, /\.resource-shelf \.trusted-resource-imprint \{[^}]*--player-mark-h:/s);
+  const shelfPlate = styles.slice(
+    styles.indexOf(".resource-shelf .trusted-resource-imprint {"),
+    styles.indexOf(".resource-shelf .trusted-resource-imprint .trusted-resource-source"),
+  );
+  assert.match(shelfPlate, /--player-mark-h:/);
+
+  /* ONE OPTICAL SCALE, both species. The marks are normalised against the
+     publisher's own declared aspect ratio rather than drawn at a nominal
+     height, and the names are stepped by their length — which is the whole of
+     "the marks are not on a common scale" and half of "two species in one
+     row". Both CONSUME what the palettes declare; neither redefines it. */
+  assert.match(shelfPlate, /pow\(var\(--resource-mark-ratio\)/,
+    "the shelf sizes marks by nominal height again; logos of different aspect ratios do not read equal at equal height");
+  assert.match(room, /"--imprint-measure": chip\.name\.length/,
+    "the names lost their optical size; CSS cannot count characters");
+
+  /* THE TRACK. An imprint is one track or two and nothing between — this floor
+     is the whole mechanism, and without it the shelf is justified again: one
+     plate on a row, then two, then three, at eleven widths. */
+  assert.match(shelfPlate, /min-width: calc\(50% - var\(--shelf-gap\) \/ 2\)/,
+    "the register lost its track; the shelf is justified again");
 
   /* ── THE PLATE LAW · added 2026-07-30 ─────────────────────────────────────
      The chip is the dock's plate and takes the dock's own geometry. It was
@@ -250,8 +301,8 @@ test("the publisher shelf is back, with its colours, its marks and its filter", 
      .podcast-mast-plate and as a rack in the shelf. The colour was never the
      defect; the geometry was. */
   const imprint = styles.slice(
-    styles.indexOf(".trusted-resource-imprint {"),
-    styles.indexOf(".trusted-resource-imprint:hover"),
+    styles.indexOf("\n.trusted-resource-imprint {"),
+    styles.indexOf("\n.trusted-resource-imprint:hover"),
   );
   assert.match(imprint, /height: 26px/, "the shelf plate left the dock's own height");
   assert.match(imprint, /border-radius: var\(--radius-sm\)/,
@@ -261,11 +312,39 @@ test("the publisher shelf is back, with its colours, its marks and its filter", 
      <button>'s initial black on five publishers' own colours. */
   assert.match(imprint, /color: var\(--resource-ink\)/,
     "the shelf plate paints a ground and lets the ink fall where it may");
-  /* No lift, no drop shadow. The app's hover language is ink and a ring. */
-  assert.doesNotMatch(styles.slice(
-    styles.indexOf(".trusted-resource-imprint:hover"),
-    styles.indexOf(".trusted-resource-imprint[aria-expanded"),
-  ), /transform|box-shadow/, "the shelf plates lift off the page under the cursor again");
+
+  /* ── HOVER · RESTATED 2026-07-30 ──────────────────────────────────────────
+     What stood here banned `transform|box-shadow` outright on the hover rule,
+     under the heading "No lift, no drop shadow. The app's hover language is
+     ink and a ring." The ban and its own heading disagreed: a ring IS a
+     box-shadow, so with the blunt ban the only hover the shelf could have was
+     `filter: brightness(1.06)` — under a tenth of a stop, across eleven
+     different grounds, which is nothing on any of them and told nobody the
+     plate was pressable.
+
+     The defect the ban was written for is the LIFT: a chip that translates and
+     drops a shadow under a passing cursor, eleven at a time, on a reading
+     surface. So the ban is now exactly that, and the ring its heading asks for
+     is allowed on the inset channel. */
+  const shelfHover = styles.slice(
+    styles.indexOf(".resource-shelf .trusted-resource-imprint:hover"),
+    styles.indexOf(".resource-shelf .trusted-resource-imprint[aria-pressed=\"true\"] {"),
+  );
+  assert.doesNotMatch(shelfHover, /transform|translate/,
+    "the shelf plates lift off the page under the cursor again");
+  assert.match(shelfHover, /--shelf-edge: inset /,
+    "the hovered plate draws no edge; a tenth of a stop of brightness is not a hover");
+
+  /* ── STATE · added 2026-07-30 ─────────────────────────────────────────────
+     "The shelf is a FILTER, but every plate looks equally on." Chosen is Law
+     2's own seal mark — the instrument the tab strip above this room already
+     uses — in the APP's gold, on the edge nearest the room it opens, and it is
+     drawn again on the outline channel for a forced palette, which suppresses
+     box-shadow outright. */
+  assert.match(styles, /\.resource-shelf \.trusted-resource-imprint\[aria-pressed="true"\] \{[^}]*--shelf-seal: 0 4px 0 -2px var\(--accent-seal\)/s,
+    "the chosen publisher lost its seal mark");
+  assert.match(styles, /forced-colors[\s\S]*\.resource-shelf \.trusted-resource-imprint\[aria-pressed="true"\] \{[^}]*outline: 2px solid Highlight/,
+    "the one state on this shelf that carries meaning without words is drawn and then thrown away in a forced palette");
 });
 
 test("every card carries its publisher's mark", () => {

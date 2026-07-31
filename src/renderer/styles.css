@@ -19949,122 +19949,289 @@ button.lang-phrase-diagram-node:focus-visible,
   color: var(--text-primary);
 }
 
-/* ── The shelf ─────────────────────────────────────────────────────────────
+/* ── The shelf · THE IMPRINT REGISTER ──────────────────────────────────────
    The publishers who have taught this chapter, in one glance, in their own
    colours and under their own marks, pressed as a filter rather than opened as
    a drawer.
 
-   RECOMPOSED 2026-07-30, and the defect was geometry rather than colour. The
-   chips were 30px tall with `--radius-page` on them — 14 of a possible 15, so
-   a full-round pill — laid in a wrapping flex row under a 47% cap. Eleven of
-   those produce a ragged two-wide stack of colour bars with a stray outlined
-   circle orphaned under it: the same brand colours that read as premium on the
-   dock's 26px plate read as a candy rack here, because the pill is foreign to
-   a frame whose own law is radius ≈ 0.22 × the shorter dimension.
+   RECOMPOSED TWICE BEFORE THIS, and both are quoted because a form that is
+   replaced without its own words on the page is a form nobody can argue with
+   later.
 
-   So the chip IS the dock's plate, at the dock's own height and radius, and
-   the shelf is JUSTIFIED: every plate is as wide as the publisher it names,
-   and the plates on a row divide that row's whole width between them. Ragged
-   inside, flush at both edges — which is what a colophon strip does in print,
-   and what the 47% cap could never do, because a cap can only leave a void.
+     1. "30px tall with --radius-page on them — 14 of a possible 15, so a
+        full-round pill — laid in a wrapping flex row under a 47% cap … a candy
+        rack." Right about the pill; the cap was the other half of it, because
+        a cap does not tighten a plate, it only decides where the void goes.
+     2. "the shelf is JUSTIFIED: every plate is as wide as the publisher it
+        names, and the plates on a row divide that row's whole width between
+        them. Ragged inside, flush at both edges — which is what a colophon
+        strip does in print." A colophon strip in print is set to a MEASURE.
+        This was set to whatever eleven intrinsic widths happened to sum to:
+        one plate on a row, then two, then three, at eleven widths, with the
+        tallies at eleven x. And it made the widest names into slabs — 332px of
+        brick with 200px of empty brick in it, which is not more brand than a
+        plate the size of its own mark. It is a highlighter bar. The
+        mark-to-field ratio is what makes a mark look premium, and
+        justification made that ratio a variable.
 
-   Two columns of equal cells were tried first and rejected. Half a 380px panel
-   is 165px, and "The Listener's Bible Commentary" and "40 Minutes in the Old
-   Testament" do not fit it at any size a plate may be — so a grid buys its
-   alignment by ellipsing five of the eleven publishers, which is the opposite
-   of the trust this shelf is for. A publisher is either legible or absent.
+   The grid of equal cells tried between them was rejected for a reason that
+   still stands: half a 380px panel is 165px, and "40 Minutes in the Old
+   Testament" does not fit it at any size a plate may be. A publisher is either
+   legible or absent.
 
-   The block carries a kicker over it and closes on a rule. The colour is
-   untouched — there is more of it legible on screen than there was, and it is
-   laid out. */
+   ── THE THIRD ANSWER: QUANTISE, DO NOT JUSTIFY ─────────────────────────────
+
+   Two tracks. An imprint is one track wide or two, and nothing in between —
+   and nothing is ellipsed to make it so, because the names that will not fit a
+   track simply take both. Every left edge lands on one of two x; every right
+   edge on one of two; the tallies fall into two true numeral columns. The
+   rhythm is modular rather than accidental and the register still holds every
+   publisher at full length.
+
+   The whole mechanism is `min-width: calc(50% - gap/2)` on an item that still
+   grows. Flexbox breaks lines on the hypothetical main size, which that floor
+   raises to half the shelf, so at most two fit a line; whatever lands on a
+   line then grows to fill it, which for two items is exactly half each and for
+   one is the whole measure. Nothing is reordered — so rank survives — and no
+   line is left with a hole in it.
+
+   THE COLOUR IS UNTOUCHED AND UNMUTED. What left is empty brand colour, which
+   was never brand presence. */
 .resource-shelf-block {
-  margin: 2px 0 var(--sp-md);
-  padding-bottom: var(--sp-md);
+  margin: 2px 0 var(--sp-lg);
+  padding-bottom: 13px;
   border-bottom: 1px solid var(--border-subtle);
 }
 
-/* The room's own head. The lens had none — the tab strip was doing that work —
-   so eleven saturated plates arrived directly under a row of tabs with nothing
-   to say what they were. The app's kicker voice, the same one the margin's
-   section labels and the folded tab use. */
-.resource-shelf-kicker {
+/* ── The shelf's head, and it is a STATUS LINE ─────────────────────────────
+   Added 2026-07-30 with the register. The lens's own name was doing all of
+   this work and none of it: eleven saturated plates arrived under a row of
+   tabs with nothing to say what they were, no way to tell which of them the
+   room was narrowed to, and two controls that were not publishers standing in
+   the row of publishers pretending to be some.
+
+   Left: what the shelf is, or — once it is pressed — what the room is showing.
+   Right: the way back to all, and the way into the library, in the app's quiet
+   action voice. Both are TEXT, which is the point: neither of them is a plate,
+   so the register below is publishers and nothing else. */
+.resource-shelf-head {
+  display: flex;
+  /* IT WRAPS RATHER THAN TRUNCATES. Three things at nine pixels in 332 is
+     tight, and the left of them is a publisher's name once the shelf is
+     pressed — the one string on this surface that may never be cut. So the
+     actions drop to a right-aligned second line when they must, which costs
+     thirteen pixels in one state and costs nobody a name. */
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 12px;
   margin: 0 0 9px;
+}
+
+/* The app's kicker voice, the same one the margin's section labels and the
+   folded tab use. */
+.resource-shelf-kicker {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin: 0;
   color: var(--text-tertiary);
   font: var(--fw-semibold) 0.5625rem/1.2 var(--font-ui);
   letter-spacing: 0.13em;
   text-transform: uppercase;
 }
 
+.resource-shelf-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+  gap: 12px;
+}
+
+/* One voice for both, and it is the room's own quiet link — the same object as
+   .trusted-resource-library-more, which is where this head leads. Never a
+   pill: the shelf has exactly one pill shape in it and it belongs to
+   publishers. */
+.resource-shelf-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-tertiary);
+  font: var(--fw-semibold) 0.5625rem/1.2 var(--font-ui);
+  letter-spacing: 0.11em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--transition-fast);
+}
+
+.resource-shelf-action:hover { color: var(--text-primary); }
+.resource-shelf-action[aria-expanded="true"] { color: var(--study-gold); }
+.resource-shelf-action:focus-visible {
+  outline: 2px solid var(--accent-seal);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* The one plate that is not a publisher's is the one that says a publisher has
+   been switched off. A dot rather than a count: how many is a fact for the
+   panel it opens, and a numeral here would sit in the tally column's voice
+   while meaning the opposite thing. */
+.resource-shelf-action.is-library[data-muted="true"]::after {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--study-gold);
+  content: "";
+}
+
 .resource-shelf {
-  /* 5 → 6, with the room's gutter. The shelf teaches which hue belongs to
-     whom and the cards below spend that lesson, so the two have to read as one
-     system: the shelf's gap and the grid's gutter are now the same interval
-     scaled to their own plate. */
-  gap: 6px;
+  /* One interval, and the register's whole geometry hangs off it: the gap
+     between plates, and half of it subtracted from the track. */
+  --shelf-gap: 6px;
+  gap: var(--shelf-gap);
   padding: 0;
 }
 
-/* THE READER'S OWN CELL DOES NOT GROW. Added 2026-07-30 with the audit: the
-   settings cell took an equal share of the justification like a publisher, so
-   on a passage whose last row held only it, "Your library" arrived as a
-   full-width outlined box under a stack of colour — the loosest object on the
-   shelf, at the largest size on the shelf, carrying the least. It takes its
-   own width now and the publishers above it divide theirs. */
-.resource-shelf .trusted-resource-imprint.is-settings {
-  flex: 0 0 auto;
-}
-
-/* THE MARK'S HEIGHT, which the imprint never had. The shared mark rule sizes
-   artwork from --player-mark-h, and that token is declared by the dock's plate
-   and by the row's — never by the imprint. So `width: calc(var(--player-mark-h)
-   × ratio)` was invalid on every chip, the artwork collapsed to nothing, and
-   the name behind it is indented off-screen by the same rule: six colour chips
-   with no marks on them. Restored at the chip's own scale — a 26px plate, so a
-   mark of 16 leaves 5 of clear space top and bottom, which is the dock's own
-   proportion at the dock's own size. */
+/* THE TRACK. See the register note above — this floor is the entire mechanism.
+   `flex: 1 1 auto` keeps every line flush at both edges; the floor keeps the
+   line from holding three, and keeps a two-plate line at exactly half each. */
 .resource-shelf .trusted-resource-imprint {
-  --player-mark-h: calc(var(--resource-mark-height) * 0.66);
-  /* THE JUSTIFICATION. Each plate asks for the width its own publisher needs
-     and then takes an equal share of whatever the row has left, so every row
-     runs flush to both edges of the shelf. Nothing is truncated to achieve it:
-     growth only ever adds width. */
   flex: 1 1 auto;
-  gap: 6px;
-  min-width: 0;
+  position: relative;
+  gap: 7px;
+  min-width: calc(50% - var(--shelf-gap) / 2);
   max-width: none;
+  /* A plate's own measure, restated at the register's scale: 10 of inset each
+     side, which is what gives every mark and every name the same left edge and
+     the same clear space from the tally. */
+  padding: 0 10px;
+
+  /* ── ONE OPTICAL SCALE FOR THE MARKS ────────────────────────────────────
+     Added 2026-07-30, and it is the answer to "the marks are not on a common
+     scale". They were sized by --resource-mark-height × 0.66 — a NOMINAL
+     height, chosen per publisher for a different surface — which is why TGC's
+     mark filled its plate corner to corner while BibleProject's whispered and
+     Enter the Bible's read as a sticker. Logos with different aspect ratios do
+     not read equal at equal height: a 7.671-wide lockup lays down four times
+     the ink of a 1.583-wide emblem at the same cap height.
+
+     So the height is derived from the publisher's OWN declared aspect ratio,
+     which the shelf consumes and never redefines. Pure area equality
+     (ratio^0.5) over-corrects — it takes Spoken Gospel's lockup to under 8px,
+     which is not a quiet mark, it is no mark — so the exponent is 0.34, a
+     third of the way from equal-height to equal-area, and the result is
+     clamped to what a 26px plate can hold with its clear space intact.
+
+     Measured, at K = 20.5: TGC 15.5 · Naked Bible 16 (clamped) · Enter the
+     Bible 14.2 · Working Preacher 13.7 · BibleProject 12.4 · Spoken Gospel
+     10.4. Against the old rule that was 11.9 · 12.5 · 14.5 · 14.5 · 11.9 ·
+     13.9 — a family in which the widest lockup on the shelf was also the
+     tallest. */
+  --player-mark-h: clamp(10px, calc(20.5px / pow(var(--resource-mark-ratio), 0.34)), 16px);
 }
 
-/* A name yields; a tally does not. The five sources with no approved artwork
-   set their name in type, and "40 Minutes in the Old Testament" is longer than
-   any cell — so it ellipses inside the publisher's own colour rather than
-   pushing the count out of its column. */
+/* ── ONE OPTICAL SCALE FOR THE NAMES ───────────────────────────────────────
+   The other half of "two species in one row". Six publishers hand us artwork
+   and five hand us a name, and a name set at one point size beside artwork
+   normalised by ink is the mismatch the reader saw: "40 Minutes in the Old
+   Testament" at the same size as "Naked Bible" is twice the ink and reads as a
+   sentence highlighted in brick, not as a logotype on a field.
+
+   A name has no aspect ratio. Its one measurable is its length, which the
+   component hands over as --imprint-measure because CSS cannot count
+   characters; what a character is worth is decided here, once, for all five.
+   The ramp runs 12.5px at eleven characters down to a floor of 11px by
+   twenty-four, clamped at both ends — the same partial correction the marks
+   take, for the same reason: full ink equality would put the longest names
+   under nine pixels, and a name nobody can read identifies nobody.
+
+   The ceiling matters as much as the floor, and 13px was too high: it is where
+   "Naked Bible" came out visibly larger than the Spoken Gospel lockup on the
+   line above it, which is the two-species problem in one row.
+
+   Serif, and deliberately: these are OUR setting of a publisher's name, and a
+   serif logotype set to a measure is a printer's imprint, where the app's UI
+   face would read as our chrome wearing their colour. The tracking is what
+   separates a logotype from running text. */
 .resource-shelf .trusted-resource-imprint .trusted-resource-source {
   flex: 0 1 auto;
   min-width: 0;
   overflow: hidden;
-  /* A shade under the imprint's 13px wordmark: at 165px of cell, 13px serif
-     put four of the five unmarked names into an ellipsis by the third word. */
-  font-size: 0.75rem;
+  font-size: clamp(
+    0.6875rem,
+    calc(0.95rem - var(--imprint-measure, 16) * 0.0122rem),
+    0.78125rem
+  );
+  font-weight: var(--fw-semibold);
+  letter-spacing: 0.004em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 /* Naked Bible's name is a pseudo-element beside its emblem (see the mark rules
-   below), and it holds `margin-right: auto` so the emblem and the name read as
-   one lockup on a row. In a grid cell the tally is what takes the free space,
-   so the lockup gives it back. */
+   below) and Ligonier's show keeps its name beside the tree. Both join the
+   ramp: a shelf with one name at 13px serif and another at 12px is the
+   inconsistency this rule exists to end, and the fact that one of them is
+   drawn by a ::after is not a reason for it to be a different size. */
 .resource-shelf .trusted-resource-imprint[data-source="naked-bible"]::after {
   min-width: 0;
   margin-right: 0;
   overflow: hidden;
-  font-size: 0.75rem;
+  font: var(--fw-semibold) clamp(
+    0.6875rem,
+    calc(0.95rem - var(--imprint-measure, 16) * 0.0122rem),
+    0.78125rem
+  ) / 1 var(--font-reading);
+  letter-spacing: 0.004em;
   text-overflow: ellipsis;
 }
 
-/* The one narrowed to, said in the app's own way: pressed chips carry the seal
-   ring the tab strip carries, rather than a second idea of "chosen". */
+/* ── The one narrowed to, and the promise that a press narrows ─────────────
+   STATE WAS INVISIBLE. The shelf is a filter and every plate looked equally
+   "on": nothing said which publisher the room was holding, nothing said a
+   press would do anything, and the way back was a twelfth chip that appeared
+   in the middle of the row and shoved whatever line it landed on.
+
+   Both states are drawn on the SAME channel — one shadow slot each — because
+   the two pseudo-elements a plate has are already spent: ::before is
+   Ligonier's tree and ::after is the Naked Bible name, and a state that can
+   only be drawn on nine of eleven plates is not a state.
+
+   CHOSEN is Law 2 verbatim — "a 2px seal mark on the edge nearest the content
+   it opens" — which is what the tab strip above this room already does. The
+   room is below the shelf, so the mark is under the plate, in the APP's gold,
+   on the app's paper: the app saying which publisher it is holding, in the
+   app's own colour, without laying a finger on the publisher's. It is not a
+   ring, not a wash over the others, and nothing is muted to make it read. Read
+   with the head above, which names the publisher and offers the way back.
+
+   HOVER had been `filter: brightness(1.06)` — under a tenth of a stop, across
+   eleven different grounds, which is nothing on any of them. The app's hover
+   language is ink and a ring, and the ink here belongs to the publisher, so
+   the ring is the publisher's own hairline (--resource-line, which every
+   palette declares for exactly this). The plate lights its own edge and does
+   not move. */
+.resource-shelf .trusted-resource-imprint {
+  --shelf-edge: inset 0 0 0 0 transparent;
+  --shelf-seal: 0 0 0 0 transparent;
+  box-shadow: var(--shelf-edge), var(--shelf-seal);
+  transition: box-shadow var(--transition-fast);
+}
+
+.resource-shelf .trusted-resource-imprint:hover {
+  --shelf-edge: inset 0 0 0 1.5px var(--resource-line);
+  filter: none;
+}
+
 .resource-shelf .trusted-resource-imprint[aria-pressed="true"] {
-  box-shadow: 0 0 0 2px var(--bg-reading), 0 0 0 3.5px var(--resource-source);
+  /* Offset 4, spread -2: the plate's own rectangle dropped four and pulled in
+     two, so what clears the plate's bottom edge is a 2px bar inset 2px at each
+     end, with the plate's own corner softened into it. A seal mark, drawn
+     without a pseudo-element. */
+  --shelf-seal: 0 4px 0 -2px var(--accent-seal);
 }
 
 .resource-shelf-sliders { flex: none; }
@@ -21190,6 +21357,36 @@ button.lang-phrase-diagram-node:focus-visible,
   text-indent: -200vw;
 }
 
+/* ── TYPE FILLS A MEASURE; ARTWORK DOES NOT · 2026-07-30 ───────────────────
+   The register's one exception, and it is a law rather than a special case.
+
+   A plate on this shelf is a line in a two-track register, and a line that
+   holds no partner fills its measure — which is what a line of type does, and
+   why "40 Minutes in the Old Testament" reading name-left, tally-right across
+   the whole shelf is a register line and not a slab. Artwork cannot do that. A
+   44px wordmark left adrift in 332px of the publisher's maroon has nothing
+   holding it: the mark-to-field ratio collapses, and a small mark in a large
+   field of colour is the one thing that makes a good logo look cheap. Measured
+   on the first build of this register: Working Preacher and The Gospel
+   Coalition each took a whole row for 44 and 34 pixels of artwork.
+
+   So a plate whose identity is ARTWORK is pinned to one track and never grows;
+   a plate whose identity is TYPE fills whatever measure it is given. Every one
+   of the six fits a track with room to spare, so nothing is truncated to hold
+   the rule.
+
+   THE LIST IS THE MARK LIST, above, verbatim — these are exactly the sources
+   whose wordmark replaces their name — and the two must move together. If a
+   seventh source gains a mark it belongs in both. */
+.resource-shelf .trusted-resource-imprint[data-source="working-preacher"],
+.resource-shelf .trusted-resource-imprint[data-source="bibleproject"],
+.resource-shelf .trusted-resource-imprint[data-source="the-gospel-coalition"],
+.resource-shelf .trusted-resource-imprint[data-source="enter-the-bible"],
+.resource-shelf .trusted-resource-imprint[data-source="naked-bible"],
+.resource-shelf .trusted-resource-imprint[data-source="spoken-gospel"] {
+  flex-grow: 0;
+}
+
 /* And the plate itself, at row scale, for exactly those six. A source with no
    approved mark takes no plate: its name is set in type in the meta line, which
    is the generic treatment docs/trusted-resource-permissions prescribes.
@@ -21352,89 +21549,73 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-source { order: 0; }
 .trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-kind { order: 2; }
 
-/* The count a publisher's chip carries when it has more than one answer, and
-   the count on All. Set in mono so it reads as a tally rather than a word. */
-/* RESTATED 2026-07-30. The tally used to be a dark rounded pill inside the
-   chip — so every plate carried a second, darker blob, and eleven plates
-   carried eleven of them at eleven different distances from the right edge.
-   That is what stacked into "sore on the eyes": not the brand colours, the
-   forty small shapes laid on them.
-   In a grid of equal cells the tally needs no container at all. Pushed to the
-   cell's right edge in the publisher's own ink at three quarters strength, it
-   falls into a numeral column down each side of the shelf, which is the thing
-   a tabular face is for. */
+/* ── The tally ─────────────────────────────────────────────────────────────
+   Set in mono so it reads as a tally rather than as a word.
+
+   RESTATED 2026-07-30. It was a dark rounded pill inside the chip — "eleven
+   plates carried eleven of them at eleven different distances from the right
+   edge" — and losing the pill was right. Two things it kept were not.
+
+     · IT WAS CONDITIONAL. `count > 1`, so a publisher with one thing on this
+       passage showed no tally at all: on the reference chapter two of six
+       plates had a numeral and four did not, which is most of what "the counts
+       are inconsistent" was. A one is a fact. It is drawn always, and a column
+       with holes in it is not a column.
+     · IT WAS THREE QUARTERS OF AN INK. `opacity: 0.74` over --resource-ink
+       takes 40 Minutes' 5.42:1 to roughly 3.4:1 and Working Preacher's to
+       about 3.6 — a number, in text, under Law 6's floor, on nine plates. The
+       tally is quiet by SIZE now and full strength in ink, which is the only
+       way a small numeral is ever quiet honestly.
+
+   The register's two tracks are what finally give it a column: every plate's
+   right edge is at one of two x, so every tally is too. */
 .trusted-resource-imprint-count {
   /* The lockup name is a pseudo-element at order 1, so an unordered count sits
      ahead of it and reads "4 Naked Bible". The tally goes last, always. */
   order: 2;
   flex: none;
   margin-left: auto;
-  padding-left: 8px;
+  padding-left: 10px;
   background: none;
-  color: inherit;
-  font: var(--fw-medium) 0.625rem/1 var(--font-mono);
+  color: var(--shelf-tally-ink, var(--resource-ink));
+  font: var(--fw-medium) 0.59375rem/1 var(--font-mono);
   font-variant-numeric: tabular-nums;
-  opacity: 0.74;
+  letter-spacing: 0.02em;
 }
 
-/* All is a chip of the same size and shape, in the margin's own ink rather than
-   a publisher's colour — it belongs to the reader, not to a brand. */
-.trusted-resource-imprint.is-all {
-  background: transparent;
-  box-shadow: inset 0 0 0 1px var(--border-medium);
-  color: var(--text-secondary);
-}
+/* ── The one ink that could not carry a numeral · 2026-07-30 ───────────────
+   The tally is the FIRST text ever drawn on the six plates that carry
+   artwork. Their name is a wordmark, and artwork is exempt from Law 6's 4.5
+   where text is not — so those six palettes' inks had never been measured
+   against their own grounds by anything. Measured now, in the engine, on all
+   eleven:
 
-.trusted-resource-imprint.is-all:hover {
-  box-shadow: inset 0 0 0 1px var(--text-tertiary);
-  color: var(--text-primary);
-}
+     Enter the Bible 11.95 · Naked Bible 10.41 · Working Preacher 6.95 ·
+     The Gospel Coalition 5.76 · BibleProject 5.72 · Spoken Gospel 3.24
 
-.trusted-resource-imprint.is-all .trusted-resource-source {
-  overflow: visible;
-  color: inherit;
-  font: var(--fw-semibold) 0.6875rem/1 var(--font-ui);
-  letter-spacing: 0.055em;
-  text-indent: 0;
-  text-transform: uppercase;
-}
+   Ten of the eleven publishers chose an ink that holds on their own colour.
+   Spoken Gospel's cream is a REVERSE — drawn for their white lockup, which is
+   graphics — and on their green it is 3.24:1. Nothing in their palette clears
+   the floor there: their pale yellow pill ink measures 3.56 and pure white
+   3.67. Only a near-black does, and the ceiling on that green is 5.72.
 
-.trusted-resource-imprint.is-all[aria-expanded="true"] {
-  box-shadow: inset 0 0 0 1.5px var(--accent-seal);
-  color: var(--text-primary);
-}
+   So on that one plate the numeral is their green taken down until it clears
+   the floor: 5.13:1 measured in the engine, against a ceiling of 5.72. It is
+   recorded as OURS — a re-pick with a stated reason, the same way
+   --resource-pill-ink for 40 Minutes is — and it is declared here, in the
+   shelf's own scope, rather than in their palette block. The palettes are not
+   this surface's to edit: the shelf is fitting an ink to a job the palette was
+   never asked about.
 
-/* Settings is the quietest chip in the shelf: same height and radius, no fill,
-   no count. It is a way out of the group rather than a way into it — and it is
-   NAMED as of 2026-07-30, because an unlabelled outlined circle wrapped onto a
-   line of its own under eleven colour plates read as a stray control rather
-   than as the shelf's own last cell. */
-.trusted-resource-imprint.is-settings {
-  gap: 7px;
-  padding: 0 9px;
-  background: transparent;
-  box-shadow: inset 0 0 0 1px var(--border-subtle);
-  color: var(--text-tertiary);
-}
-
-.trusted-resource-imprint.is-settings:hover {
-  box-shadow: inset 0 0 0 1px var(--border-medium);
-  color: var(--text-secondary);
-  filter: none;
-}
-
-.trusted-resource-imprint.is-settings .trusted-resource-source {
-  display: inline-flex;
-  align-items: center;
-  overflow: hidden;
-  height: auto;
-  aspect-ratio: auto;
-  background: none;
-  color: inherit;
-  font: var(--fw-semibold) 0.5625rem/1 var(--font-ui);
-  letter-spacing: 0.11em;
-  text-indent: 0;
-  text-transform: uppercase;
+   Written as a hex rather than as `oklch(from …)` or a `color-mix`, and that
+   is not a style preference: both of those PRESERVE their function in the
+   computed value in this engine, and the contrast probe in
+   scripts/qa-podcast-player reads computed colours by pulling numbers out of
+   the string. An oklch triple parsed as an rgb one is a measurement of
+   nothing, which is how a colour ships unmeasured under a gate that appears
+   to pass. */
+.resource-shelf .trusted-resource-imprint[data-source="spoken-gospel"] {
+  --shelf-tally-ink: #041509;
 }
 
 /* The library panel opens where a card opens, and its rows carry their own
@@ -21564,21 +21745,12 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .resource-kind-icon { flex: none; }
 
-/* Something is muted, and the row must say so even when the panel is shut —
-   otherwise a quiet chapter next Tuesday is indistinguishable from a chapter
-   with nothing in it. */
-.trusted-resource-imprint.is-settings[data-muted="true"]::after {
-  position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent-seal);
-  content: "";
-}
-
-.trusted-resource-imprint.is-settings { position: relative; }
+/* The muted dot moved with the control it belongs to · 2026-07-30. "Something
+   is muted, and the row must say so even when the panel is shut — otherwise a
+   quiet chapter next Tuesday is indistinguishable from a chapter with nothing
+   in it" is still the rule; what changed is that the control it hangs off is
+   no longer a plate in the row of publishers. See
+   `.resource-shelf-action.is-library[data-muted="true"]` above. */
 
 @media (prefers-reduced-motion: reduce) {
   .resource-matrix-row,
@@ -21601,6 +21773,12 @@ button.lang-phrase-diagram-node:focus-visible,
 @media (prefers-reduced-motion: reduce) {
   .trusted-resource-imprint { transition: none; }
   .trusted-resource-imprint:hover { transform: none; }
+  /* The register's own selector, at the register's own specificity. Added
+     2026-07-30: the shelf's edge and seal ride a `transition: box-shadow` on a
+     two-class rule, which the one-class reset above cannot reach — so a reader
+     who asked for stillness got the shelf moving anyway. */
+  .resource-shelf .trusted-resource-imprint,
+  .resource-shelf-action { transition: none; }
 }
 
 @media (forced-colors: active) {
@@ -21625,7 +21803,21 @@ button.lang-phrase-diagram-node:focus-visible,
      two devices stay on the ground they were drawn for. */
   .trusted-resource-imprint::before { display: none; }
   .trusted-resource-imprint[aria-expanded="true"] { outline: 2px solid Highlight; box-shadow: none; }
+  /* THE SEAL MARK, in the reader's own two colours · 2026-07-30. The register
+     draws "chosen" as a box-shadow, and a forced palette suppresses box-shadow
+     outright — so the one state on this surface that carries meaning without
+     words would have been drawn and then thrown away. Highlight, on the
+     outline channel, which a forced palette keeps. */
+  .resource-shelf .trusted-resource-imprint[aria-pressed="true"] {
+    outline: 2px solid Highlight;
+    outline-offset: 1px;
+  }
+  .trusted-resource-imprint-count { color: ButtonText; }
   .trusted-resource-source { color: CanvasText; }
+  /* The head's two actions, and the dot that says something is muted. */
+  .resource-shelf-action { color: CanvasText; }
+  .resource-shelf-action[aria-expanded="true"] { color: Highlight; }
+  .resource-shelf-action.is-library[data-muted="true"]::after { background: Highlight; }
 }
 
 /* The material switch. Four appearances and one switch: this is the only

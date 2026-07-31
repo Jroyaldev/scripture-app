@@ -687,21 +687,109 @@ export function Resources({
       {/* ── The shelf ────────────────────────────────────────────────────────
           Every publisher who has taught this chapter, in one glance, in their
           own colours and with their own marks — and the filter and the settings
-          route that went missing with the merge. A chip is a publisher, not a
+          route that went missing with the merge. A plate is a publisher, not a
           record: pressing one narrows the room to their material and pressing
           it again gives the room back.
 
-          RECOMPOSED 2026-07-30. The chips were 30px full-round pills laid in a
-          wrapping flex row under a 47% cap, which produced a ragged two-wide
-          stack of eleven colour bars — a filter widget rather than a shelf, and
-          a radius foreign to a frame whose own law is 0.22 × the shorter side.
-          They are PLATES now, on the dock's own plate law, in a grid of two
-          equal columns: one height, one radius, one width, and the tallies in a
-          numeral column down the right of each. The colour is the same colour;
-          what changed is that it is laid out. */}
+          ── THE REGISTER · 2026-07-30 (third recomposition) ──────────────────
+
+          The two forms this replaces are both quoted, because the third answer
+          is only legible against the two that failed.
+
+            1. "30px full-round pills laid in a wrapping flex row under a 47%
+               cap" — a candy rack, and the cap was what made it read as a
+               rigid two-wide stack rather than as a wrapped paragraph.
+            2. "the shelf is JUSTIFIED: every plate is as wide as the publisher
+               it names, and the plates on a row divide that row's whole width
+               between them. Ragged inside, flush at both edges." Flush at the
+               edges and arbitrary everywhere else: one plate on a row, then
+               two, then three, at eleven different widths, with the tallies at
+               eleven different x. A 332px slab of brick with 200px of empty
+               brick in it is not more brand than a plate the size of its own
+               mark — it is a highlighter bar, and it is why the shelf read as
+               a chart of colour while the cards beneath it read as a room.
+
+          A grid of equal cells was tried between them and rejected for the
+          right reason, which still stands: half a 380px panel does not hold
+          "40 Minutes in the Old Testament", and a publisher is either legible
+          or absent.
+
+          THE THIRD ANSWER IS QUANTISATION RATHER THAN JUSTIFICATION. The shelf
+          is a two-track register: an imprint is either exactly one track wide
+          or exactly two, never anything between, and nothing is ellipsed to
+          make it so — the long names simply take both tracks. So every left
+          edge lands on one of two x, every right edge on one of two, and the
+          tallies fall into two true numeral columns. The rhythm is modular
+          instead of accidental, and no publisher is dropped to buy it. The
+          mechanism is one line of CSS (`min-width: calc(50% - gap/2)` on a
+          growing flex item), so nothing is reordered and no cell is left
+          empty. See `.resource-shelf` in styles.css.
+
+          THE FILTER SAYS SO NOW. Every plate looked equally "on", the way back
+          to all was a chip that appeared mid-shelf and pushed the row it
+          landed in, and the settings route was an outlined pill sitting among
+          filled plates looking like a publisher that failed to load. Both
+          leave the register: the head above it is the shelf's own status line
+          — what is showing on the left, the way back and the way into the
+          library on the right, in the app's quiet action voice — and the
+          register below is publishers and nothing else. */}
       {shelf.length > 0 && (
         <div className="resource-shelf-block">
-          <p className="resource-shelf-kicker">Publishers on this passage</p>
+          <div className="resource-shelf-head">
+            <p className="resource-shelf-kicker">
+              {only === null
+                ? "Publishers on this passage"
+                : `Showing ${shelf.find((chip) => chip.id === only)?.name ?? "one publisher"}`}
+            </p>
+            <div className="resource-shelf-actions">
+              {only !== null && (
+                <button
+                  /* The tally is in the accessible name and not on the face.
+                     The head is 332px holding three things at nine pixels, and
+                     "Show all 956" is what put the publisher's own name into
+                     an ellipsis — which is the one thing this shelf may never
+                     do. A number here would also be the room's own inventory
+                     voice arriving in the app's quietest line. */
+                  aria-label={`Show all ${entries.length} for this passage`}
+                  className="resource-shelf-action"
+                  onClick={() => setOnly(null)}
+                  type="button"
+                >
+                  Show all
+                </button>
+              )}
+              {/* The shelf raises the question of who these publishers are, and
+                  the answer lives in settings — so the way there is the shelf's
+                  own head rather than a hunt through a menu, and rather than a
+                  twelfth cell in a row of eleven publishers. */}
+              <button
+                aria-expanded={library}
+                aria-label={(catalogue?.mutes.length ?? 0) > 0
+                  ? `Your library — ${catalogue?.mutes.length} muted`
+                  : "Choose what your library offers"}
+                className="resource-shelf-action is-library"
+                data-muted={(catalogue?.mutes.length ?? 0) > 0}
+                onClick={() => setLibrary(!library)}
+                title={(catalogue?.mutes.length ?? 0) > 0
+                  ? `Your library — ${catalogue?.mutes.length} muted`
+                  : "Choose what your library offers"}
+                type="button"
+              >
+                {/* Sliders, not a cog: at 13px a cog's teeth close up into a
+                    sun. Three rows with a knob each also happens to be what the
+                    panel behind it actually is. */}
+                <svg className="resource-shelf-sliders" viewBox="0 0 16 16" width="13" height="13" aria-hidden="true">
+                  <g fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.4">
+                    <path d="M2.2 4.2h11.6M2.2 8h11.6M2.2 11.8h11.6" />
+                    <circle cx="5.6" cy="4.2" r="1.6" fill="var(--bg-reading)" />
+                    <circle cx="10.4" cy="8" r="1.6" fill="var(--bg-reading)" />
+                    <circle cx="6.6" cy="11.8" r="1.6" fill="var(--bg-reading)" />
+                  </g>
+                </svg>
+                <span aria-hidden="true">Your library</span>
+              </button>
+            </div>
+          </div>
           <div className="trusted-resource-imprints resource-shelf" role="group" aria-label="Publishers on this passage">
             {shelf.map((chip) => (
               <button
@@ -711,56 +799,27 @@ export function Resources({
                 data-source={chip.id}
                 key={chip.id}
                 onClick={() => setOnly(only === chip.id ? null : chip.id)}
+                /* THE OPTICAL SIZE OF A NAME, which is the other half of the
+                   two-species problem. A shelf of logos has no nominal size:
+                   "TGC" and "40 Minutes in the Old Testament" do not read as
+                   one family at one point size, because a wordmark's weight is
+                   its INK, not its height. The marks are normalised against
+                   their own aspect ratio in the stylesheet; a name has no
+                   ratio, so its one measurable is its length, and it is handed
+                   over here because CSS cannot count characters. The ramp
+                   itself — what a character is worth — is the stylesheet's. */
+                style={{ "--imprint-measure": chip.name.length } as React.CSSProperties}
                 type="button"
               >
                 <span className="trusted-resource-source">{chip.name}</span>
-                {chip.count > 1 && <span className="trusted-resource-imprint-count">{chip.count}</span>}
+                {/* ALWAYS. It was `count > 1`, so a publisher with one thing
+                    here showed no tally at all and the column had holes in it
+                    — which is most of what "the counts are inconsistent" was.
+                    A one is a fact, and a column of numerals with gaps in it
+                    is not a column. */}
+                <span className="trusted-resource-imprint-count">{chip.count}</span>
               </button>
             ))}
-            {only !== null && (
-              <button
-                aria-label={`All ${entries.length} for this passage`}
-                className="trusted-resource-imprint is-all"
-                onClick={() => setOnly(null)}
-                type="button"
-              >
-                <span className="trusted-resource-source">All</span>
-                <span className="trusted-resource-imprint-count">{entries.length}</span>
-              </button>
-            )}
-            {/* The shelf raises the question of who these publishers are, and
-                the answer lives in settings — so the way there is the shelf's
-                own closing cell rather than a hunt through a menu. It is the
-                one cell that carries no colour: it belongs to the reader.
-                Named in type as of 2026-07-30, because an unlabelled outlined
-                circle orphaned on a row of its own was the shelf's loosest
-                object and read as a stray control. */}
-            <button
-              aria-expanded={library}
-              aria-label={(catalogue?.mutes.length ?? 0) > 0
-                ? `Your library — ${catalogue?.mutes.length} muted`
-                : "Choose what your library offers"}
-              className="trusted-resource-imprint is-settings"
-              data-muted={(catalogue?.mutes.length ?? 0) > 0}
-              onClick={() => setLibrary(!library)}
-              title={(catalogue?.mutes.length ?? 0) > 0
-                ? `Your library — ${catalogue?.mutes.length} muted`
-                : "Choose what your library offers"}
-              type="button"
-            >
-              {/* Sliders, not a cog: at 13px a cog's teeth close up into a sun.
-                  Three rows with a knob each also happens to be what the panel
-                  behind it actually is. */}
-              <svg className="resource-shelf-sliders" viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-                <g fill="none" stroke="currentColor" strokeLinecap="round" strokeWidth="1.4">
-                  <path d="M2.2 4.2h11.6M2.2 8h11.6M2.2 11.8h11.6" />
-                  <circle cx="5.6" cy="4.2" r="1.6" fill="var(--bg-reading)" />
-                  <circle cx="10.4" cy="8" r="1.6" fill="var(--bg-reading)" />
-                  <circle cx="6.6" cy="11.8" r="1.6" fill="var(--bg-reading)" />
-                </g>
-              </svg>
-              <span className="trusted-resource-source" aria-hidden="true">Your library</span>
-            </button>
           </div>
         </div>
       )}

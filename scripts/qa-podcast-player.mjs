@@ -745,7 +745,29 @@ const room = await evaluate(`(() => {
       return ground !== "rgba(0, 0, 0, 0)" && ground !== "transparent";
     }).length,
     filter: shelf.some((chip) => chip.hasAttribute("aria-pressed")),
-    settings: Boolean(lens.querySelector(".resource-shelf .trusted-resource-imprint.is-settings")),
+    /* RESTATED 2026-07-30 with the register. This read
+       ".resource-shelf .trusted-resource-imprint.is-settings" — the route
+       into the library as a PLATE in the row of publishers, which is what made
+       it "the one control in the row that is not a publisher, and it looks
+       like a publisher that failed to load". The claim is the same claim: the
+       route exists on this surface. It is in the shelf's head now, with the
+       way back to everything, in the app's quiet action voice. */
+    settings: Boolean(lens.querySelector(".resource-shelf-action.is-library")),
+    /* And the register's own two facts, added with it. Every plate is exactly
+       one track or exactly two — never an intrinsic width, which is what made
+       the shelf read as a chart of bars — and the tally is on every one of
+       them, which it was not: "count > 1" left a numeral column with holes. */
+    shelfTracks: (() => {
+      const measure = lens.querySelector(".resource-shelf")?.getBoundingClientRect().width ?? 0;
+      const track = (measure - 6) / 2;
+      return [...new Set(shelf.map((chip) => {
+        const width = chip.getBoundingClientRect().width;
+        if (Math.abs(width - track) < 1.5) return "one";
+        if (Math.abs(width - measure) < 1.5) return "two";
+        return String(Math.round(width));
+      }))].sort();
+    })(),
+    shelfTallies: shelf.filter((chip) => chip.querySelector(".trusted-resource-imprint-count")).length,
     /* THE PLATE LAW, on the shelf · added 2026-07-30 with the taste pass. The
        chips were 30px with a 14px corner — a full-round pill on a frame whose
        radius law is 0.22 × the shorter dimension — which is why the same brand
@@ -827,6 +849,10 @@ assert.equal(room.filter, true, "the shelf is a drawer again rather than a filte
 assert.equal(room.settings, true, "the route into resource settings is missing from the shelf");
 assert.deepEqual(room.shelfPlate, ["26/6px"],
   `the shelf left the plate law: ${room.shelfPlate.join(", ")} (want 26px tall, 6px corner)`);
+assert.ok(room.shelfTracks.every((track) => track === "one" || track === "two"),
+  `the register is justified again — a plate is one track or two, never ${room.shelfTracks.join(", ")}`);
+assert.equal(room.shelfTallies, room.shelfChips,
+  `${room.shelfChips - room.shelfTallies} plates carry no tally; a numeral column with holes in it is not a column`);
 /* The reference chapter's shelf is short and may hold only approved marks; the
    dense chapter below carries all eleven and is where the count is gated. */
 for (const plate of room.shelfInk) {
@@ -1240,6 +1266,51 @@ for (const plate of shelfInk) {
     `${plate.source} sets its name on its own ground at ${plate.ratio}:1`);
 }
 console.log("shelf ink", shelfInk);
+
+/* ── AND THE TALLY, ON EVERY PLATE · added 2026-07-30 ───────────────────────
+   The ink gate above only sees the five plates that draw a NAME — an approved
+   mark is artwork and its ink is never painted — so the numeral was never
+   measured anywhere, on any plate. It is text, and it was set at
+   `opacity: 0.74` over the publisher's own ink: that takes 40 Minutes' 5.42:1
+   to roughly 3.4 and Working Preacher's to about 3.6, under Law 6's floor, on
+   every plate on the shelf. Full strength now, quiet by size, and measured
+   here on all eleven because the six with artwork have no other textual gate
+   at all. */
+const shelfTally = await evaluate(`(() => {
+  const lens = document.querySelector("#margin-resources-panel:not([hidden])");
+  const channel = (v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+  const luminance = (colour) => {
+    const [r, g, b] = colour.match(/[\\d.]+/g).map(Number);
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  };
+  const against = (ink, ground) => {
+    const [high, low] = [luminance(ink), luminance(ground)].sort((a, b) => b - a);
+    return Math.round(((high + 0.05) / (low + 0.05)) * 100) / 100;
+  };
+  return [...lens.querySelectorAll(".resource-shelf .trusted-resource-imprint")]
+    .map((chip) => {
+      const tally = chip.querySelector(".trusted-resource-imprint-count");
+      if (!tally) return null;
+      const box = getComputedStyle(tally);
+      const ground = getComputedStyle(chip).backgroundColor;
+      const alpha = Number(box.opacity);
+      return {
+        source: chip.dataset.source,
+        opacity: alpha,
+        ratio: against(box.color, ground),
+      };
+    })
+    .filter(Boolean);
+})()`);
+assert.ok(shelfTally.length >= 10,
+  `only ${shelfTally.length} tallies on the dense chapter's shelf; the tally gate is looking at nothing`);
+for (const plate of shelfTally) {
+  assert.equal(plate.opacity, 1,
+    `${plate.source}'s tally is drawn at ${plate.opacity} of its own ink; a number is quiet by size or it is under the floor`);
+  assert.ok(plate.ratio >= ACCENT_FLOOR,
+    `${plate.source} sets its tally on its own ground at ${plate.ratio}:1`);
+}
+console.log("shelf tally", shelfTally);
 
 await screenshot("paper-resources-dense", ".living-margin");
 
