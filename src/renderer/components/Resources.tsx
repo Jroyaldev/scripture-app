@@ -331,20 +331,6 @@ export function useDiscoveryShape(): DiscoveryShape {
   );
 }
 
-/**
- * The runs, as a flag per card.
- *
- * A run is what the ordering already produced: consecutive cards from one
- * publisher. Nothing is regrouped and nothing is reordered — this only asks,
- * of each card, whether the card before it came from the same imprint, which
- * is what decides whether the publisher's plate carries their mark or only
- * their colour. Computed on the list AS DRAWN, so the spine's stops each start
- * a fresh run: a publisher's first card under a new verse announces itself.
- */
-function runs(list: readonly ResourceEntry[]): boolean[] {
-  return list.map((entry, at) => at > 0 && list[at - 1]?.sourceId === entry.sourceId);
-}
-
 /** What a press hands the transport. One shape, both kinds of audio entry. */
 function episodeOf(entry: ResourceEntry): PodcastEpisode {
   return {
@@ -379,43 +365,57 @@ function episodeOf(entry: ResourceEntry): PodcastEpisode {
  * and answered none of the four questions it was asked, because a 300px column
  * clipped all of them at once.
  *
- * The publisher's form is the permission boundary's decision rather than a
- * design one, and it is made in the stylesheet where the approved marks live:
- * a source with an approved mark gets the plate — their colour under their own
- * artwork — and every other source gets its name in type and no colour at all.
- * Six of eleven, so the room stays a margin rather than a colour chart.
+ * ── THE MARK IS ON EVERY CARD · REVERSED 2026-07-30 ─────────────────────────
  *
- * ── THE RUN · added 2026-07-30 with the taste pass ──────────────────────────
+ * The rule this replaces ran one build. It is quoted whole because a contract
+ * that is reversed without its own words on the page is a contract nobody can
+ * argue with later:
  *
- * The publisher is stated ONCE PER RUN. A chapter's material arrives in runs —
- * three Spoken Gospel cards, then four BibleProject ones — and the first draft
- * stamped the full wordmark on every card in every run, so a column of four
- * shouted the same name four times and the room read as a colour chart with
- * titles in it.
+ *   "The publisher is stated ONCE PER RUN. … The plate does not leave the face
+ *   and the brand does not go quiet: the first card of a run carries the
+ *   publisher's plate whole, and the cards that follow carry the SAME PLATE
+ *   reduced to its ground … So a run reads as one publisher's column of colour
+ *   with one wordmark at its head, which is what a printed page does with a
+ *   running imprint."
  *
- * The plate does not leave the face and the brand does not go quiet: the first
- * card of a run carries the publisher's plate whole, and the cards that follow
- * carry the SAME PLATE reduced to its ground — the publisher's own colour, at
- * the plate's own height and radius, with the artwork withdrawn. So a run reads
- * as one publisher's column of colour with one wordmark at its head, which is
- * what a printed page does with a running imprint, and the identity is still
- * spoken in full on every card's accessible name.
+ * The reader read it on screen and rejected it: "i dont like how some lose the
+ * logo it just confuses. logo on every is better." That settles it — a mark
+ * that is present on some cards and withdrawn on others makes the reader ask
+ * what the difference MEANS, and the answer ("the card above happened to be the
+ * same publisher") is not worth a question. Identity is a trust instrument and
+ * trust does not take turns. Every card carries its publisher's mark.
  *
- * Permission-wise this is strictly narrower than what came before: the reduced
- * form paints the same approved colour and draws no artwork at all.
+ * The redundancy the run rule was solving is real, and it is solved in the
+ * other four currencies instead — all of them in the stylesheet:
+ *
+ *   SCALE · the plate is the only thing on the card's first line now. The 20px
+ *     transport disc that used to sit beside it moved to the foot, where it
+ *     belongs to the extent it acts on, so the head is a colophon rather than
+ *     two marks arguing.
+ *   HIERARCHY · the ground carries the publisher and the plate confirms them,
+ *     so the plate no longer has to be the whole of the identity.
+ *   RHYTHM · one plate at one x on every card, and a foot that aligns across a
+ *     row, so a column of them is a rule rather than a rash.
+ *   SPACING · the gutter and the card's own padding both went up; air is what
+ *     separates marks.
+ *
+ * The publisher's FORM is still the permission boundary's decision rather than
+ * a design one, and it is still made in the stylesheet where the approved marks
+ * live: a source with an approved mark gets the plate — their colour under
+ * their own artwork — and a source without one gets its name in type. What is
+ * no longer true is that a source without a mark takes no colour at all: the
+ * card's ground is an homage to their hue either way, which is what finally
+ * closes the gap between the two forms. See the ground note in styles.css.
  */
 function ResourceCard({
   entry,
   heavy,
-  repeat,
   running,
   playing,
   onOpen,
 }: {
   entry: ResourceEntry;
   heavy: boolean;
-  /** True when the card above this one is the same publisher's. */
-  repeat: boolean;
   running: boolean;
   playing: boolean;
   onOpen: (entry: ResourceEntry) => void;
@@ -430,40 +430,49 @@ function ResourceCard({
       ? `${running ? "Now playing. " : ""}Hear ${entry.episode}, ${entry.sourceName}. ${relationSpoken(entry.timed.relation, entry.label)}, ${extentOf(entry.timed.seconds)} from ${clockOf(entry.timed.at)}.`
       : `${running ? "Now playing. " : ""}Hear ${entry.episode}, ${entry.sourceName}. ${entry.label} is ${said}.`;
   return (
-    <li className="resource-card" data-weight={heavy ? "heavy" : "light"}>
+    /* The publisher moves to the CARD, and it is the card that needs it: the
+       ground is derived from `--resource-source`, and the face below re-declares
+       that property as the app's own gold so the transport mark on it stays the
+       app's voice rather than the publisher's. Two scopes, one attribute, and
+       the division is the point — the ground is whose material this is, the
+       transport is whose app this is. */
+    <li
+      className="resource-card"
+      data-source={entry.sourceId}
+      data-weight={heavy ? "heavy" : "light"}
+    >
       <button
         aria-label={spoken}
         className="resource-card-face"
         data-kind={entry.link ? "read" : "hear"}
-        data-repeat={repeat ? "true" : undefined}
         data-running={running ? "true" : undefined}
         onClick={() => onOpen(entry)}
         type="button"
       >
-        <span className="resource-card-head">
-          {entry.link ? (
-            <span aria-hidden="true" className="resource-card-out">
-              <ResourceKindIcon kind={entry.kind} />
-            </span>
-          ) : (
-            <TransportPlayMark className="resource-card-play" paused={!(running && playing)} />
-          )}
-          <span
-            className="taught-here-plate resource-card-plate"
-            data-repeat={repeat ? "true" : undefined}
-            data-source={entry.sourceId}
-          >
-            {/* Withdrawn on a repeat, so the run carries one wordmark and a
-                column of the publisher's own colour under it. The name is in
-                the face's accessible name either way. */}
-            {!repeat && <span className="taught-here-mark">{entry.sourceName}</span>}
-          </span>
+        {/* The head is the colophon and nothing else. Every card carries it —
+            see the reversal note above. */}
+        <span className="taught-here-plate resource-card-plate" data-source={entry.sourceId}>
+          <span className="taught-here-mark">{entry.sourceName}</span>
         </span>
         <span className="resource-card-title">{entry.episode}</span>
+        {/* The foot is the passage on the left and, on the right, what a press
+            will do to it. The transport mark sits against the extent it acts
+            on rather than up in the head against the publisher's plate: one
+            mark per line, and the loudest thing on the card is no longer a
+            20px disc of amber repeated nine hundred times. */}
         <span className="resource-card-foot">
           <span className="resource-card-ref">{entry.label}</span>
-          <span className="resource-card-extent">
-            {entry.timed ? extentOf(entry.timed.seconds) : entry.kind}
+          <span className="resource-card-tail">
+            {entry.link ? (
+              <span aria-hidden="true" className="resource-card-out">
+                <ResourceKindIcon kind={entry.kind} />
+              </span>
+            ) : (
+              <TransportPlayMark className="resource-card-play" paused={!(running && playing)} />
+            )}
+            <span className="resource-card-extent">
+              {entry.timed ? extentOf(entry.timed.seconds) : entry.kind}
+            </span>
           </span>
         </span>
       </button>
@@ -586,11 +595,6 @@ export function Resources({
     () => (only ? entries.filter((entry) => entry.sourceId === only) : entries),
     [entries, only],
   );
-  /* Which cards are the second and third of one publisher's run, worked out
-     once on the list as drawn — see `runs`. Narrowing to one publisher makes
-     the whole room a single run, which is right: the shelf's pressed chip is
-     already saying whose it is, so the plate states it once at the top. */
-  const repeats = useMemo(() => runs(shown), [shown]);
 
   /* ── The walk, and its whole extent, worked out before it is offered ──────
      One pass, because the control has to state a count and a total that are
@@ -807,45 +811,40 @@ export function Resources({
 
       {shape === "spine" ? (
         <div className="resource-room" data-discovery="spine">
-          {stops.map(([at, cards]) => {
-            const repeats = runs(cards);
-            return (
-              <div className="resource-stop" key={at}>
-                {/* The spine's whole idea, said in two characters: this run of
-                    cards speaks to verse 7, and the one below it to verse 12.
-                    A bare numeral could have been anything — a count, an
-                    index, a rank — which is what the first draft drew. */}
-                <span aria-hidden="true" className="resource-stop-mark">
-                  {at === 0 ? "ch" : `v${at}`}
-                </span>
-                <ul className="resource-grid">
-                  {cards.map((entry, index) => (
-                    <ResourceCard
-                      entry={entry}
-                      heavy={false}
-                      key={entry.key}
-                      onOpen={open}
-                      playing={playing}
-                      repeat={repeats[index] ?? false}
-                      running={runningKey === entry.key}
-                    />
-                  ))}
-                </ul>
-              </div>
-            );
-          })}
+          {stops.map(([at, cards]) => (
+            <div className="resource-stop" key={at}>
+              {/* The spine's whole idea, said in two characters: this run of
+                  cards speaks to verse 7, and the one below it to verse 12.
+                  A bare numeral could have been anything — a count, an
+                  index, a rank — which is what the first draft drew. */}
+              <span aria-hidden="true" className="resource-stop-mark">
+                {at === 0 ? "ch" : `v${at}`}
+              </span>
+              <ul className="resource-grid">
+                {cards.map((entry) => (
+                  <ResourceCard
+                    entry={entry}
+                    heavy={false}
+                    key={entry.key}
+                    onOpen={open}
+                    playing={playing}
+                    running={runningKey === entry.key}
+                  />
+                ))}
+              </ul>
+            </div>
+          ))}
         </div>
       ) : (
         <div className="resource-room" data-discovery={shape}>
           <ul className="resource-grid">
-            {shown.map((entry, index) => (
+            {shown.map((entry) => (
               <ResourceCard
                 entry={entry}
                 heavy={isHeavy(entry)}
                 key={entry.key}
                 onOpen={open}
                 playing={playing}
-                repeat={repeats[index] ?? false}
                 running={runningKey === entry.key}
               />
             ))}
@@ -861,11 +860,24 @@ export function Resources({
         </p>
       )}
 
-      {hiddenCount > 0 && entries.length > 0 && (
-        <p className="trusted-resource-more-hidden">{`${hiddenCount} hidden by your settings`}</p>
-      )}
+      {/* ── The room's colophon ──────────────────────────────────────────────
+          HOW NINE HUNDRED CARDS END. Added 2026-07-30 with the room's audit:
+          the grid used to stop, and two loose paragraphs at two weights came
+          after it — a settings count set as body copy and the footing sentence
+          under a rule of its own. A reader who scrolls Genesis 1 to the bottom
+          reaches the end of the app's answer, and the end of an answer is a
+          colophon: one rule, one block, the standing facts about the shelf in
+          the order they matter, and nothing that looks like another control.
 
-      {footingLine && <p className="taught-here-footing">{footingLine}</p>}
+          Drawn only where there is a room above it to close. */}
+      {entries.length > 0 && (footingLine || hiddenCount > 0) && (
+        <footer className="resources-colophon">
+          {footingLine && <p className="taught-here-footing">{footingLine}</p>}
+          {hiddenCount > 0 && (
+            <p className="resources-colophon-hidden">{`${hiddenCount} hidden by your settings`}</p>
+          )}
+        </footer>
+      )}
     </section>
   );
 }
@@ -909,7 +921,6 @@ export function ResourcesDigest({
     [book, chapter, displayBook, moments, records, verse],
   );
   const digest = entries.slice(0, DIGEST);
-  const digestRepeats = runs(digest);
   if (entries.length === 0) return <></>;
   return (
     <section className="resources-digest" aria-labelledby="resources-digest-title">
@@ -919,14 +930,13 @@ export function ResourcesDigest({
       </header>
       <div className="resource-room" data-discovery="digest">
         <ul className="resource-grid">
-          {digest.map((entry, index) => (
+          {digest.map((entry) => (
             <ResourceCard
               entry={entry}
               heavy={false}
               key={entry.key}
               onOpen={(chosen) => playPodcastEpisode(episodeOf(chosen))}
               playing={playing}
-              repeat={digestRepeats[index] ?? false}
               running={runningKey === entry.key}
             />
           ))}

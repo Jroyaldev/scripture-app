@@ -543,6 +543,81 @@ const OWNERSHIP = `((sources) => {
   return rows;
 })(${JSON.stringify(SOURCES)})`;
 
+/**
+ * The card's ground, swept the way the accent is · 2026-07-30.
+ *
+ * The resources room's cards wear a muted homage to the publisher's hue —
+ * hue kept, chroma clamped, lightness replaced by the atmosphere's own figure
+ * (see --ground-fit-* in styles.css). Eleven publishers × four atmospheres is
+ * forty-four grounds, and the whole of the reader's ask — "important they look
+ * good" — rests on two numbers nobody could otherwise check:
+ *
+ *   1. It is a HOMAGE, not a reproduction. The ground must not be the brand's
+ *      own colour, and must not have collapsed back onto the app's paper.
+ *   2. The ink on it holds. The app's tertiary is drawn to clear 4.5 against
+ *      paper by a hair and does NOT clear it on a tinted card — 4.07:1 at the
+ *      worst — which is exactly why the card steps its quietest rank up to
+ *      secondary. This asserts the rank that is actually used, resting and
+ *      under the pointer, so the step cannot be undone without failing here.
+ *
+ * Colours are normalised through a canvas for the same reason the accent sweep
+ * does it: a computed `oklch()` serialises as `oklch(...)` and a token as
+ * `rgb(...)`, and one string parser for two formats is two chances to be wrong.
+ */
+const GROUND = `((sources) => {
+  const card = document.querySelector(".resource-card");
+  if (!card) return null;
+  const was = card.getAttribute("data-source");
+  const ink = document.createElement("canvas").getContext("2d");
+  const bytes = (value) => {
+    ink.clearRect(0, 0, 1, 1);
+    ink.fillStyle = "#000";
+    ink.fillStyle = value;
+    ink.fillRect(0, 0, 1, 1);
+    return [...ink.getImageData(0, 0, 1, 1).data].slice(0, 3).map((c) => c / 255);
+  };
+  const channel = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const luminance = ([r, g, b]) => 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  const contrast = (a, b) => {
+    const [x, y] = [luminance(a), luminance(b)];
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  };
+  const probe = document.createElement("span");
+  probe.style.cssText = "position:absolute;pointer-events:none";
+  card.append(probe);
+  const paint = (value) => {
+    probe.style.backgroundColor = "color-mix(in srgb, " + value + " 100%, transparent)";
+    return bytes(getComputedStyle(probe).backgroundColor);
+  };
+  const shell = getComputedStyle(document.querySelector(".app-shell"));
+  const paper = bytes(shell.getPropertyValue("--bg-reading").trim());
+  /* The rank the card actually draws its quietest type in. Read off the
+     element rather than off the token, so the step is what is asserted. */
+  const quietest = bytes(getComputedStyle(card.querySelector(".resource-card-extent")).color);
+  const rows = [];
+  for (const source of sources) {
+    card.setAttribute("data-source", source);
+    const ground = paint("var(--resource-ground)");
+    const lift = paint("var(--resource-ground-lift)");
+    const brand = paint("var(--resource-source)");
+    rows.push({
+      source,
+      groundIsBrand: ground.every((c, at) => Math.abs(c - brand[at]) < 0.004),
+      groundIsPaper: ground.every((c, at) => Math.abs(c - paper[at]) < 0.004),
+      quietOnGround: Number(contrast(quietest, ground).toFixed(2)),
+      quietOnHover: Number(contrast(quietest, lift).toFixed(2)),
+    });
+  }
+  probe.remove();
+  if (was === null) card.removeAttribute("data-source"); else card.setAttribute("data-source", was);
+  return rows;
+/* The unregistered sentinel is excluded below, and its exclusion is the point:
+   a source with no palette has no hue to pay homage to, so the derivation is
+   invalid at computed-value time and the card's ground falls back to the app's
+   own paper. That is the correct behaviour and it is not a ground this sweep
+   has anything to measure. */
+})(${JSON.stringify(SOURCES.filter((source) => source !== "qa-unregistered-source"))})`;
+
 await cdp.send("Network.enable");
 await cdp.send("Page.reload", { ignoreCache: true });
 await waitFor(`Boolean(document.querySelector(".sidebar") && document.querySelector(".scripture-content"))`);
@@ -713,24 +788,14 @@ const room = await evaluate(`(() => {
           return { source: chip.dataset.source, ratio: against(ink, box.backgroundColor) };
         });
     })(),
-    /* THE RUN · added 2026-07-30. A publisher announces itself once per run:
-       the first card of a run carries the wordmark, the cards under it carry
-       the same plate reduced to the publisher's colour. Asserted as the thing
-       that was wrong — the same artwork drawn on two consecutive cards. */
-    twiceRunning: (() => {
-      let last = null;
-      let seen = 0;
-      for (const card of cards) {
-        const plate = card.querySelector(".resource-card-plate");
-        const mark = plate?.querySelector(".taught-here-mark");
-        const drawn = mark ? getComputedStyle(mark).backgroundImage !== "none" : false;
-        const source = plate?.dataset.source ?? null;
-        if (drawn && source && source === last) seen += 1;
-        last = source;
-      }
-      return seen;
-    })(),
-    reduced: cards.filter((card) => card.querySelector('.resource-card-plate[data-repeat="true"]')).length,
+    /* THE MARK ON EVERY CARD · REVERSED 2026-07-30. What stood here for one
+       build was twiceRunning, which asserted that a publisher's wordmark was
+       never drawn on two consecutive cards — the run rule. The reader saw that
+       drawn and rejected it ("i dont like how some lose the logo it just
+       confuses. logo on every is better"), so the gate is turned over: every
+       card names its publisher, and no card carries the withdrawn form. */
+    unmarked: cards.filter((card) => !card.querySelector(".taught-here-mark")).length,
+    reduced: document.querySelectorAll("[data-repeat]").length,
     // The plate is the ONE publisher crossing on a card, and only where a mark
     // is approved: everyone else takes their name in type.
     plated: cards.filter((card) => {
@@ -768,9 +833,10 @@ for (const plate of room.shelfInk) {
   assert.ok(plate.ratio >= ACCENT_FLOOR,
     `${plate.source} sets its name on its own ground at ${plate.ratio}:1`);
 }
-assert.equal(room.twiceRunning, 0,
-  "a publisher's wordmark is drawn twice running; the run announces itself once");
-assert.ok(room.reduced > 0, "no card carries the run's reduced plate");
+assert.equal(room.unmarked, 0,
+  `${room.unmarked} cards do not name their publisher; the mark is on every card`);
+assert.equal(room.reduced, 0,
+  "the run's reduced plate is back; a mark present on some cards and not others is what the reader rejected");
 assert.ok(room.sizes.every((size) => ["heavy", "light"].includes(size)),
   `the card family grew a third size: ${room.sizes.join(", ")}`);
 assert.match(room.footing ?? "", /machine-read/i,
@@ -812,7 +878,13 @@ const family = await evaluate(`(() => {
 })()`);
 assert.equal(family.card, true, "no Naked Bible card in the room to press");
 assert.equal(family.isFamily, true, "the card's play is not in the transport family");
-assert.equal(family.size, 20, "the family at the room's own scale");
+/* 20 → 14, dated 2026-07-30 with the card's ground. The mark left the card's
+   head — where it was a 20px disc of amber beside the publisher's plate, twice
+   per card and nine hundred times per chapter — and moved to the foot, against
+   the extent it acts on. What this gate is FOR is that the room speaks the one
+   transport language rather than inventing a fifth; the scale is the room's,
+   and the room's is now the numeral line's. */
+assert.equal(family.size, 14, "the family at the room's own scale");
 assert.equal(family.glyphs, 2, "play and pause are both in the tree so one can cross into the other");
 assert.deepEqual([...new Set(family.grid)], ["0 0 24 24"], "one icon grid");
 assert.notEqual(family.filled, "rgba(0, 0, 0, 0)", "the family is filled, on every surface");
@@ -1005,6 +1077,22 @@ for (const theme of ATMOSPHERES) {
   }
   const worst = rows.reduce((low, row) => Math.min(low, row.accentOnPaper), Infinity);
   console.log(`ownership ${theme}: ${rows.length} sources, worst accent ${worst}:1`);
+
+  /* And the room's cards, on the same sweep and in the same engine. */
+  const grounds = await evaluate(GROUND);
+  assert.ok(grounds, "the ground probe found no card");
+  for (const row of grounds) {
+    assert.equal(row.groundIsBrand, false,
+      `${theme}/${row.source}: the card's ground is the raw brand colour — an homage, not a reproduction`);
+    assert.equal(row.groundIsPaper, false,
+      `${theme}/${row.source}: the card's ground collapsed back onto the app's paper; the homage is gone`);
+    assert.ok(row.quietOnGround >= ACCENT_FLOOR,
+      `${theme}/${row.source}: the card's quietest ink is ${row.quietOnGround}:1 on its own ground`);
+    assert.ok(row.quietOnHover >= ACCENT_FLOOR,
+      `${theme}/${row.source}: the card's quietest ink is ${row.quietOnHover}:1 under the pointer`);
+  }
+  const quietest = grounds.reduce((low, row) => Math.min(low, row.quietOnGround, row.quietOnHover), Infinity);
+  console.log(`grounds ${theme}: ${grounds.length} publishers, quietest ink ${quietest}:1`);
 }
 await setTheme("light");
 

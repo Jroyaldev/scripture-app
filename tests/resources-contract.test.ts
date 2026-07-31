@@ -201,10 +201,11 @@ test("density is a room, not a drawer", () => {
     /shortest last|taught-here-more|setShown/,
     "the drawer is back in front of the answer");
   assert.doesNotMatch(room, /aria-expanded=\{isOpen\}|taught-here-toggle/, "the bands are back");
-  /* Restated 2026-07-30 for the run's index — `shown.map((entry, index) =>`.
-     What this holds is that the room draws `shown` ENTIRE: no slice, no page,
-     no cap between the reader and the answer. */
-  assert.match(room, /\{shown\.map\(\(entry, index\) =>/, "the room must draw everything it holds");
+  /* Restated 2026-07-30 again, when the run's index went with the run rule it
+     served. What this holds — and all it ever held — is that the room draws
+     `shown` ENTIRE: no slice, no page, no cap between the reader and the
+     answer. The index the card no longer needs is not part of that claim. */
+  assert.match(room, /\{shown\.map\(\(entry\) =>/, "the room must draw everything it holds");
   assert.doesNotMatch(code("src/renderer/components/Resources.tsx"), /shown\.slice\(/,
     "the room is capping the answer again");
 
@@ -267,36 +268,72 @@ test("the publisher shelf is back, with its colours, its marks and its filter", 
   ), /transform|box-shadow/, "the shelf plates lift off the page under the cursor again");
 });
 
-test("a publisher announces itself once per run", () => {
-  /* NEW CONTRACT · 2026-07-30, from the taste pass. Three Spoken Gospel cards
-     in a row each carried the full Spoken Gospel wordmark, then four
-     BibleProject cards each carried theirs — so a column of tiles read as a
-     colour chart with titles in it, which is the note the reader sent back.
+test("every card carries its publisher's mark", () => {
+  /* CONTRACT REVERSED · 2026-07-30. What stood here for one build was "a
+     publisher announces itself once per run": the first card of a run carried
+     the wordmark and the cards under it carried the same plate reduced to the
+     publisher's colour with the artwork withdrawn.
 
-     The plate does NOT leave the face and the brand does not go quiet: the
-     first card of a run carries the wordmark, and the cards under it carry the
-     same plate reduced to the publisher's own colour. Permission-wise the
-     reduced form is strictly narrower — the same approved colour, no artwork
-     at all — and the name is still spoken in full on every card. */
+     The reader saw it drawn and rejected it: "i dont like how some lose the
+     logo it just confuses. logo on every is better." A mark present on some
+     cards and absent on others makes a reader ask what the difference means,
+     and the true answer — that the card above happened to be the same
+     publisher — is not worth the question it costs.
+
+     So this test is the opposite of the one it replaces, and it guards the
+     same defect from the other side: the mark is unconditional, and the
+     machinery that made it conditional is gone rather than disabled. */
   const room = read("src/renderer/components/Resources.tsx");
-  assert.match(room, /function runs\(list: readonly ResourceEntry\[\]\): boolean\[\]/);
-  assert.match(room, /list\[at - 1\]\?\.sourceId === entry\.sourceId/,
-    "a run is consecutive cards from one publisher, in the order as drawn");
-  /* Worked out on the list AS DRAWN, at all three call sites, so the spine's
-     stops each start a fresh run rather than inheriting one across a verse. */
-  assert.equal((room.match(/runs\(/g) ?? []).length - 1, 3,
-    "a card list is being drawn without its runs worked out");
-  assert.match(room, /\{!repeat && <span className="taught-here-mark">/,
-    "the repeat is still stamping the wordmark");
+  assert.match(room, /<span className="taught-here-mark">\{entry\.sourceName\}<\/span>/,
+    "the wordmark is conditional again");
+  assert.doesNotMatch(room, /\brepeat\b|data-repeat|function runs\(/,
+    "the run machinery is back; the mark is on every card or it is a rule again");
 
   const styles = read("src/renderer/styles.css");
-  assert.match(styles, /\.resource-card \.resource-card-plate\[data-repeat="true"\] \{[^}]*width: 4px/s,
-    "the reduced plate is a swatch again rather than a rule");
-  /* The five unmarked sources have no artwork to withdraw and keep their name
-     on every card — that is docs/trusted-resource-permissions' own generic
-     treatment, and a permission decision rather than a design one. */
+  assert.doesNotMatch(styles, /\[data-repeat/,
+    "the reduced plate's selectors are still standing");
+  /* The redundancy the run rule was solving is real, and it moved into the
+     four currencies a mark can be quiet in without being absent. The one that
+     can be asserted from a file is the ground: it is what lets the plate stop
+     being the whole of the identity. */
+  assert.match(styles, /--resource-ground: oklch\(from var\(--resource-source\)/,
+    "the card's ground is no longer derived from the publisher's own colour");
+  /* The five unmarked sources have no artwork and keep their name in type —
+     that is docs/trusted-resource-permissions' own generic treatment, and a
+     permission decision rather than a design one. It must stay in the
+     stylesheet beside the marks it is the fallback for. */
   assert.doesNotMatch(room, /APPROVED_MARKS|MARKED_SOURCES/,
     "the mark list is being duplicated out of the stylesheet into the component");
+});
+
+test("the card's ground is derived, not picked", () => {
+  /* THE HOMAGE, AS A DERIVATION. The reader asked for "an homage toward the
+     brands hue down to aesthetic muted alternatives", and the one way that
+     stays true across eleven publishers and four atmospheres is to compute it:
+     hue from the publisher, chroma clamped into a narrow band, lightness
+     replaced by the atmosphere's own figure. A hand-picked hex per publisher
+     per atmosphere is forty-four numbers nobody can check. */
+  const styles = read("src/renderer/styles.css");
+  const ground = styles.slice(styles.indexOf(".resource-card[data-source] {"));
+  assert.match(ground, /var\(--ground-fit-l\)/, "the ground picks its own lightness");
+  assert.match(ground, /clamp\(var\(--ground-fit-c-min\), c, var\(--ground-fit-c-max\)\)/,
+    "the chroma is capped without a floor, or floored without a cap");
+  /* Hue is the publisher's, untouched — the whole of what makes it an homage
+     rather than a wash. */
+  assert.match(ground, /var\(--ground-fit-c-max\)\)\s*\n\s*h\);/,
+    "the ground is moving the publisher's hue");
+  /* Both polarities declare the two numbers that have one. */
+  assert.equal((styles.match(/--ground-fit-l:/g) ?? []).length, 2,
+    "the ground fit has a light polarity and a dark one, and no more");
+  assert.equal((styles.match(/--ground-fit-step:/g) ?? []).length, 2,
+    "the edge step has a light polarity and a dark one, and no more");
+  /* MEASURED, not adjusted by eye: the app's tertiary ink clears 4.5 against
+     paper by a hair and does not clear it against a tinted card, so the card's
+     quietest rank steps up one. qa-podcast-player sweeps the whole matrix in
+     the running engine. */
+  assert.match(styles,
+    /\.resource-card\[data-source\] \.resource-card-extent,\s*\n\s*\.resource-card\[data-source\] \.resource-card-plate \.taught-here-mark \{\s*\n\s*color: var\(--text-secondary\);/,
+    "the card's quietest ink is the tertiary again, which does not clear 4.5 on a tinted ground");
 });
 
 test("the two footings reach the surfaces that show them, in a reader's language", () => {

@@ -545,6 +545,51 @@
      is roughly the lightness of the ember. */
   --accent-fit-floor: 0;      /* @kind other */
   --accent-fit-ceiling: 0.52; /* @kind other */
+
+  /* ── Fitting a publisher's HUE to the app's own paper ────────────────────
+     Added 2026-07-30 with the resources room's card ground. The sibling of the
+     accent fit above and the same idea turned ninety degrees: the accent keeps
+     the brand's chroma and clamps its LIGHTNESS, because it has to hold as a
+     mark; a card GROUND keeps the brand's hue and drops almost all of its
+     chroma, because it has to hold as paper.
+
+     The reader asked for this and named it: "maybe an homage toward the brands
+     hue down to aesthetic muted alternatives! important they look good." So the
+     card wears neither the raw brand colour nor plain app paper. Hue is the
+     publisher's, untouched. Chroma is clamped into a narrow band. Lightness is
+     REPLACED — not clamped — by the atmosphere's own figure, because a ground
+     that inherited the brand's lightness would put Naked Bible's charcoal and
+     Enter the Bible's yellow on two different planes of the same shelf.
+
+     Three numbers, eleven publishers, four atmospheres, no hand-picked hexes:
+
+       --ground-fit-l · where the ground sits. One step off paper and no more.
+         The binding constraint is measured rather than chosen: at the light
+         figure below, the app's SECONDARY ink holds 5.00:1 over the worst of
+         the eleven and its TERTIARY holds only 4.07:1 — so a tinted card steps
+         its quietest ink up one rank, which is stated where the card sets it.
+
+       --ground-fit-c-min / -max · the chroma band. The ceiling is the largest
+         value that stays inside sRGB for all eleven hues at this lightness
+         (0.024 clips the blues); the floor is what stops a brand that is
+         already near-neutral — Naked Bible's charcoal is C 0.009 — from
+         arriving as the one plain card on a shelf of tinted ones. A clamp
+         rather than a cap, so every publisher gets a ground of the same
+         family and only the hue moves.
+
+       --ground-fit-step · how far the card's own edge and its hover sit from
+         its ground, signed by the atmosphere's polarity so one expression
+         serves both: on light paper a card darkens to show its edge, on dark
+         paper it lifts.
+
+     scripts/qa-podcast-player.mjs sweeps all eleven grounds against all four
+     atmospheres in the running engine and asserts the ink floor, so these
+     numbers cannot drift away from the claim. */
+  --ground-fit-l: 0.96;        /* @kind other */
+  --ground-fit-c-min: 0.011;   /* @kind other */
+  --ground-fit-c-max: 0.022;   /* @kind other */
+  --ground-fit-step: -0.055;   /* @kind other */
+
   --material-blur: 0px;   /* @kind other */
   --material-saturate: 1; /* @kind other */
 
@@ -818,6 +863,14 @@
      Porcelain is a light atmosphere and keeps :root's pair. */
   --accent-fit-floor: 0.74;
   --accent-fit-ceiling: 1;
+  /* The dark polarity of the ground fit — see the :root note. Only the two
+     numbers that have a polarity turn over: the ground sinks to just above the
+     paper it sits on, and the step that draws its edge points the other way.
+     The chroma band is the same band, because chroma has no polarity.
+     Measured here, and it is the looser of the two: the app's secondary ink
+     holds 5.88:1 over the worst of the eleven dark grounds. */
+  --ground-fit-l: 0.262;
+  --ground-fit-step: 0.055;
   /* Laurel's dark polarity, Rev 04 §4. Declared only; the licensed strings
      migrate onto it in a separate pass this block does not own. */
   --accent-laurel: #9DAA8A;     /* 7.00:1 on paper */
@@ -19687,29 +19740,31 @@ button.lang-phrase-diagram-node:focus-visible,
    pairs a 28px tail with a 27px head across a subtle hairline, and this group
    sat at 18px against a heavier rule, reading as a different kind of object
    than the sections above it. */
-/* ══ Taught here — the chapter's one audio surface ══════════════════════════
-   Rewritten 2026-07-30, when the surface it styles absorbed the podcast rows
-   of the publisher index below it. See components/TaughtHere.tsx for what the
-   merge is and why; this file holds three decisions of its own.
+/* ══ What survived Taught here ══════════════════════════════════════════════
+   SWEPT 2026-07-30 with the resources room's audit. This region used to style
+   a whole surface — a masthead over three collapsing bands of rows, each row a
+   play face, a title, a wrapping meta line and a count, with a density control
+   under it. That surface became the ROOM below (see THE RESOURCES ROOM), and
+   the merge that moved it left ~440 lines of its stylesheet standing so the
+   merge would stay clean. The merge is done, so they are gone: every rule
+   removed had zero consumers outside this file, proved by grep per class.
 
-   IT KEEPS THE MARGIN'S PAPER. Every colour here is a token, so the surface
-   answers all four atmospheres. The one exception is the plate, which is the
-   publisher's own colour under their own approved artwork — the same object
-   the dock's masthead carries, at a colophon's size rather than a masthead's.
+   Five objects survive, because components/Resources still draws them, and
+   they keep the `taught-here-` prefix rather than being renamed — a rename
+   would touch the six approved marks' selector lists, which are the permission
+   boundary's and not this pass's to move:
+
+     · the digest's masthead and kicker, on the Overview tab
+     · the walk — one offer, above the room, stating its own whole extent
+     · the PLATE and its mark, which is the publisher's own colour under their
+       own approved artwork at a colophon's size, and the one thing on either
+       surface that is not drawn from a token
+     · the footing, one sentence at the foot of the room
+
    The play face takes the app's fitted gold rather than the publisher's
-   accent: twenty-five rows from eight publishers each glowing a different
-   colour is a colour chart, not a margin. See the --player-accent note where
-   the surfaces that declare it are listed.
-
-   IT COVERS ITS OWN STATES. The family this replaced had no :focus-visible
-   rule anywhere — two real <button>s taking the UA's default ring against a
-   pebble radius while every neighbour used the seal — no forced-colors block,
-   and no reduced-motion opt-out for a chevron that rotates 90°. All three are
-   here, and the QA tour walks them.
-
-   THE ROW HAS ONE GRAMMAR, whichever file the entry came from:
-     [play] Episode title ……………………………… 25 min
-            [plate] Romans 8:9–17 · 0:26 · worked through   */
+   accent: eleven publishers each glowing a different colour is a colour chart,
+   not a margin. See the --player-accent note where the surfaces that declare
+   it are listed. */
 .taught-here {
   margin-top: 27px;
   border-top: 1px solid var(--border-subtle);
@@ -19793,174 +19848,12 @@ button.lang-phrase-diagram-node:focus-visible,
   text-wrap: pretty;
 }
 
-/* Three bands, all shut. A chapter holds 18 moments at the median and 922 at
-   Genesis 1 — open, the long ones bury the margin; as one list nobody can tell
-   which of nine hundred bear on the line in front of them. Shut with a count,
-   the whole thing is three rows and the reader opens the question they have.
-   (Those two numbers were 7 and 427 when this was written and are measured
-   again here: the corpus has more than doubled under the surface.) */
-.taught-here-group + .taught-here-group { border-top: 1px solid var(--border-subtle); }
-
-.taught-here-toggle {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  width: 100%;
-  padding: 10px 6px;
-  border: 0;
-  background: none;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: color var(--transition-fast);
-}
-
-.taught-here-toggle:hover { color: var(--text-primary); }
-
-.taught-here-toggle:focus-visible {
-  outline: var(--focus-ring-width) solid var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
-  border-radius: var(--radius-pebble);
-  color: var(--text-primary);
-}
-
-.taught-here-chevron {
-  flex: none;
-  width: 11px;
-  height: 11px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 0.55;
-  transition: transform var(--transport-quick) var(--ease-transport);
-}
-
-.taught-here-group[data-open="true"] .taught-here-chevron { transform: rotate(90deg); }
-
-.taught-here-label {
-  flex: 1;
-  font: var(--fw-semibold) 0.5625rem/1.3 var(--font-ui);
-  letter-spacing: 0.11em;
-  text-align: left;
-  text-transform: uppercase;
-}
-
-/* What makes a shut drawer worth reading. */
-.taught-here-count {
-  color: var(--text-tertiary);
-  font: 0.6875rem/1.3 var(--font-mono);
-  font-variant-numeric: tabular-nums;
-}
-
-.taught-here-group[data-open="true"] .taught-here-count { color: var(--text-secondary); }
-
-.taught-here-list {
-  /* An open band takes its own scroll rather than pushing the index below it
-     off the panel. It is also what makes "show all" a real offer on Genesis 1:
-     nine hundred rows inside a 300px scroller is a list; nine hundred rows in
-     the document is a panel nobody can leave. */
-  max-height: 300px;
-  margin: 0;
-  padding: 0 0 6px;
-  overflow-y: auto;
-  list-style: none;
-  scrollbar-width: thin;
-  overscroll-behavior: contain;
-}
-
-/* ── The row ───────────────────────────────────────────────────────────────
-   Two lines, three columns on the first. The transport's face leads because
-   the row's press is play; the extent closes the first line because eleven
-   minutes against forty seconds is the whole decision and a scanning eye
-   returns to the right edge. */
-.taught-here-row {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  grid-template-areas: "play episode extent" ". meta meta";
-  align-items: center;
-  gap: 2px 9px;
-  width: 100%;
-  padding: 8px 6px;
-  border: 0;
-  border-radius: var(--radius-pebble);
-  background: none;
-  color: inherit;
-  text-align: left;
-  cursor: pointer;
-  transition: background var(--transition-fast);
-}
-
-.taught-here-row:hover { background: var(--surface-hover); }
-
-.taught-here-row:focus-visible {
-  outline: var(--focus-ring-width) solid var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
-}
-
 /* The row's press IS the transport, so the face takes the row's own states.
    See TransportPlayMark: one glyph, one pill, one crossfade for the whole app,
    and this surface was the fourth that started audio with no transport
    language on it at all. */
 .taught-here-play {
   --transport-size: 22px;
-}
-
-.taught-here-row .taught-here-play { grid-area: play; }
-
-.taught-here-row:hover .taught-here-play { filter: brightness(1.06); }
-.taught-here-row:active .taught-here-play { transform: scale(0.94); }
-
-/* The one currently in the dock is stated on the row that started it, so a
-   reader scanning the list can see where the voice came from. */
-.taught-here-row[data-running="true"] .taught-here-episode { color: var(--text-primary); }
-.taught-here-row[data-running="true"] {
-  background: var(--surface-hover);
-  box-shadow: inset 2px 0 0 var(--player-accent);
-}
-
-.taught-here-episode {
-  grid-area: episode;
-  overflow: hidden;
-  font: var(--fw-medium) 0.8125rem/1.4 var(--font-reading);
-  letter-spacing: -0.006em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Numeral face so a column of them aligns and eleven minutes is visibly more
-   than forty seconds without anyone reading a word. */
-.taught-here-extent {
-  grid-area: extent;
-  color: var(--text-secondary);
-  font: var(--fw-medium) 0.6875rem/1.4 var(--font-mono);
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-/* ── The meta line WRAPS ───────────────────────────────────────────────────
-   Four facts want this line — who, which passage, when in the episode, and in
-   what way — and a 300px margin column cannot hold them on one row. The first
-   draft clipped each of them to its own ellipsis and produced
-   "40 MINUTES IN THE OL… · 1 Sa… · 1:39 · worked t…", which is four
-   truncations answering none of the four questions.
-
-   So it wraps, to two lines at most. This is a study margin: an entry that
-   takes a second line is what a margin entry does, and nothing here is a
-   column that has to align with the row above it. The episode title above
-   still clips to one line, because a title is long by nature and its first
-   forty characters identify it. */
-.taught-here-meta {
-  grid-area: meta;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1px 6px;
-  min-width: 0;
-  max-height: 3.1em;
-  overflow: hidden;
-  color: var(--text-tertiary);
-  font: 0.6875rem/1.5 var(--font-ui);
 }
 
 /* ── The publisher ─────────────────────────────────────────────────────────
@@ -19991,80 +19884,6 @@ button.lang-phrase-diagram-node:focus-visible,
   white-space: nowrap;
 }
 
-/* The passage, in the reading face and at full strength: it is the answer
-   rather than the filing. A reader on Romans 8:1 who sees 8:1-4 knows it is
-   theirs without a band heading saying so. */
-.taught-here-ref {
-  color: var(--text-secondary);
-  font: var(--fw-medium) 0.6875rem/1.5 var(--font-reading);
-  white-space: nowrap;
-}
-
-.taught-here-at {
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.taught-here-ref::before,
-.taught-here-at::before,
-.taught-here-said::before {
-  margin-right: 6px;
-  content: "\00b7";
-  opacity: 0.6;
-}
-
-/* Never a schema token. The four relations reached readers as `crossref` and
-   `mention` — 56% of the corpus labelled with a column name — and as an empty
-   span in the dock. src/core/relation-words.ts holds the words for both
-   surfaces so they cannot drift apart again. */
-.taught-here-said { white-space: nowrap; }
-
-/* ── The density control ───────────────────────────────────────────────────
-   Genesis 1's 922 moments used to end at row 25 in a plain <li> reading "897
-   more, shortest last" — a sentence shaped like a disclosure with nothing
-   under it. The stylesheet already held a button's worth of rules for a
-   control that had been taken out; they are a control again. */
-.taught-here-more-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding-bottom: 4px;
-}
-
-.taught-here-more {
-  margin: 2px 0 0;
-  padding: 5px 6px;
-  border: 0;
-  border-radius: var(--radius-pebble);
-  background: none;
-  color: var(--text-tertiary);
-  font: 0.6875rem/1.4 var(--font-ui);
-  text-align: left;
-  cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
-}
-
-.taught-here-more:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
-}
-
-.taught-here-more:focus-visible {
-  outline: var(--focus-ring-width) solid var(--focus-ring);
-  outline-offset: var(--focus-ring-offset);
-}
-
-.taught-here-more.is-all {
-  flex: none;
-  margin-left: auto;
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-}
-
 /* ── The two footings ──────────────────────────────────────────────────────
    One sentence, once, at the foot. docs/trusted-resource-permissions says the
    distinction between a publisher who granted transcripts and one nobody has
@@ -20082,46 +19901,24 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .taught-here-chevron,
-  .taught-here-row,
-  .taught-here-walk,
-  .taught-here-toggle,
-  .taught-here-more { transition: none; }
-  .taught-here-row:active .taught-here-play { transform: none; }
+  .taught-here-walk { transition: none; }
 }
 
 @media (forced-colors: active) {
-  /* Hover was the ONLY thing distinguishing a pointed-at row, and
-     `background: var(--surface-hover)` flattens to Canvas here — so the row a
-     reader is on became indistinguishable from the eight around it. */
-  .taught-here-row:hover,
-  .taught-here-walk:hover,
-  .taught-here-toggle:hover { background: Highlight; color: HighlightText; }
+  /* Hover was the ONLY thing distinguishing a pointed-at offer, and
+     `background: var(--surface-hover)` flattens to Canvas here. */
+  .taught-here-walk:hover { background: Highlight; color: HighlightText; }
+  .taught-here-walk:focus-visible { outline-color: Highlight; }
 
-  .taught-here-row[data-running="true"] {
-    background: Canvas;
-    outline: 2px solid Highlight;
-    outline-offset: -2px;
-    box-shadow: none;
-  }
-
-  .taught-here-row:focus-visible,
-  .taught-here-walk:focus-visible,
-  .taught-here-toggle:focus-visible,
-  .taught-here-more:focus-visible { outline-color: Highlight; }
-
-  /* The masthead's 3px rule and the hairlines between bands both resolve to
-     CanvasText, which loses the distinction the weight was carrying. */
+  /* The masthead's 3px rule resolves to CanvasText, which loses the
+     distinction the weight was carrying. */
   .taught-here-masthead { border-bottom-width: 2px; border-bottom-color: CanvasText; }
-  .taught-here-group + .taught-here-group { border-top-color: GrayText; }
 
   /* The plate keeps the publisher's colour for the same reason the dock's
      does — the marks are approved reverses and the artwork may not be
      recoloured — and it is the only opt-out on this surface. */
   .taught-here-plate { forced-color-adjust: none; }
 
-  .taught-here-count,
-  .taught-here-meta,
   .taught-here-footing { color: CanvasText; }
 }
 
@@ -20199,8 +19996,22 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 .resource-shelf {
-  gap: 5px;
+  /* 5 → 6, with the room's gutter. The shelf teaches which hue belongs to
+     whom and the cards below spend that lesson, so the two have to read as one
+     system: the shelf's gap and the grid's gutter are now the same interval
+     scaled to their own plate. */
+  gap: 6px;
   padding: 0;
+}
+
+/* THE READER'S OWN CELL DOES NOT GROW. Added 2026-07-30 with the audit: the
+   settings cell took an equal share of the justification like a publisher, so
+   on a passage whose last row held only it, "Your library" arrived as a
+   full-width outlined box under a stack of colour — the loosest object on the
+   shelf, at the largest size on the shelf, carrying the least. It takes its
+   own width now and the publishers above it divide theirs. */
+.resource-shelf .trusted-resource-imprint.is-settings {
+  flex: 0 0 auto;
 }
 
 /* THE MARK'S HEIGHT, which the imprint never had. The shared mark rule sizes
@@ -20259,7 +20070,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-shelf-sliders { flex: none; }
 
 .resource-room {
-  margin-top: var(--sp-sm);
+  margin-top: var(--sp-md);
 }
 
 .resource-grid {
@@ -20269,10 +20080,12 @@ button.lang-phrase-diagram-node:focus-visible,
      two as the reader drags the window, and a room that reflows under the
      hand is not calm. */
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  /* Raised from 6 with the taste pass. Every card carries a saturated plate in
-     its head, and at 6px of gutter a column of them read as one continuous
-     band of colour with hairlines through it. Air is what separates marks. */
-  gap: 8px;
+  /* 6 → 8 with the taste pass, 8 → 10 with the ground. Every card is now a
+     tinted plane rather than paper with a plate on it, and two planes 8px
+     apart read as one plane with a seam. The gutter is what tells eleven
+     papers apart; it is the cheapest thing on this surface and the most
+     load-bearing. */
+  gap: 10px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -20280,11 +20093,63 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .resource-card {
   display: grid;
+  /* Both stated rather than inherited, because the palette blocks this card
+     now matches were written for inline plates. */
+  align-items: stretch;
   /* The room can be nine hundred cards long. This is what keeps that honest:
      the ones outside the viewport are not laid out until they are near it, and
      the intrinsic size stops the scrollbar from lying while they wait. */
   content-visibility: auto;
   contain-intrinsic-size: auto 112px;
+}
+
+/* ── THE CARD'S GROUND · 2026-07-30 ────────────────────────────────────────
+   A muted homage to the publisher's hue, derived rather than picked.
+
+   The reader asked the question and answered it: "maybe an homage toward the
+   brands hue down to aesthetic muted alternatives! important they look good."
+   Before this the card was plain app paper and the publisher survived only as
+   a 16px plate, which is why a shelf of them read as a list with badges on it
+   rather than as a set of publishers.
+
+   HOMAGE, NOT REPRODUCTION. The ground is neither the raw brand colour — a
+   grid of eleven saturated tiles is the colour chart every note in this file
+   is trying to avoid — nor the app's paper. It is the brand's HUE at the
+   app's own lightness with almost all of the chroma taken out, so the eleven
+   cards read as a family of related papers and the shelf reads as a set. See
+   --ground-fit-* at :root for the three numbers and what binds them.
+
+   ONE DERIVATION. Eleven publishers, four atmospheres, zero hand-picked
+   hexes: the input is the same `--resource-source` the plate is painted from,
+   so a publisher whose palette changes upstream gets a new ground for free and
+   cannot drift away from their own plate. This is the sibling of the accent
+   fit that Build 2 wrote for `--player-accent`, turned ninety degrees —
+   that one keeps chroma and clamps lightness because it must hold as a mark;
+   this one keeps hue and clamps chroma because it must hold as paper.
+
+   Lightness is REPLACED rather than clamped, and that is the whole reason the
+   set works: clamping would have left Naked Bible's charcoal and Enter the
+   Bible's yellow on two different planes of one shelf. Every card sits on the
+   same plane; only the hue moves.
+
+   Declared on the CARD, not the face. The face below re-declares
+   `--resource-source` as the app's gold so its transport mark stays the app's
+   voice — see the note beside that declaration — and the ground has already
+   been computed by then. Two scopes, and the division is the point. */
+.resource-card[data-source] {
+  --resource-ground: oklch(from var(--resource-source)
+    var(--ground-fit-l)
+    clamp(var(--ground-fit-c-min), c, var(--ground-fit-c-max))
+    h);
+  /* The card's own edge, in its own hue. A warm grey hairline around a cyan
+     card is the app's border token showing through the homage; one step off
+     the ground in the atmosphere's own direction is the card's own edge. */
+  --resource-ground-edge: oklch(from var(--resource-ground)
+    calc(l + var(--ground-fit-step)) c h);
+  /* Hover is the same step at 42%, so the pointer moves the card toward its
+     own edge rather than toward the app's grey. */
+  --resource-ground-lift: oklch(from var(--resource-ground)
+    calc(l + var(--ground-fit-step) * 0.42) c h);
 }
 
 /* The second size. It is the same card — same face, same four things, same
@@ -20297,26 +20162,25 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .resource-card-face {
   display: grid;
-  /* Head, name, foot — and the foot is on the card's FLOOR rather than under
-     whatever the name happened to need. Added 2026-07-30: the face was
+  /* Colophon, name, foot — and the foot is on the card's FLOOR rather than
+     under whatever the name happened to need. Added 2026-07-30: the face was
      `align-content: start`, so two cards side by side with a one-line and a
      two-line title put their passage and their extent on two different lines,
      and a grid of them had no horizontal rhythm at all. The middle row takes
      the slack; the passage and the extent align across every row. */
   grid-template-rows: auto minmax(0, 1fr) auto;
-  gap: 8px;
+  gap: 9px;
   width: 100%;
   height: 100%;
-  /* 10 rather than 8, with the taste pass. The face carries a brand plate, a
-     transport mark, a two-line title and a foot; at 8 the plate sat 8px from
-     the card's own edge and 8px from the title, so nothing on the face had a
-     margin wider than the gaps inside it. */
-  padding: 10px;
-  border: 1px solid var(--border-subtle);
+  /* 8 → 10 with the taste pass, 10 → 11 with the ground: on a tinted plane the
+     padding is the card's own margin, and a margin narrower than the gaps
+     inside the block is what makes a card look printed on its own edge. */
+  padding: 11px;
+  border: 1px solid var(--resource-ground-edge, var(--border-subtle));
   /* Canon: 0.22 × the shorter dimension, rounded even, capped at 8 — a ~112px
      tile takes the cap, and the plate inside it nests at 4. */
   border-radius: var(--radius-md);
-  background: none;
+  background: var(--resource-ground, none);
   color: inherit;
   text-align: left;
   cursor: pointer;
@@ -20324,8 +20188,8 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 .resource-card-face:hover {
-  border-color: var(--border-medium);
-  background: var(--surface-hover);
+  border-color: var(--resource-ground-edge, var(--border-medium));
+  background: var(--resource-ground-lift, var(--surface-hover));
 }
 
 .resource-card-face:focus-visible {
@@ -20335,24 +20199,52 @@ button.lang-phrase-diagram-node:focus-visible,
 
 /* The one in the dock is named on the card that started it, so a reader
    scanning the room can see where the voice came from. The mark is the app's
-   own seal edge, not a second fill. */
+   own seal edge, not a second fill — and on a tinted ground it is now the only
+   thing that distinguishes the playing card, which is why it holds a full
+   3px against a plane that is no longer white. */
 .resource-card-face[data-running="true"] {
-  border-color: var(--border-medium);
-  background: var(--surface-hover);
-  box-shadow: inset 2px 0 0 var(--player-accent);
+  border-color: var(--resource-ground-edge, var(--border-medium));
+  background: var(--resource-ground-lift, var(--surface-hover));
+  box-shadow: inset 3px 0 0 var(--player-accent);
 }
 
-.resource-card-head {
+/* ── The ink on a tinted ground ────────────────────────────────────────────
+   MEASURED, not adjusted by eye. The app's tertiary ink is drawn to clear 4.5
+   against PAPER and clears it by a hair — 4.60:1 on Paper, 4.63 on Porcelain,
+   4.61 on Ink, 4.64 on Onyx — so the moment the card stops being paper it
+   stops clearing. Swept over all eleven grounds × four atmospheres the worst
+   tertiary lands at 4.07:1 and the worst SECONDARY at 5.00:1.
+
+   So the card's quietest rank steps up one, and it is stated here rather than
+   fixed per element: on this ground the app has three inks, not four. The
+   ranks below it keep their distance because the type sizes and the faces
+   still differ — 11px reading serif against 10px mono is a hierarchy without
+   a fourth grey in it.
+
+   Both consumers are on the two elements below; qa-podcast-player sweeps the
+   whole matrix in the running engine so this claim cannot drift. */
+.resource-card[data-source] .resource-card-extent,
+.resource-card[data-source] .resource-card-plate .taught-here-mark {
+  color: var(--text-secondary);
+}
+
+/* ── The foot, and what a press will do ────────────────────────────────────
+   The transport mark used to sit in the card's head beside the publisher's
+   plate: two marks on the loudest line, and 20px of amber repeated once per
+   card down a room that can be nine hundred long. It is at the foot now,
+   against the extent it acts on — "▸ 12 min" is one object, and the head is
+   free for the colophon that has to be on every card. */
+.resource-card-tail {
   display: flex;
+  flex: none;
   align-items: center;
-  gap: 7px;
-  min-width: 0;
+  gap: 5px;
 }
 
 /* The transport's own face, at the room's scale. The card's press IS the
    play, so this is a mark rather than a second control inside a control. */
 .resource-card-play {
-  --transport-size: 20px;
+  --transport-size: 14px;
   flex: none;
 }
 
@@ -20361,24 +20253,72 @@ button.lang-phrase-diagram-node:focus-visible,
 
 /* Something to read rather than hear. One glyph is the whole difference, and
    it is the difference a press actually makes — everything else on the two
-   faces is identical, because they are the same kind of thing. */
+   faces is identical, because they are the same kind of thing.
+
+   THE RING IS GONE · 2026-07-30. It was a 20px hairline disc, drawn that way
+   to answer the 20px filled transport disc it used to sit beside in the head.
+   Neither is in the head any more, and in the foot the ring was a container
+   around a 9px glyph that needed none — a shape whose whole job was to match a
+   shape that had moved. What is left is the glyph, at the transport mark's own
+   height so the foot's right edge still has one. It also gives the passage
+   back six pixels, which on a 160px tile is a word. */
 .resource-card-out {
   display: inline-grid;
   flex: none;
   place-items: center;
-  width: 20px;
-  height: 20px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 50%;
-  color: var(--text-tertiary);
+  width: 14px;
+  height: 14px;
+  color: var(--text-secondary);
 }
 
-/* The plate takes what is left of the head, because on a tile the publisher IS
-   the identity and there is nothing else on that line competing for it. The
-   row's own 42% cap belongs to a row with a title and an extent beside it. */
+.resource-card-out .resource-kind-icon { width: 12px; height: 12px; }
+
+/* The plate has the head line to itself — see the reversal note in
+   components/Resources. It is a colophon rather than a badge: full width is
+   available to it and it takes only what its own mark needs.
+
+   ONE HEAD-LINE HEIGHT, whichever of the two permission forms the publisher is
+   on. A source with an approved mark gets a 16px plate; a source without one
+   gets its name in type, which is 9px of small caps and was leaving the head
+   line seven pixels shorter — so a grid holding both put its titles on two
+   different baselines, column by column, for a reason that is about our
+   outreach rather than about the material. The floor makes the line one
+   height; the two forms inside it stay exactly as different as the permission
+   boundary says they are. */
 .resource-card .resource-card-plate[data-source] {
+  /* A COLOPHON TAKES ITS OWN WIDTH. `justify-self: start` rather than the
+     grid's default stretch — measured on the first render of this build, and
+     it is the single loudest thing that was wrong with it: the plate is a grid
+     item now that the transport left the head, so it filled the card and every
+     wordmark arrived as a full-width banner in the publisher's colour, which
+     is the colour chart with a title under it that this whole room is against.
+     It was invisible before only because a 20px disc was sharing the line. */
+  justify-self: start;
   min-width: 0;
   max-width: 100%;
+  /* ONE HEAD-LINE HEIGHT, whichever of the two permission forms the publisher
+     is on. A source with an approved mark gets a 16px plate; a source without
+     one gets its name in type, which is 9px of small caps and was leaving the
+     head line seven pixels shorter — so a grid holding both put its titles on
+     two different baselines, column by column, for a reason that is about our
+     outreach rather than about the material. */
+  min-height: 16px;
+  padding: 0 5px;
+  border-radius: 4px;
+  /* THE KEYLINE, and it does three jobs for one hairline.
+     · It separates a plate from a ground of its own hue. Naked Bible's plate
+       is a charcoal and their card's ground is a charcoal at the dark
+       polarity's lightness — 0.06 apart in OKLCH L — and Enter the Bible's
+       yellow sits the same distance off their cream ground on the light one.
+       Those are the two cases the derivation cannot fix without moving every
+       other publisher, so the frame fixes them instead.
+     · It gives the five sources with no approved mark a nameplate that rhymes
+       with the six that have one, without giving them a mark or a fill.
+     · It is the card's own edge colour, so it belongs to the card rather than
+       introducing a second grey.
+     Drawn as a shadow rather than a border so it costs the plate no width and
+     cannot shift the artwork inside it. */
+  box-shadow: 0 0 0 1px var(--resource-ground-edge, var(--border-subtle));
 }
 
 /* The five sources with no approved mark set their NAME here — the generic
@@ -20393,45 +20333,40 @@ button.lang-phrase-diagram-node:focus-visible,
    itself, indented off-screen behind a background image by the mark rule
    further down this file, so an ink and a face on it change nothing. */
 .resource-card-plate .taught-here-mark {
-  color: var(--text-tertiary);
   font: var(--fw-semibold) 0.5625rem/1 var(--font-ui);
-  letter-spacing: 0.07em;
+  /* 0.07em → 0.05em. Tracking is what a 9px imprint voice is made of, and it
+     is also what "40 Minutes in the Old Testament" spends before the ellipsis
+     takes it: five of the eleven set their name here, three of those are over
+     twenty characters, and the two hundredths buy about three of them in a
+     160px column. */
+  letter-spacing: 0.05em;
   text-transform: uppercase;
 }
 
-/* ── The run · 2026-07-30 ──────────────────────────────────────────────────
-   The second and third card of one publisher's run keep the plate and give up
-   the artwork: the same colour, the same 16px height, the same 4px corner,
-   reduced to its ground. See components/Resources for the argument — the
-   wordmark stamped four times down one column is what made the room shout, and
-   withdrawing it is what lets the colour stay.
+/* ── The run, and why it is gone · REVERSED 2026-07-30 ─────────────────────
+   This is where the run-inheritance rule was pinned. It ran one build, and
+   the note that held it said:
 
-   A RULE RATHER THAN A SWATCH. The first draft made it 14px wide at the
-   plate's own 4px corner, which put a second rounded rectangle beside the
-   transport's disc and read as an unlabelled control — a coloured button
-   nobody could press. 4px at the marks' own 2px corner reads as what it is:
-   a printer's rule in the publisher's ink, struck at the exact x where the
-   imprint two cards above it starts, so a run threads down the column.
+     "The second and third card of one publisher's run keep the plate and give
+     up the artwork: the same colour, the same 16px height, the same 4px
+     corner, reduced to its ground. … the wordmark stamped four times down one
+     column is what made the room shout, and withdrawing it is what lets the
+     colour stay."
 
-   Specificity is deliberate. The per-source plate rules further down this file
-   set the padding and the corner, and they are later in source order, so this
-   has to out-rank rather than out-order them.
+   The reader saw it drawn and rejected it: "i dont like how some lose the logo
+   it just confuses. logo on every is better." A mark present on some cards and
+   withdrawn on others makes a reader ask what the difference means, and the
+   true answer — that the card above happened to be the same publisher — is not
+   worth the question it costs. The selectors that did it are deleted rather
+   than disabled, and `data-repeat` is gone from the markup with them.
 
-   THE FIVE UNMARKED SOURCES ARE UNTOUCHED. They take no plate and no colour on
-   a card at all — that is docs/trusted-resource-permissions' generic treatment
-   and a permission decision rather than a design one — so their name in type
-   is already the quiet form, and it stays on every card. There is nothing to
-   withdraw. */
-.resource-card .resource-card-plate[data-repeat="true"] {
-  flex: none;
-  width: 4px;
-  padding: 0;
-  border-radius: var(--radius-mark);
-}
-
-/* Naked Bible's plate carries its name as a pseudo-element beside the emblem,
-   and a reduced plate has neither. */
-.resource-card .resource-card-plate[data-repeat="true"]::after { content: none; }
+   THE REDUNDANCY IT WAS SOLVING IS REAL AND IS STILL SOLVED. It moved into the
+   four currencies a mark can be quiet in without being absent: the ground
+   above carries the publisher so the plate no longer has to be the whole of
+   the identity (HIERARCHY); the plate has the head line to itself now that the
+   transport moved to the foot (SCALE); one plate at one x on every card, over
+   a foot that aligns across the row (RHYTHM); and the gutter and the card's
+   own padding both went up (SPACING). */
 
 /* The thing's own name. Two lines, because a title is long by nature and its
    first forty characters identify it; `pretty` rather than `balance` because a
@@ -20454,7 +20389,10 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .resource-card-foot {
   display: flex;
-  align-items: baseline;
+  /* `center` rather than `baseline`, with the transport mark now in this row:
+     a 14px disc has no baseline of its own, so a baseline row hung it off the
+     bottom of the numerals beside it. */
+  align-items: center;
   justify-content: space-between;
   gap: 6px;
   min-width: 0;
@@ -20559,13 +20497,78 @@ button.lang-phrase-diagram-node:focus-visible,
   border-radius: var(--radius-sm);
 }
 
+/* ── THE WALK, AGAINST A ROOM OF TINTED CARDS · 2026-07-30 ─────────────────
+   The offer is the one object on this surface that is the APP speaking rather
+   than a publisher: it is about the chapter, and it plays twelve publishers in
+   turn. It was drawn as a bare row on paper, which was right when the cards
+   below it were bare rows on paper too — and became wrong the moment they
+   became tinted planes with edges, because the loudest thing in the room was
+   then the only thing with no shape at all.
+
+   So it takes the card's own geometry — same radius, same hairline, same
+   padding — in the APP'S OWN PAPER. One object in the app's voice above a grid
+   in eleven publishers' voices, and the difference between them is a fact
+   rather than a decoration. */
+.resources .taught-here-walk {
+  align-items: center;
+  margin: 0;
+  padding: 11px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--bg-reading);
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.resources .taught-here-walk:hover {
+  border-color: var(--border-medium);
+  background: var(--surface-hover);
+}
+
+/* ── The colophon ──────────────────────────────────────────────────────────
+   HOW NINE HUNDRED CARDS END. The grid used to simply stop, and two loose
+   paragraphs at two weights followed it — a settings count set as body copy,
+   then the footing sentence under a rule of its own. A reader who has scrolled
+   Genesis 1 to the bottom has reached the end of the app's whole answer, and
+   the end of an answer is a colophon: one rule, one block, standing facts in
+   the order they matter, nothing that could be mistaken for a control.
+
+   The rule lives here rather than on the footing paragraph, so the block
+   closes once however many of its two lines are drawn. */
+.resources-colophon {
+  margin-top: var(--sp-md);
+  padding-top: var(--sp-sm);
+  border-top: 1px solid var(--border-subtle);
+}
+
+.resources-colophon .taught-here-footing {
+  margin: 0;
+  padding: 0;
+  border-top: 0;
+}
+
+/* Second, quieter, and in the numeral face the room uses for every other
+   count: it is a fact about the reader's own settings rather than about the
+   publishers above it. */
+.resources-colophon-hidden {
+  margin: 5px 0 0;
+  color: var(--text-tertiary);
+  font: 0.625rem/1.5 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .resource-card-face,
+  .resources .taught-here-walk,
   .resources-door { transition: none; }
   .resource-card-face:active .resource-card-play { transform: none; }
 }
 
 @media (forced-colors: active) {
+  /* The ground is a fill, and a forced palette takes fills away by design —
+     `forced-color-adjust: auto` maps every card back to Canvas, which is
+     exactly right: the homage is a courtesy and the reader's own contrast is
+     not. What must survive is the card's EDGE, because with the tint gone the
+     edge is the only thing that says where one card stops. */
   .resource-card-face {
     border-color: CanvasText;
   }
@@ -20585,39 +20588,17 @@ button.lang-phrase-diagram-node:focus-visible,
   .resource-card-ref,
   .resource-card-extent,
   .resource-stop-mark,
+  .resources-colophon-hidden,
   .resources-door { color: CanvasText; }
   .resource-card-out { border-color: CanvasText; color: CanvasText; }
   .resource-stop::before { background: CanvasText; }
+  .resources-colophon { border-top-color: GrayText; }
+  .resources .taught-here-walk { border-color: CanvasText; }
+  .resources .taught-here-walk:hover { background: Highlight; color: HighlightText; }
   /* The plate keeps the publisher's colour for the same reason the dock's
      does — the marks are approved reverses and the artwork may not be
      recoloured — and it is the only opt-out in this room. */
   .resource-card-plate { forced-color-adjust: none; }
-}
-
-.trusted-resources {
-  margin-top: 27px;
-  border-top: 1px solid var(--border-subtle);
-  color: var(--text-primary);
-}
-
-.trusted-resources-masthead {
-  display: grid;
-  gap: 2px;
-  padding: 11px 0 9px;
-  border-bottom: 3px solid var(--text-primary);
-}
-
-.trusted-resources-kicker {
-  color: var(--text-tertiary);
-  font: var(--fw-semibold) 0.5625rem/1.2 var(--font-ui);
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-}
-
-.trusted-resources-masthead h3 {
-  margin: 0;
-  font: var(--fw-bold) 1rem/1.1 var(--font-ui);
-  letter-spacing: -0.025em;
 }
 
 .trusted-resources-status {
@@ -20628,13 +20609,6 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 .trusted-resources-status.is-refusal { color: var(--error); }
-
-.trusted-resource-drawer {
-  display: grid;
-  /* On the 4px grid the rest of the app uses; 10px was nothing's multiple. */
-  gap: var(--sp-md);
-  padding-top: var(--sp-md);
-}
 
 .trusted-resource-imprints {
   display: flex;
@@ -20789,6 +20763,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="working-preacher"],
 .resource-source[data-source="working-preacher"],
 .resource-matrix-row[data-source="working-preacher"],
+.resource-card[data-source="working-preacher"],
 .podcast-dock[data-source="working-preacher"],
 .taught-here-plate[data-source="working-preacher"] {
   --resource-source: #9d2235;
@@ -20806,6 +20781,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="bibleproject"],
 .resource-source[data-source="bibleproject"],
 .resource-matrix-row[data-source="bibleproject"],
+.resource-card[data-source="bibleproject"],
 .podcast-dock[data-source="bibleproject"],
 .taught-here-plate[data-source="bibleproject"] {
   --resource-source: #00b3e5;
@@ -20827,6 +20803,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="enter-the-bible"],
 .resource-source[data-source="enter-the-bible"],
 .resource-matrix-row[data-source="enter-the-bible"],
+.resource-card[data-source="enter-the-bible"],
 .podcast-dock[data-source="enter-the-bible"],
 .taught-here-plate[data-source="enter-the-bible"] {
   /* Their yellow is the plate, which is the ground their colour artwork was
@@ -20855,6 +20832,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="naked-bible"],
 .resource-source[data-source="naked-bible"],
 .resource-matrix-row[data-source="naked-bible"],
+.resource-card[data-source="naked-bible"],
 .podcast-dock[data-source="naked-bible"],
 .taught-here-plate[data-source="naked-bible"] {
   /* Their gold, dated 2026-07-30. This was #6e7a80 — a grey lifted off a
@@ -20891,6 +20869,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="spoken-gospel"],
 .resource-source[data-source="spoken-gospel"],
 .resource-matrix-row[data-source="spoken-gospel"],
+.resource-card[data-source="spoken-gospel"],
 .podcast-dock[data-source="spoken-gospel"],
 .taught-here-plate[data-source="spoken-gospel"] {
   --resource-source: #239948;
@@ -20928,6 +20907,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="forty-minutes-ot"],
 .resource-source[data-source="forty-minutes-ot"],
 .resource-matrix-row[data-source="forty-minutes-ot"],
+.resource-card[data-source="forty-minutes-ot"],
 .podcast-dock[data-source="forty-minutes-ot"],
 .taught-here-plate[data-source="forty-minutes-ot"] {
   --resource-source: #a8402a;
@@ -20945,6 +20925,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="five-minutes-church-history"],
 .resource-source[data-source="five-minutes-church-history"],
 .resource-matrix-row[data-source="five-minutes-church-history"],
+.resource-card[data-source="five-minutes-church-history"],
 .podcast-dock[data-source="five-minutes-church-history"],
 .taught-here-plate[data-source="five-minutes-church-history"] {
   --resource-source: #45696a;
@@ -20962,6 +20943,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="ask-nt-wright"],
 .resource-source[data-source="ask-nt-wright"],
 .resource-matrix-row[data-source="ask-nt-wright"],
+.resource-card[data-source="ask-nt-wright"],
 .podcast-dock[data-source="ask-nt-wright"],
 .taught-here-plate[data-source="ask-nt-wright"] {
   --resource-source: #0079a8;
@@ -20987,6 +20969,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="listeners-commentary"],
 .resource-source[data-source="listeners-commentary"],
 .resource-matrix-row[data-source="listeners-commentary"],
+.resource-card[data-source="listeners-commentary"],
 .podcast-dock[data-source="listeners-commentary"],
 .taught-here-plate[data-source="listeners-commentary"] {
   --resource-accent: #26518c;
@@ -21004,6 +20987,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="radically-christian"],
 .resource-source[data-source="radically-christian"],
 .resource-matrix-row[data-source="radically-christian"],
+.resource-card[data-source="radically-christian"],
 .podcast-dock[data-source="radically-christian"],
 .taught-here-plate[data-source="radically-christian"] {
   --resource-accent: #3f6fb0;
@@ -21019,6 +21003,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-imprint[data-source="the-gospel-coalition"],
 .resource-source[data-source="the-gospel-coalition"],
 .resource-matrix-row[data-source="the-gospel-coalition"],
+.resource-card[data-source="the-gospel-coalition"],
 .podcast-dock[data-source="the-gospel-coalition"],
 .taught-here-plate[data-source="the-gospel-coalition"] {
   --resource-source: #79ae4a;
@@ -21147,67 +21132,11 @@ button.lang-phrase-diagram-node:focus-visible,
   color: var(--resource-ink);
 }
 
-.trusted-resource-kind {
-  flex: none;
-  color: var(--resource-ink-soft);
-  font: var(--fw-medium) 0.59375rem/1.2 var(--font-mono);
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-}
-
 .trusted-resource-title {
   margin: 0 0 3px;
   font: var(--fw-semibold) 0.96875rem/1.34 var(--font-reading);
   letter-spacing: -0.004em;
   text-wrap: balance;
-}
-
-.trusted-resource-meta {
-  margin: 0 0 10px;
-  color: var(--resource-ink-soft);
-  font: 0.75rem/1.4 var(--font-ui);
-}
-
-.trusted-resource-chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-  margin: 0 0 12px;
-  padding: 0;
-  list-style: none;
-}
-
-.trusted-resource-chip {
-  padding: 2px 8px;
-  border: 1px solid var(--resource-line);
-  border-radius: var(--radius-sm);
-  font: var(--fw-medium) 0.6875rem/1.5 var(--font-ui);
-}
-
-.trusted-resource-chip.is-bref {
-  font-family: var(--font-mono);
-  font-size: 0.625rem;
-  letter-spacing: 0.02em;
-}
-
-.trusted-resource-chip.is-match {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-weight: var(--fw-semibold);
-}
-
-.trusted-resource-chip.is-match::before {
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: currentcolor;
-  content: "";
-}
-
-.trusted-resource-chip.is-basis {
-  border-style: dashed;
-  color: var(--resource-ink-soft);
 }
 
 /* An emblem with no wordmark needs its name beside it. Written here rather than
@@ -21254,34 +21183,6 @@ button.lang-phrase-diagram-node:focus-visible,
 .trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-head::after { font-size: 0.9375rem; }
 .trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-source { order: 0; }
 .trusted-resource-card.is-featured[data-source="naked-bible"] .trusted-resource-kind { order: 2; }
-
-/* Inside an opened group: one item per row, divided by the publisher's own
-   hairline rather than by another surface. The mark is above them all. */
-.trusted-resource-items {
-  display: grid;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.trusted-resource-item {
-  padding: 13px 0 14px;
-  border-top: 1px solid var(--resource-line);
-}
-
-.trusted-resource-item:first-child { padding-top: 2px; border-top: 0; }
-.trusted-resource-item:last-child { padding-bottom: 2px; }
-
-.trusted-resource-item-kind {
-  margin: 0 0 4px;
-  color: var(--resource-ink-soft);
-  font: var(--fw-medium) 0.59375rem/1.2 var(--font-mono);
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
-}
-
-.trusted-resource-item .trusted-resource-title { font-size: 0.9375rem; }
-.trusted-resource-item .trusted-resource-chips { margin-bottom: 10px; }
 
 /* The count a publisher's chip carries when it has more than one answer, and
    the count on All. Set in mono so it reads as a tally rather than a word. */
@@ -21495,40 +21396,6 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .resource-kind-icon { flex: none; }
 
-/* The lens: what the reader is looking at this second. Lighter than anything
-   that persists, and it carries no colour, because it owns nothing. */
-.trusted-resource-lens {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 5px;
-}
-
-.trusted-resource-lens-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 3px 9px;
-  border: 1px solid var(--border-subtle);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--text-tertiary);
-  font: var(--fw-medium) 0.6875rem/1.3 var(--font-ui);
-  text-transform: capitalize;
-  cursor: pointer;
-  transition: color 140ms ease, border-color 140ms ease, background-color 140ms ease;
-}
-
-.trusted-resource-lens-chip:hover { color: var(--text-primary); border-color: var(--border-medium); }
-
-.trusted-resource-lens-chip[aria-pressed="true"] {
-  border-color: transparent;
-  background: color-mix(in srgb, var(--accent-seal) 16%, transparent);
-  color: var(--text-primary);
-}
-
-.trusted-resource-lens-chip:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 2px; }
-.trusted-resource-lens-count { font: 0.5625rem/1 var(--font-mono); font-variant-numeric: tabular-nums; }
-
 /* Something is muted, and the row must say so even when the panel is shut —
    otherwise a quiet chapter next Tuesday is indistinguishable from a chapter
    with nothing in it. */
@@ -21548,196 +21415,9 @@ button.lang-phrase-diagram-node:focus-visible,
 @media (prefers-reduced-motion: reduce) {
   .resource-matrix-row,
   .resource-matrix-kind,
-  .resource-matrix-rail,
-  .trusted-resource-lens-chip { transition: none; }
+  .resource-matrix-rail { transition: none; }
 }
 
-/* Opened, the cards stack under the row they came from. */
-.trusted-resource-panel:not(:empty) {
-  display: grid;
-  gap: var(--sp-md);
-}
-
-/* The count line. It is the only place the group admits it is a selection, so
-   it says the number rather than gesturing at "more". */
-.trusted-resource-more {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
-  flex-wrap: wrap;
-  padding-top: 2px;
-}
-
-.trusted-resource-more-toggle {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: var(--text-secondary);
-  font: var(--fw-semibold) 0.6875rem/1.4 var(--font-ui);
-  letter-spacing: 0.01em;
-  cursor: pointer;
-}
-
-.trusted-resource-more-toggle:hover { color: var(--study-gold); }
-.trusted-resource-more-toggle:focus-visible { outline: 2px solid var(--accent-seal); outline-offset: 3px; }
-
-.trusted-resource-more-hidden {
-  color: var(--text-tertiary);
-  font: 0.6875rem/1.4 var(--font-ui);
-}
-
-/* Settings — one row per publisher, wearing its own colour so the list reads
-   as the same objects the margin shows. */
-.resource-source-list {
-  display: grid;
-  gap: 6px;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.resource-source {
-  display: grid;
-  grid-template-columns: 4px minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 12px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-window);
-  background: var(--bg-float);
-}
-
-.resource-source-mark {
-  align-self: stretch;
-  min-height: 26px;
-  border-radius: 2px;
-  background: var(--resource-source, var(--border-medium));
-}
-
-.resource-source-copy { display: grid; gap: 2px; min-width: 0; }
-.resource-source-copy strong { font: var(--fw-semibold) 0.8125rem/1.3 var(--font-ui); }
-.resource-source-copy span { color: var(--text-tertiary); font: 0.6875rem/1.3 var(--font-mono); }
-
-.resource-source-switch {
-  display: inline-flex;
-  align-items: center;
-  gap: 9px;
-  cursor: pointer;
-}
-
-.resource-source-switch input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-}
-
-.resource-source-switch-track {
-  position: relative;
-  width: 34px;
-  height: 20px;
-  border-radius: 999px;
-  background: var(--border-medium);
-  transition: background-color 160ms ease;
-}
-
-.resource-source-switch-track::after {
-  position: absolute;
-  top: 3px;
-  left: 3px;
-  width: 14px;
-  height: 14px;
-  border-radius: 50%;
-  background: var(--bg-float);
-  content: "";
-  transition: transform 160ms ease;
-}
-
-.resource-source-switch input:checked + .resource-source-switch-track { background: var(--accent-seal); }
-.resource-source-switch input:checked + .resource-source-switch-track::after { transform: translateX(14px); }
-.resource-source-switch input:focus-visible + .resource-source-switch-track {
-  outline: 2px solid var(--accent-seal);
-  outline-offset: 2px;
-}
-
-.resource-source-switch-label {
-  min-width: 46px;
-  color: var(--text-tertiary);
-  font: var(--fw-medium) 0.6875rem/1 var(--font-ui);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .resource-source-switch-track,
-  .resource-source-switch-track::after { transition: none; }
-}
-
-/* Play sits beside the outbound verb, not instead of it: the card still says
-   where the episode lives, and pressing play is the reader choosing to fetch
-   from the publisher rather than the app deciding for them.
-
-   Dated 2026-07-30 — this is now one member of the transport family rather
-   than a second design for the same action. It was a 28px HAIRLINE circle in
-   --resource-ink with an --accent-seal ring and a hardcoded 150ms, twenty
-   pixels from a 38px FILLED pill in the publisher's colour with an
-   --resource-ink ring and --transition-fast — two play buttons for one verb,
-   in opposite treatments, seen by the same reader inside one second. Its glyph
-   was also a separate copy that never got the optical correction the dock
-   documents at length: `M4.6 2.8 12.6 8l-8 5.2z` on a 16-box puts the
-   triangle's centroid at 7.27 against a centre of 8, so play and pause shifted
-   0.73px under the pointer.
-
-   Both now compose .transport-play (styles/player.css) and both take the same
-   glyph component. All this rule keeps is the one thing that is a fact about
-   the CARD: its size, and the gap to the verb beside it. */
-.trusted-resource-play {
-  --transport-size: 28px;
-  margin-right: 8px;
-}
-
-/* A fourth transport aesthetic, dead since it was written: no component ever
-   referenced .trusted-resource-scrub, -scrub-range or -scrub-time (~34 lines,
-   including an always-visible 11px thumb that argued the opposite of the
-   dock's "a rule that fills is a fact"). Removed 2026-07-30 with the decision
-   that this app has one transport language. */
-
-/* `min-width: 0` because a flex item's floor is its content, not zero — without
-   it a long label pushes straight through the card's edge instead of being
-   constrained by it, which is what put "Listen at The Listener's Bible
-   Commentary" outside its own card. The labels are short now; this is what
-   keeps the next long one from doing the same thing. */
-.trusted-resource-actions { display: flex; align-items: center; min-width: 0; }
-.trusted-resource-actions > * { min-width: 0; }
-
-.trusted-resource-act {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  padding: 6px 13px;
-  border: 0;
-  border-radius: var(--radius-sm);
-  background: var(--resource-pill-bg);
-  color: var(--resource-pill-ink);
-  font: var(--fw-semibold) 0.78125rem/1 var(--font-ui);
-  white-space: nowrap;
-  cursor: pointer;
-  transition: transform 150ms ease, box-shadow 150ms ease;
-}
-
-.trusted-resource-act:hover {
-  box-shadow: 0 4px 10px -4px rgb(0 0 0 / 0.4);
-  transform: translateY(-1px);
-}
-
-.trusted-resource-act:focus-visible {
-  outline: 2px solid var(--accent-seal);
-  outline-offset: 3px;
-}
-
-/* A mark stays on full-strength brand colour wherever it appears, because the
-   official variants are white: muting the surface would cost a dark mark
-   variant per publisher and a colour decision per theme, four times over. The
-   drawer pays for the colour in area instead — three chips closed, one card
-   open — so the group stops competing with the reading it sits beside. */
 /* A source with no approved mark keeps its name, and the name is set as a
    wordmark rather than a label so the row does not look half-built. The rule
    that swaps in a mark is scoped per source, so this is what an unapproved
@@ -21751,19 +21431,15 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .trusted-resource-act,
   .trusted-resource-imprint { transition: none; }
-  .trusted-resource-act:hover,
   .trusted-resource-imprint:hover { transform: none; }
 }
 
 @media (forced-colors: active) {
-  .trusted-resources-masthead { border-color: CanvasText; }
-  .trusted-resource-card { border: 1px solid CanvasText; background: Canvas; color: CanvasText; }
   /* A forced palette drops the brand surface, and with it the only thing that
-     told the chips apart — so the name comes back out of the indent. */
-  /* The ink comes back to the system's too, now that the chip declares one:
-     `--resource-ink` is a brand colour and a forced palette must own it. */
+     told the chips apart — so the name comes back out of the indent, and the
+     ink comes back to the system's: `--resource-ink` is a brand colour and a
+     forced palette must own it. */
   .trusted-resource-imprint { border: 1px solid ButtonText; background: ButtonFace; color: ButtonText; padding: 0 9px; }
   .trusted-resource-imprint .trusted-resource-source {
     aspect-ratio: auto;
@@ -21773,12 +21449,7 @@ button.lang-phrase-diagram-node:focus-visible,
     text-indent: 0;
   }
   .trusted-resource-imprint[aria-expanded="true"] { outline: 2px solid Highlight; box-shadow: none; }
-  .trusted-resource-source,
-  .trusted-resource-kind,
-  .trusted-resource-meta { color: CanvasText; }
-  .trusted-resource-chip { border-color: CanvasText; }
-  .trusted-resource-act { border: 1px solid ButtonText; background: ButtonFace; color: ButtonText; }
-  .trusted-resource-act:focus-visible { outline-color: Highlight; }
+  .trusted-resource-source { color: CanvasText; }
 }
 
 /* The material switch. Four appearances and one switch: this is the only
