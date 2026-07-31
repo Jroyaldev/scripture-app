@@ -1888,6 +1888,40 @@ export function App(): React.JSX.Element {
     return () => window.removeEventListener("keydown", onKey);
   }, [changeView, focusMode, globalShortcutBlocked, toggleFocusMode]);
 
+  /**
+   * A transition belongs to the gesture, not to the window.
+   *
+   * The study column's width is viewport-derived — `--player-column-w` is a
+   * clamp over `32vw` — and the column carries a 240ms width transition so a
+   * swap between its two residents reads as one motion. Dragging the window
+   * edge changes that same width, and the browser fires `resize` continuously,
+   * so every frame started a fresh 240ms animation toward a target that had
+   * already moved: the column chased the pointer a quarter-second behind and
+   * each restart read as a flash. Reported from a real window on 2026-07-31.
+   *
+   * While the window is being dragged the correct behaviour is not motion but
+   * TRACKING — one-to-one, no easing, no lag — so the shell is marked for the
+   * length of the burst and the transitions stand down. The mark clears a beat
+   * after the last resize, which is what returns the swap its motion.
+   */
+  useEffect(() => {
+    let settle: number | undefined;
+    const onResize = (): void => {
+      document.documentElement.setAttribute("data-viewport-resizing", "");
+      window.clearTimeout(settle);
+      settle = window.setTimeout(
+        () => document.documentElement.removeAttribute("data-viewport-resizing"),
+        120,
+      );
+    };
+    window.addEventListener("resize", onResize, { passive: true });
+    return () => {
+      window.clearTimeout(settle);
+      window.removeEventListener("resize", onResize);
+      document.documentElement.removeAttribute("data-viewport-resizing");
+    };
+  }, []);
+
   const shellClass = [
     "app-shell",
     `theme-${theme}`,

@@ -23304,6 +23304,36 @@ button.lang-phrase-diagram-node:focus-visible,
   box-shadow: none;
 }
 
+/* ── Tracking, not motion, while the window is being dragged ────────────────
+   Added 2026-07-31 from a real window: "when already open and you stretch
+   viewport width, the transition happens but flashily instead of smoothly."
+
+   The study column's width is viewport-derived (--player-column-w clamps over
+   32vw) and it carries a 240ms width transition so the swap between its two
+   residents reads as one seam travelling. Those two facts collide on a window
+   drag: `resize` fires continuously, so every frame started a fresh 240ms
+   animation toward a target that had already moved again. The column chased
+   the pointer a quarter second behind and each restart read as a flash.
+
+   The rule is that a transition belongs to the GESTURE. When the reader opens,
+   closes or swaps, the column should move. When the WINDOW is the thing
+   moving, the column should track it one to one — no easing, no lag, no
+   catching up. app.tsx marks the document for the length of the resize burst
+   and clears it a beat after the last event, which is what gives the swap its
+   motion back the moment the drag stops.
+
+   Scoped to the geometry the viewport drives, so a hover or a focus ring drawn
+   during a drag keeps its own fade. */
+:root[data-viewport-resizing] :where(
+  .podcast-dock,
+  .podcast-sheet,
+  .living-margin,
+  .margin-fold,
+  .scripture-page
+) {
+  transition: none !important;
+}
+
 /* Hover is a promise that something will happen. Nothing will. */
 .is-disabled-instrument:hover {
   color: var(--text-tertiary);
