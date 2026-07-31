@@ -1,0 +1,512 @@
+{
+  "runId": "2026-07-31T21-14-39-999-deepseek-v4-flash",
+  "startedAt": "2026-07-31T21:14:40.000Z",
+  "promptId": "doctrinal-resurrection-body",
+  "prompt": "If Jesus rose bodily, what happens to my body when I die? I want to understand what the New Testament actually claims about resurrection versus 'going to heaven'.",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolution": {
+      "slug": "deepseek/deepseek-v4-flash-0731",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek/deepseek-v4-flash-0731",
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash-0731"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "DEEPSEEK_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Your Body After Death: Resurrection vs. \"Going to Heaven\"",
+    "intro": "You are asking the right question, and it is a bigger one than it sounds: whether Jesus rose bodily settles something about your body, not just about your soul's destination. This tour walks you through what the New Testament actually claims — starting with why \"resurrection\" and \"going to heaven\" are not the same idea, moving through the few things the Bible says about the time between your death and the resurrection, then into what kind of body Paul promises (it is a body, and it is yours), and ending with what that means for how you live in and honor the body you have now. Seven voices, seven angles, one arc: the hope is not escape from the body but the body raised.",
+    "steps": [
+      {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "startSec": 640,
+        "endSec": 715,
+        "why": "Tom Wright starts by clearing the vocabulary, which is the real root of your question: in the first-century Jewish world, resurrection never meant somebody going into a glorious angelic state. He says plainly, \"when people today say I believe in the resurrection, often what they really mean is I believe in going to heaven when I die. That's simply not what the words mean.\" He also notes why the empty tomb alone wouldn't have convinced anyone — you need tomb plus appearances — because resurrection is precisely about a body.",
+        "episodeTitle": "#164 Easter questions on the resurrection of Jesus",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR6878813537.mp3?updated=1749655811",
+        "durationSec": 2012,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "bibleproject:podcast:heaven-earth-revisited",
+        "startSec": 745,
+        "endSec": 895,
+        "why": "If you grew up hearing that heaven is a mansion in the sky, this is the clip that untangles the favorite proof-text, John 14:2–3. Tim Mackie shows that when Jesus says \"my father's house,\" \"house is the main word for temple in the Bible,\" and the many rooms are the temple storerooms the disciples knew from Jerusalem. Preparing a place means opening \"access to God's divine presence,\" not reserving a condo above the clouds — and Jesus' \"I will come to you\" is fulfilled in the coming of the Spirit, not a spatial relocation out of the world.",
+        "episodeTitle": "How Did the Biblical Authors Imagine Life After Death?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/0ad535fa-d5c2-4247-b5b8-cfdf6c8e86b7/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=0ad535fa-d5c2-4247-b5b8-cfdf6c8e86b7",
+        "durationSec": 3319,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:heaven-earth-q-r",
+        "startSec": 640,
+        "endSec": 745,
+        "why": "Now that the \"heaven is a place\" model is loosened, BibleProject lays out the honest data about what happens between death and resurrection: Jesus' promise to the thief is \"one of only three clear passages in the Bible that even talk about what happens right after death.\" Paul calls it sleep (1 Thessalonians) and twice says simply that to die is to be \"with Jesus\" (Philippians, 2 Corinthians). The hosts are candid that we don't know most of what that state is like — and they land the plot: \"the hope is of resurrection into a new physical world.\" This is the hinge your question needs.",
+        "episodeTitle": "Heaven & Earth Question & Response",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e377fa21-f15c-4ec8-b498-507f52e60c14/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e377fa21-f15c-4ec8-b498-507f52e60c14",
+        "durationSec": 2671,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "startSec": 780,
+        "endSec": 960,
+        "why": "The heart of the tour: a careful walk through 2 Corinthians 5, where Paul says we groan in this tent \"because we don't want to be unclothed, but to be clothed.\" The teacher points out that Greek philosophers used Paul's word for \"naked\" to celebrate the soul escaping the body — and that for Christians that is precisely not the goal: \"Not to be released from the body, but to put on a new eternal supernatural body so that mortality will be swallowed up by life.\" He ties it to 1 Corinthians 15:52–55, \"death has been swallowed up in victory,\" so you hear Paul's own echo across the two letters.",
+        "episodeTitle": "2 Corinthians 5:1-10",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/jckmzx/2_corinthians_51-10816em.mp3",
+        "durationSec": 1584,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "startSec": 1130,
+        "endSec": 1245,
+        "why": "The same episode, the next paragraph: verses 6–10, where Paul says being \"absent from the body\" means being \"at home with the Lord\" — and that it is \"better by far\" (Philippians 1). This clip keeps the two hopes distinct without collapsing them: \"our ultimate hope is resurrection, but our immediate hope is of dying and getting to be with the Lord.\" It also shows the point of it all — that Paul's ambition is to please Jesus, and that the deeds done in the body matter, because we will all stand before his judgment seat. This is the New Testament's actual shape of hope, in sequence.",
+        "episodeTitle": "2 Corinthians 5:1-10",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/jckmzx/2_corinthians_51-10816em.mp3",
+        "durationSec": 1584,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:719",
+        "startSec": 180,
+        "endSec": 350,
+        "why": "You have probably heard \"spiritual body\" in 1 Corinthians 15 and pictured a ghost. Michael Heiser's whole episode exists to correct that: in the ancient Jewish world, embodied divine beings had bodies made of something superior to flesh and blood, and Paul's point is that Christians will one day share \"the same sort of body\" as the resurrected Christ — \"incorruptible, but corporeal in some sense as well.\" His bottom line is the one this tour keeps returning to: \"it's not just going to be a bunch of spirits floating around.\"",
+        "episodeTitle": "Naked Bible 88: What is the “spiritual body” Paul talks about in 1 Cor 15?",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2016/02/NakedBible88_spiritualbody_1Cor15.mp3",
+        "durationSec": 2975,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "radically-christian:podcast:920f7f45-https-radicallychristian-com-p-9747",
+        "startSec": 1190,
+        "endSec": 1370,
+        "why": "Now the continuity point, from a different voice: resurrection means \"your body dies, is buried, and then comes to life again.\" Jesus was raised as \"the first fruit of the coming resurrection\" — the one surprising thing is that it happened in the middle of history, not at the end. And your resurrection body is different but also the same: \"It's connected in some way to your pre-resurrection body. If it wasn't, it wouldn't be resurrection.\" The closing image — the difference between driving a new car and driving a restored car — makes it unforgettable: this is your body, transformed, not replaced.",
+        "episodeTitle": "New Heavens and New Earth (Part One)",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682217/c4e7cab7-25e4-42aa-8533-9490dbde7514/transcoded.mp3?post_id=148682217&relation=podcast&Expires=1785438056&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=LE6IMlZGZ34wY30Pj5yi~AT5ze2tLwycdU5RHKsxDyV6kWnp7op3Hi8GCMLqPWxdDU2ozndDAKCXmlevx5ySU~f1q-u72m5KDhrkGbX4tEQ1wjfTtWxS2PmgvbT5ijUrvUrxD3tWLWCW4fDah-d8spOCKyfGLC0PckzJ8uUSNa-ioBoZq8igCCZq8ItcvrBUlG4UdYt6rRgHcvbNBOb5i6-0wcXC0qfpjpgx0LECaVuSsPkZyGtJ3OcuRblQqAIWwYFHFofyXJkg-d1wdQOvR8IA~7it4hWBGNfDnhMk5c3wWFMdIqfbtks1qY7mcgSnrQQFL9ZIa1IQkHG2K0O4gg__",
+        "durationSec": 1689,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:a1b97879b7216b0aeed665fa00ac8e1e",
+        "startSec": 1990,
+        "endSec": 2245,
+        "why": "The tour ends where your life is lived: in a body that will die. This Old Testament teacher lands it pastorally — your body is not \"a mere shell in which the real you is located,\" which is why the way we care for a corpse matters, and why the mangled body of Jesus was tenderly buried. He gives you a picture to carry: \"if I die today and I'm buried, I will be in kind of the holy Saturday state that Christ was in... with him that day in paradise... but I will still be waiting\" for resurrection. Physical death takes our physical life, \"but that will be reversed on the day of our resurrection\" — our own Easter Sunday.",
+        "episodeTitle": "40 Minutes In The Old Testament: Episode 33",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_Min_OT_33_Final.mp3?dest-id=245197",
+        "durationSec": 2245,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "So the New Testament's answer to your question is not \"your body ends and your soul goes up.\" It is stranger and more hopeful: when you die, you go to be with Christ — but that is the waiting room, not the destination. The destination is resurrection, your body raised, transformed, and taken up into God's new creation, because Jesus' empty tomb was the first installment of a harvest that includes you. That is why the Bible cares about bodies — Christ's, your neighbor's, and your own — and why, between now and your own Easter Sunday, what you do in the body matters. You do not have to choose between \"going to heaven\" and the resurrection. You get the first as the promise, and the second as the finish line.",
+    "totalSeconds": 1230
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3385,
+      "promptTokens": 1770,
+      "completionTokens": 384,
+      "reasoningTokens": 200,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0001270192
+    },
+    {
+      "i": 1,
+      "latencyMs": 10609,
+      "promptTokens": 8142,
+      "completionTokens": 1444,
+      "reasoningTokens": 1023,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0013158992
+    },
+    {
+      "i": 2,
+      "latencyMs": 8937,
+      "promptTokens": 11529,
+      "completionTokens": 1112,
+      "reasoningTokens": 718,
+      "cachedPromptTokens": 8064,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008190392
+    },
+    {
+      "i": 3,
+      "latencyMs": 17663,
+      "promptTokens": 14775,
+      "completionTokens": 1800,
+      "reasoningTokens": 1364,
+      "cachedPromptTokens": 11520,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000991956
+    },
+    {
+      "i": 4,
+      "latencyMs": 21301,
+      "promptTokens": 18092,
+      "completionTokens": 2132,
+      "reasoningTokens": 1698,
+      "cachedPromptTokens": 14720,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001110256
+    },
+    {
+      "i": 5,
+      "latencyMs": 23148,
+      "promptTokens": 21093,
+      "completionTokens": 2646,
+      "reasoningTokens": 2313,
+      "cachedPromptTokens": 18048,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012177144
+    },
+    {
+      "i": 6,
+      "latencyMs": 49626,
+      "promptTokens": 23321,
+      "completionTokens": 5827,
+      "reasoningTokens": 3948,
+      "cachedPromptTokens": 20992,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0020163976
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 81,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "resurrection of the body",
+        "limit": 10
+      },
+      "ms": 66,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "going to heaven when you die",
+        "limit": 10
+      },
+      "ms": 53,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "intermediate state",
+        "limit": 10
+      },
+      "ms": 51,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "fromSec": 600,
+        "toSec": 780
+      },
+      "ms": 1,
+      "summary": "600s–780s of #164 Easter questions on the resurrection of Jesus"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-q-r",
+        "fromSec": 420,
+        "toSec": 780
+      },
+      "ms": 0,
+      "summary": "420s–600s of Heaven & Earth Question & Response"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:719",
+        "fromSec": 180,
+        "toSec": 420
+      },
+      "ms": 0,
+      "summary": "180s–360s of Naked Bible 88: What is the “spiritual body” Paul talks about in 1 Cor 15?"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 1290,
+        "toSec": 1510
+      },
+      "ms": 0,
+      "summary": "1290s–1470s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:a44eb206-c17d-11f0-ad05-2b5b9ed3042e",
+        "fromSec": 100,
+        "toSec": 500
+      },
+      "ms": 0,
+      "summary": "100s–280s of Where Do We Go When We Die?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-revisited",
+        "fromSec": 200,
+        "toSec": 560
+      },
+      "ms": 0,
+      "summary": "200s–380s of How Did the Biblical Authors Imagine Life After Death?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-q-r",
+        "fromSec": 640,
+        "toSec": 820
+      },
+      "ms": 0,
+      "summary": "640s–820s of Heaven & Earth Question & Response"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:920f7f45-https-radicallychristian-com-p-9747",
+        "fromSec": 1190,
+        "toSec": 1370
+      },
+      "ms": 0,
+      "summary": "1190s–1370s of New Heavens and New Earth (Part One)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-revisited",
+        "fromSec": 380,
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "380s–560s of How Did the Biblical Authors Imagine Life After Death?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:a44eb206-c17d-11f0-ad05-2b5b9ed3042e",
+        "fromSec": 400,
+        "toSec": 750
+      },
+      "ms": 0,
+      "summary": "400s–580s of Where Do We Go When We Die?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 950,
+        "toSec": 1290
+      },
+      "ms": 0,
+      "summary": "950s–1130s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:f639e871-https-radicallychristian-com-p-10370",
+        "fromSec": 2900,
+        "toSec": 3110
+      },
+      "ms": 1,
+      "summary": "2900s–3080s of Eschatology: What Is It and Why Is It Important?"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-revisited",
+        "fromSec": 560,
+        "toSec": 740
+      },
+      "ms": 0,
+      "summary": "560s–740s of How Did the Biblical Authors Imagine Life After Death?"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:a44eb206-c17d-11f0-ad05-2b5b9ed3042e",
+        "fromSec": 580,
+        "toSec": 760
+      },
+      "ms": 0,
+      "summary": "580s–760s of Where Do We Go When We Die?"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 1130,
+        "toSec": 1290
+      },
+      "ms": 0,
+      "summary": "1130s–1290s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a1b97879b7216b0aeed665fa00ac8e1e",
+        "fromSec": 2080,
+        "toSec": 2245
+      },
+      "ms": 0,
+      "summary": "2080s–2245s of 40 Minutes In The Old Testament: Episode 33"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 780,
+        "toSec": 960
+      },
+      "ms": 0,
+      "summary": "780s–960s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-revisited",
+        "fromSec": 740,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "740s–900s of How Did the Biblical Authors Imagine Life After Death?"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a1b97879b7216b0aeed665fa00ac8e1e",
+        "fromSec": 1990,
+        "toSec": 2085
+      },
+      "ms": 0,
+      "summary": "1990s–2085s of 40 Minutes In The Old Testament: Episode 33"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 7,
+    "toolCalls": 24,
+    "promptTokens": 98722,
+    "completionTokens": 15345,
+    "reasoningTokens": 11264,
+    "cachedPromptTokens": 76672,
+    "wallMs": 135043,
+    "modelLatencyMs": 134669,
+    "toolMs": 253
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.007598,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T21:16:55.043Z"
+}

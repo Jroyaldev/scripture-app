@@ -1,0 +1,802 @@
+{
+  "runId": "2026-07-31T21-14-41-987-gpt-5.6-luna-high",
+  "startedAt": "2026-07-31T21:14:41.988Z",
+  "promptId": "doctrinal-resurrection-body",
+  "prompt": "If Jesus rose bodily, what happens to my body when I die? I want to understand what the New Testament actually claims about resurrection versus 'going to heaven'.",
+  "model": {
+    "key": "gpt-5.6-luna-high",
+    "label": "GPT-5.6 Luna (high)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "high",
+      "source": "per-model default for gpt-5.6-luna-high",
+      "envVar": "LUNA_HIGH_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "From Death to Resurrection: What the New Testament Promises for Your Body",
+    "intro": "This tour follows the New Testament’s sequence rather than collapsing everything into “going to heaven”: Jesus’ bodily resurrection, the future resurrection of his people, the hope of being with Christ after death, and the final renewal of creation. The teachers sometimes acknowledge where Scripture gives only limited detail, so you can hear both the confidence and the restraint in the claims.",
+    "steps": [
+      {
+        "recordId": "ask-nt-wright:podcast:0b0b5970-4d5f-11ee-955e-119eeadcb150",
+        "startSec": 100,
+        "endSec": 280,
+        "why": "Begin here for the central distinction your question is asking about. N. T. Wright says resurrection means “actual bodies” being alive after being dead, not “the soul escaping the body,” and describes it as “life after life after death”—a sequence that separates the immediate aftermath of death from the final resurrection.",
+        "episodeTitle": "#186 Has the resurrection been debunked? (Classic)",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR9195388223.mp3?updated=1749653807",
+        "durationSec": 2045,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "startSec": 1360,
+        "endSec": 1540,
+        "why": "This clip grounds the claim in Paul’s argument in 1 Corinthians 15. The commentator connects your future to Jesus’ resurrection body: “Our resurrection body will be like Jesus’ resurrection body,” then explains why transformation is necessary—the perishable body must become fit for an imperishable life, and “the dead will be raised imperishable.”",
+        "episodeTitle": "1 Corinthians 15:29-58",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/d8ngn3/1_corinthians_1529-589yhwk.mp3",
+        "durationSec": 2010,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "startSec": 960,
+        "endSec": 1140,
+        "why": "Now hear the important qualification about what happens if you die before Christ returns. The teacher says the ultimate hope is “not to be released from the body, but to put on a new eternal supernatural body,” and then turns to Paul’s assurance that, in the meantime, death means being “at home with the Lord,” not already possessing the final resurrection body.",
+        "episodeTitle": "2 Corinthians 5:1-10",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/jckmzx/2_corinthians_51-10816em.mp3",
+        "durationSec": 1584,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:61fea544-com-fbfc585e-18f3-3e09-8729-7190089a2dbf",
+        "startSec": 820,
+        "endSec": 1000,
+        "why": "This gives the public, future event that completes the sequence. Reading 1 Thessalonians 4, the commentator pictures the Lord descending with “a shout,” the archangel’s voice, and God’s trumpet; crucially, “the dead in Christ will rise first,” followed by the living. It keeps the focus on resurrection rather than an escape from embodiment.",
+        "episodeTitle": "1 Thessalonians 4:13-18",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/8pb6cz/1_thess_413-189tacb.mp3",
+        "durationSec": 1603,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:heaven-earth-part-3",
+        "startSec": 1980,
+        "endSec": 2300,
+        "why": "End with the New Testament’s larger destination and with appropriate humility about the intermediate state. The speakers say that after death believers are “with Jesus,” but “it’s not the end of the story”: heaven is not the permanent destination in their reading, because the Savior comes from there “to transform everything” in new creation. They also admit that the New Testament offers only a few brief glimpses of what lies between death and resurrection.",
+        "episodeTitle": "Jesus, The Ultimate Heaven & Earth Meeting Place",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/9327a394-42a0-4eaf-a203-09e63e82aacd/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=9327a394-42a0-4eaf-a203-09e63e82aacd",
+        "durationSec": 2514,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips present a clear shape: death is not the resurrection, and resurrection is not merely going to heaven. The New Testament’s central hope is that the God who raised Jesus will raise and transform his people bodily, while those who die beforehand are held in the presence of Christ as they await that final renewal. Where the teachers go beyond those contours, notice their qualifications—and let the bodily, world-renewing hope remain the center.",
+    "totalSeconds": 1040
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3323,
+      "promptTokens": 1147,
+      "completionTokens": 54,
+      "reasoningTokens": 38,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0000492
+    },
+    {
+      "i": 1,
+      "latencyMs": 5289,
+      "promptTokens": 1442,
+      "completionTokens": 333,
+      "reasoningTokens": 71,
+      "cachedPromptTokens": 1144,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00024841500000000004
+    },
+    {
+      "i": 2,
+      "latencyMs": 5683,
+      "promptTokens": 12888,
+      "completionTokens": 661,
+      "reasoningTokens": 297,
+      "cachedPromptTokens": 1439,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0018420400000000003
+    },
+    {
+      "i": 3,
+      "latencyMs": 6018,
+      "promptTokens": 17565,
+      "completionTokens": 415,
+      "reasoningTokens": 126,
+      "cachedPromptTokens": 12885,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009627750000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 7048,
+      "promptTokens": 29428,
+      "completionTokens": 703,
+      "reasoningTokens": 399,
+      "cachedPromptTokens": 17562,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.002080595
+    },
+    {
+      "i": 5,
+      "latencyMs": 22815,
+      "promptTokens": 33280,
+      "completionTokens": 2478,
+      "reasoningTokens": 2432,
+      "cachedPromptTokens": 29425,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0022628500000000003
+    },
+    {
+      "i": 6,
+      "latencyMs": 4714,
+      "promptTokens": 34011,
+      "completionTokens": 238,
+      "reasoningTokens": 175,
+      "cachedPromptTokens": 33277,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0005672450000000001
+    },
+    {
+      "i": 7,
+      "latencyMs": 9904,
+      "promptTokens": 34799,
+      "completionTokens": 974,
+      "reasoningTokens": 729,
+      "cachedPromptTokens": 34008,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010232800000000001
+    },
+    {
+      "i": 8,
+      "latencyMs": 8307,
+      "promptTokens": 36485,
+      "completionTokens": 752,
+      "reasoningTokens": 489,
+      "cachedPromptTokens": 34796,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00101021
+    },
+    {
+      "i": 9,
+      "latencyMs": 9061,
+      "promptTokens": 38449,
+      "completionTokens": 577,
+      "reasoningTokens": 507,
+      "cachedPromptTokens": 36482,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00095682
+    },
+    {
+      "i": 10,
+      "latencyMs": 15773,
+      "promptTokens": 39187,
+      "completionTokens": 1586,
+      "reasoningTokens": 1523,
+      "cachedPromptTokens": 38446,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00142861
+    },
+    {
+      "i": 11,
+      "latencyMs": 8971,
+      "promptTokens": 39669,
+      "completionTokens": 1107,
+      "reasoningTokens": 765,
+      "cachedPromptTokens": 39184,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0011165900000000002
+    },
+    {
+      "i": 12,
+      "latencyMs": 7693,
+      "promptTokens": 44087,
+      "completionTokens": 576,
+      "reasoningTokens": 505,
+      "cachedPromptTokens": 39666,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012948100000000002
+    },
+    {
+      "i": 13,
+      "latencyMs": 15010,
+      "promptTokens": 44184,
+      "completionTokens": 1703,
+      "reasoningTokens": 895,
+      "cachedPromptTokens": 44084,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014750650000000002
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 45,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "resurrection body raised from the dead",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 61,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "going to heaven after death resurrection",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 38,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "new heavens new earth embodied future",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 67,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "absent from body present with the Lord intermediate state",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 43,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "1 Corinthians",
+        "chapter": 15,
+        "verse": 0,
+        "limit": 20
+      },
+      "ms": 72,
+      "summary": "20 of 259 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "1 Thessalonians",
+        "chapter": 4,
+        "verse": 0,
+        "limit": 15
+      },
+      "ms": 0,
+      "summary": "5 of 64 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Philippians",
+        "chapter": 3,
+        "verse": 0,
+        "limit": 15
+      },
+      "ms": 0,
+      "summary": "7 of 70 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "2 Corinthians",
+        "chapter": 5,
+        "verse": 0,
+        "limit": 15
+      },
+      "ms": 0,
+      "summary": "5 of 143 moments"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "fromSec": 600,
+        "toSec": 840
+      },
+      "ms": 0,
+      "summary": "600s–780s of #164 Easter questions on the resurrection of Jesus"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 560,
+        "toSec": 850
+      },
+      "ms": 2,
+      "summary": "560s–740s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 240,
+        "toSec": 480
+      },
+      "ms": 0,
+      "summary": "240s–420s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 1000,
+        "toSec": 1260
+      },
+      "ms": 0,
+      "summary": "1000s–1180s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-q-r",
+        "fromSec": 580,
+        "toSec": 870
+      },
+      "ms": 0,
+      "summary": "580s–760s of Heaven & Earth Question & Response"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:655dad0a-37e9-11ef-81a9-db3cdeacccae",
+        "fromSec": 380,
+        "toSec": 620
+      },
+      "ms": 0,
+      "summary": "380s–560s of 1 Corinthians Overview: A Wrong View of the Body"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "trumpet dead raised imperishable transformed body",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 82,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "citizenship in heaven Savior transform our lowly body Philippians",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 73,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "dead in Christ rise first caught up together Lord Thessalonians",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 52,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "new creation heaven earth Revelation 21 resurrection",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 47,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Jesus resurrection physical touch eat wounds empty tomb body",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 73,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 740,
+        "toSec": 980
+      },
+      "ms": 0,
+      "summary": "740s–920s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:655dad0a-37e9-11ef-81a9-db3cdeacccae",
+        "fromSec": 540,
+        "toSec": 760
+      },
+      "ms": 1,
+      "summary": "540s–720s of 1 Corinthians Overview: A Wrong View of the Body"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:6a253c6-com-651c11dc-e7c9-3e9c-8d28-dfdec7d811d5",
+        "fromSec": 520,
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "520s–700s of #164 Easter questions on the resurrection of Jesus"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 1420,
+        "toSec": 1620
+      },
+      "ms": 0,
+      "summary": "1420s–1600s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:61fea544-com-fbfc585e-18f3-3e09-8729-7190089a2dbf",
+        "fromSec": 820,
+        "toSec": 1080
+      },
+      "ms": 3,
+      "summary": "820s–1000s of 1 Thessalonians 4:13-18"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-part-3",
+        "fromSec": 1980,
+        "toSec": 2280
+      },
+      "ms": 4,
+      "summary": "1980s–2160s of Jesus, The Ultimate Heaven & Earth Meeting Place"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:a44eb206-c17d-11f0-ad05-2b5b9ed3042e",
+        "fromSec": 500,
+        "toSec": 820
+      },
+      "ms": 0,
+      "summary": "500s–680s of Where Do We Go When We Die?"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-part-3",
+        "fromSec": 2120,
+        "toSec": 2300
+      },
+      "ms": 0,
+      "summary": "2120s–2300s of Jesus, The Ultimate Heaven & Earth Meeting Place"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:0b0b5970-4d5f-11ee-955e-119eeadcb150",
+        "fromSec": 90,
+        "toSec": 300
+      },
+      "ms": 0,
+      "summary": "90s–270s of #186 Has the resurrection been debunked? (Classic)"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 960,
+        "toSec": 1100
+      },
+      "ms": 4,
+      "summary": "960s–1100s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:61fea544-com-fbfc585e-18f3-3e09-8729-7190089a2dbf",
+        "fromSec": 780,
+        "toSec": 850
+      },
+      "ms": 0,
+      "summary": "780s–850s of 1 Thessalonians 4:13-18"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-part-3",
+        "fromSec": 2080,
+        "toSec": 2140
+      },
+      "ms": 0,
+      "summary": "2080s–2140s of Jesus, The Ultimate Heaven & Earth Meeting Place"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 1380,
+        "toSec": 1440
+      },
+      "ms": 0,
+      "summary": "1380s–1440s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 8,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:0b0b5970-4d5f-11ee-955e-119eeadcb150",
+        "fromSec": 0,
+        "toSec": 150
+      },
+      "ms": 0,
+      "summary": "0s–150s of #186 Has the resurrection been debunked? (Classic)"
+    },
+    {
+      "at": 8,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 1360,
+        "toSec": 1410
+      },
+      "ms": 0,
+      "summary": "1360s–1410s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 8,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 900,
+        "toSec": 980
+      },
+      "ms": 0,
+      "summary": "900s–980s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 8,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:61fea544-com-fbfc585e-18f3-3e09-8729-7190089a2dbf",
+        "fromSec": 1000,
+        "toSec": 1080
+      },
+      "ms": 0,
+      "summary": "1000s–1080s of 1 Thessalonians 4:13-18"
+    },
+    {
+      "at": 9,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 960,
+        "toSec": 1140
+      },
+      "ms": 0,
+      "summary": "960s–1140s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 10,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:0b0b5970-4d5f-11ee-955e-119eeadcb150",
+        "fromSec": 100,
+        "toSec": 190
+      },
+      "ms": 0,
+      "summary": "100s–190s of #186 Has the resurrection been debunked? (Classic)"
+    },
+    {
+      "at": 11,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:0b0b5970-4d5f-11ee-955e-119eeadcb150",
+        "fromSec": 100,
+        "toSec": 280
+      },
+      "ms": 1,
+      "summary": "100s–280s of #186 Has the resurrection been debunked? (Classic)"
+    },
+    {
+      "at": 11,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 1360,
+        "toSec": 1540
+      },
+      "ms": 0,
+      "summary": "1360s–1540s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 11,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 900,
+        "toSec": 1140
+      },
+      "ms": 0,
+      "summary": "900s–1080s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 11,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:61fea544-com-fbfc585e-18f3-3e09-8729-7190089a2dbf",
+        "fromSec": 780,
+        "toSec": 960
+      },
+      "ms": 0,
+      "summary": "780s–960s of 1 Thessalonians 4:13-18"
+    },
+    {
+      "at": 11,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-part-3",
+        "fromSec": 1980,
+        "toSec": 2160
+      },
+      "ms": 0,
+      "summary": "1980s–2160s of Jesus, The Ultimate Heaven & Earth Meeting Place"
+    },
+    {
+      "at": 11,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-part-3",
+        "fromSec": 2160,
+        "toSec": 2300
+      },
+      "ms": 0,
+      "summary": "2160s–2300s of Jesus, The Ultimate Heaven & Earth Meeting Place"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 14,
+    "toolCalls": 47,
+    "promptTokens": 406621,
+    "completionTokens": 12157,
+    "reasoningTokens": 8951,
+    "cachedPromptTokens": 363498,
+    "wallMs": 130380,
+    "modelLatencyMs": 129609,
+    "toolMs": 668
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.016319,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort high). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T21:16:52.368Z"
+}

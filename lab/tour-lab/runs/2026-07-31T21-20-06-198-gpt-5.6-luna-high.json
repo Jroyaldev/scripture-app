@@ -1,0 +1,657 @@
+{
+  "runId": "2026-07-31T21-20-06-198-gpt-5.6-luna-high",
+  "startedAt": "2026-07-31T21:20:06.198Z",
+  "promptId": "topic-divine-council",
+  "prompt": "Teach me the divine council worldview from scratch — what it is, where the Old Testament assumes it, and why it matters for reading the New Testament.",
+  "model": {
+    "key": "gpt-5.6-luna-high",
+    "label": "GPT-5.6 Luna (high)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "high",
+      "source": "per-model default for gpt-5.6-luna-high",
+      "envVar": "LUNA_HIGH_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "The Divine Council: From the Old Testament to the New",
+    "intro": "This tour starts with the basic idea—God’s heavenly administration and the spiritual beings around him—then traces the worldview through Job, Psalm 82, and Deuteronomy 32. From there, it follows the thread into Paul’s language about invisible powers and into Revelation’s use of Daniel’s heavenly courtroom, so you can hear not just what the worldview is but why it changes how you read the New Testament.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "startSec": 400,
+        "endSec": 580,
+        "why": "Begin here for the vocabulary and the basic picture. The speakers explain that biblical authors can speak of other “Elohim” without putting them on Yahweh’s level, then define the divine council as God “like a commander in chief of a staff of Elohim,” illustrating it with Yahweh enthroned among the heavenly host in 1 Kings 22.",
+        "episodeTitle": "Spiritual Warfare",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/b40c2f6a-4f0a-4552-a28b-ad3991133387/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=b40c2f6a-4f0a-4552-a28b-ad3991133387",
+        "durationSec": 4363,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:wisdom-series-job-part-2",
+        "startSec": 600,
+        "endSec": 700,
+        "why": "This gives you an Old Testament narrative that assumes the worldview rather than merely naming it. Job’s opening scene is described as “God presiding over the sons of God in his divine court,” an image of God’s “decision-making room” that the speakers connect with the council scenes in 1 Kings and Zechariah.",
+        "episodeTitle": "Job E2: Where on Earth is \"Uz\"?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/9158c4f9-a010-4d2f-b813-50405d6cd4c2/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=9158c4f9-a010-4d2f-b813-50405d6cd4c2",
+        "durationSec": 2491,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "startSec": 2560,
+        "endSec": 2740,
+        "why": "Now hear the clearest named example. The speakers read Psalm 82: “God takes his stand in the council of El,” explain that “the phrase divine council is actually a biblical phrase,” and interpret the addressed “Elohim” as delegated spiritual beings whom God confronts and judges.",
+        "episodeTitle": "Origin of Spiritual Beings + Mini Question & Response",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/d7e45e15-6a73-4ddc-a3a7-42e0547ef789/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=d7e45e15-6a73-4ddc-a3a7-42e0547ef789",
+        "durationSec": 4082,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:moses-final-words",
+        "startSec": 1990,
+        "endSec": 2170,
+        "why": "This widens the picture from a heavenly courtroom to the nations. The discussion connects Deuteronomy 32 with the “table of 70 nations” and God handing the nations over to the sons of Elohim, while also honestly noting the manuscript difference and the speakers’ reservation about treating the textual question too simply. It lands on the crucial contrast: “Yahweh’s inheritance is his special people.”",
+        "episodeTitle": "Deuteronomy: Moses’ Final Words",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/018604b1-78df-4140-81f5-4c570d6cdfd1/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=018604b1-78df-4140-81f5-4c570d6cdfd1",
+        "durationSec": 4759,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:6c2d7a78-com-857189b5-f81e-57f0-bb3a-ee0f68ade8b1",
+        "startSec": 300,
+        "endSec": 470,
+        "why": "This is the bridge into the New Testament’s christology. The commentator explains that “thrones, dominions, rulers, or authorities” includes supernatural powers in the ancient context, and that Jesus is not merely one created being among them: “he is the ruler of all of creation” and all things were made “through him and for him.”",
+        "episodeTitle": "Colossians 1:15-23",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/3j8tqp/1_15-23.mp3",
+        "durationSec": 1490,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:443675d9-com-1c505f52-8ecf-31f4-be17-93eac135f7c3",
+        "startSec": 570,
+        "endSec": 750,
+        "why": "Hear what the worldview does in Christian practice and in Paul’s reading of the unseen world. The speaker connects Ephesians’ rulers and authorities with “spiritual beings of wickedness in the heavenly places,” but emphasizes that Jesus is exalted “far above” them and that the church has “new power to live differently.”",
+        "episodeTitle": "Ephesians 6:10-17",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/v54f7g/ephesians_610-1763dzi.mp3",
+        "durationSec": 1706,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:3003",
+        "startSec": 2010,
+        "endSec": 2190,
+        "why": "Finish by seeing why this matters for reading apocalyptic New Testament texts. The speaker explains the council’s roles—attendants, participants, messengers, and advocates—and insists that Daniel 7 “is going to be the backdrop” for Revelation 4–5, which is therefore “very clearly a divine council courtroom scene.”",
+        "episodeTitle": "Naked Bible 366: Revelation 4 Part 1",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2021/03/NakedBible366_Revelation4_Part1.mp3",
+        "durationSec": 3221,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "You have now heard the council as a recurring biblical pattern: Yahweh rules amid a heavenly host, spiritual rulers can rebel and be judged, Israel is chosen amid the nations, and Jesus is presented as creator and supreme ruler over every visible and invisible power. When you meet “rulers,” “authorities,” heavenly assemblies, thrones, or courtroom scenes in the New Testament, you can ask what Old Testament council scene the writer expects you to recognize.",
+    "totalSeconds": 1170
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3049,
+      "promptTokens": 1145,
+      "completionTokens": 40,
+      "reasoningTokens": 24,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00004055
+    },
+    {
+      "i": 1,
+      "latencyMs": 3411,
+      "promptTokens": 1440,
+      "completionTokens": 296,
+      "reasoningTokens": 102,
+      "cachedPromptTokens": 1142,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00022619500000000003
+    },
+    {
+      "i": 2,
+      "latencyMs": 7371,
+      "promptTokens": 12398,
+      "completionTokens": 556,
+      "reasoningTokens": 255,
+      "cachedPromptTokens": 1437,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0017180200000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 5844,
+      "promptTokens": 17544,
+      "completionTokens": 416,
+      "reasoningTokens": 236,
+      "cachedPromptTokens": 12395,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010171000000000002
+    },
+    {
+      "i": 4,
+      "latencyMs": 3934,
+      "promptTokens": 25529,
+      "completionTokens": 307,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 17541,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0013580350000000003
+    },
+    {
+      "i": 5,
+      "latencyMs": 4651,
+      "promptTokens": 29995,
+      "completionTokens": 415,
+      "reasoningTokens": 139,
+      "cachedPromptTokens": 25526,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010628100000000002
+    },
+    {
+      "i": 6,
+      "latencyMs": 18594,
+      "promptTokens": 34278,
+      "completionTokens": 2127,
+      "reasoningTokens": 1960,
+      "cachedPromptTokens": 29992,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0021117950000000005
+    },
+    {
+      "i": 7,
+      "latencyMs": 19108,
+      "promptTokens": 36160,
+      "completionTokens": 2157,
+      "reasoningTokens": 2114,
+      "cachedPromptTokens": 34275,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0018725000000000002
+    },
+    {
+      "i": 8,
+      "latencyMs": 26895,
+      "promptTokens": 36997,
+      "completionTokens": 3524,
+      "reasoningTokens": 2560,
+      "cachedPromptTokens": 36157,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0025808950000000006
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "divine council heavenly beings",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 143,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "sons of God nations Most High Deuteronomy 32",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 86,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Psalm 82 gods divine council",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 71,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "New Testament divine council spiritual rulers powers",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 84,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Job 1 heavenly court sons of God",
+        "sourceId": "",
+        "limit": 8
+      },
+      "ms": 73,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Daniel 7 son of man heavenly court kingdom",
+        "sourceId": "",
+        "limit": 8
+      },
+      "ms": 79,
+      "summary": "8 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "fromSec": 300,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "300s–480s of Spiritual Warfare"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "fromSec": 2440,
+        "toSec": 3060
+      },
+      "ms": 0,
+      "summary": "2440s–2620s of Origin of Spiritual Beings + Mini Question & Response"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:922",
+        "fromSec": 1450,
+        "toSec": 1900
+      },
+      "ms": 5,
+      "summary": "1450s–1630s of Naked Bible 109: John 10, gods or Men?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:moses-final-words",
+        "fromSec": 1850,
+        "toSec": 2300
+      },
+      "ms": 7,
+      "summary": "1850s–2030s of Deuteronomy: Moses’ Final Words"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:wisdom-series-job-part-2",
+        "fromSec": 500,
+        "toSec": 950
+      },
+      "ms": 0,
+      "summary": "500s–680s of Job E2: Where on Earth is \"Uz\"?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:paul-and-powers",
+        "fromSec": 1250,
+        "toSec": 1900
+      },
+      "ms": 0,
+      "summary": "1250s–1430s of N.T. Wright Interview: Paul and the Powers in Acts"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:3003",
+        "fromSec": 2050,
+        "toSec": 2550
+      },
+      "ms": 0,
+      "summary": "2050s–2230s of Naked Bible 366: Revelation 4 Part 1"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Colossians thrones dominions rulers authorities created invisible powers",
+        "sourceId": "",
+        "limit": 8
+      },
+      "ms": 98,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Ephesians rulers authorities heavenly places spiritual forces",
+        "sourceId": "",
+        "limit": 8
+      },
+      "ms": 46,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Jesus divine council Psalm 82 John 10",
+        "sourceId": "",
+        "limit": 8
+      },
+      "ms": 57,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Revelation 4 5 Daniel 7 divine council courtroom lamb",
+        "sourceId": "",
+        "limit": 8
+      },
+      "ms": 66,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Hebrews angels heavenly assembly firstborn spirits divine council",
+        "sourceId": "",
+        "limit": 8
+      },
+      "ms": 57,
+      "summary": "8 hits"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e18-who-did-paul-think-jesus-was",
+        "fromSec": 1900,
+        "toSec": 2150
+      },
+      "ms": 4,
+      "summary": "1900s–2080s of Who Did Paul Think Jesus Was?"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:paul-and-powers",
+        "fromSec": 30,
+        "toSec": 260
+      },
+      "ms": 7,
+      "summary": "30s–210s of N.T. Wright Interview: Paul and the Powers in Acts"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6c2d7a78-com-857189b5-f81e-57f0-bb3a-ee0f68ade8b1",
+        "fromSec": 380,
+        "toSec": 620
+      },
+      "ms": 2,
+      "summary": "380s–560s of Colossians 1:15-23"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:443675d9-com-1c505f52-8ecf-31f4-be17-93eac135f7c3",
+        "fromSec": 570,
+        "toSec": 780
+      },
+      "ms": 3,
+      "summary": "570s–750s of Ephesians 6:10-17"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:3016",
+        "fromSec": 680,
+        "toSec": 930
+      },
+      "ms": 0,
+      "summary": "680s–860s of Naked Bible 369: Revelation 5"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:1839",
+        "fromSec": 3850,
+        "toSec": 4050
+      },
+      "ms": 0,
+      "summary": "3850s–4030s of Naked Bible 198: Hebrews 12"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "fromSec": 240,
+        "toSec": 420
+      },
+      "ms": 9,
+      "summary": "240s–420s of Spiritual Warfare"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "fromSec": 2560,
+        "toSec": 2740
+      },
+      "ms": 7,
+      "summary": "2560s–2740s of Origin of Spiritual Beings + Mini Question & Response"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:moses-final-words",
+        "fromSec": 1990,
+        "toSec": 2170
+      },
+      "ms": 6,
+      "summary": "1990s–2170s of Deuteronomy: Moses’ Final Words"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:paul-and-powers",
+        "fromSec": 210,
+        "toSec": 390
+      },
+      "ms": 0,
+      "summary": "210s–390s of N.T. Wright Interview: Paul and the Powers in Acts"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e18-who-did-paul-think-jesus-was",
+        "fromSec": 1840,
+        "toSec": 2020
+      },
+      "ms": 0,
+      "summary": "1840s–2020s of Who Did Paul Think Jesus Was?"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:3003",
+        "fromSec": 2010,
+        "toSec": 2190
+      },
+      "ms": 0,
+      "summary": "2010s–2190s of Naked Bible 366: Revelation 4 Part 1"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:wisdom-series-job-part-2",
+        "fromSec": 580,
+        "toSec": 700
+      },
+      "ms": 4,
+      "summary": "580s–700s of Job E2: Where on Earth is \"Uz\"?"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6c2d7a78-com-857189b5-f81e-57f0-bb3a-ee0f68ade8b1",
+        "fromSec": 300,
+        "toSec": 470
+      },
+      "ms": 0,
+      "summary": "300s–470s of Colossians 1:15-23"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "fromSec": 400,
+        "toSec": 580
+      },
+      "ms": 0,
+      "summary": "400s–580s of Spiritual Warfare"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:3003",
+        "fromSec": 2190,
+        "toSec": 2370
+      },
+      "ms": 0,
+      "summary": "2190s–2370s of Naked Bible 366: Revelation 4 Part 1"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 9,
+    "toolCalls": 36,
+    "promptTokens": 195486,
+    "completionTokens": 9838,
+    "reasoningTokens": 7390,
+    "cachedPromptTokens": 159565,
+    "wallMs": 93784,
+    "modelLatencyMs": 92857,
+    "toolMs": 915
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.011988,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort high). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T21:21:39.982Z"
+}

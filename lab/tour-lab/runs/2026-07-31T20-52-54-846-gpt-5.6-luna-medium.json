@@ -1,0 +1,601 @@
+{
+  "runId": "2026-07-31T20-52-54-846-gpt-5.6-luna-medium",
+  "startedAt": "2026-07-31T20:52:54.846Z",
+  "promptId": null,
+  "prompt": "multiple views of romans 1 or pretty standard across the board?",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Romans 1: One Standard Reading, Several Important Disagreements",
+    "intro": "Romans 1 is not read identically across the board, but the differences are more specific than a simple traditional-versus-progressive split. This tour starts with the chapter’s overall argument, then lets you hear a standard close reading, the turn into Romans 2, and two historically informed challenges to how the passage is framed and applied. The corpus leans strongly traditional on the sexual-ethics question, so the tour makes that imbalance explicit rather than pretending to offer equal representation of every position.",
+    "steps": [
+      {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "startSec": 500,
+        "endSec": 850,
+        "why": "Begin with the chapter’s big-picture logic before focusing on its most disputed lines. The speakers read Romans 1 through Genesis’s “generative life” and say the Gentile world has exchanged the life-giving Creator for “things that die,” with God “giving them over” to that direction. This gives you one coherent account of how verses 18–32 fit together, rather than isolating verses 26–27.",
+        "episodeTitle": "Romans Overview: Handed Over To Death",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG3565017248.mp3?updated=1712710406",
+        "durationSec": 2931,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "startSec": 140,
+        "endSec": 300,
+        "why": "Now hear a more conventional verse-by-verse presentation. The teacher centers the repeated phrase “God gave them over,” interpreting wrath as God allowing people to “reap what they sow,” and identifies idolatry—“choosing idolatry over the one true God”—as the reason for the judgment described in the passage. This is a useful baseline for what a standard conservative reading sounds like.",
+        "episodeTitle": "Romans 1:18-32",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/na8unf/romans_118-329cdz0.mp3",
+        "durationSec": 1668,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:585ee17e-com-d9a04cb3-54c1-335e-9d5a-2d2c6c6d5f9b",
+        "startSec": 0,
+        "endSec": 180,
+        "why": "This clip is essential because it prevents Romans 1 from being treated as Paul’s final word in isolation. The teacher says Paul has “thrown the net incredibly wide” in chapter 1, including ordinary sins such as “malice, anger, slander, gossip,” and then explains that Romans 2 turns the finger on the person saying, “Amen, Paul.” Whatever one concludes about verses 26–27, this placement changes how the chapter functions rhetorically.",
+        "episodeTitle": "Romans 2:1-16",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/jkeic4/romans_21-16a7tgi.mp3",
+        "durationSec": 1236,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:34ccc8ab-com-40a66085-175b-3a5f-a31a-166e16baaf68",
+        "startSec": 960,
+        "endSec": 1140,
+        "why": "Here is a different kind of challenge: not necessarily a different final sexual ethic, but a caution about importing modern categories into ancient texts. N. T. Wright says “homosexuality is a nineteenth century construct,” then draws on Greco-Roman evidence, including Juvenal, to argue that the ancient world knew both exploitative practices and “long-term partnerships.” This helps you distinguish a dispute over what Romans 1 forbids from a dispute over what historical relationships Paul could have encountered.",
+        "episodeTitle": "#162 Questions on sexuality and LGBT (Classic)",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR9904756994.mp3?updated=1749655920",
+        "durationSec": 1756,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "radically-christian:podcast:60f0a92d-https-radicallychristian-com-p-11100",
+        "startSec": 1180,
+        "endSec": 1340,
+        "why": "This supplies the strongest traditional rebuttal to the contextual/affirming argument heard in the previous clip. Rubel Shelly insists that reading “the historical context” does not erase the passage, and argues that ancient sources did include “public, socially approved, committed same-sex relationships,” citing Plato’s Symposium. The point is not that every teacher in the corpus agrees with him, but that the traditional side’s argument is also making a historical claim—not merely quoting a rule.",
+        "episodeTitle": "A Biblical Response to LGBTQ+ Claims with Rubel Shelly",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682099/beb8b99b-b88f-442e-8a37-7bba413e7ca3/transcoded.mp3?post_id=148682099&relation=podcast&Expires=1785437765&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=CijhXFKutHVKRTX9985rLmYQBz2b7YaokCbvG7aoyE-ftLvitn3sygz2SDlHC8vauQiI-Vj~V9xZZVdlZ8JkadjNZV4bt62qqMbOijnpRlkoRLNerz9IVOjxL4-VxNUoPJTSSCWYaaUWVqxf-f8HBAP69QiPNZmH~9auSN2vLif5SFHRtyKIg29lzVpeDvziDAYmmYkLKr2vSSgIDnlaWvBqdna2ERORmDmP7Pv5SwQiG-bjS521DMFCnLKCm8O9yAatWrdFs3J7wX1188MVk4qMfvq6achCE0fPxlq6dZFxKP9Wv8n9hUxjLy5KOQ9VUKrkJMusbnRRT7fSbpdpZA__",
+        "durationSec": 3934,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "radically-christian:podcast:60f0a92d-https-radicallychristian-com-p-11100",
+        "startSec": 1680,
+        "endSec": 1810,
+        "why": "End by hearing the traditional conclusion stated plainly. Shelly rejects the idea that Romans 1 is only about rape, pederasty, prostitution, or pagan ritual, saying those abuses are included but that Paul addressed “men who have sex with men, women who have sex with women” as such. Set beside Wright’s category warning and the earlier rhetorical reading, this lets you answer the original question accurately: there is a broad common reading in this corpus, but real disagreement remains over historical context, the scope of the language, and how Romans 1 works within Romans 1–3.",
+        "episodeTitle": "A Biblical Response to LGBTQ+ Claims with Rubel Shelly",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682099/beb8b99b-b88f-442e-8a37-7bba413e7ca3/transcoded.mp3?post_id=148682099&relation=podcast&Expires=1785437765&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=CijhXFKutHVKRTX9985rLmYQBz2b7YaokCbvG7aoyE-ftLvitn3sygz2SDlHC8vauQiI-Vj~V9xZZVdlZ8JkadjNZV4bt62qqMbOijnpRlkoRLNerz9IVOjxL4-VxNUoPJTSSCWYaaUWVqxf-f8HBAP69QiPNZmH~9auSN2vLif5SFHRtyKIg29lzVpeDvziDAYmmYkLKr2vSSgIDnlaWvBqdna2ERORmDmP7Pv5SwQiG-bjS521DMFCnLKCm8O9yAatWrdFs3J7wX1188MVk4qMfvq6achCE0fPxlq6dZFxKP9Wv8n9hUxjLy5KOQ9VUKrkJMusbnRRT7fSbpdpZA__",
+        "durationSec": 3934,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "So, are multiple views of Romans 1 pretty standard across the board? Not quite. In this collection, the dominant reading is that Paul describes idolatry’s consequences and includes same-sex sexual behavior among those consequences. But teachers differ over whether the emphasis is creation order, “handing over” and death, ancient social context, or the chapter’s rhetorical trap for the self-righteous listener. The clearest gap is that this corpus does not give you a comparably developed affirming exposition of Romans 1; it gives you traditional readings and substantial contextual objections to some alternative readings.",
+    "totalSeconds": 1160
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 4301,
+      "promptTokens": 1128,
+      "completionTokens": 155,
+      "reasoningTokens": 19,
+      "cachedPromptTokens": 0,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00023392500000000003
+    },
+    {
+      "i": 1,
+      "latencyMs": 3000,
+      "promptTokens": 8699,
+      "completionTokens": 189,
+      "reasoningTokens": 46,
+      "cachedPromptTokens": 1125,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010713250000000001
+    },
+    {
+      "i": 2,
+      "latencyMs": 4028,
+      "promptTokens": 20367,
+      "completionTokens": 390,
+      "reasoningTokens": 39,
+      "cachedPromptTokens": 8696,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0017797600000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 2789,
+      "promptTokens": 25034,
+      "completionTokens": 169,
+      "reasoningTokens": 26,
+      "cachedPromptTokens": 20364,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008887150000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 3457,
+      "promptTokens": 36552,
+      "completionTokens": 386,
+      "reasoningTokens": 81,
+      "cachedPromptTokens": 25031,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0019219600000000003
+    },
+    {
+      "i": 5,
+      "latencyMs": 6126,
+      "promptTokens": 40025,
+      "completionTokens": 551,
+      "reasoningTokens": 298,
+      "cachedPromptTokens": 36549,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0011305150000000001
+    },
+    {
+      "i": 6,
+      "latencyMs": 12418,
+      "promptTokens": 42452,
+      "completionTokens": 1388,
+      "reasoningTokens": 246,
+      "cachedPromptTokens": 40022,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0015366950000000002
+    },
+    {
+      "i": 7,
+      "latencyMs": 5749,
+      "promptTokens": 43697,
+      "completionTokens": 1162,
+      "reasoningTokens": 23,
+      "cachedPromptTokens": 42449,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012776150000000002
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Romans",
+        "chapter": 1,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "20 of 151 moments"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 different interpretations disagreement views",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 82,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans one wrath faith gospel sexuality",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 41,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 same sex women men interpretation",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 83,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 26 27 homosexuality interpretation Paul",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 93,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 Gentiles Jews idolatry argument",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 87,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1:18-32 commentary interpretation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 67,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 natural unnatural same sex relations",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 76,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "fromSec": 500,
+        "toSec": 800
+      },
+      "ms": 6,
+      "summary": "500s–680s of Romans Overview: Handed Over To Death"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 220,
+        "toSec": 520
+      },
+      "ms": 0,
+      "summary": "220s–400s of Romans 1:18-32"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 980,
+        "toSec": 1260
+      },
+      "ms": 0,
+      "summary": "980s–1160s of Romans 1:18-32"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:619",
+        "fromSec": 3510,
+        "toSec": 3800
+      },
+      "ms": 0,
+      "summary": "3510s–3690s of Naked Bible 79: Leviticus 17-18"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:34ccc8ab-com-40a66085-175b-3a5f-a31a-166e16baaf68",
+        "fromSec": 900,
+        "toSec": 1250
+      },
+      "ms": 0,
+      "summary": "900s–1080s of #162 Questions on sexuality and LGBT (Classic)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:a7f43efb-https-radicallychristian-com-p-10909",
+        "fromSec": 1800,
+        "toSec": 2140
+      },
+      "ms": 4,
+      "summary": "1800s–1980s of The Key to Reaching Our LGBTQ+ Neighbors"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 loving monogamous same sex relationship interpretation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 109,
+      "summary": "15 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 idolatry homosexuality affirming interpretation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 63,
+      "summary": "15 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 not about homosexuality interpretation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 71,
+      "summary": "15 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 same sex relationships context ancient world",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 111,
+      "summary": "15 hits"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:60f0a92d-https-radicallychristian-com-p-11100",
+        "fromSec": 1200,
+        "toSec": 1420
+      },
+      "ms": 8,
+      "summary": "1200s–1380s of A Biblical Response to LGBTQ+ Claims with Rubel Shelly"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:60f0a92d-https-radicallychristian-com-p-11100",
+        "fromSec": 1540,
+        "toSec": 1810
+      },
+      "ms": 0,
+      "summary": "1540s–1720s of A Biblical Response to LGBTQ+ Claims with Rubel Shelly"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:298507af-https-radicallychristian-com-p-9033",
+        "fromSec": 1490,
+        "toSec": 1770
+      },
+      "ms": 2,
+      "summary": "1490s–1670s of Struggling with Same Sex Attraction – CrossTalk S3E15"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "fromSec": 680,
+        "toSec": 850
+      },
+      "ms": 4,
+      "summary": "680s–850s of Romans Overview: Handed Over To Death"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:585ee17e-com-d9a04cb3-54c1-335e-9d5a-2d2c6c6d5f9b",
+        "fromSec": 0,
+        "toSec": 180
+      },
+      "ms": 2,
+      "summary": "0s–180s of Romans 2:1-16"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 140,
+        "toSec": 300
+      },
+      "ms": 4,
+      "summary": "140s–300s of Romans 1:18-32"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:34ccc8ab-com-40a66085-175b-3a5f-a31a-166e16baaf68",
+        "fromSec": 960,
+        "toSec": 1180
+      },
+      "ms": 3,
+      "summary": "960s–1140s of #162 Questions on sexuality and LGBT (Classic)"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:60f0a92d-https-radicallychristian-com-p-11100",
+        "fromSec": 1180,
+        "toSec": 1340
+      },
+      "ms": 0,
+      "summary": "1180s–1340s of A Biblical Response to LGBTQ+ Claims with Rubel Shelly"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:60f0a92d-https-radicallychristian-com-p-11100",
+        "fromSec": 1680,
+        "toSec": 1810
+      },
+      "ms": 0,
+      "summary": "1680s–1810s of A Biblical Response to LGBTQ+ Claims with Rubel Shelly"
+    }
+  ],
+  "rejections": [
+    {
+      "at": 6,
+      "errors": [
+        "steps[3].recordId: \"ask-nt-wright:podcast:34ccc8ab-com-40a66085-175b-3a5f-a31a-166e16d6f9c63\" is not an episode in this corpus"
+      ],
+      "submitted": {
+        "title": "Romans 1: One Standard Reading, Several Important Disagreements",
+        "intro": "Romans 1 is not read identically across the board, but the differences are more specific than a simple traditional-versus-progressive split. This tour starts with the chapter’s overall argument, then lets you hear a standard close reading, the turn into Romans 2, and two historically informed challenges to how the passage is framed and applied. The corpus leans strongly traditional on the sexual-ethics question, so the tour makes that imbalance explicit rather than pretending to offer equal representation of every position.",
+        "steps": [
+          {
+            "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+            "startSec": 500,
+            "endSec": 850,
+            "why": "Begin with the chapter’s big-picture logic before focusing on its most disputed lines. The speakers read Romans 1 through Genesis’s “generative life” and say the Gentile world has exchanged the life-giving Creator for “things that die,” with God “giving them over” to that direction. This gives you one coherent account of how verses 18–32 fit together, rather than isolating verses 26–27."
+          },
+          {
+            "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+            "startSec": 140,
+            "endSec": 300,
+            "why": "Now hear a more conventional verse-by-verse presentation. The teacher centers the repeated phrase “God gave them over,” interpreting wrath as God allowing people to “reap what they sow,” and identifies idolatry—“choosing idolatry over the one true God”—as the reason for the judgment described in the passage. This is a useful baseline for what a standard conservative reading sounds like."
+          },
+          {
+            "recordId": "listeners-commentary:podcast:585ee17e-com-d9a04cb3-54c1-335e-9d5a-2d2c6c6d5f9b",
+            "startSec": 0,
+            "endSec": 180,
+            "why": "This clip is essential because it prevents Romans 1 from being treated as Paul’s final word in isolation. The teacher says Paul has “thrown the net incredibly wide” in chapter 1, including ordinary sins such as “malice, anger, slander, gossip,” and then explains that Romans 2 turns the finger on the person saying, “Amen, Paul.” Whatever one concludes about verses 26–27, this placement changes how the chapter functions rhetorically."
+          },
+          {
+            "recordId": "ask-nt-wright:podcast:34ccc8ab-com-40a66085-175b-3a5f-a31a-166e16d6f9c63",
+            "startSec": 960,
+            "endSec": 1140,
+            "why": "Here is a different kind of challenge: not necessarily a different final sexual ethic, but a caution about importing modern categories into ancient texts. N. T. Wright says “homosexuality is a nineteenth century construct,” then draws on Greco-Roman evidence, including Juvenal, to argue that the ancient world knew both exploitative practices and “long-term partnerships.” This helps you distinguish a dispute over what Romans 1 forbids from a dispute over what historical relationships Paul could have encountered."
+          },
+          {
+            "recordId": "radically-christian:podcast:60f0a92d-https-radicallychristian-com-p-11100",
+            "startSec": 1180,
+            "endSec": 1340,
+            "why": "This supplies the strongest traditional rebuttal to the contextual/affirming argument heard in the previous clip. Rubel Shelly insists that reading “the historical context” does not erase the passage, and argues that ancient sources did include “public, socially approved, committed same-sex relationships,” citing Plato’s Symposium. The point is not that every teacher in the corpus agrees with him, but that the traditional side’s argument is also making a historical claim—not merely quoting a rule."
+          },
+          {
+            "recordId": "radically-christian:podcast:60f0a92d-https-radicallychristian-com-p-11100",
+            "startSec": 1680,
+            "endSec": 1810,
+            "why": "End by hearing the traditional conclusion stated plainly. Shelly rejects the idea that Romans 1 is only about rape, pederasty, prostitution, or pagan ritual, saying those abuses are included but that Paul addressed “men who have sex with men, women who have sex with women” as such. Set beside Wright’s category warning and the earlier rhetorical reading, this lets you answer the original question accurately: there is a broad common reading in this corpus, but real disagreement remains over historical context, the scope of the language, and how Romans 1 works within Romans 1–3."
+          }
+        ],
+        "closing": "So, are multiple views of Romans 1 pretty standard across the board? Not quite. In this collection, the dominant reading is that Paul describes idolatry’s consequences and includes same-sex sexual behavior among those consequences. But teachers differ over whether the emphasis is creation order, “handing over” and death, ancient social context, or the chapter’s rhetorical trap for the self-righteous listener. The clearest gap is that this corpus does not give you a comparably developed affirming exposition of Romans 1; it gives you traditional readings and substantial contextual objections to some alternative readings."
+      }
+    }
+  ],
+  "totals": {
+    "modelCalls": 8,
+    "toolCalls": 29,
+    "promptTokens": 217954,
+    "completionTokens": 4390,
+    "reasoningTokens": 778,
+    "cachedPromptTokens": 174236,
+    "wallMs": 42882,
+    "modelLatencyMs": 41868,
+    "toolMs": 916
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.009841,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T20:53:37.728Z"
+}

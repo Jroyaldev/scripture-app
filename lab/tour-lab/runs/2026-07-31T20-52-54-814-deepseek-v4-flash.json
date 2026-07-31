@@ -1,0 +1,546 @@
+{
+  "runId": "2026-07-31T20-52-54-814-deepseek-v4-flash",
+  "startedAt": "2026-07-31T20:52:54.814Z",
+  "promptId": null,
+  "prompt": "multiple views of romans 1 or pretty standard across the board?",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolution": {
+      "slug": "deepseek/deepseek-v4-flash-0731",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek/deepseek-v4-flash-0731",
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash-0731"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "DEEPSEEK_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Romans 1: One Chapter, Several Readings",
+    "intro": "You asked whether Romans 1 is read multiple ways or pretty standard across the board. The honest answer, from these teachers: the chapter's spine is read almost identically everywhere, and its most famous contested details are genuinely fought over — the meaning of \"righteousness of God,\" whose faith Habakkuk's quote points to, and what Paul is doing in verses 26-27. This tour walks you through the standard reading first, then into the debates, so you can hear where the teachers agree and where they part company, and decide for yourself.",
+    "steps": [
+      {
+        "recordId": "five-minutes-church-history:podcast:2289",
+        "startSec": 103,
+        "endSec": 260,
+        "why": "Start with the most famous reading of one verse in the chapter — Luther on Romans 1:17. This clip tells the story of his 'tower experience': how he initially 'hated the righteous God who punishes sinners' because he took the righteousness of God as something he had to achieve, until he understood it as 'the passive righteousness with which the merciful God justifies us by faith,' and felt 'the very gates of paradise' open. It frames why this chapter has been the hinge of Western theology ever since.",
+        "episodeTitle": "The Gates of Paradise",
+        "sourceId": "five-minutes-church-history",
+        "source": "5 Minutes in Church History",
+        "audioUrl": "https://dts.podtrac.com/redirect.mp3/traffic.libsyn.com/secure/5minutesinchurchhistory/226_The_Gates_of_Paradise.mp3?dest-id=668749",
+        "durationSec": 300,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "startSec": 0,
+        "endSec": 115,
+        "why": "The baseline, consensus reading of the whole section. The Listener's Commentary lays out the structure most teachers in this corpus share: Romans 1:18-32 is the opening of Paul's case that 'all people, regardless of their background, stand under the wrath of God,' carried forward by the refrain 'God gave them over' in 1:24, 26, and 28. This is the map you need before the disagreements make sense.",
+        "episodeTitle": "Romans 1:18-32",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/na8unf/romans_118-329cdz0.mp3",
+        "durationSec": 1668,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "startSec": 822,
+        "endSec": 1000,
+        "why": "BibleProject walks the same ground in a teacher's voice: Paul's thesis that the gospel reveals 'the upstanding character of God that compels him to do right by his promises,' the phrase 'from faith to faith' about which 'there's literally whole stacks of books written,' and the claim that the creation itself gives evidence of God — 'you can just do a Psalm 19, the heavens declare your glory.' They stress that Paul is indicting 'all humanity here, not just the Jewish people,' which sets up the ethnic stakes of the whole letter.",
+        "episodeTitle": "Saved from God’s Wrath",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/2c920bb5-7256-4ada-b28c-d39f072152d5/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=2c920bb5-7256-4ada-b28c-d39f072152d5",
+        "durationSec": 3397,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:7e8159e6-9f97-11f0-807d-4f9d863b5694",
+        "startSec": 653,
+        "endSec": 900,
+        "why": "Now the first genuine dispute: whose faith in Habakkuk 2:4, quoted at Romans 1:17? N.T. Wright runs the options — 'Is it from God's faithfulness to our faithfulness? Is it from the faithfulness of Jesus?' — and notes the Hebrew and the Greek Old Testament read it differently, 'his faith' versus 'my faith.' He shows that emuna and pistis carry the range 'faithfulness, reliability, trustworthiness,' not just belief, and promises Paul will unpack it all in Romans 3. Same verse, real divergence.",
+        "episodeTitle": "Gender Hierarchy, Habakuk 2:4, What bits of the Bible did Paul write? Did Paul write the Pastoral Epistles?",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR8456054145.mp3?updated=1759414212",
+        "durationSec": 2054,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "naked-bible:podcast:3274",
+        "startSec": 768,
+        "endSec": 1010,
+        "why": "A second, more radical voice on the same verse: Michael Heiser says 'there's really not a word in this text that is not disputed or talked about or debated among scholars,' and he translates pistis as faithfulness — 'from faithfulness for faithfulness' — because faith in Paul is 'a very thick word that entails loyalty' and discipleship. He grounds this in the Septuagint's reading of Habakkuk 2:4, 'by my faithfulness, will live,' where the 'my' is God's. Hear how a translation choice becomes a theological position.",
+        "episodeTitle": "Naked Bible 419: Paul’s Use of the Old Testament Series: Romans 1-3",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2022/04/NakedBible419_PaulOTSeries_Romans1_3.mp3",
+        "durationSec": 4136,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "startSec": 470,
+        "endSec": 710,
+        "why": "Back to the big picture, with the passage's engine explained: humanity refuses the life-giving Creator, so God 'gives them over to the delusion of worshiping death' — 'you're gonna worship death and you're gonna become like death.' The hosts are candid that this is where Paul 'makes a lot of us uncomfortable,' because Paul closes the chapter with sexual examples read as 'paradigmatic examples of a denial of the creator.' This is the interpretive hinge the next two steps argue over.",
+        "episodeTitle": "Romans Overview: Handed Over To Death",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG3565017248.mp3?updated=1712710406",
+        "durationSec": 2931,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "radically-christian:podcast:a7f43efb-https-radicallychristian-com-p-10909",
+        "startSec": 1888,
+        "endSec": 2220,
+        "why": "The flashpoint, argued from the traditional side. The host dismantles the claim that Romans 1:26-27 only condemns same-sex acts tied to idol worship or prostitution — 'there's nothing in Paul's language that speaks to prostitution, idol worship, pedophilia, or rape' — and presses the consistency argument: if verses 28-31's list (murder, lying, disobedience) is read plainly, the sexual terms should be too, and 'we become accused of cafeteria-style hermeneutics.' He closes by acknowledging the 'false binary' between loving people and speaking the truth.",
+        "episodeTitle": "The Key to Reaching Our LGBTQ+ Neighbors",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682116/e7ac8e9e-9baa-4281-a81f-21450e5c5df2/transcoded.mp3?post_id=148682116&relation=podcast&Expires=1785437866&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=OND2hoIue4Agf7hJF04zCMwJBV8KiyAoTi1EncZf-0kYbsmOYgMyAQPkEB6ZkVDnaKb8sACTGQCqhP6jsFUOodGVNsxEx1qtY-PWDvQ-LijRuTO8s9eCWx7E0WWDjA2rAhw2r5tAW99sOt2wh1qah5A~mgIShMRunI~Ml2ZnGU44rRXpZ4VwWER6vtcXxwZi-Q7OmSBhTm-sVDChHLpFvqw6PWcsxU4qCcjAlyKgzb3wIUKOOdIqBNeAF3u-TNTBbsPAGp6QXFLEamiNXuZkKuZrFtxdBT0fbUR~0dgEwYJbIjqQlyPfYTX4uiuyJ1JUlUCVSNwpQjnYlXKskvyg3Q__",
+        "durationSec": 2989,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:2ee505e8-sgender-dc6a86ad3050ebdf89dbb69b206468b3",
+        "startSec": 1060,
+        "endSec": 1400,
+        "why": "A different kind of challenge to the standard reading, from an ancient historian: N.T. Wright argues the category itself is modern — 'homosexuality is a nineteenth-century construct,' like 'Hinduism' or 'Buddhism' — and that we should be careful mapping it onto the ancient world. Yet he also answers the 'we know nothing like this existed' claim directly: Juvenal's Rome included 'long-term partnerships,' and Plato's Symposium describes 'long-term, faithful, stable partnerships,' so 'there's nothing that we know about actual behaviour that they didn't know.' He ends by insisting that historical honesty 'doesn't then foreclose the issue as to what you do with it' — a respectful model of how to disagree about this chapter.",
+        "episodeTitle": "#13 Christian sexual ethics, homosexuality and transgender",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR9802435957.mp3?updated=1736470000",
+        "durationSec": 1953,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "So there's your answer: Romans 1 is both. The architecture — a gospel of God's righteousness that indicts everyone, Jew and Gentile alike, through the threefold 'gave them over' — is read the same way across every voice in this corpus. But the load-bearing details are genuinely open: whether 'the righteousness of God' is about covenant faithfulness or imputed righteousness, whether Habakkuk's 'faith' is ours, Christ's, or God's own, what the exchange in verses 23 and 25 is really diagnosing, and what verses 26-27 mean for Christians today. Luther had to break through one reading to find the gospel in this chapter; the teachers in this tour suggest the chapter has kept generating breakthroughs ever since. Listen with an open Bible and an open mind — and notice how often the disagreements are about what Paul's argument is doing, not about whether the chapter is true.",
+    "totalSeconds": 1851
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 7437,
+      "promptTokens": 1752,
+      "completionTokens": 563,
+      "reasoningTokens": 469,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0001746192
+    },
+    {
+      "i": 1,
+      "latencyMs": 18454,
+      "promptTokens": 5522,
+      "completionTokens": 1902,
+      "reasoningTokens": 1512,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010773392
+    },
+    {
+      "i": 2,
+      "latencyMs": 20752,
+      "promptTokens": 8621,
+      "completionTokens": 1681,
+      "reasoningTokens": 1279,
+      "cachedPromptTokens": 5504,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009224712
+    },
+    {
+      "i": 3,
+      "latencyMs": 22495,
+      "promptTokens": 11574,
+      "completionTokens": 2016,
+      "reasoningTokens": 1583,
+      "cachedPromptTokens": 8576,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010082128
+    },
+    {
+      "i": 4,
+      "latencyMs": 48429,
+      "promptTokens": 17959,
+      "completionTokens": 4079,
+      "reasoningTokens": 3457,
+      "cachedPromptTokens": 11520,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.002075836
+    },
+    {
+      "i": 5,
+      "latencyMs": 40946,
+      "promptTokens": 21851,
+      "completionTokens": 3271,
+      "reasoningTokens": 2750,
+      "cachedPromptTokens": 17920,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001516396
+    },
+    {
+      "i": 6,
+      "latencyMs": 33958,
+      "promptTokens": 24441,
+      "completionTokens": 2989,
+      "reasoningTokens": 1142,
+      "cachedPromptTokens": 21760,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001273188
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "ROM",
+        "chapter": 1,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "40 of 151 moments"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:7e8159e6-9f97-11f0-807d-4f9d863b5694",
+        "fromSec": 600,
+        "toSec": 780
+      },
+      "ms": 6,
+      "summary": "600s–780s of Gender Hierarchy, Habakuk 2:4, What bits of the Bible did Paul write? Did Paul write the Pastoral Epistles?"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "fromSec": 800,
+        "toSec": 980
+      },
+      "ms": 5,
+      "summary": "800s–980s of Saved from God’s Wrath"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 0,
+        "toSec": 180
+      },
+      "ms": 0,
+      "summary": "0s–180s of Romans 1:18-32"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "fromSec": 350,
+        "toSec": 530
+      },
+      "ms": 4,
+      "summary": "350s–530s of Romans Overview: Handed Over To Death"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 980,
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "toSec": 1160
+      },
+      "ms": 0,
+      "summary": "980s–1160s of Saved from God’s Wrath"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 748,
+        "recordId": "ask-nt-wright:podcast:27cf789c-f845-11f0-9b4f-5b44b2950008",
+        "toSec": 860
+      },
+      "ms": 7,
+      "summary": "748s–860s of Is Salvation fair?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1920,
+        "recordId": "radically-christian:podcast:a7f43efb-https-radicallychristian-com-p-10909",
+        "toSec": 2100
+      },
+      "ms": 5,
+      "summary": "1920s–2100s of The Key to Reaching Our LGBTQ+ Neighbors"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 760,
+        "recordId": "naked-bible:podcast:3274",
+        "toSec": 940
+      },
+      "ms": 0,
+      "summary": "760s–940s of Naked Bible 419: Paul’s Use of the Old Testament Series: Romans 1-3"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "homosexuality Romans 1",
+        "limit": 10
+      },
+      "ms": 78,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "same-sex same sex relationships",
+        "limit": 10
+      },
+      "ms": 45,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1160,
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "toSec": 1340
+      },
+      "ms": 2,
+      "summary": "1160s–1340s of Saved from God’s Wrath"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 530,
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "toSec": 710
+      },
+      "ms": 0,
+      "summary": "530s–710s of Romans Overview: Handed Over To Death"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 4264,
+        "recordId": "naked-bible:podcast:1147",
+        "toSec": 4440
+      },
+      "ms": 2,
+      "summary": "4264s–4440s of Naked Bible 135: Ezekiel 19-20"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 180,
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "toSec": 320
+      },
+      "ms": 4,
+      "summary": "180s–320s of Romans 1:18-32"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 90,
+        "recordId": "five-minutes-church-history:podcast:2289",
+        "toSec": 260
+      },
+      "ms": 0,
+      "summary": "90s–260s of The Gates of Paradise"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1060,
+        "recordId": "ask-nt-wright:podcast:2ee505e8-sgender-dc6a86ad3050ebdf89dbb69b206468b3",
+        "toSec": 1240
+      },
+      "ms": 0,
+      "summary": "1060s–1240s of #13 Christian sexual ethics, homosexuality and transgender"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 470,
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "toSec": 560
+      },
+      "ms": 0,
+      "summary": "470s–560s of Romans Overview: Handed Over To Death"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 780,
+        "recordId": "ask-nt-wright:podcast:7e8159e6-9f97-11f0-807d-4f9d863b5694",
+        "toSec": 900
+      },
+      "ms": 4,
+      "summary": "780s–900s of Gender Hierarchy, Habakuk 2:4, What bits of the Bible did Paul write? Did Paul write the Pastoral Epistles?"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2100,
+        "recordId": "radically-christian:podcast:a7f43efb-https-radicallychristian-com-p-10909",
+        "toSec": 2220
+      },
+      "ms": 0,
+      "summary": "2100s–2220s of The Key to Reaching Our LGBTQ+ Neighbors"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1240,
+        "recordId": "ask-nt-wright:podcast:2ee505e8-sgender-dc6a86ad3050ebdf89dbb69b206468b3",
+        "toSec": 1400
+      },
+      "ms": 0,
+      "summary": "1240s–1400s of #13 Christian sexual ethics, homosexuality and transgender"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 680,
+        "recordId": "ask-nt-wright:podcast:27cf789c-f845-11f0-9b4f-5b44b2950008",
+        "toSec": 800
+      },
+      "ms": 8,
+      "summary": "680s–800s of Is Salvation fair?"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1880,
+        "recordId": "radically-christian:podcast:a7f43efb-https-radicallychristian-com-p-10909",
+        "toSec": 1930
+      },
+      "ms": 0,
+      "summary": "1880s–1930s of The Key to Reaching Our LGBTQ+ Neighbors"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 940,
+        "recordId": "naked-bible:podcast:3274",
+        "toSec": 1010
+      },
+      "ms": 5,
+      "summary": "940s–1010s of Naked Bible 419: Paul’s Use of the Old Testament Series: Romans 1-3"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 430,
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "toSec": 480
+      },
+      "ms": 0,
+      "summary": "430s–480s of Romans Overview: Handed Over To Death"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 7,
+    "toolCalls": 27,
+    "promptTokens": 91720,
+    "completionTokens": 16501,
+    "reasoningTokens": 12192,
+    "cachedPromptTokens": 68608,
+    "wallMs": 192780,
+    "modelLatencyMs": 192471,
+    "toolMs": 176
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.008048,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T20:56:07.594Z"
+}

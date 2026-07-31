@@ -1,0 +1,804 @@
+{
+  "runId": "2026-07-31T20-52-54-846-gpt-5.6-luna-high",
+  "startedAt": "2026-07-31T20:52:54.846Z",
+  "promptId": null,
+  "prompt": "multiple views of romans 1 or pretty standard across the board?",
+  "model": {
+    "key": "gpt-5.6-luna-high",
+    "label": "GPT-5.6 Luna (high)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "high",
+      "source": "per-model default for gpt-5.6-luna-high",
+      "envVar": "LUNA_HIGH_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Romans 1: One Reading, Several Interpretive Lenses",
+    "intro": "You’re asking whether Romans 1 is read pretty uniformly or whether real interpretive differences are at work. This tour starts with the chapter’s place in Paul’s argument, then lets you compare a conventional reading with a different account of God’s wrath, historical-context cautions, and a creation-order reading. It ends where Romans itself ends the setup: with Paul turning the accusation back on the person who is listening and judging.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "startSec": 0,
+        "endSec": 180,
+        "why": "Begin here for the map. The teacher calls Romans 1:16–17 “the thesis to the letter,” then explains that 1:18–32 presents the pagan world under condemnation before the argument widens. This gives you the broad shape that many readings share before the disputed details begin.",
+        "episodeTitle": "An Overview of the Letter to the Romans",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/x82wrk/overview.mp3",
+        "durationSec": 1242,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "startSec": 0,
+        "endSec": 180,
+        "why": "This is the clearest conventional exposition in the tour. The teacher says 1:18–3:20 is Paul’s “case against mankind,” and reads 1:18–32 specifically as the case against the “immoral pagan,” organized by the repeated refrain “God gave them over.”",
+        "episodeTitle": "Romans 1:18-32",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/na8unf/romans_118-329cdz0.mp3",
+        "durationSec": 1668,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "startSec": 0,
+        "endSec": 180,
+        "why": "Now compare the meaning of wrath rather than simply assuming it means a standard penal picture. The speaker says God’s anger is “handing people over to a process that’s self-chosen,” and emphasizes that Romans presents rescue from that trajectory “right now,” with the cross foregrounding God’s love.",
+        "episodeTitle": "Saved from God’s Wrath",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/2c920bb5-7256-4ada-b28c-d39f072152d5/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=2c920bb5-7256-4ada-b28c-d39f072152d5",
+        "durationSec": 3397,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:34ccc8ab-com-40a66085-175b-3a5f-a31a-166e16baaf68",
+        "startSec": 900,
+        "endSec": 1200,
+        "why": "This is the tour’s strongest historical-context counterpoint. Wright distinguishes the modern category “homosexuality,” calls it a nineteenth-century construct, and then argues from Juvenal, Plutarch, and Plato that the ancient world included “long-term partnerships” and “faithful, stable partnerships.” He does not simply say the passage is therefore irrelevant; he says that conclusion raises further questions about how to integrate Paul’s small passages with his wider theology.",
+        "episodeTitle": "#162 Questions on sexuality and LGBT (Classic)",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR9904756994.mp3?updated=1749655920",
+        "durationSec": 1756,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "naked-bible:podcast:619",
+        "startSec": 3606,
+        "endSec": 3720,
+        "why": "Hear a different traditional reading of the sexual language, grounded less in idolatry-specific practice than in creation order. The teacher says Paul includes both male and female same-sex relations and that “at the heart” of the New Testament rationale is that this is “contrary to creation order,” while also distinguishing that from the older, procreation-based rationale he sees in Leviticus.",
+        "episodeTitle": "Naked Bible 79: Leviticus 17-18",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2015/12/NakedBible79_Leviticus17_18.mp3",
+        "durationSec": 4631,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:585ee17e-com-d9a04cb3-54c1-335e-9d5a-2d2c6c6d5f9b",
+        "startSec": 0,
+        "endSec": 180,
+        "why": "Finish with the safeguard built into Paul’s next move. After describing how chapter 1 “thrown the net incredibly wide,” the teacher says chapter 2 begins, “you are without excuse, every one of you who passes judgment.” That keeps Romans 1 from becoming a detached catalogue for condemning others: in this reading, the moralist who applauds chapter 1 is also being addressed.",
+        "episodeTitle": "Romans 2:1-16",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/jkeic4/romans_21-16a7tgi.mp3",
+        "durationSec": 1236,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "So the short answer is: the broad architecture is fairly standard—idolatry, God’s handing-over judgment, universal accountability, and the move toward the gospel—but the emphases are not identical. The clips disagree or differ over what “wrath” means, how ancient sexual practices relate to modern categories, and whether Romans 1’s sexual language is best explained through idolatry, creation order, or both. Romans 2 is the needed final check: whatever view you take, Paul does not leave the listener safely outside the indictment.",
+    "totalSeconds": 1134
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2578,
+      "promptTokens": 1128,
+      "completionTokens": 211,
+      "reasoningTokens": 33,
+      "cachedPromptTokens": 0,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00026752500000000007
+    },
+    {
+      "i": 1,
+      "latencyMs": 3688,
+      "promptTokens": 10912,
+      "completionTokens": 284,
+      "reasoningTokens": 102,
+      "cachedPromptTokens": 1125,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014049500000000003
+    },
+    {
+      "i": 2,
+      "latencyMs": 5122,
+      "promptTokens": 25578,
+      "completionTokens": 654,
+      "reasoningTokens": 198,
+      "cachedPromptTokens": 10909,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0023350400000000005
+    },
+    {
+      "i": 3,
+      "latencyMs": 3740,
+      "promptTokens": 31537,
+      "completionTokens": 291,
+      "reasoningTokens": 99,
+      "cachedPromptTokens": 25575,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0011755250000000002
+    },
+    {
+      "i": 4,
+      "latencyMs": 3706,
+      "promptTokens": 46003,
+      "completionTokens": 309,
+      "reasoningTokens": 104,
+      "cachedPromptTokens": 31534,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0023092900000000003
+    },
+    {
+      "i": 5,
+      "latencyMs": 6060,
+      "promptTokens": 61189,
+      "completionTokens": 626,
+      "reasoningTokens": 326,
+      "cachedPromptTokens": 46000,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0027341500000000003
+    },
+    {
+      "i": 6,
+      "latencyMs": 6794,
+      "promptTokens": 65412,
+      "completionTokens": 416,
+      "reasoningTokens": 374,
+      "cachedPromptTokens": 61186,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0013896350000000002
+    },
+    {
+      "i": 7,
+      "latencyMs": 13049,
+      "promptTokens": 66226,
+      "completionTokens": 602,
+      "reasoningTokens": 349,
+      "cachedPromptTokens": 65409,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00111734
+    },
+    {
+      "i": 8,
+      "latencyMs": 5923,
+      "promptTokens": 69269,
+      "completionTokens": 451,
+      "reasoningTokens": 233,
+      "cachedPromptTokens": 66223,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0013135050000000002
+    },
+    {
+      "i": 9,
+      "latencyMs": 6230,
+      "promptTokens": 74885,
+      "completionTokens": 523,
+      "reasoningTokens": 453,
+      "cachedPromptTokens": 69266,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0017087600000000001
+    },
+    {
+      "i": 10,
+      "latencyMs": 10042,
+      "promptTokens": 75469,
+      "completionTokens": 917,
+      "reasoningTokens": 860,
+      "cachedPromptTokens": 74882,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00137232
+    },
+    {
+      "i": 11,
+      "latencyMs": 13762,
+      "promptTokens": 76198,
+      "completionTokens": 1252,
+      "reasoningTokens": 1047,
+      "cachedPromptTokens": 75466,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0015972850000000002
+    },
+    {
+      "i": 12,
+      "latencyMs": 16807,
+      "promptTokens": 76533,
+      "completionTokens": 1912,
+      "reasoningTokens": 972,
+      "cachedPromptTokens": 76195,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0019513250000000003
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Romans",
+        "chapter": 1,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 93,
+      "summary": "20 of 151 moments"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 interpretation different views wrath God homosexuality exchanged truth",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 70,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans chapter one meaning Paul gospel law faith righteousness",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 54,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 same sex sexual relationships nature women men",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 64,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 Israel Gentiles historical context shameful lusts",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 50,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 18 32 Paul says",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 93,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1:26 27 against nature natural relations interpretation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 87,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 not talking about all gay people orientation context",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 86,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 idolatry pagan worship temple sexual practices",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 123,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1:16 17 thesis righteousness gospel Jew Greek",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 90,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 0,
+        "toSec": 240
+      },
+      "ms": 0,
+      "summary": "0s–180s of Romans 1:18-32"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 650,
+        "toSec": 950
+      },
+      "ms": 0,
+      "summary": "650s–830s of Romans 1:18-32"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 950,
+        "toSec": 1250
+      },
+      "ms": 0,
+      "summary": "950s–1130s of Romans 1:18-32"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "fromSec": 80,
+        "toSec": 300
+      },
+      "ms": 5,
+      "summary": "80s–260s of An Overview of the Letter to the Romans"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:3274",
+        "fromSec": 0,
+        "toSec": 330
+      },
+      "ms": 6,
+      "summary": "0s–180s of Naked Bible 419: Paul’s Use of the Old Testament Series: Romans 1-3"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d09c8ed4-f6cf-11ee-8072-b7002c006746",
+        "fromSec": 1600,
+        "toSec": 2100
+      },
+      "ms": 5,
+      "summary": "1600s–1780s of Romans Overview: Jesus is King"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "fromSec": 0,
+        "toSec": 300
+      },
+      "ms": 4,
+      "summary": "0s–180s of Saved from God’s Wrath"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:11898be9-com-1755e8f0-a7a3-3f13-a832-7633c5a0138a",
+        "fromSec": 560,
+        "toSec": 760
+      },
+      "ms": 5,
+      "summary": "560s–740s of #168 Questions on the life of St Paul, justification and predestination (Classic)"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 homosexuality Paul ancient world orientation behavior",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 93,
+      "summary": "15 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 sexual ethics same sex desire N T Wright Paul",
+        "sourceId": "ask-nt-wright",
+        "limit": 15
+      },
+      "ms": 53,
+      "summary": "15 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 homosexuality idolatry natural unnatural Paul",
+        "sourceId": "naked-bible",
+        "limit": 15
+      },
+      "ms": 104,
+      "summary": "15 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 homosexuality idolatry natural unnatural Paul",
+        "sourceId": "radically-christian",
+        "limit": 15
+      },
+      "ms": 73,
+      "summary": "15 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 wrath handed over interpretation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 111,
+      "summary": "15 hits"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1:18 wrath N T Wright Romans",
+        "sourceId": "ask-nt-wright",
+        "limit": 15
+      },
+      "ms": 102,
+      "summary": "15 hits"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 creation idolatry wrath Paul Wright",
+        "sourceId": "ask-nt-wright",
+        "limit": 15
+      },
+      "ms": 53,
+      "summary": "15 hits"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 26 women men natural relations N T Wright",
+        "sourceId": "ask-nt-wright",
+        "limit": 15
+      },
+      "ms": 55,
+      "summary": "15 hits"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 Gentiles idolatry Paul Jews Romans",
+        "sourceId": "ask-nt-wright",
+        "limit": 15
+      },
+      "ms": 56,
+      "summary": "15 hits"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 18 32 same sex interpretation scholars",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 102,
+      "summary": "15 hits"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "fromSec": 2580,
+        "toSec": 2760
+      },
+      "ms": 0,
+      "summary": "2580s–2760s of Saved from God’s Wrath"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:619",
+        "fromSec": 3330,
+        "toSec": 3510
+      },
+      "ms": 0,
+      "summary": "3330s–3510s of Naked Bible 79: Leviticus 17-18"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:a2f4371c-https-radicallychristian-com-p-10904",
+        "fromSec": 500,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "500s–680s of Looking for True Love: A Class on Christian Sexual Ethics"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:298507af-https-radicallychristian-com-p-9033",
+        "fromSec": 1450,
+        "toSec": 1700
+      },
+      "ms": 0,
+      "summary": "1450s–1630s of Struggling with Same Sex Attraction – CrossTalk S3E15"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:3274",
+        "fromSec": 1650,
+        "toSec": 1900
+      },
+      "ms": 0,
+      "summary": "1650s–1830s of Naked Bible 419: Paul’s Use of the Old Testament Series: Romans 1-3"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4",
+        "fromSec": 0,
+        "toSec": 220
+      },
+      "ms": 0,
+      "summary": "0s–180s of Romans 1:16-17"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:619",
+        "fromSec": 3540,
+        "toSec": 3720
+      },
+      "ms": 0,
+      "summary": "3540s–3720s of Naked Bible 79: Leviticus 17-18"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:34ccc8ab-com-40a66085-175b-3a5f-a31a-166e16baaf68",
+        "fromSec": 900,
+        "toSec": 1200
+      },
+      "ms": 0,
+      "summary": "900s–1080s of #162 Questions on sexuality and LGBT (Classic)"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:34ccc8ab-com-40a66085-175b-3a5f-a31a-166e16baaf68",
+        "fromSec": 1200,
+        "toSec": 1500
+      },
+      "ms": 0,
+      "summary": "1200s–1380s of #162 Questions on sexuality and LGBT (Classic)"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:2ee505e8-sgender-dc6a86ad3050ebdf89dbb69b206468b3",
+        "fromSec": 1000,
+        "toSec": 1350
+      },
+      "ms": 0,
+      "summary": "1000s–1180s of #13 Christian sexual ethics, homosexuality and transgender"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:did-paul-actually-say-that",
+        "fromSec": 2500,
+        "toSec": 2800
+      },
+      "ms": 0,
+      "summary": "2500s–2680s of Did Paul Actually Say That?"
+    },
+    {
+      "at": 8,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 2 you have no excuse judgment chapter 1 moralist",
+        "sourceId": "listeners-commentary",
+        "limit": 10
+      },
+      "ms": 60,
+      "summary": "10 hits"
+    },
+    {
+      "at": 8,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 2 you who judge another same things",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 47,
+      "summary": "10 hits"
+    },
+    {
+      "at": 8,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6bbfa166-com-20db375c-a035-35f2-8b38-516fd9b58eb7",
+        "fromSec": 0,
+        "toSec": 180
+      },
+      "ms": 0,
+      "summary": "0s–180s of An Overview of the Letter to the Romans"
+    },
+    {
+      "at": 8,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:585ee17e-com-d9a04cb3-54c1-335e-9d5a-2d2c6c6d5f9b",
+        "fromSec": 0,
+        "toSec": 180
+      },
+      "ms": 0,
+      "summary": "0s–180s of Romans 2:1-16"
+    },
+    {
+      "at": 9,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:34ccc8ab-com-40a66085-175b-3a5f-a31a-166e16baaf68",
+        "fromSec": 1080,
+        "toSec": 1200
+      },
+      "ms": 4,
+      "summary": "1080s–1200s of #162 Questions on sexuality and LGBT (Classic)"
+    },
+    {
+      "at": 10,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:a2f4371c-https-radicallychristian-com-p-10904",
+        "fromSec": 680,
+        "toSec": 860
+      },
+      "ms": 8,
+      "summary": "680s–860s of Looking for True Love: A Class on Christian Sexual Ethics"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 13,
+    "toolCalls": 51,
+    "promptTokens": 680339,
+    "completionTokens": 8448,
+    "reasoningTokens": 5150,
+    "cachedPromptTokens": 603770,
+    "wallMs": 99364,
+    "modelLatencyMs": 97501,
+    "toolMs": 1756
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.020677,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort high). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T20:54:34.210Z"
+}

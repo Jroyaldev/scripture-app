@@ -1,0 +1,720 @@
+{
+  "runId": "2026-07-31T20-52-54-845-gpt-5.6-luna",
+  "startedAt": "2026-07-31T20:52:54.845Z",
+  "promptId": null,
+  "prompt": "multiple views of romans 1 or pretty standard across the board?",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "LUNA_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Romans 1: Shared Skeleton, Different Emphases",
+    "intro": "This tour starts with Romans 1:16–17 as the letter’s thesis, then follows the familiar reading of 1:18–32 before putting it beside other emphases. You’ll hear real agreement about idolatry, divine judgment, and the turn toward Romans 2, but also differences over what “God gave them over,” “nature,” and the sexual language are doing in Paul’s argument. The middle clips address Romans 1:26–27 directly.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4",
+        "startSec": 767,
+        "endSec": 1060,
+        "why": "Begin here for the frame that one teacher places over the whole chapter and letter: Romans 1:16–17 reveals “God’s saving justice,” and its benefits are experienced “completely, solely, and totally on the basis of faith.” That gives you the gospel thesis before the tour moves into judgment and human failure.",
+        "episodeTitle": "Romans 1:16-17",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/7uc4t3/romans_116-17a8laf.mp3",
+        "durationSec": 1125,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "startSec": 0,
+        "endSec": 520,
+        "why": "This is the clearest broad exposition of the conventional flow: 1:18–32 is presented as Paul’s first case against the immoral pagan, while the argument eventually includes everyone. Listen for the structural refrain, “God gave them over,” and for the speaker’s explanation that humanity exchanges the Creator for creation and therefore stands under God’s “just repayment.”",
+        "episodeTitle": "Romans 1:18-32",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/na8unf/romans_118-329cdz0.mp3",
+        "durationSec": 1668,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "startSec": 861,
+        "endSec": 1300,
+        "why": "Stay with the same episode for its explicit reading of verses 24–28. The speaker says Paul is “clearly talking about homosexual behavior,” understands “against nature” as “against God’s design,” and connects the passage to Genesis 1–2. This makes the traditional non-affirming interpretation concrete before you hear other ways of explaining the passage’s role.",
+        "episodeTitle": "Romans 1:18-32",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/na8unf/romans_118-329cdz0.mp3",
+        "durationSec": 1668,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "startSec": 1390,
+        "endSec": 1570,
+        "why": "BibleProject shifts the lens from a mainly future punishment reading to the repeated present-tense pattern of handing over. It links Paul’s language to the golden-calf story and says, “God’s anger is giving people over to the consequences of their decisions.” Hear how idolatry, social damage, and the Hebrew Bible’s storyline become central to the meaning of wrath.",
+        "episodeTitle": "Saved from God’s Wrath",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/2c920bb5-7256-4ada-b28c-d39f072152d5/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=2c920bb5-7256-4ada-b28c-d39f072152d5",
+        "durationSec": 3397,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "startSec": 540,
+        "endSec": 720,
+        "why": "This gives you another explanation of the sexual section rather than simply repeating the previous clip. The hosts describe the Gentile world as “worshiping death” instead of the life-giving Creator, then call the male-female passage a paradigmatic example of a relationship that “cannot produce life.” The difference is chiefly in the framework used to explain Paul’s example: creation, fruitfulness, and life versus death.",
+        "episodeTitle": "Romans Overview: Handed Over To Death",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG3565017248.mp3?updated=1712710406",
+        "durationSec": 2931,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "startSec": 760,
+        "endSec": 940,
+        "why": "End here because this teacher insists Romans 1 is not meant to leave the listener judging someone else. After the Gentile indictment, the episode says, “He does turn the knife on the Jews,” describing chapter 2 as Paul’s exposure of hypocrisy and a leveling of Jew and Gentile. That final move is essential for hearing the chapter as part of Romans’ larger argument rather than as an isolated list of condemned outsiders.",
+        "episodeTitle": "Romans Overview: Handed Over To Death",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG3565017248.mp3?updated=1712710406",
+        "durationSec": 2931,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "So the qualified answer is: the broad movement is fairly shared in these recordings—gospel, idolatry, God’s repeated “giving over,” and the turn toward universal culpability—but the interpretive emphases are not identical. One teacher stresses a direct prohibition and created order; others foreground consequences, idolatry, life and death, or the rhetorical setup for Romans 2. This is not every possible reading of Romans 1, but it is enough to show that “pretty standard across the board” is too simple.",
+    "totalSeconds": 1792
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2537,
+      "promptTokens": 1128,
+      "completionTokens": 140,
+      "reasoningTokens": 124,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00009842500000000002
+    },
+    {
+      "i": 1,
+      "latencyMs": 4554,
+      "promptTokens": 1423,
+      "completionTokens": 401,
+      "reasoningTokens": 201,
+      "cachedPromptTokens": 1125,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00028902500000000005
+    },
+    {
+      "i": 2,
+      "latencyMs": 7597,
+      "promptTokens": 17775,
+      "completionTokens": 750,
+      "reasoningTokens": 490,
+      "cachedPromptTokens": 1420,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0025085000000000003
+    },
+    {
+      "i": 3,
+      "latencyMs": 10561,
+      "promptTokens": 41151,
+      "completionTokens": 1201,
+      "reasoningTokens": 886,
+      "cachedPromptTokens": 17772,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0038206200000000007
+    },
+    {
+      "i": 4,
+      "latencyMs": 99111,
+      "promptTokens": 47649,
+      "completionTokens": 3086,
+      "reasoningTokens": 2329,
+      "cachedPromptTokens": 41148,
+      "toolCalls": 12,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0030756300000000006
+    },
+    {
+      "i": 5,
+      "latencyMs": 4932,
+      "promptTokens": 56238,
+      "completionTokens": 605,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 47646,
+      "toolCalls": 12,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0019133850000000003
+    },
+    {
+      "i": 6,
+      "latencyMs": 92963,
+      "promptTokens": 64382,
+      "completionTokens": 11185,
+      "reasoningTokens": 10200,
+      "cachedPromptTokens": 56235,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.008291650000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 3,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Romans",
+        "chapter": 1,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "20 of 151 moments"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans chapter one argument wrath God",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 68,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 same sex natural relations homosexuality",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 73,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "exchanged the truth of God Romans 1 idolatry",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 88,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "from faith to faith Romans 1 gospel righteousness",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 49,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 Gentiles law conscience judgment",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 75,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1:18-32",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 52,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1:26 27 women men natural unnatural",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 87,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Paul homosexuality Romans 1 first century sexual practice",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 88,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 pagan Gentile idolatry sexual relations",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 83,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1:18 wrath handed over",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 108,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 and 2 Jew Gentile no excuse",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 97,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 imperial critique Caesar",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 62,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans 1 homosexuality affirming interpretation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 82,
+      "summary": "15 hits"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4"
+      },
+      "ms": 7,
+      "summary": "Romans 1:16-17 (1125s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134"
+      },
+      "ms": 2,
+      "summary": "Romans 1:18-32 (1668s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath"
+      },
+      "ms": 1,
+      "summary": "Saved from God’s Wrath (3397s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01"
+      },
+      "ms": 1,
+      "summary": "Romans Overview: Handed Over To Death (2931s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:2ee505e8-sgender-dc6a86ad3050ebdf89dbb69b206468b3"
+      },
+      "ms": 3,
+      "summary": "#13 Christian sexual ethics, homosexuality and transgender (1953s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "radically-christian:podcast:a2f4371c-https-radicallychristian-com-p-10904"
+      },
+      "ms": 3,
+      "summary": "Looking for True Love: A Class on Christian Sexual Ethics (2548s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "naked-bible:podcast:3274"
+      },
+      "ms": 5,
+      "summary": "Naked Bible 419: Paul’s Use of the Old Testament Series: Romans 1-3 (4136s)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4",
+        "fromSec": 80,
+        "toSec": 260
+      },
+      "ms": 3,
+      "summary": "80s–260s of Romans 1:16-17"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4",
+        "fromSec": 285,
+        "toSec": 465
+      },
+      "ms": 0,
+      "summary": "285s–465s of Romans 1:16-17"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4",
+        "fromSec": 400,
+        "toSec": 580
+      },
+      "ms": 0,
+      "summary": "400s–580s of Romans 1:16-17"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4",
+        "fromSec": 750,
+        "toSec": 930
+      },
+      "ms": 0,
+      "summary": "750s–930s of Romans 1:16-17"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4",
+        "fromSec": 880,
+        "toSec": 1060
+      },
+      "ms": 0,
+      "summary": "880s–1060s of Romans 1:16-17"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 0,
+        "toSec": 180
+      },
+      "ms": 0,
+      "summary": "0s–180s of Romans 1:18-32"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 180,
+        "toSec": 360
+      },
+      "ms": 0,
+      "summary": "180s–360s of Romans 1:18-32"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 330,
+        "toSec": 510
+      },
+      "ms": 0,
+      "summary": "330s–510s of Romans 1:18-32"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 520,
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "520s–700s of Romans 1:18-32"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 820,
+        "toSec": 1000
+      },
+      "ms": 0,
+      "summary": "820s–1000s of Romans 1:18-32"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 980,
+        "toSec": 1160
+      },
+      "ms": 0,
+      "summary": "980s–1160s of Romans 1:18-32"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 1120,
+        "toSec": 1300
+      },
+      "ms": 0,
+      "summary": "1120s–1300s of Romans 1:18-32"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "fromSec": 780,
+        "toSec": 1040
+      },
+      "ms": 0,
+      "summary": "780s–960s of Saved from God’s Wrath"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "fromSec": 1030,
+        "toSec": 1280
+      },
+      "ms": 0,
+      "summary": "1030s–1210s of Saved from God’s Wrath"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "fromSec": 1390,
+        "toSec": 1650
+      },
+      "ms": 0,
+      "summary": "1390s–1570s of Saved from God’s Wrath"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "fromSec": 1600,
+        "toSec": 1830
+      },
+      "ms": 0,
+      "summary": "1600s–1780s of Saved from God’s Wrath"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "fromSec": 2390,
+        "toSec": 2600
+      },
+      "ms": 0,
+      "summary": "2390s–2570s of Saved from God’s Wrath"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:saved-from-gods-wrath",
+        "fromSec": 2940,
+        "toSec": 3160
+      },
+      "ms": 0,
+      "summary": "2940s–3120s of Saved from God’s Wrath"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "fromSec": 0,
+        "toSec": 240
+      },
+      "ms": 0,
+      "summary": "0s–180s of Romans Overview: Handed Over To Death"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "fromSec": 300,
+        "toSec": 560
+      },
+      "ms": 0,
+      "summary": "300s–480s of Romans Overview: Handed Over To Death"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "fromSec": 540,
+        "toSec": 760
+      },
+      "ms": 0,
+      "summary": "540s–720s of Romans Overview: Handed Over To Death"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "fromSec": 760,
+        "toSec": 970
+      },
+      "ms": 0,
+      "summary": "760s–940s of Romans Overview: Handed Over To Death"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:09338d52-f6d4-11ee-8b22-17bcf4d2ba01",
+        "fromSec": 1300,
+        "toSec": 1505
+      },
+      "ms": 0,
+      "summary": "1300s–1480s of Romans Overview: Handed Over To Death"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 7,
+    "toolCalls": 47,
+    "promptTokens": 229746,
+    "completionTokens": 17368,
+    "reasoningTokens": 14230,
+    "cachedPromptTokens": 166446,
+    "wallMs": 223385,
+    "modelLatencyMs": 222255,
+    "toolMs": 1040
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.019997,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T20:56:38.230Z"
+}

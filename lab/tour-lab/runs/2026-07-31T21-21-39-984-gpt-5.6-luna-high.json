@@ -1,0 +1,797 @@
+{
+  "runId": "2026-07-31T21-21-39-984-gpt-5.6-luna-high",
+  "startedAt": "2026-07-31T21:21:39.984Z",
+  "promptId": "word-study-hesed",
+  "prompt": "I keep hearing that the Hebrew word hesed can't be translated. What does hesed actually mean, and where does the Old Testament use it in a way that shows its range?",
+  "model": {
+    "key": "gpt-5.6-luna-high",
+    "label": "GPT-5.6 Luna (high)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "high",
+      "source": "per-model default for gpt-5.6-luna-high",
+      "envVar": "LUNA_HIGH_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Hesed: More Than One English Word",
+    "intro": "This tour starts with the translation problem, then follows hesed through Exodus, family loyalty, royal generosity, prophetic critique, and the Psalms. You’ll hear why “steadfast love,” “covenant faithfulness,” “mercy,” and “loving-kindness” each catch part of the word—while no single gloss captures all of it.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "startSec": 0,
+        "endSec": 180,
+        "why": "Begin here for the central definition and the reason translations vary. The speaker describes hesed as combining “being generous with being loyal” and “deep affection,” then adds that it involves a covenant partner doing “concrete acts” to fulfill a promise. The clip also names the major English renderings—“mercy,” “loving kindness,” “love,” and “steadfast love”—without treating any one of them as a complete equivalent.",
+        "episodeTitle": "The Loyal Love of God",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e530ba3f-428a-4ef5-828c-34800da4963f/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e530ba3f-428a-4ef5-828c-34800da4963f",
+        "durationSec": 4105,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:c416445833e65b5f726afb158ec92353",
+        "startSec": 1370,
+        "endSec": 1620,
+        "why": "Now hear the word anchored in its key Old Testament setting: God’s self-description in Exodus 34. After reading the passage, the speaker explains that hesed means “goodness in action”—not merely an inward emotion, but love that goes outward “into this act of goodness.” This also keeps the definition from becoming sentimental: the clip notes that God forgives while still not simply winking at sin.",
+        "episodeTitle": "Episode 105 (Exodus 33:18-34:16)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_Min_ep_105.mp3?dest-id=245197",
+        "durationSec": 2488,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "startSec": 1940,
+        "endSec": 2070,
+        "why": "Ruth shows that hesed is not restricted to God’s actions or to formal legal language. Naomi says, “May Yahweh do chesed with you, as you’ve shown chesed to me,” and Ruth answers with her costly vow: “Where you go, I go.” The teachers call this an act of hesed because Ruth offers familial and covenant loyalty when Naomi has “nothing to give her,” making the generosity and commitment dimensions visible.",
+        "episodeTitle": "The Loyal Love of God",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e530ba3f-428a-4ef5-828c-34800da4963f/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e530ba3f-428a-4ef5-828c-34800da4963f",
+        "durationSec": 4105,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:478e6896-2d24-4806-ac5f-4db234766229",
+        "startSec": 1630,
+        "endSec": 2010,
+        "why": "This longer narrative gives the word another shape: David’s hesed toward Mephibosheth, the disabled grandson of his political enemy. The speaker says David is acting as “the instrument of Yahweh” to show covenant loyalty, and the scene lands in David’s promise: “Do not fear,” followed by restored land and a permanent place at the king’s table. Hesed here is loyal love expressed through surprising, concrete generosity toward a vulnerable rival.",
+        "episodeTitle": "2 Samuel 8:9-9:13 (Episode 267)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_Min_ep_667.mp3?dest-id=245197",
+        "durationSec": 2471,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:633264c5-ede2-4f20-abae-f6b16f3d5c4d",
+        "startSec": 700,
+        "endSec": 830,
+        "why": "Hosea 6:6 shows the prophetic and ethical range of hesed. The familiar translation is “I desire mercy, not sacrifice,” but the speaker identifies the Hebrew as “God’s covenant, steadfast, faithful, loyal love.” The point is not to discard sacrifice; it is to expose worship severed from relationship—“all the sacrifice, but none of the love.” This helps you see why hesed can be translated as mercy in context while still meaning more than pity.",
+        "episodeTitle": "Hosea 5:8-11:11: Politics and Religion",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG8402683449.mp3?updated=1664486091",
+        "durationSec": 3757,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:a07922e45da2445b8c36defa6d82cc67",
+        "startSec": 1460,
+        "endSec": 1640,
+        "why": "Finish with Psalm 136, where hesed becomes the refrain interpreting Israel’s whole story. The speaker identifies “for his loving kindness is everlasting” as the repeated line through all twenty-six verses, covering creation, the exodus, and entry into the land. The conclusion is a helpful reading principle: the Psalm makes the “loving kindness of Yahweh” the interpretive key for the Torah, showing hesed as enduring action across generations rather than a single moment of kindness.",
+        "episodeTitle": "Live From HWSS 2019",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_Min_HWSS.mp3?dest-id=245197",
+        "durationSec": 2510,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips suggest that hesed is not literally impossible to translate; it is unusually rich. In any given verse, context may foreground mercy, kindness, loyalty, faithfulness, affection, forgiveness, or generosity. But the fuller range is a committed relationship expressed in concrete, generous action—especially action that keeps faith when there is no obvious repayment.",
+    "totalSeconds": 1250
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2984,
+      "promptTokens": 1151,
+      "completionTokens": 74,
+      "reasoningTokens": 58,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00006170000000000001
+    },
+    {
+      "i": 1,
+      "latencyMs": 2857,
+      "promptTokens": 1446,
+      "completionTokens": 210,
+      "reasoningTokens": 45,
+      "cachedPromptTokens": 1148,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00017465500000000001
+    },
+    {
+      "i": 2,
+      "latencyMs": 4144,
+      "promptTokens": 11565,
+      "completionTokens": 490,
+      "reasoningTokens": 114,
+      "cachedPromptTokens": 1443,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0015736050000000003
+    },
+    {
+      "i": 3,
+      "latencyMs": 3585,
+      "promptTokens": 17589,
+      "completionTokens": 276,
+      "reasoningTokens": 101,
+      "cachedPromptTokens": 11562,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010345200000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 6073,
+      "promptTokens": 25471,
+      "completionTokens": 690,
+      "reasoningTokens": 313,
+      "cachedPromptTokens": 17586,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0015754100000000002
+    },
+    {
+      "i": 5,
+      "latencyMs": 7342,
+      "promptTokens": 31323,
+      "completionTokens": 840,
+      "reasoningTokens": 539,
+      "cachedPromptTokens": 25468,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014904800000000002
+    },
+    {
+      "i": 6,
+      "latencyMs": 15400,
+      "promptTokens": 35638,
+      "completionTokens": 1685,
+      "reasoningTokens": 1464,
+      "cachedPromptTokens": 31320,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0018638750000000003
+    },
+    {
+      "i": 7,
+      "latencyMs": 12025,
+      "promptTokens": 37751,
+      "completionTokens": 1018,
+      "reasoningTokens": 957,
+      "cachedPromptTokens": 35635,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012315750000000002
+    },
+    {
+      "i": 8,
+      "latencyMs": 6787,
+      "promptTokens": 38513,
+      "completionTokens": 613,
+      "reasoningTokens": 568,
+      "cachedPromptTokens": 37748,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008408300000000001
+    },
+    {
+      "i": 9,
+      "latencyMs": 13843,
+      "promptTokens": 39211,
+      "completionTokens": 1268,
+      "reasoningTokens": 1207,
+      "cachedPromptTokens": 38510,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00123345
+    },
+    {
+      "i": 10,
+      "latencyMs": 9574,
+      "promptTokens": 39947,
+      "completionTokens": 905,
+      "reasoningTokens": 842,
+      "cachedPromptTokens": 39208,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00102738
+    },
+    {
+      "i": 11,
+      "latencyMs": 15810,
+      "promptTokens": 40776,
+      "completionTokens": 1622,
+      "reasoningTokens": 1342,
+      "cachedPromptTokens": 39944,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014765650000000002
+    },
+    {
+      "i": 12,
+      "latencyMs": 20063,
+      "promptTokens": 43576,
+      "completionTokens": 2304,
+      "reasoningTokens": 1326,
+      "cachedPromptTokens": 40773,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0021404300000000005
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "hesed Hebrew word meaning covenant loyalty loving kindness",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 145,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "chesed steadfast love mercy kindness Old Testament",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 81,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "hesed cannot be translated range meaning",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 60,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Hebrew word hesed Ruth David Jonathan",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 73,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "hesed Psalm Exodus loyal love",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 72,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 0,
+        "toSec": 180
+      },
+      "ms": 0,
+      "summary": "0s–180s of The Loyal Love of God"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 700,
+        "toSec": 1030
+      },
+      "ms": 0,
+      "summary": "700s–880s of The Loyal Love of God"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 1550,
+        "toSec": 1770
+      },
+      "ms": 0,
+      "summary": "1550s–1730s of The Loyal Love of God"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 2070,
+        "toSec": 2360
+      },
+      "ms": 0,
+      "summary": "2070s–2250s of The Loyal Love of God"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 3570,
+        "toSec": 3760
+      },
+      "ms": 0,
+      "summary": "3570s–3750s of The Loyal Love of God"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:478e6896-2d24-4806-ac5f-4db234766229",
+        "fromSec": 1480,
+        "toSec": 1720
+      },
+      "ms": 0,
+      "summary": "1480s–1660s of 2 Samuel 8:9-9:13 (Episode 267)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+        "fromSec": 830,
+        "toSec": 1100
+      },
+      "ms": 0,
+      "summary": "830s–1010s of Ruth 1-2: God Fills What's Empty"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:c416445833e65b5f726afb158ec92353",
+        "fromSec": 1370,
+        "toSec": 1650
+      },
+      "ms": 5,
+      "summary": "1370s–1550s of Episode 105 (Exodus 33:18-34:16)"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "hesed Psalm 23 goodness mercy follow me Hebrew",
+        "sourceId": "",
+        "limit": 8
+      },
+      "ms": 78,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "hesed Hosea 6:6 desire steadfast love not sacrifice",
+        "sourceId": "",
+        "limit": 8
+      },
+      "ms": 78,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "hesed Micah 6:8 love kindness justice",
+        "sourceId": "",
+        "limit": 8
+      },
+      "ms": 77,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "hesed Psalm 136 everlasting loving kindness",
+        "sourceId": "",
+        "limit": 8
+      },
+      "ms": 43,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god"
+      },
+      "ms": 1,
+      "summary": "The Loyal Love of God (4105s)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 520,
+        "toSec": 850
+      },
+      "ms": 0,
+      "summary": "520s–700s of The Loyal Love of God"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 960,
+        "toSec": 1210
+      },
+      "ms": 0,
+      "summary": "960s–1140s of The Loyal Love of God"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 1260,
+        "toSec": 1510
+      },
+      "ms": 0,
+      "summary": "1260s–1440s of The Loyal Love of God"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 1800,
+        "toSec": 2070
+      },
+      "ms": 0,
+      "summary": "1800s–1980s of The Loyal Love of God"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 2320,
+        "toSec": 2615
+      },
+      "ms": 0,
+      "summary": "2320s–2500s of The Loyal Love of God"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:478e6896-2d24-4806-ac5f-4db234766229",
+        "fromSec": 1630,
+        "toSec": 1850
+      },
+      "ms": 0,
+      "summary": "1630s–1810s of 2 Samuel 8:9-9:13 (Episode 267)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:d1608daa-https-radicallychristian-com-p-10577",
+        "fromSec": 1190,
+        "toSec": 1435
+      },
+      "ms": 0,
+      "summary": "1190s–1370s of A Cruciform Hermeneutic"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a07922e45da2445b8c36defa6d82cc67",
+        "fromSec": 1430,
+        "toSec": 1650
+      },
+      "ms": 0,
+      "summary": "1430s–1610s of Live From HWSS 2019"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 1960,
+        "toSec": 2160
+      },
+      "ms": 0,
+      "summary": "1960s–2140s of The Loyal Love of God"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 2160,
+        "toSec": 2320
+      },
+      "ms": 0,
+      "summary": "2160s–2320s of The Loyal Love of God"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 1440,
+        "toSec": 1620
+      },
+      "ms": 0,
+      "summary": "1440s–1620s of The Loyal Love of God"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:c416445833e65b5f726afb158ec92353",
+        "fromSec": 1530,
+        "toSec": 1710
+      },
+      "ms": 0,
+      "summary": "1530s–1710s of Episode 105 (Exodus 33:18-34:16)"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a07922e45da2445b8c36defa6d82cc67",
+        "fromSec": 1600,
+        "toSec": 1780
+      },
+      "ms": 0,
+      "summary": "1600s–1780s of Live From HWSS 2019"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:633264c5-ede2-4f20-abae-f6b16f3d5c4d",
+        "fromSec": 680,
+        "toSec": 880
+      },
+      "ms": 0,
+      "summary": "680s–860s of Hosea 5:8-11:11: Politics and Religion"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:c416445833e65b5f726afb158ec92353",
+        "fromSec": 1500,
+        "toSec": 1620
+      },
+      "ms": 0,
+      "summary": "1500s–1620s of Episode 105 (Exodus 33:18-34:16)"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:633264c5-ede2-4f20-abae-f6b16f3d5c4d",
+        "fromSec": 720,
+        "toSec": 800
+      },
+      "ms": 0,
+      "summary": "720s–800s of Hosea 5:8-11:11: Politics and Religion"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a07922e45da2445b8c36defa6d82cc67",
+        "fromSec": 1460,
+        "toSec": 1540
+      },
+      "ms": 0,
+      "summary": "1460s–1540s of Live From HWSS 2019"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 0,
+        "toSec": 180
+      },
+      "ms": 0,
+      "summary": "0s–180s of The Loyal Love of God"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a07922e45da2445b8c36defa6d82cc67",
+        "fromSec": 1380,
+        "toSec": 1560
+      },
+      "ms": 0,
+      "summary": "1380s–1560s of Live From HWSS 2019"
+    },
+    {
+      "at": 8,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 2100,
+        "toSec": 2280
+      },
+      "ms": 0,
+      "summary": "2100s–2280s of The Loyal Love of God"
+    },
+    {
+      "at": 9,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a07922e45da2445b8c36defa6d82cc67",
+        "fromSec": 1460,
+        "toSec": 1640
+      },
+      "ms": 0,
+      "summary": "1460s–1640s of Live From HWSS 2019"
+    },
+    {
+      "at": 10,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:478e6896-2d24-4806-ac5f-4db234766229",
+        "fromSec": 1770,
+        "toSec": 1950
+      },
+      "ms": 0,
+      "summary": "1770s–1950s of 2 Samuel 8:9-9:13 (Episode 267)"
+    },
+    {
+      "at": 11,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:c416445833e65b5f726afb158ec92353",
+        "fromSec": 1590,
+        "toSec": 1710
+      },
+      "ms": 0,
+      "summary": "1590s–1710s of Episode 105 (Exodus 33:18-34:16)"
+    },
+    {
+      "at": 11,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 1940,
+        "toSec": 2120
+      },
+      "ms": 0,
+      "summary": "1940s–2120s of The Loyal Love of God"
+    },
+    {
+      "at": 11,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:478e6896-2d24-4806-ac5f-4db234766229",
+        "fromSec": 1850,
+        "toSec": 2010
+      },
+      "ms": 0,
+      "summary": "1850s–2010s of 2 Samuel 8:9-9:13 (Episode 267)"
+    },
+    {
+      "at": 11,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:633264c5-ede2-4f20-abae-f6b16f3d5c4d",
+        "fromSec": 700,
+        "toSec": 830
+      },
+      "ms": 0,
+      "summary": "700s–830s of Hosea 5:8-11:11: Politics and Religion"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 13,
+    "toolCalls": 47,
+    "promptTokens": 363957,
+    "completionTokens": 11995,
+    "reasoningTokens": 8876,
+    "cachedPromptTokens": 321445,
+    "wallMs": 121211,
+    "modelLatencyMs": 120487,
+    "toolMs": 714
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.015724,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort high). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T21:23:41.195Z"
+}

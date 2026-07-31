@@ -43,6 +43,7 @@ A cold query is ~100ms, a warm one ~20ms.
 | `moments_for_passage(book, chapter, verse?)` | every timestamped treatment of a text, with relation + dwell time |
 | `transcript_window(recordId, fromSec, toSec)` | the tape between two timestamps, **capped at 180s** so an episode cannot be slurped |
 | `episode_info(recordId)` | title, show, duration, coarse outline, every scripture moment detected |
+| `read_passage(book, chapter, fromVerse?, toVerse?)` | the scripture text itself (WEB, public domain) — so a "why" quotes the text, not the model's memory of it |
 | `submit_tour(...)` | the only exit |
 
 `transcript_window` is the tool that makes this experiment different from a search ranking: the model has
@@ -189,6 +190,7 @@ run-cli.mjs       same loop, headless, for the bench          npm run lab:tour:r
 tour-agent.mjs    agent loop, validation retries, cost, ledger
 tools.mjs         tool schemas, dispatch, the tour contract
 corpus.mjs        read-only corpus + two-stage retrieval + index cache
+scripture.mjs     the Bible itself (WEB verse text from data/scripture/text)
 model-client.mjs  one OpenAI-compatible client, slug resolution, env loading
 pricing.json      EDIT ME rate card
 fixtures.json     the eight bench prompts

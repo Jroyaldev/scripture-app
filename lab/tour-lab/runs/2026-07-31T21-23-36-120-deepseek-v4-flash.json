@@ -1,0 +1,596 @@
+{
+  "runId": "2026-07-31T21-23-36-120-deepseek-v4-flash",
+  "startedAt": "2026-07-31T21:23:36.120Z",
+  "promptId": "topic-divine-council",
+  "prompt": "Teach me the divine council worldview from scratch — what it is, where the Old Testament assumes it, and why it matters for reading the New Testament.",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolution": {
+      "slug": "deepseek/deepseek-v4-flash-0731",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek/deepseek-v4-flash-0731",
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash-0731"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "DEEPSEEK_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "The Divine Council Worldview, From Scratch",
+    "intro": "You asked to learn the divine council worldview from the ground up: what it is, where the Old Testament simply assumes it, and why it changes how you read the New Testament. This tour builds the idea in order — starting with the definition, then the two Old Testament pillars, then the rebellion that explains why the world looks the way it does, and finally three New Testament payoffs: Jesus, Paul, and the throne room of Revelation. Two voices carry it: Michael Heiser (the Naked Bible Podcast, whose life's work this was) and Tim Mackie and Jon Collins (BibleProject), with N.T. Wright along the way as a fellow traveler. Where they differ in emphasis, I'll say so plainly.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "startSec": 2580,
+        "endSec": 2760,
+        "why": "The cleanest single definition of the worldview on tape. Tim Mackie names it directly: \"We've got this divine council idea. And its basic core of this idea is that Yahweh is the commander-in-chief. There are other Elohim, they're called the hosts of heaven, the armies of heaven.\" He gives the labels the Bible uses — sons of God, stars — and stresses that they are lesser than Yahweh, which is the precise sense in which this is not polytheism. He also foreshadows the rebellion and the Deuteronomy story, which the next steps will unpack.",
+        "episodeTitle": "Spiritual Warfare",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/b40c2f6a-4f0a-4552-a28b-ad3991133387/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=b40c2f6a-4f0a-4552-a28b-ad3991133387",
+        "durationSec": 4363,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:288",
+        "startSec": 800,
+        "endSec": 980,
+        "why": "The worldview's constitutional passage: Deuteronomy 32:8-9, the moment the Most High divides the nations at Babel and assigns them to the sons of God. Heiser walks the text in plain language — \"at the Babel event, God disinherits the nations and he assigns their governance to sons of God, to other divine beings\" — and pairs it with Deuteronomy 4:19's warning about the host of heaven that the Lord \"has allotted to all the peoples,\" then lands on the crucial line: Israel is Yahweh's portion. This is where the assumption becomes an explicit story.",
+        "episodeTitle": "Naked Bible 43: Acts 6-7",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2015/04/NakedBible43_Acts6and7.mp3",
+        "durationSec": 2982,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:moses-final-words",
+        "startSec": 1680,
+        "endSec": 1800,
+        "why": "A second voice confirming that Deuteronomy 32:8 genuinely says what the divine council view says it says — and how we know. Tim and Jon read the ESV's \"sons of God\" against the NIV's \"sons of Israel,\" showing it is a manuscript difference: the Dead Sea Scrolls and the Septuagint read sons of El (spiritual beings), while later medieval Hebrew manuscripts read sons of Israel. \"It's the plus or minus of three Hebrew letters in different manuscripts.\" This builds confidence in the text before you move to the payoff passage.",
+        "episodeTitle": "Deuteronomy: Moses’ Final Words",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/018604b1-78df-4140-81f5-4c570d6cdfd1/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=018604b1-78df-4140-81f5-4c570d6cdfd1",
+        "durationSec": 4759,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:922",
+        "startSec": 1450,
+        "endSec": 1810,
+        "why": "The heart of the Old Testament assumption: a full reading of Psalm 82, the divine council scene in which \"God has taken his place in the divine council. In the midst of the gods, in the midst of the Elohim, he holds judgment\" — and the gods are condemned for corrupt administration, then told \"you are gods, sons of the Most High\" who will die like men. Heiser shows why the standard attempts to make these gods into Israelites or Jewish judges are forced: \"just read the passage for what it says. The gods are being addressed in the Divine Council.\" He then walks Jesus' quotation of this psalm in John 10, where Jesus is not backing away from \"I and the Father are one\" but \"defending his deity\" — the first of the New Testament payoffs, and the hinge of the whole tour.",
+        "episodeTitle": "Naked Bible 109: John 10, gods or Men?",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2016/07/NakedBible109_John10_godsorMen.mp3",
+        "durationSec": 2924,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "startSec": 3080,
+        "endSec": 3260,
+        "why": "Here is why the world looks the way it does: the rebellion of those appointed rulers. Tim Mackie reads Psalm 82 as God's verdict on the council members — \"I appointed you to govern the heavenly realms. You broke that boundary and your days are numbered\" — and links it to Genesis 6, where the sons of God overstep, mirroring the human fall: \"These divine beings are undergoing their own rebellion matching the human rebellion.\" Both realms are now in rebellion, which is why the story needs a fix.",
+        "episodeTitle": "Origin of Spiritual Beings + Mini Question & Response",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/d7e45e15-6a73-4ddc-a3a7-42e0547ef789/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=d7e45e15-6a73-4ddc-a3a7-42e0547ef789",
+        "durationSec": 4082,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "startSec": 3520,
+        "endSec": 3700,
+        "why": "What the worldview does to Paul — the payoff in Ephesians and Colossians. Because the lesser Elohim were originally \"to be over the nations,\" Paul's claim is that \"Jesus is now exalted above all other principalities and authorities. He's the chief one.\" The armor of God is not Frank Peretti-style individual combat but protecting the corporate unity of the new humanity. This is where the divine council worldview stops being a curiosity about the Old Testament and starts organizing how you read the New Testament's talk of powers.",
+        "episodeTitle": "Spiritual Warfare",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/b40c2f6a-4f0a-4552-a28b-ad3991133387/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=b40c2f6a-4f0a-4552-a28b-ad3991133387",
+        "durationSec": 4363,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:3003",
+        "startSec": 2050,
+        "endSec": 2380,
+        "why": "The throne-room payoff: Revelation 4-5 is deliberately staged as a divine council courtroom. Heiser works from Davis and Mullen's studies of the council — its members attend the head, praise him, promote justice among the peoples (Psalm 82), serve as messengers and watchers — then applies it: \"Daniel 7 is a divine counsel scene... That's why Revelation 4 and 5 is very clearly a divine council courtroom scene,\" with the Lamb's worthiness as the issue before the council. This is where the whole worldview converges on the center of the New Testament's apocalyptic vision.",
+        "episodeTitle": "Naked Bible 366: Revelation 4 Part 1",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2021/03/NakedBible366_Revelation4_Part1.mp3",
+        "durationSec": 3221,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:5a10ecf6-195a-11f1-86af-43dc19bb3b99",
+        "startSec": 1650,
+        "endSec": 1850,
+        "why": "A respected outside voice affirming that this is mainstream biblical reading, not a fringe obsession. N.T. Wright, who says he is \"not an expert on Heiser,\" concedes that Heiser \"has alerted ordinary Western Bible readers like me to a phenomenon which many of us may easily have kind of glossed over.\" He describes Job 1's heavenly council with God \"like a king summoning 50 people who are in charge of all the different departments,\" and links it to Isaiah 40's heavenly voices. This closes the tour with perspective: the worldview is a lens, and even those who don't build on it acknowledge the phenomenon.",
+        "episodeTitle": "What's the fine print on the Second Coming, the Transfiguration, and Michael Heiser's Unseen Realm",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR3729639316.mp3?updated=1772801654",
+        "durationSec": 2418,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "You now have the worldview from the ground up: one God who presides over a council of lesser elohim; Deuteronomy 32 and Psalm 82 as the two passages where the Old Testament lets you see it plainly; the rebellion that explains why the nations are in chaos; and then the New Testament reread through that lens — Jesus defending his deity with Psalm 82, Paul announcing Christ exalted above the powers, and John staging Revelation 4-5 as the council's courtroom. The point was never a doctrine about angels. It is a way of reading: when the biblical writers talk about the nations, the powers, and the throne of God, they are talking about one unseen world, and Jesus walks into the middle of it. Listen to these in order, and you'll find yourself hearing phrases you knew — \\\"principalities and powers,\\\" \\\"you are gods,\\\" \\\"the twenty-four elders\\\" — as if for the first time.",
+    "totalSeconds": 1730
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3859,
+      "promptTokens": 1768,
+      "completionTokens": 371,
+      "reasoningTokens": 187,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0001230992
+    },
+    {
+      "i": 1,
+      "latencyMs": 6937,
+      "promptTokens": 7990,
+      "completionTokens": 695,
+      "reasoningTokens": 393,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010848992
+    },
+    {
+      "i": 2,
+      "latencyMs": 17695,
+      "promptTokens": 15873,
+      "completionTokens": 1917,
+      "reasoningTokens": 1573,
+      "cachedPromptTokens": 7936,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0016701608
+    },
+    {
+      "i": 3,
+      "latencyMs": 23063,
+      "promptTokens": 17748,
+      "completionTokens": 2420,
+      "reasoningTokens": 1975,
+      "cachedPromptTokens": 15872,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009846816
+    },
+    {
+      "i": 4,
+      "latencyMs": 17246,
+      "promptTokens": 23505,
+      "completionTokens": 1579,
+      "reasoningTokens": 1261,
+      "cachedPromptTokens": 17664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0013093192
+    },
+    {
+      "i": 5,
+      "latencyMs": 19898,
+      "promptTokens": 29717,
+      "completionTokens": 2033,
+      "reasoningTokens": 1465,
+      "cachedPromptTokens": 23424,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0015158472
+    },
+    {
+      "i": 6,
+      "latencyMs": 90303,
+      "promptTokens": 34551,
+      "completionTokens": 8965,
+      "reasoningTokens": 8683,
+      "cachedPromptTokens": 29696,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0032730488
+    },
+    {
+      "i": 7,
+      "latencyMs": 19370,
+      "promptTokens": 36045,
+      "completionTokens": 1794,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 34432,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008245496
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "divine council",
+        "limit": 10
+      },
+      "ms": 87,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Psalm 82 gods",
+        "limit": 10
+      },
+      "ms": 73,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "sons of God Deuteronomy 32",
+        "limit": 10
+      },
+      "ms": 86,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "Psalm 82 divine council gods judged",
+        "sourceId": "naked-bible"
+      },
+      "ms": 102,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "let us make man in our image plural"
+      },
+      "ms": 83,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "unknown god Athens Acts 17"
+      },
+      "ms": 57,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "limit": 10,
+        "query": "spiritual warfare principalities powers Ephesians 6",
+        "sourceId": "bibleproject"
+      },
+      "ms": 88,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:922",
+        "fromSec": 1040,
+        "toSec": 1220
+      },
+      "ms": 7,
+      "summary": "1040s–1220s of Naked Bible 109: John 10, gods or Men?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:288",
+        "fromSec": 800,
+        "toSec": 980
+      },
+      "ms": 5,
+      "summary": "800s–980s of Naked Bible 43: Acts 6-7"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:moses-final-words",
+        "fromSec": 1680,
+        "toSec": 1860
+      },
+      "ms": 0,
+      "summary": "error: unknown recordId \"bibleproject:moses-final-words\""
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:theme-god-e2-no-other-god",
+        "fromSec": 700,
+        "toSec": 880
+      },
+      "ms": 1,
+      "summary": "error: unknown recordId \"bibleproject:theme-god-e2-no-other-god\""
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1680,
+        "recordId": "bibleproject:podcast:moses-final-words",
+        "toSec": 1860
+      },
+      "ms": 8,
+      "summary": "1680s–1860s of Deuteronomy: Moses’ Final Words"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 700,
+        "recordId": "bibleproject:podcast:theme-god-e2-no-other-god",
+        "toSec": 900
+      },
+      "ms": 3,
+      "summary": "700s–880s of No Other God"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1450,
+        "recordId": "naked-bible:podcast:922",
+        "toSec": 1750
+      },
+      "ms": 0,
+      "summary": "1450s–1630s of Naked Bible 109: John 10, gods or Men?"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "limit": 8,
+        "query": "Psalm 82 you are gods sons of the Most High",
+        "sourceId": "forty-minutes-ot"
+      },
+      "ms": 61,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "limit": 8,
+        "query": "Unseen Realm supernatural worldview elohim spiritual beings",
+        "sourceId": "naked-bible"
+      },
+      "ms": 64,
+      "summary": "8 hits"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "limit": 8,
+        "query": "divine rebellion spiritual beings sons of God",
+        "sourceId": "bibleproject"
+      },
+      "ms": 119,
+      "summary": "8 hits"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "limit": 8,
+        "query": "Job 1 sons of God came to present themselves before the Lord"
+      },
+      "ms": 56,
+      "summary": "8 hits"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 3000,
+        "recordId": "naked-bible:podcast:2856",
+        "toSec": 3180
+      },
+      "ms": 0,
+      "summary": "3000s–3180s of Naked Bible 340: The Cloud of Witnesses in Hebrews 12"
+    },
+    {
+      "at": 4,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "PSA",
+        "chapter": 82
+      },
+      "ms": 0,
+      "summary": "25 of 48 moments"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2580,
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "toSec": 2760
+      },
+      "ms": 0,
+      "summary": "2580s–2760s of Spiritual Warfare"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 3520,
+        "recordId": "bibleproject:podcast:theme-god-e3-spiritual-warfare",
+        "toSec": 3700
+      },
+      "ms": 0,
+      "summary": "3520s–3700s of Spiritual Warfare"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 3080,
+        "recordId": "bibleproject:podcast:theme-god-e4-origin-spiritual-beings-mini-qr",
+        "toSec": 3260
+      },
+      "ms": 0,
+      "summary": "3080s–3260s of Origin of Spiritual Beings + Mini Question & Response"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1630,
+        "recordId": "naked-bible:podcast:922",
+        "toSec": 1900
+      },
+      "ms": 0,
+      "summary": "1630s–1810s of Naked Bible 109: John 10, gods or Men?"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2050,
+        "recordId": "naked-bible:podcast:3003",
+        "toSec": 2230
+      },
+      "ms": 7,
+      "summary": "2050s–2230s of Naked Bible 366: Revelation 4 Part 1"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1650,
+        "recordId": "ask-nt-wright:podcast:5a10ecf6-195a-11f1-86af-43dc19bb3b99",
+        "toSec": 1850
+      },
+      "ms": 5,
+      "summary": "1650s–1830s of What's the fine print on the Second Coming, the Transfiguration, and Michael Heiser's Unseen Realm"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2230,
+        "recordId": "naked-bible:podcast:3003",
+        "toSec": 2380
+      },
+      "ms": 0,
+      "summary": "2230s–2380s of Naked Bible 366: Revelation 4 Part 1"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1795,
+        "recordId": "naked-bible:podcast:922",
+        "toSec": 1840
+      },
+      "ms": 0,
+      "summary": "1795s–1840s of Naked Bible 109: John 10, gods or Men?"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 1695,
+        "recordId": "bibleproject:podcast:moses-final-words",
+        "toSec": 1770
+      },
+      "ms": 8,
+      "summary": "1695s–1770s of Deuteronomy: Moses’ Final Words"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 8,
+    "toolCalls": 31,
+    "promptTokens": 167197,
+    "completionTokens": 19774,
+    "reasoningTokens": 15537,
+    "cachedPromptTokens": 132352,
+    "wallMs": 199299,
+    "modelLatencyMs": 198371,
+    "toolMs": 921
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.010786,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T21:26:55.419Z"
+}

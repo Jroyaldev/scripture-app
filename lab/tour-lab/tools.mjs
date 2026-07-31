@@ -16,6 +16,7 @@ import {
   sourceName,
   MAX_WINDOW_SECONDS,
 } from './corpus.mjs';
+import { readPassage } from './scripture.mjs';
 
 export const MIN_CLIP_SECONDS = 20;
 export const MAX_CLIP_SECONDS = 900; // 15 minutes
@@ -96,6 +97,24 @@ export const TOOL_SCHEMAS = [
         type: 'object',
         properties: { recordId: { type: 'string' } },
         required: ['recordId'],
+      },
+    },
+  },
+  {
+    type: 'function',
+    function: {
+      name: 'read_passage',
+      description:
+        'Read the scripture text itself (World English Bible, public domain) — one chapter, or a verse range within it. When a step\'s "why" makes a claim about what the text says, ground it here rather than in memory; this is also the way to check what words the passage actually uses before searching for them.',
+      parameters: {
+        type: 'object',
+        properties: {
+          book: { type: 'string', description: 'Book name or code, e.g. "Genesis" or "GEN".' },
+          chapter: { type: 'integer' },
+          fromVerse: { type: 'integer', description: 'Optional: start of a verse range.' },
+          toVerse: { type: 'integer', description: 'Optional: end of a verse range.' },
+        },
+        required: ['book', 'chapter'],
       },
     },
   },
@@ -259,6 +278,14 @@ export function runTool(name, args) {
     case 'episode_info':
       result = episodeInfo({ recordId: String(args.recordId ?? '') });
       break;
+    case 'read_passage':
+      result = readPassage({
+        book: String(args.book ?? ''),
+        chapter: Number(args.chapter),
+        fromVerse: args.fromVerse == null ? null : Number(args.fromVerse),
+        toVerse: args.toVerse == null ? null : Number(args.toVerse),
+      });
+      break;
     default:
       result = { error: `unknown tool "${name}"` };
   }
@@ -273,6 +300,8 @@ export function summarizeToolResult(name, result) {
   if (name === 'moments_for_passage') return `${(result.moments || []).length} of ${result.total ?? 0} moments`;
   if (name === 'transcript_window') return `${result.fromSec}s–${result.toSec}s of ${result.title || ''}`;
   if (name === 'episode_info') return `${result.title || ''} (${result.durationSec || 0}s)`;
+  if (name === 'read_passage')
+    return `${result.bookName} ${result.chapter}:${result.verses?.[0]?.verse}–${result.verses?.at(-1)?.verse} (WEB)`;
   if (name === 'list_sources') return `${(result.sources || []).length} shows`;
   return '';
 }

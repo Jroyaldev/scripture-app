@@ -1,41 +1,41 @@
 {
-  "updatedAt": "2026-07-31T20:48:38.612Z",
+  "updatedAt": "2026-07-31T21:35:51.292Z",
   "models": {
     "deepseek-v4-flash": {
       "requestedSlug": "deepseek/deepseek-v4-flash-0731",
       "resolvedSlug": "deepseek/deepseek-v4-flash-0731",
-      "runs": 23,
-      "ok": 23,
+      "runs": 30,
+      "ok": 30,
       "failed": 0,
-      "promptTokens": 3769905,
-      "completionTokens": 387582,
-      "modelCalls": 194,
-      "toolCalls": 562,
-      "totalUsd": 0.392249,
+      "promptTokens": 4730869,
+      "completionTokens": 534126,
+      "modelCalls": 247,
+      "toolCalls": 767,
+      "totalUsd": 0.463518,
       "costSources": {
         "price-table": 15,
-        "provider": 8
+        "provider": 15
       },
       "efforts": {
-        "max": 5
+        "max": 12
       }
     },
     "gpt-5.6-luna": {
       "requestedSlug": "openai/gpt-5.6-luna",
       "resolvedSlug": "openai/gpt-5.6-luna",
-      "runs": 30,
-      "ok": 29,
+      "runs": 31,
+      "ok": 30,
       "failed": 1,
-      "promptTokens": 5896353,
-      "completionTokens": 324837,
-      "modelCalls": 221,
-      "toolCalls": 911,
-      "totalUsd": 0.482282,
+      "promptTokens": 6126099,
+      "completionTokens": 342205,
+      "modelCalls": 228,
+      "toolCalls": 958,
+      "totalUsd": 0.502279,
       "costSources": {
-        "provider": 30
+        "provider": 31
       },
       "efforts": {
-        "max": 2
+        "max": 3
       }
     },
     "ling-3.0-flash-free": {
@@ -127,8 +127,44 @@
       "efforts": {
         "max": 3
       }
+    },
+    "gpt-5.6-luna-medium": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "runs": 1,
+      "ok": 1,
+      "failed": 0,
+      "promptTokens": 217954,
+      "completionTokens": 4390,
+      "modelCalls": 8,
+      "toolCalls": 29,
+      "totalUsd": 0.009841,
+      "costSources": {
+        "provider": 1
+      },
+      "efforts": {
+        "medium": 1
+      }
+    },
+    "gpt-5.6-luna-high": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "runs": 9,
+      "ok": 9,
+      "failed": 0,
+      "promptTokens": 2968578,
+      "completionTokens": 88100,
+      "modelCalls": 100,
+      "toolCalls": 372,
+      "totalUsd": 0.128283,
+      "costSources": {
+        "provider": 9
+      },
+      "efforts": {
+        "high": 9
+      }
     }
   },
-  "totalUsd": 1.324432,
-  "runs": 66
+  "totalUsd": 1.553822,
+  "runs": 84
 }
