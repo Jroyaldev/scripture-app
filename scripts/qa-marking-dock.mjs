@@ -137,8 +137,9 @@ const FORCED_CODES = DOCK_ANATOMY.forcedCodes;
 // the middle slot: Remove replaces Note exactly when the selection already has
 // a wash under it, so a bar is always 8 buttons and never 9.
 const BAR_WASH_ACTIONS = ["highlight", "highlight", "highlight", "highlight", "highlight"];
-const MORE_ACTIONS = ["capture", "study-verse", "keep-comparison", "open-in-tab", "copy-reference", "pericope"];
-const MORE_ACTION_KINDS = ["deferred", "deferred", "deferred", "deferred", "deferred", "modal"];
+// The DECLARED overflow set, in table order. What More actually shows is the
+// subset this window can run (2026-07-30) — see assertMoreList.
+const MORE_ACTIONS = ["capture", "study-verse", "keep-comparison", "open-in-tab", "copy-reference"];
 const REST_GUIDANCE = "Select words, or choose a tool to keep in hand.";
 const DRAFT_ID = "__connection-authoring-draft__";
 const FIXTURE = {
@@ -1038,10 +1039,15 @@ function assertDockMatrixReport(report, theme, viewport) {
 /**
  * The More list, in one cell.
  *
- * Six items, every one of them named and in a fixed order. The list does not
- * hide what it cannot do — a blocked item states its reason — so the count is
- * six whether or not this window can honour them, and a sweep that found fewer
- * would be asserting nothing.
+ * RESTATED 2026-07-30. This used to read: "Six items, every one of them named
+ * and in a fixed order. The list does not hide what it cannot do — a blocked
+ * item states its reason." That produced five greyed rows with an apology
+ * printed against each, one live action, and a reader who had just touched the
+ * text being told what the app could not do. More now offers only what it can
+ * run, so the assertions are the ones that still mean something: the rows are
+ * a SUBSET of the declared table, in the declared ORDER, none of them disabled,
+ * and none of them carrying a reason. Copy is always among them, so the list is
+ * never empty and More never opens onto nothing.
  */
 async function assertMoreList(driver, cdp, theme, viewport) {
   const label = `${THEME_LABELS.get(theme)}/${viewport.label}`;
@@ -1061,7 +1067,8 @@ async function assertMoreList(driver, cdp, theme, viewport) {
       ids: items.map((item) => item.getAttribute("data-more-action")),
       kinds: items.map((item) => item.getAttribute("data-action-kind")),
       roles: items.map((item) => item.getAttribute("role")),
-      blockedHaveReasons: items.every((item) => item.disabled === Boolean(item.querySelector(".marking-more-reason"))),
+      disabled: items.filter((item) => item.disabled).length,
+      reasons: panel?.querySelectorAll(".marking-more-reason").length ?? 0,
       listRole: list?.getAttribute("role") ?? null,
       scope: panel?.querySelector(".marking-more-scope")?.textContent?.trim() ?? null,
       expanded: root?.querySelector('[data-bar-action="more"]')?.getAttribute("aria-expanded") ?? null,
@@ -1070,12 +1077,17 @@ async function assertMoreList(driver, cdp, theme, viewport) {
     };
   })()`);
   assert.equal(more.panel, true, `${label}: More did not open a list`);
-  assert.equal(more.count, MORE_ACTIONS.length, `${label}: More listed ${more.count} items, expected ${MORE_ACTIONS.length}`);
-  assert.deepEqual(more.ids, MORE_ACTIONS, `${label}: More vocabulary drifted`);
-  assert.deepEqual(more.kinds, MORE_ACTION_KINDS, `${label}: More action kinds drifted`);
-  assert.deepEqual(more.roles, Array(MORE_ACTIONS.length).fill("menuitem"), `${label}: More items lost menuitem semantics`);
+  assert.ok(more.count >= 1, `${label}: More opened onto nothing`);
+  assert.ok(more.ids.every((id) => MORE_ACTIONS.includes(id)),
+    `${label}: More offered an action outside the declared table (${more.ids.join(", ")})`);
+  assert.deepEqual(more.ids, MORE_ACTIONS.filter((id) => more.ids.includes(id)),
+    `${label}: More rearranged the declared order (${more.ids.join(", ")})`);
+  assert.ok(more.ids.includes("copy-reference"), `${label}: Copy with reference must always be reachable`);
+  assert.deepEqual([...new Set(more.kinds)], ["deferred"], `${label}: More action kinds drifted`);
+  assert.deepEqual(more.roles, Array(more.count).fill("menuitem"), `${label}: More items lost menuitem semantics`);
   assert.equal(more.listRole, "menu", `${label}: More list lost its menu role`);
-  assert.equal(more.blockedHaveReasons, true, `${label}: a blocked More item hid its reason, or an actionable one invented one`);
+  assert.equal(more.disabled, 0, `${label}: More offered a row it cannot run`);
+  assert.equal(more.reasons, 0, `${label}: More printed an apology beside a row`);
   assert.equal(more.expanded, "true", `${label}: More did not report itself expanded`);
   assert.equal(more.barStillPresent, true, `${label}: More replaced the bar instead of sitting beside it`);
   assert.equal(more.scope, "Acts 19:8 · selected words", `${label}: More scope line drifted`);
@@ -1673,8 +1685,12 @@ async function assertAuthoringDraft(driver, cdp, connectionsLog) {
       armed: root?.getAttribute("data-tool-armed") ?? null,
       sessionRole: root?.querySelector(".marking-connect-draft")?.getAttribute("role") ?? null,
       sessionLabel: root?.querySelector(".marking-connect-draft")?.getAttribute("aria-label") ?? null,
-      sessionKind: root?.querySelector(".marking-session-kind")?.textContent?.trim() ?? null,
-      sessionCopy: root?.querySelector(".marking-session-copy")?.textContent?.trim() ?? null,
+      // RESTATED 2026-07-30: the head is one steady word, the count is the
+      // numeral lane of the anchor list, and what used to be a standing hint
+      // column is the list's own next-numbered line.
+      sessionHead: root?.querySelector(".marking-connect-head")?.textContent?.trim() ?? null,
+      sessionNext: root?.querySelector(".marking-connect-next span")?.textContent?.trim() ?? null,
+      sessionStatus: root?.querySelector(".marking-connect-status")?.textContent?.trim() ?? null,
       anchors: [...(root?.querySelectorAll(".marking-connect-ref") ?? [])].map((item) => item.textContent?.trim()),
       kindChoices: root?.querySelectorAll("[data-relationship-kind]").length ?? -1,
       actions: [...(root?.querySelectorAll(".marking-connect-actions button") ?? [])].map((button) => button.textContent?.trim()),
@@ -1716,8 +1732,10 @@ async function assertAuthoringDraft(driver, cdp, connectionsLog) {
   assert.equal(report.sessionLabel, "Connection draft", "the connection draft label drifted");
   // With one phrase there is no relation yet, so the kind is not named and the
   // chooser does not exist. Only the phrase count is stated.
-  assert.equal(report.sessionKind, "1 phrase", "a one-anchor draft named a relationship it does not have");
-  assert.equal(report.sessionCopy, "Select another phrase to connect.", "the one-anchor draft copy drifted");
+  assert.equal(report.sessionHead, "Connection", "the draft head drifted");
+  assert.equal(report.sessionNext, "Select the phrase it answers",
+    "the anchor list's next-numbered line no longer carries the affordance");
+  assert.equal(report.sessionStatus, "", "a one-anchor draft spoke when nothing had happened");
   assert.deepEqual(report.anchors, ["Acts 19:8"], "the draft did not state its held phrase as a whole reference");
   assert.equal(report.kindChoices, 0, "the relationship chooser appeared before a relation existed");
   assert.deepEqual(report.actions, ["Cancel draft"], "a one-anchor draft offered a save it cannot honour");
@@ -1744,7 +1762,7 @@ async function assertAuthoringDraft(driver, cdp, connectionsLog) {
   assert.equal(firstHeldPaint.length, 1, "the first phrase did not own exactly one held paint path");
   const duplicate = await driver.evaluate(selectPhraseExpression(FIXTURE.phrase));
   assert.equal(duplicate, FIXTURE.phrase.quote, "the duplicate phrase selection drifted");
-  await driver.waitFor(`document.querySelector(".marking-session-copy")?.textContent?.trim()
+  await driver.waitFor(`document.querySelector(".marking-connect-status")?.textContent?.trim()
     === "That phrase is already held. Select a different phrase to continue."`);
   const duplicateState = await driver.evaluate(`(() => {
     const root = document.querySelector(${JSON.stringify(HOST)});
@@ -1788,9 +1806,13 @@ async function assertAuthoringDraft(driver, cdp, connectionsLog) {
       armed: root?.getAttribute("data-tool-armed"),
       anchors: [...(root?.querySelectorAll(".marking-connect-ref") ?? [])].map((item) => item.textContent?.trim()),
       kindIds: choices.map((choice) => choice.getAttribute("data-relationship-kind")),
-      kindLabels: choices.map((choice) => choice.querySelector(".marking-choice-label")?.textContent?.trim()),
-      kindGroupRole: root?.querySelector(".marking-relationship-grid")?.getAttribute("role") ?? null,
-      kindGroupLabel: root?.querySelector(".marking-relationship-grid")?.getAttribute("aria-label") ?? null,
+      // RESTATED 2026-07-30: the kind is a WORD (Rev 04 §5), so the button IS
+      // its label — there is no inner glyph or label span to read through, and
+      // the group is a radiogroup because moving through it chooses.
+      kindLabels: choices.map((choice) => choice.textContent?.trim()),
+      kindGlyphs: root?.querySelectorAll(".marking-connect-kinds svg").length ?? -1,
+      kindGroupRole: root?.querySelector(".marking-connect-kinds")?.getAttribute("role") ?? null,
+      kindGroupLabel: root?.querySelector(".marking-connect-kinds")?.getAttribute("aria-label") ?? null,
       field: root?.querySelectorAll(".marking-connect-field textarea").length ?? -1,
       actions: [...(root?.querySelectorAll(".marking-connect-actions button") ?? [])].map((button) => button.textContent?.trim()),
       saveDisabled: root?.querySelector(".marking-connect-actions .marking-session-action.primary")?.disabled ?? null,
@@ -1809,8 +1831,9 @@ async function assertAuthoringDraft(driver, cdp, connectionsLog) {
     anchors: ["Acts 19:8", "Acts 19:9"],
     kindIds: RELATIONSHIPS,
     kindLabels: RELATIONSHIP_LABELS,
-    kindGroupRole: "group",
-    kindGroupLabel: "Connection type",
+    kindGlyphs: 0,
+    kindGroupRole: "radiogroup",
+    kindGroupLabel: "Connection kind",
     field: 1,
     actions: ["Save connection", "Cancel draft"],
     // The relation exists but has not been named, so saving is not yet honest.
@@ -1830,14 +1853,17 @@ async function assertAuthoringDraft(driver, cdp, connectionsLog) {
   const named = await driver.evaluate(`(() => {
     const root = document.querySelector(${JSON.stringify(HOST)});
     return {
-      kind: root?.querySelector(".marking-session-kind")?.textContent?.trim() ?? null,
+      // The chosen kind is marked on the WORD, so that is where it is read.
+      kind: [...(root?.querySelectorAll(".marking-connect-kind") ?? [])]
+        .filter((choice) => choice.getAttribute("aria-checked") === "true")
+        .map((choice) => choice.textContent?.trim()),
       saveDisabled: root?.querySelector(".marking-connect-actions .marking-session-action.primary")?.disabled ?? null,
       armed: root?.getAttribute("data-tool-armed"),
     };
   })()`);
   assert.deepEqual(
     named,
-    { kind: "Series · 2 phrases", saveDisabled: false, armed: "connect:series" },
+    { kind: ["Series"], saveDisabled: false, armed: "connect:series" },
     "naming the relation did not unlock an honest save",
   );
 

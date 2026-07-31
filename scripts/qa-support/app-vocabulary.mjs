@@ -122,9 +122,14 @@ export const ATTRIBUTE_VOCABULARY = Object.freeze({
     source: "src/renderer/components/MarkingSurface.tsx · MarkingBar",
     values: ["highlight", "remove", "note", "connect", "more"],
   },
+  // The DECLARED overflow set, in table order. 2026-07-30: "pericope" retired
+  // (its whole content was "pericopes are edited from the passage header"),
+  // and More now renders only the subset a given window can actually run — so
+  // a tour asserts that what it sees is a prefix-preserving SUBSET of this
+  // list, never that every value is present.
   "data-more-action": {
     source: "src/renderer/components/MarkingSurface.tsx · MARKING_ACTIONS where home === \"more\"",
-    values: ["capture", "study-verse", "keep-comparison", "open-in-tab", "copy-reference", "pericope"],
+    values: ["capture", "study-verse", "keep-comparison", "open-in-tab", "copy-reference"],
   },
   "data-action-kind": {
     source: "src/renderer/components/MarkingSurface.tsx · MarkingActionKind",
@@ -271,11 +276,11 @@ export const DOCK_ANATOMY = Object.freeze({
     "marking-bar-swatch", "marking-bar-action", "marking-choice", "marking-wash",
     "marking-pigment", "marking-more", "marking-more-scope", "marking-more-list",
     "marking-more-row", "marking-more-item", "marking-more-label",
-    "marking-more-reason", "marking-session", "marking-connect-draft",
-    "marking-connect-progress", "marking-session-kind", "marking-connect-anchors",
-    "marking-connect-ref", "marking-session-copy", "marking-connect-kinds",
-    "marking-choice-grid", "marking-relationship-grid", "marking-relationship",
-    "marking-choice-glyph", "marking-choice-label", "marking-connect-field",
+    "marking-session", "marking-connect-draft",
+    "marking-connect-progress", "marking-connect-head", "marking-connect-anchors",
+    "marking-connect-index", "marking-connect-next", "marking-connect-ref",
+    "marking-connect-status", "marking-connect-kinds", "marking-connect-kind",
+    "marking-connect-field",
     "marking-session-recovery", "marking-connect-kept-text",
     "marking-connect-actions", "marking-session-action", "surface-state",
     "surface-state-line", "surface-state-thing", "surface-state-reason",

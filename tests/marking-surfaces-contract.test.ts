@@ -971,11 +971,25 @@ test("production marking surfaces retain distinct grammar at the supported deskt
     ["highlight", "remove"],
     "immediate acts and finishes",
   );
+  // RESTATED 2026-07-30 — "Mark a pericope" is gone from the table. Its whole
+  // content in this menu was the sentence "pericopes are edited from the
+  // passage header", and a row that exists to say the work happens elsewhere
+  // is a signpost, not an action. A pericope is also a property of a PASSAGE,
+  // not of the words a reader has just dragged across, so the selection menu
+  // was never its home. The passage header is.
   assert.deepEqual(
     declared.filter(({ kind }) => kind === "modal").map(({ id }) => id).sort(),
-    ["connect", "pericope"],
+    ["connect"],
     "modal turns the surface into a workbench",
   );
+  // "Pericope" is also the product's name, so the retirement is proved against
+  // the things the action actually WAS — its id, its prop, its label and its
+  // apology — and against code alone, since the prose that records why it went
+  // has to be allowed to name it.
+  const code = withoutComments(source);
+  for (const trace of [/"pericope"/, /onPericope/, /Mark a pericope/, /pericopes are edited/]) {
+    assert.doesNotMatch(code, trace, `the retired pericope action left ${trace.source} behind`);
+  }
   assert.deepEqual(
     declared.filter(({ home }) => home === "bar").map(({ id }) => id),
     ["highlight", "remove", "note", "connect"],
@@ -987,18 +1001,28 @@ test("production marking surfaces retain distinct grammar at the supported deskt
       `${id} is ${kind} and may not hold a permanent slot`);
   }
 
-  // --- More is a plain list that never changes shape -------------------------
+  // --- More SHOWS WHAT CAN BE DONE ------------------------------------------
+  // RESTATED 2026-07-30. This used to read: "an item that cannot act shows an
+  // em-dash and the reason rather than vanishing", on the argument that a list
+  // which changes shape costs the reader the place they had learned. The
+  // argument was true and the trade was wrong. Five of the six declared rows
+  // arrived greyed, each with an apology printed beside it — "no writing sheet
+  // is open in this window", "this passage is already the open tab" — in a
+  // popover the reader had just summoned by touching the text. What that
+  // teaches is not a place in a list; it is that the app is broken.
+  //
+  // What survives of the old contract is the part that was actually load
+  // bearing: the declared ORDER. Rows never rearrange around each other. They
+  // only stop being offered when this window cannot honour them, and they
+  // return the moment it can.
   assert.match(source, /function MoreList\(\{[\s\S]*className="marking-more-scope"/,
     "More states the scope it will act on before it offers an action");
-  assert.match(source, /disabled=\{item\.blockedReason != null\}[\s\S]*item\.blockedReason && \(\s*<span className="marking-more-reason">\s*<i aria-hidden="true">—<\/i> \{item\.blockedReason\}/,
-    "an item that cannot act shows an em-dash and the reason rather than vanishing");
-  assert.doesNotMatch(
-    source,
-    /MORE_ACTIONS\.filter\(/,
-    "the More list is never filtered down; a shorter list is a moved list",
-  );
-  assert.match(source, /MORE_ACTIONS\.map\(/,
-    "every declared overflow action renders a row, able to act or not");
+  assert.doesNotMatch(source, /blockedReason|marking-more-reason/,
+    "no row may carry a printed reason: an action that cannot act is not offered");
+  assert.match(source, /for \(const action of MORE_ACTIONS\) \{[\s\S]*const handler = handlers\[action\.id\];\s*if \(!handler\) continue;/,
+    "the list is built by walking the declared table in order and skipping what has no host");
+  assert.match(source, /if \(action\.id === "copy-reference"\) \{[\s\S]*items\.push\(/,
+    "Copy is always offered, so More can keep its slot without ever opening onto nothing");
   assert.match(source, /`“\$\{quote\}”\\n— \$\{reference\}`/,
     "Copy always includes the reference");
 
@@ -1042,9 +1066,20 @@ test("production marking surfaces retain distinct grammar at the supported deskt
     /const native = window\.getSelection\(\);\s*if \(native && !native\.isCollapsed && native\.toString\(\)\.trim\(\)\) return;/,
     "an outside click that still holds words is a drag to extend, not a dismissal",
   );
-  // A pointer surface advertises the shortcuts its bar answers to, and the
-  // legend must name the bindings that actually exist.
-  assert.match(palette, /<span className="marking-palette-shortcuts" aria-hidden="true"><kbd>1–5<\/kbd> colour <i>·<\/i> <kbd>0<\/kbd> remove <i>·<\/i> <kbd>⌘⇧M<\/kbd> note<\/span>/);
+  // RESTATED 2026-07-30. This used to require a permanent three-item legend
+  // under the bar — `1–5 colour · 0 remove · ⌘⇧M note` — printed at every
+  // moment a reader had words selected. A shortcut is a label on the thing it
+  // operates, not a manual beneath it, so the footer now shows ONE key, and
+  // only while the control it belongs to is under the pointer or holds focus.
+  // Nothing about the bindings changed: every control still declares its own
+  // through aria-keyshortcuts, and the shortcuts sheet carries the full
+  // reference, which is where a reference belongs.
+  assert.match(palette, /<span className="marking-palette-key" aria-hidden="true">\s*\{paletteHelp\?\.key && <kbd>\{paletteHelp\.key\}<\/kbd>\}\s*<\/span>/);
+  assert.match(source, /explain\(\{ \.\.\.option, key: `\$\{index \+ 1\}` \}\)/,
+    "a swatch carries its own digit into the help line");
+  assert.match(source, /const BAR_HELP: Record<"remove" \| "note" \| "connect" \| "more", PaletteHelp> = \{[\s\S]*key: "0"[\s\S]*key: "⌘⇧M"/,
+    "Remove and Note carry theirs from one table");
+  assert.doesNotMatch(source, /marking-palette-shortcuts/);
   assert.match(source, /aria-label="Add note"/);
   assert.match(palette, /aria-label="Close palette"/);
   assert.doesNotMatch(source, /marking-palette-pin/,
@@ -1056,8 +1091,12 @@ test("production marking surfaces retain distinct grammar at the supported deskt
   // the desk stays live, so it must never claim modality.
   assert.doesNotMatch(palette, /aria-modal/);
   assert.match(source, /id="marking-palette-help" className="marking-palette-help" aria-live="polite"/);
-  assert.match(source, /onMouseEnter=\{\(\) => onHelpChange\?\.\(option\)\}/);
-  assert.match(source, /captureFeedback \?\? \(paletteHelp \? paletteHelp\.description/);
+  // Every control on the bar answers the help line, not just the swatches:
+  // the line is only worth one row of the footer if it is never blank while
+  // the reader is on something.
+  assert.equal([...source.matchAll(/onMouseEnter=\{\(\) => explain\(/g)].length, 5,
+    "five bar controls carry their own help: the swatches and the three named slots");
+  assert.match(source, /\{paletteHelp \? paletteHelp\.description/);
   assert.doesNotMatch(source, /paletteHelp \? `\$\{paletteHelp\.label\} · \$\{paletteHelp\.description\}`/);
   assert.match(
     source,
@@ -1069,7 +1108,7 @@ test("production marking surfaces retain distinct grammar at the supported deskt
   assert.match(styles, /\.marking-palette\.flipped \{ transform-origin: center top; \}/);
   assert.match(styles, /\.marking-floating-host\[data-palette-layout="sheet"\] \.marking-palette::after \{ display: none; \}/,
     "a sheet does not point at anything, so it must drop the pointer");
-  assert.match(styles, /\.marking-floating-host\[data-stage-size="narrow"\] \.marking-palette-shortcuts \{ display: none; \}/);
+  assert.match(styles, /\.marking-floating-host\[data-stage-size="narrow"\] \.marking-palette-key \{ display: none; \}/);
 
   // --- Shared: one focus-ring modality across both surfaces ------------------
   assert.equal([...source.matchAll(/data-focus-ring=\{focusRingMode\}/g)].length, 2,
@@ -1112,9 +1151,26 @@ test("production marking surfaces retain distinct grammar at the supported deskt
     "an in-flight write freezes the fields it is writing; the bar itself stays");
   assert.match(
     source,
-    /\{session\.anchors\.length >= 2 && \(\s*<div className="marking-connect-kinds">/,
+    /\{held >= 2 && \(\s*<ConnectKindChoices/,
     "the kind row appears with the second anchor, not before it",
   );
+  // RESTATED 2026-07-30 — the kind is a WORD. Rev 04 §5 rules that "the kind is
+  // carried by the word and by nothing else — never abbreviated, never
+  // iconified, never colour-coded, always set in the UI sans", and the margin's
+  // finished card has obeyed it since. The draft did not: it drew six
+  // unlabelled pictograms and hued each one per kind, breaking the ruling
+  // twice. Both are gone, and the draft now offers the same six words the card
+  // does, in the same grammar.
+  assert.doesNotMatch(withoutComments(source), /RelationshipGlyph/,
+    "no pictogram may stand for a connection kind");
+  assert.match(source, /className="marking-connect-kind"[\s\S]*>\{option\.label\}<\/button>/,
+    "each kind renders as its own word and nothing else");
+  assert.doesNotMatch(source, /marking-kind-\$\{option\.id/,
+    "no per-kind hue class reaches the authoring surface");
+  // Arity is read off the kind here exactly as the inspector reads it, so a
+  // draft can never author a kind the card would immediately call invalid.
+  assert.match(source, /const blocked = \(kind: ConnectionKind\): boolean => BINARY_KINDS\.has\(kind\) && held !== 2;/);
+  assert.match(source, /data-arity-blocked=\{unreachable \? "" : undefined\}/);
   assert.match(source, /readOnly=\{readOnly\}/, "in-flight fields are read-only, not unmounted");
   assert.equal([...source.matchAll(/<textarea/g)].length, 1,
     "label and observation are ONE field");
@@ -1157,7 +1213,11 @@ test("production marking surfaces retain distinct grammar at the supported deskt
   assert.match(styles, /\.marking-dock-host\[data-dock-layout="stacked"\] \.marking-dock \{[\s\S]*?grid-template-areas:\s*"context actions" "modes modes"/);
   assert.match(styles, /\.scripture-reading-stage:has\(\.marking-dock-host\[data-dock-layout="stacked"\]\) \{\s*--mdock-bottom-inset:\s*120px;/);
   assert.match(styles, /\.marking-dock-host\[data-dock-layout="stacked"\] \.marking-dock:has\(> \.marking-dock-actions:empty\) \{[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\);[\s\S]*?grid-template-areas:\s*"context" "modes";[\s\S]*?column-gap:\s*0;/);
-  assert.match(styles, /\.marking-dock-host\[data-dock-layout="stacked"\] \.marking-dock-context \.marking-session \{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*auto minmax\(0, 1fr\) auto auto/);
+  // RESTATED 2026-07-30 — was `grid-template-columns: auto minmax(0, 1fr) auto
+  // auto`, four columns for a draft laid out as a strip. At this width every
+  // column was narrower than the phrase inside it, so the type wrapped
+  // mid-phrase. The draft is one block set down the page in every host now.
+  assert.match(styles, /\.marking-dock-host\[data-dock-layout="stacked"\] \.marking-dock-context \.marking-session \{[\s\S]*?display:\s*grid;[\s\S]*?grid-template-columns:\s*minmax\(0, 1fr\)/);
   assert.match(styles, /@container reading-stage \(max-width: 430px\) \{[\s\S]*?\.marking-dock-hit \{ display: none; \}[\s\S]*?\.marking-dock-host\[data-dock-layout="stacked"\] \.marking-dock \{ column-gap: 8px; \}[\s\S]*?width:\s*220px;/);
   assert.match(styles, /@media \(any-pointer: coarse\) \{[\s\S]*?\.marking-dock-modes \{ width: 238px; grid-template-columns: repeat\(5, 44px\); \}[\s\S]*?data-dock-layout="stacked"\] \.marking-dock-modes \{ width: 228px; gap: 2px; \}/);
   assert.match(styles, /\.app-shell:has\(\.marking-dock-host\[data-dock-layout="shelf"\]\) \+ \.toast-container \{[\s\S]*?bottom:\s*calc\(104px/);
@@ -1192,20 +1252,26 @@ test("Dock note capture preserves exact multi-verse words and rejects duplicate 
 
 test("marking keyboard movement separates vocabulary focus from committed choices", () => {
   const source = read("src", "renderer", "components", "MarkingSurface.tsx");
-  const rovingStart = source.indexOf("function useRovingFocus");
-  const relationshipStart = source.indexOf("function RelationshipChoices", rovingStart);
-  const roving = source.slice(rovingStart, relationshipStart);
-  const relationships = source.slice(relationshipStart, source.indexOf("interface PaletteHelp", relationshipStart));
+  const kindsStart = source.indexOf("function ConnectKindChoices");
+  const kinds = source.slice(kindsStart, source.indexOf("interface PaletteHelp", kindsStart));
+  assert.ok(kindsStart >= 0, "the kind chooser must remain locatable");
 
-  assert.doesNotMatch(roving, /onMove|onChoose/);
-  assert.match(roving, /setActiveIndex\(normalized\);[\s\S]*refs\.current\[normalized\]\?\.focus\(\);[\s\S]*return normalized;/);
-  assert.match(relationships, /useRovingFocus<HTMLButtonElement>\(RELATIONSHIPS\.length,/);
-  assert.match(relationships, /index === Math\.max\(0, selectedIndex\) && initialFocusRef/);
-  assert.match(relationships, /role=\{activateOnMove \? "radiogroup" : "group"\} aria-label="Connection type"/);
-  assert.match(relationships, /role=\{activateOnMove \? "radio" : undefined\}[\s\S]*aria-checked=\{activateOnMove \? selected === option\.id : undefined\}/);
-  assert.match(relationships, /if \(activateOnMove && next != null\) \(onMoveChoose \?\? onChoose\)\(RELATIONSHIPS\[next\]!\.id\)/);
-  assert.match(relationships, /if \(!activateOnMove\) event\.preventDefault\(\)/);
-  assert.match(relationships, /activateOnMove \? \(onMoveChoose \?\? onChoose\) : onChoose/);
+  // RESTATED 2026-07-30. `useRovingFocus` and `RelationshipChoices` are gone
+  // with the pictograms they drew (Rev 04 §5: the kind is a word). What that
+  // pair guaranteed still holds, and is now asserted of the one chooser that
+  // remains: it is a radiogroup, the arrows MOVE and CHOOSE together, and the
+  // walk steps OVER a kind that arity has put out of reach instead of landing
+  // focus on a control that cannot answer.
+  assert.match(kinds, /role="radiogroup" aria-label="Connection kind"/);
+  assert.match(kinds, /role="radio"[\s\S]*aria-checked=\{selected === option\.id\}/);
+  assert.match(kinds, /const reachable = RELATIONSHIPS\.map\(\(option, index\) => \(blocked\(option\.id\) \? -1 : index\)\)\.filter\(\(index\) => index >= 0\);/);
+  assert.match(kinds, /const next = position < 0[\s\S]*reachable\[\(position \+ direction \+ reachable\.length\) % reachable\.length\]!/,
+    "the arrow walk wraps through reachable kinds only");
+  assert.match(kinds, /refs\.current\[next\]\?\.focus\(\);\s*onChoose\(RELATIONSHIPS\[next\]!\.id\);/,
+    "moving to a kind chooses it, so the arrows never leave a phantom selection");
+  assert.match(kinds, /tabIndex=\{tabIndexOwner === index \? 0 : -1\}/,
+    "one tab stop for the group, and it is never a kind out of reach");
+  assert.doesNotMatch(source, /useRovingFocus/);
   assert.match(source, /lastDockAutofocusedSelectionRef\.current === activeSelectionNonce[\s\S]*if \(tool \|\| tray != null \|\| session \|\| busy \|\| selectionFailure\?\.nonce === activeSelectionNonce\) return[\s\S]*lastDockAutofocusedSelectionRef\.current = activeSelectionNonce/);
   assert.match(source, /const timer = window\.setTimeout\(\(\) => \{[\s\S]*target\.focus\(\{ preventScroll: true \}\);[\s\S]*lastDockAutofocusedSelectionRef\.current = activeSelectionNonce;/);
   assert.match(source, /if \(surface !== "dock" \|\| busy \|\| !session\?\.feedback\) return;[\s\S]*\.marking-session-action\.primary:not\(:disabled\)[\s\S]*focus\(\{ preventScroll: true \}\)[\s\S]*\[busy, session\?\.feedback, surface\]/);
@@ -1393,7 +1459,7 @@ test("marking materials stay neutral, shared, and accessibility-safe", () => {
   }
   assert.doesNotMatch(marking, /\.theme-glass|\.theme-dark-glass/);
   assert.doesNotMatch(marking, /\.marking-icon-action\.danger:hover\s*\{[^}]*var\(--error\)/);
-  const shortcutKeys = ruleBlock(".marking-palette-shortcuts kbd");
+  const shortcutKeys = ruleBlock(".marking-palette-key kbd");
   assert.match(shortcutKeys, /border:\s*0;/);
   assert.match(shortcutKeys, /background:\s*transparent;/);
   assert.match(shortcutKeys, /box-shadow:\s*none;/);
@@ -1620,10 +1686,21 @@ test("marking surface guidance stays contextual and quiet", () => {
   // work, not the widget — and each surface says it in exactly one place.
   assert.doesNotMatch(source, /arc above|settle below/,
     "guidance describes the marking, never the shape of the instrument");
+  // RESTATED 2026-07-30. The refusal used to come FIRST in this line, which
+  // meant a reader who selected words in a translation without an exact word
+  // index was handed a sentence about an uninstalled artifact before they had
+  // asked for anything — while all they may have wanted was a wash. A refused
+  // exact capture blocks Connect and nothing else, so it is now said at
+  // Connect, through that control's own help, and nowhere else.
   assert.match(
     source,
-    /\{captureFeedback \?\? \(paletteHelp \? paletteHelp\.description\s*: selection\.mixedColors \? "Mixed washes selected — choose one to unify them\."\s*: "Highlight, note, or connect these words\."\)\}/,
-    "the palette's one live region answers refusal, hover help, and mixed washes in that order",
+    /\{paletteHelp \? paletteHelp\.description\s*: selection\.mixedColors \? "Mixed washes selected — choose one to unify them\."\s*: "Highlight, note, or connect these words\."\}/,
+    "the palette's one live region answers hover help, then mixed washes",
+  );
+  assert.match(
+    source,
+    /const connectHelp: PaletteHelp = selection\?\.capture\.status === "refused"\s*\? \{ label: "Connect", description: selection\.capture\.message \}\s*: BAR_HELP\.connect;/,
+    "the refusal is carried by the one action it actually blocks",
   );
   // Both surfaces read from the one `status` string, so guidance cannot drift
   // between them.

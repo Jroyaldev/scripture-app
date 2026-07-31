@@ -70,17 +70,21 @@ export interface ConnectionDraftModel {
 }
 
 /**
- * The deferred and modal half of the action set (G·2). None of these write a
- * mark: each opens work somewhere else, so each is a callback the shell owns.
- * They are optional on purpose — an action whose host is not wired cannot act,
- * and More states that in the list rather than dropping the row.
+ * The deferred half of the action set (G·2). None of these write a mark: each
+ * opens work somewhere else, so each is a callback the shell owns.
+ *
+ * They are optional on purpose, and an absent one is an action this window
+ * cannot perform. RESTATED 2026-07-30: More used to keep the row and print the
+ * reason beside it. It no longer does — an unwired action is simply not
+ * offered. A menu that advertises what it cannot do, and explains itself in
+ * apologies, makes a quiet reading app feel broken at the exact moment the
+ * reader has just touched the text.
  */
 export interface MarkingDeferredActions {
   onCapture?: (() => void) | undefined;
   onStudyVerse?: (() => void) | undefined;
   onKeepAsComparison?: (() => void) | undefined;
   onOpenInTab?: (() => void) | undefined;
-  onPericope?: (() => void) | undefined;
 }
 
 interface Props extends MarkingDeferredActions {
@@ -184,13 +188,19 @@ const BINARY_KINDS = new Set<ConnectionKind>(["link:contrast", "mirror", "hinge"
 const NARROW_SHELL = "(max-width: 979px)";
 
 /**
- * G·2 — eleven actions in three kinds.
+ * G·2 — nine actions in three kinds.
  *
  * IMMEDIATE acts and finishes; DEFERRED opens the work elsewhere; MODAL turns
  * the surface into a workbench. Only immediate belongs on the bar. Note earns
  * its slot through use and Connect earns one as an entry point; everything
  * else lives behind More. The table is the single place that decides which is
  * which, so a new action cannot quietly award itself a permanent slot.
+ *
+ * RETIRED 2026-07-30 — "Mark a pericope". Its only content in this menu was
+ * the sentence "pericopes are edited from the passage header": a row that
+ * exists to say the work happens somewhere else is a signpost, not an action,
+ * and a pericope is a property of a passage rather than of the words a reader
+ * has just dragged across. The passage header remains its one home.
  */
 type MarkingActionId =
   | "highlight"
@@ -201,8 +211,7 @@ type MarkingActionId =
   | "keep-comparison"
   | "open-in-tab"
   | "copy-reference"
-  | "connect"
-  | "pericope";
+  | "connect";
 
 type MarkingActionKind = "immediate" | "deferred" | "modal";
 
@@ -224,7 +233,6 @@ const MARKING_ACTIONS: readonly MarkingActionSpec[] = [
   { id: "keep-comparison", kind: "deferred", label: "Keep as comparison", home: "more" },
   { id: "open-in-tab", kind: "deferred", label: "Open in a tab", home: "more" },
   { id: "copy-reference", kind: "deferred", label: "Copy with reference", home: "more" },
-  { id: "pericope", kind: "modal", label: "Mark a pericope", home: "more" },
 ] as const;
 
 /** The overflow list, in the fixed order the table declares. */
@@ -394,24 +402,12 @@ function anchorKey(anchor: ConnectionAnchorV2): string {
   ]);
 }
 
-function RelationshipGlyph({ kind }: { kind: ConnectionKind }): React.JSX.Element {
-  if (kind === "link:parallel") {
-    return <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 6h12M3 12h12" /></svg>;
-  }
-  if (kind === "link:contrast") {
-    return <svg viewBox="0 0 18 18" aria-hidden="true"><path d="m7 4-4 5 4 5M11 4l4 5-4 5" /></svg>;
-  }
-  if (kind === "link:echo") {
-    return <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M5.3 6.2H12a3.1 3.1 0 0 1 0 6.2H7.5M5.4 3.8 3 6.2l2.4 2.4" /></svg>;
-  }
-  if (kind === "mirror") {
-    return <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M9 3v12M7 5 3.5 9 7 13M11 5l3.5 4-3.5 4" /></svg>;
-  }
-  if (kind === "series") {
-    return <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M4 9h10" /><circle cx="4" cy="9" r="1.5" /><circle cx="9" cy="9" r="1.5" /><circle cx="14" cy="9" r="1.5" /></svg>;
-  }
-  return <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 9h4M11 9h4M9 5.5 12.5 9 9 12.5 5.5 9z" /></svg>;
-}
+/* RETIRED 2026-07-30 — RelationshipGlyph, six pictograms for the six kinds.
+   Rev 04 §5 rules that "the kind is carried by the word and by nothing else —
+   never abbreviated, never iconified, never colour-coded". The finished card
+   in the margin already obeys that rule; the draft invented pictograms for
+   the same six kinds and hued them per kind, which is the ruling twice over.
+   The kinds are now chosen the way they are read: as words. */
 
 function ToolGlyph({ tool }: { tool: "read" | "wash" | "connect" | "note" | "erase" | "more" }): React.JSX.Element {
   if (tool === "read") return <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3.2 4.4c1.9-.7 3.8-.5 5.8.7v9c-2-1.2-3.9-1.4-5.8-.7zM14.8 4.4c-1.9-.7-3.8-.5-5.8.7v9c2-1.2 3.9-1.4 5.8-.7z" /></svg>;
@@ -428,90 +424,79 @@ function PigmentSwatch({ color }: { color: PigmentId }): React.JSX.Element {
   return <span className={`marking-pigment marking-pigment-${color}`} aria-hidden="true" data-forced-code={forcedCodes[color]} />;
 }
 
-function useRovingFocus<T extends HTMLElement>(count: number, initialIndex = 0) {
-  const refs = useRef<Array<T | null>>([]);
-  const [activeIndex, setActiveIndex] = useState(initialIndex);
-  const onKeyDown = (event: React.KeyboardEvent<T>, index: number): number | null => {
-    let next: number | null = null;
-    if (event.key === "ArrowRight" || event.key === "ArrowDown") next = index + 1;
-    if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = index - 1;
-    if (event.key === "Home") next = 0;
-    if (event.key === "End") next = count - 1;
-    if (next == null) return null;
-    event.preventDefault();
-    const normalized = (next + count) % count;
-    setActiveIndex(normalized);
-    refs.current[normalized]?.focus();
-    return normalized;
-  };
-  return { refs, activeIndex, setActiveIndex, onKeyDown };
-}
-
-function RelationshipChoices({
+/**
+ * The six kinds, as words, in one wrapping line — the same vocabulary and the
+ * same grammar the finished card in the margin already uses: type and nothing
+ * else, the current one marked by ink on a reserved rule under the word rather
+ * than by a fill. Rev 04 §5, kept in the one place that had been breaking it.
+ *
+ * Arity is read off the kind exactly as the inspector reads it: a kind that
+ * joins exactly two phrases is out of reach for a connection holding more. It
+ * is dimmed rather than removed — the reader needs to see that Contrast exists
+ * — and the reason is reachable on the control, never printed beside it.
+ */
+function ConnectKindChoices({
   selected,
+  held,
+  disabled,
   onChoose,
-  compact = false,
-  initialFocusRef,
-  onHelpChange,
-  helpId,
-  activateOnMove = false,
-  onMoveChoose,
-  disabled = false,
 }: {
   selected: ConnectionKind | null;
+  held: number;
+  disabled: boolean;
   onChoose: (kind: ConnectionKind) => void;
-  compact?: boolean;
-  initialFocusRef?: React.RefObject<HTMLButtonElement | null>;
-  onHelpChange?: (help: PaletteHelp | null) => void;
-  helpId?: string;
-  activateOnMove?: boolean;
-  onMoveChoose?: (kind: ConnectionKind) => void;
-  disabled?: boolean;
 }): React.JSX.Element {
+  const blocked = (kind: ConnectionKind): boolean => BINARY_KINDS.has(kind) && held !== 2;
+  const reachable = RELATIONSHIPS.map((option, index) => (blocked(option.id) ? -1 : index)).filter((index) => index >= 0);
   const selectedIndex = RELATIONSHIPS.findIndex((option) => option.id === selected);
-  const roving = useRovingFocus<HTMLButtonElement>(RELATIONSHIPS.length, Math.max(0, selectedIndex));
-  useEffect(() => {
-    if (selectedIndex >= 0) roving.setActiveIndex(selectedIndex);
-  }, [roving.setActiveIndex, selectedIndex]);
+  const tabIndexOwner = selectedIndex >= 0 && !blocked(RELATIONSHIPS[selectedIndex]!.id)
+    ? selectedIndex
+    : reachable[0] ?? -1;
+  const refs = useRef<Array<HTMLButtonElement | null>>([]);
+  const step = (index: number, direction: 1 | -1): number | null => {
+    if (reachable.length === 0) return null;
+    const position = reachable.indexOf(index);
+    const next = position < 0
+      ? (direction === 1 ? reachable[0]! : reachable[reachable.length - 1]!)
+      : reachable[(position + direction + reachable.length) % reachable.length]!;
+    return next;
+  };
   return (
-    <div className={`marking-choice-grid marking-relationship-grid${compact ? " compact" : ""}`} role={activateOnMove ? "radiogroup" : "group"} aria-label="Connection type">
-      {RELATIONSHIPS.map((option, index) => (
-        <button
-          key={option.id}
-          ref={(node) => {
-            roving.refs.current[index] = node;
-            if (index === Math.max(0, selectedIndex) && initialFocusRef) initialFocusRef.current = node;
-          }}
-          type="button"
-          role={activateOnMove ? "radio" : undefined}
-          className={`marking-choice marking-relationship marking-kind-${option.id.replace("link:", "")}${selected === option.id ? " active" : ""}`}
-          data-relationship-kind={option.id}
-          disabled={disabled}
-          aria-checked={activateOnMove ? selected === option.id : undefined}
-          aria-pressed={activateOnMove ? undefined : selected === option.id}
-          aria-label={`${option.label}. ${option.description}`}
-          aria-describedby={helpId}
-          title={option.description}
-          tabIndex={roving.activeIndex === index ? 0 : -1}
-          onMouseDown={(event) => { if (!activateOnMove) event.preventDefault(); }}
-          onMouseEnter={() => onHelpChange?.(option)}
-          onMouseLeave={(event) => {
-            if (document.activeElement !== event.currentTarget) onHelpChange?.(null);
-          }}
-          onFocus={() => { roving.setActiveIndex(index); onHelpChange?.(option); }}
-          onBlur={(event) => {
-            if (!event.currentTarget.matches(":hover")) onHelpChange?.(null);
-          }}
-          onKeyDown={(event) => {
-            const next = roving.onKeyDown(event, index);
-            if (activateOnMove && next != null) (onMoveChoose ?? onChoose)(RELATIONSHIPS[next]!.id);
-          }}
-          onClick={() => (activateOnMove ? (onMoveChoose ?? onChoose) : onChoose)(option.id)}
-        >
-          <span className="marking-choice-glyph"><RelationshipGlyph kind={option.id} /></span>
-          <span className="marking-choice-label">{option.label}</span>
-        </button>
-      ))}
+    <div className="marking-connect-kinds" role="radiogroup" aria-label="Connection kind">
+      {RELATIONSHIPS.map((option, index) => {
+        const unreachable = blocked(option.id);
+        return (
+          <button
+            key={option.id}
+            ref={(node) => { refs.current[index] = node; }}
+            type="button"
+            role="radio"
+            className="marking-connect-kind"
+            data-relationship-kind={option.id}
+            data-arity-blocked={unreachable ? "" : undefined}
+            aria-checked={selected === option.id}
+            aria-label={unreachable
+              ? `${option.label}. Joins exactly two phrases, so it is out of reach for ${held}.`
+              : `${option.label}. ${option.description}`}
+            title={unreachable ? "Joins exactly two phrases." : option.description}
+            disabled={disabled || unreachable}
+            tabIndex={tabIndexOwner === index ? 0 : -1}
+            onMouseDown={(event) => event.preventDefault()}
+            onKeyDown={(event) => {
+              let next: number | null = null;
+              if (event.key === "ArrowRight" || event.key === "ArrowDown") next = step(index, 1);
+              if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = step(index, -1);
+              if (event.key === "Home") next = reachable[0] ?? null;
+              if (event.key === "End") next = reachable[reachable.length - 1] ?? null;
+              if (next == null) return;
+              event.preventDefault();
+              refs.current[next]?.focus();
+              onChoose(RELATIONSHIPS[next]!.id);
+            }}
+            onClick={() => onChoose(option.id)}
+          >{option.label}</button>
+        );
+      })}
     </div>
   );
 }
@@ -519,6 +504,12 @@ function RelationshipChoices({
 interface PaletteHelp {
   label: string;
   description: string;
+  /**
+   * The binding this control answers to, shown only while the control is under
+   * a pointer or holds focus. A shortcut belongs to the thing it operates; a
+   * legend printed permanently at the foot of a popover is a manual.
+   */
+  key?: string;
 }
 
 interface PalettePlacement {
@@ -537,6 +528,18 @@ function PaletteHeaderGlyph({ icon }: { icon: "note" | "erase" | "close" }): Rea
 }
 
 /**
+ * What each named slot does, and the binding it answers to. Both travel to the
+ * one help line at the foot of the palette, and only while the reader is on
+ * the control — the shortcut is a label on the thing, not a legend under it.
+ */
+const BAR_HELP: Record<"remove" | "note" | "connect" | "more", PaletteHelp> = {
+  remove: { label: "Remove", description: "Lift the wash from these words.", key: "0" },
+  note: { label: "Note", description: "Write a note against these words.", key: "⌘⇧M" },
+  connect: { label: "Connect", description: "Hold these words, then select the phrase they answer." },
+  more: { label: "More", description: "Everything else this selection can do." },
+};
+
+/**
  * The bar. Five swatches, then Note · Connect · More, at every width and in
  * every state — Remove takes Note's slot when the selection already carries a
  * mark, and nothing else moves. That constancy is the whole point: a bar whose
@@ -548,6 +551,7 @@ function MarkingBar({
   selectedWash,
   disabled,
   moreOpen,
+  connectHelp,
   firstChoiceRef,
   onChooseWash,
   onNote,
@@ -562,6 +566,7 @@ function MarkingBar({
   selectedWash: PigmentId | null;
   disabled: boolean;
   moreOpen: boolean;
+  connectHelp: PaletteHelp;
   firstChoiceRef: React.RefObject<HTMLButtonElement | null>;
   onChooseWash: (color: PigmentId) => void;
   onNote: () => void;
@@ -596,9 +601,9 @@ function MarkingBar({
             aria-describedby={helpId}
             title={option.description}
             onMouseDown={(event) => event.preventDefault()}
-            onMouseEnter={() => explain(option)}
+            onMouseEnter={() => explain({ ...option, key: `${index + 1}` })}
             onMouseLeave={clearAfterPointer}
-            onFocus={() => explain(option)}
+            onFocus={() => explain({ ...option, key: `${index + 1}` })}
             onBlur={clearAfterFocus}
             onClick={() => onChooseWash(option.id)}
           ><PigmentSwatch color={option.id} /></button>
@@ -615,7 +620,12 @@ function MarkingBar({
           disabled={disabled}
           aria-keyshortcuts="0"
           aria-label={phraseMode ? "Remove selected text from wash" : "Remove wash"}
+          aria-describedby={helpId}
           onMouseDown={(event) => event.preventDefault()}
+          onMouseEnter={() => explain(BAR_HELP.remove)}
+          onMouseLeave={clearAfterPointer}
+          onFocus={() => explain(BAR_HELP.remove)}
+          onBlur={clearAfterFocus}
           onClick={onRemove}
         ><ToolGlyph tool="erase" /><span>Remove</span></button>
       ) : (
@@ -626,7 +636,12 @@ function MarkingBar({
           disabled={disabled}
           aria-keyshortcuts="Meta+Shift+M"
           aria-label="Add note"
+          aria-describedby={helpId}
           onMouseDown={(event) => event.preventDefault()}
+          onMouseEnter={() => explain(BAR_HELP.note)}
+          onMouseLeave={clearAfterPointer}
+          onFocus={() => explain(BAR_HELP.note)}
+          onBlur={clearAfterFocus}
           onClick={onNote}
         ><ToolGlyph tool="note" /><span>Note</span></button>
       )}
@@ -636,7 +651,12 @@ function MarkingBar({
         data-bar-action="connect"
         disabled={disabled}
         aria-label="Connect these words to another phrase"
+        aria-describedby={helpId}
         onMouseDown={(event) => event.preventDefault()}
+        onMouseEnter={() => explain(connectHelp)}
+        onMouseLeave={clearAfterPointer}
+        onFocus={() => explain(connectHelp)}
+        onBlur={clearAfterFocus}
         onClick={onConnect}
       ><ToolGlyph tool="connect" /><span>Connect</span></button>
       <button
@@ -647,7 +667,12 @@ function MarkingBar({
         aria-expanded={moreOpen}
         aria-controls="marking-more-list"
         aria-label="More actions for this selection"
+        aria-describedby={helpId}
         onMouseDown={(event) => event.preventDefault()}
+        onMouseEnter={() => explain(BAR_HELP.more)}
+        onMouseLeave={clearAfterPointer}
+        onFocus={() => explain(BAR_HELP.more)}
+        onBlur={clearAfterFocus}
         onClick={(event) => onToggleMore(event.currentTarget)}
       ><ToolGlyph tool="more" /><span>More</span></button>
     </div>
@@ -658,16 +683,22 @@ interface MoreItem {
   id: MarkingActionId;
   label: string;
   kind: MarkingActionKind;
-  /** null when the item can act; otherwise the reason it cannot. */
-  blockedReason: string | null;
   run: () => void;
 }
 
 /**
- * More is a plain list with the scope stated at the top. An item that cannot
- * act shows an em-dash and the reason rather than vanishing: a disappearing
- * item changes the list's shape, and a list that changes shape costs the
- * reader the place they had learned.
+ * More is a plain list with the scope stated at the top, and it SHOWS WHAT CAN
+ * BE DONE — nothing else reaches it.
+ *
+ * RESTATED 2026-07-30. This list used to keep every declared row and print the
+ * reason beside the ones it could not run, on the argument that "a list that
+ * changes shape costs the reader the place they had learned". The argument was
+ * true and the trade was wrong: five of six rows arrived greyed, each with an
+ * apology printed beside it, at the exact moment the reader had just touched
+ * the text. What a reader learns from that is not a place in a list — it is
+ * that the app is broken. The declared ORDER is still fixed, so the rows that
+ * do appear never rearrange; they only stop being offered when the window
+ * cannot honour them, and appear again the moment it can.
  */
 function MoreList({
   scope,
@@ -690,17 +721,10 @@ function MoreList({
               className="marking-more-item"
               data-more-action={item.id}
               data-action-kind={item.kind}
-              disabled={item.blockedReason != null}
-              aria-disabled={item.blockedReason != null}
               onMouseDown={(event) => event.preventDefault()}
               onClick={item.run}
             >
               <span className="marking-more-label">{item.label}</span>
-              {item.blockedReason && (
-                <span className="marking-more-reason">
-                  <i aria-hidden="true">—</i> {item.blockedReason}
-                </span>
-              )}
             </button>
           </li>
         ))}
@@ -724,6 +748,16 @@ function connectDraftState(session: ConnectionSession, busy: boolean): ConnectDr
  * the failure. Four states, and the kind row only exists from the second
  * anchor — asking what the relation IS before a relation exists is a question
  * with no answer.
+ *
+ * RESTATED 2026-07-30. This was a cramped horizontal strip whose columns
+ * fought each other: a count, a numbered list, a hint that wrapped to four
+ * lines, six unlabelled pictograms, and an italic instruction longer than
+ * everything it instructed. It is now what the act actually is — a short
+ * SENTENCE composed about the text, set down the page, one idea per line:
+ * which phrases these are, what they are to each other, and why. The count is
+ * gone because the numbered list already states it; the standing hint is gone
+ * because the list's own next-numbered line carries it; the pictograms are
+ * gone because Rev 04 §5 says the kind is a word.
  */
 function ConnectDraft({
   session,
@@ -748,7 +782,8 @@ function ConnectDraft({
 }): React.JSX.Element {
   const state = connectDraftState(session, busy);
   const readOnly = state === "in-flight" || state === "recovery";
-  const phraseLabel = `${session.anchors.length} phrase${session.anchors.length === 1 ? "" : "s"}`;
+  const held = session.anchors.length;
+  const spoken = busy ? "Saving connection…" : session.feedback ?? session.notice ?? "";
   return (
     <div
       className="marking-session marking-connect-draft"
@@ -765,60 +800,63 @@ function ConnectDraft({
           <SealProgress label="Saving connection" />
         </span>
       )}
-      <span className="marking-session-kind">
-        {session.kindChosen && <RelationshipGlyph kind={session.kind} />}
-        {session.kindChosen ? `${relationshipLabel(session.kind)} · ${phraseLabel}` : phraseLabel}
-      </span>
+      <p className="marking-connect-head">Connection</p>
       {/* The anchors are stated as REFERENCES, whole. A connection is between
           passages, so the passage is the thing the reader has to be able to
           check — and a reference is an identifier, which means it is never
-          clipped and never dressed as a quotation. */}
-      <ol className="marking-connect-anchors">
+          clipped and never dressed as a quotation.
+          The list's last line is the affordance rather than a standing hint:
+          the next ordinal, waiting, in the lane the held phrases are already
+          in. It shows the shape of the act instead of describing it. */}
+      <ol className="marking-connect-anchors" aria-label="Phrases held for this connection">
         {session.labels.map((reference, index) => (
           <li key={`${reference}:${index}`}>
+            <i className="marking-connect-index" aria-hidden="true">{index + 1}</i>
             <b className="marking-connect-ref">{reference}</b>
           </li>
         ))}
+        {!readOnly && (
+          <li className="marking-connect-next">
+            <i className="marking-connect-index" aria-hidden="true">{held + 1}</i>
+            <span>{held === 1 ? "Select the phrase it answers" : "Select more words to add another"}</span>
+          </li>
+        )}
       </ol>
+      {/* Silent unless something happened. An empty live region still speaks
+          when it is filled, so this may collapse without going deaf. */}
       <span
-        className="marking-session-copy"
+        className="marking-connect-status"
         role={session.recoveryState === "unconfirmed" ? "alert" : "status"}
         aria-live={session.recoveryState === "unconfirmed" ? "assertive" : "polite"}
         aria-atomic="true"
-      >
-        {busy
-          ? "Saving connection…"
-          : session.feedback
-            ?? session.notice
-            ?? (session.anchors.length === 1
-              ? "Select another phrase to connect."
-              : "Select more text to keep adding.")}
-      </span>
+      >{spoken}</span>
       {/* Two anchors is the moment a relation exists, and therefore the first
           moment the question "what kind?" has an answer. */}
-      {session.anchors.length >= 2 && (
-        <div className="marking-connect-kinds">
-          <RelationshipChoices
-            selected={session.kindChosen ? session.kind : null}
-            onChoose={onChooseKind}
-            compact
-            disabled={readOnly}
-          />
-        </div>
+      {held >= 2 && (
+        <ConnectKindChoices
+          selected={session.kindChosen ? session.kind : null}
+          held={held}
+          disabled={readOnly}
+          onChoose={onChooseKind}
+        />
       )}
-      {session.anchors.length >= 2 && (
+      {held >= 2 && (
         <label className="marking-connect-field">
           {/* Label and observation are ONE field. The first line names the
               connection; anything after it is the observation. Two boxes asked
               the reader to sort a single thought into two containers before
-              they had finished having it. */}
+              they had finished having it.
+              The placeholder is an EXAMPLE of the first line, not an
+              instruction about the field: the label above already says what
+              the two parts are, and an instruction longer than the thing it
+              instructs is a form, not a page. */}
           <span>Name it, and say why</span>
           <textarea
             value={draft}
             readOnly={readOnly}
             rows={2}
             spellCheck
-            placeholder="Both answer the same charge — first line names it, the rest is why."
+            placeholder="Both answer the same charge."
             onChange={(event) => onDraftChange(event.target.value)}
           />
         </label>
@@ -851,7 +889,7 @@ function ConnectDraft({
         </>
       ) : (
         <div className="marking-connect-actions">
-          {session.anchors.length >= 2 && (
+          {held >= 2 && (
             <button
               type="button"
               className="marking-session-action primary"
@@ -896,7 +934,6 @@ export function MarkingSurface({
   onStudyVerse,
   onKeepAsComparison,
   onOpenInTab,
-  onPericope,
 }: Props): React.JSX.Element | null {
   const [tool, setTool] = useState<ToolMode | null>(null);
   const [session, setSession] = useState<ConnectionSession | null>(null);
@@ -1023,9 +1060,16 @@ export function MarkingSurface({
   const currentWash = tool?.type === "wash" ? tool.color : null;
   const selectedWash = PIGMENTS.find((option) => option.id === selection?.activeColor)?.id ?? null;
   const currentKind = tool?.type === "connect" ? tool.kind : session?.kind ?? null;
-  const captureFeedback = selection?.capture.status === "refused"
-    ? selection.capture.message
-    : null;
+  /**
+   * A refused exact capture blocks Connect and nothing else, so it is said at
+   * Connect and nowhere else. RESTATED 2026-07-30: this used to occupy the
+   * palette's help line from the moment the words were selected, so a reader
+   * who only wanted a wash was handed a sentence about an uninstalled index
+   * before they had asked for anything.
+   */
+  const connectHelp: PaletteHelp = selection?.capture.status === "refused"
+    ? { label: "Connect", description: selection.capture.message }
+    : BAR_HELP.connect;
   const activeSelectionNonce = selection?.nonce ?? null;
   activeSelectionNonceRef.current = activeSelectionNonce;
   const dockLayout = effectiveStageBounds.width <= 759 ? "stacked" : "shelf";
@@ -2009,52 +2053,51 @@ export function MarkingSurface({
 
   const portalThemeClass = `${isDarkTheme(theme) ? "dark " : ""}theme-${theme}`;
 
+  /**
+   * SHOW WHAT CAN BE DONE. An action whose host this window has not wired
+   * cannot act, so it is not offered — the declared ORDER is preserved, so the
+   * rows that do appear never rearrange around each other.
+   *
+   * Copy is always offered. Its only precondition is a clipboard, and a
+   * clipboard that refuses is a thing to report on the attempt rather than a
+   * row to grey out in advance; `copyText` already says so in the reader's own
+   * words if it happens. That also guarantees the list is never empty, so More
+   * can keep its permanent slot on the bar without ever opening onto nothing.
+   */
   const moreItems = useMemo<MoreItem[]>(() => {
     const quote = selection?.quote ?? "";
     const reference = selection?.rangeLabel ?? "";
-    const handlers: Record<string, (() => void) | undefined> = {
+    const handlers: Partial<Record<MarkingActionId, (() => void) | undefined>> = {
       capture: onCapture,
       "study-verse": onStudyVerse,
       "keep-comparison": onKeepAsComparison,
       "open-in-tab": onOpenInTab,
-      pericope: onPericope,
     };
-    const unavailable: Record<string, string> = {
-      capture: "no writing sheet is open in this window",
-      "study-verse": "Study is not available for this passage",
-      "keep-comparison": "comparison needs a second translation installed",
-      "open-in-tab": "this passage is already the open tab",
-      pericope: "pericopes are edited from the passage header",
-    };
-    return MORE_ACTIONS.map((action) => {
+    const items: MoreItem[] = [];
+    for (const action of MORE_ACTIONS) {
       if (action.id === "copy-reference") {
         // Copy always includes the reference: a quotation without one is a
         // sentence the reader cannot put back where they found it. Reading is
         // never blocked by a read-only library.
-        const blocked = navigator.clipboard ? null : "the clipboard is unavailable in this window";
-        return {
+        items.push({
           id: action.id,
           label: action.label,
           kind: action.kind,
-          blockedReason: blocked,
           run: () => { void copyText(`“${quote}”\n— ${reference}`, "reference"); closeTray(true); },
-        } satisfies MoreItem;
+        });
+        continue;
       }
       const handler = handlers[action.id];
-      const blocked = readOnly && action.kind !== "deferred"
-        ? "this library is read-only"
-        : handler
-          ? null
-          : unavailable[action.id] ?? "this is not available here";
-      return {
+      if (!handler) continue;
+      items.push({
         id: action.id,
         label: action.label,
         kind: action.kind,
-        blockedReason: blocked,
-        run: () => { handler?.(); closeTray(true); },
-      } satisfies MoreItem;
-    });
-  }, [closeTray, copyText, onCapture, onKeepAsComparison, onOpenInTab, onPericope, onStudyVerse, readOnly, selection?.quote, selection?.rangeLabel]);
+        run: () => { handler(); closeTray(true); },
+      });
+    }
+    return items;
+  }, [closeTray, copyText, onCapture, onKeepAsComparison, onOpenInTab, onStudyVerse, selection?.quote, selection?.rangeLabel]);
 
   const moreScope = selection
     ? `${selection.rangeLabel} · ${selection.phraseMode ? "selected words" : "whole verses"}`
@@ -2076,6 +2119,7 @@ export function MarkingSurface({
       selectedWash={currentWash ?? selectedWash}
       disabled={barDisabled}
       moreOpen={moreOpen}
+      connectHelp={connectHelp}
       firstChoiceRef={firstChoiceRef}
       onChooseWash={chooseWash}
       onNote={chooseNote}
@@ -2277,13 +2321,24 @@ export function MarkingSurface({
                   one thing is ever in it. */}
               {connectNode ?? failureNode ?? barNode}
               {moreNode}
+              {/* One line, and the key belongs to whatever the reader is
+                  touching. RESTATED 2026-07-30: the footer used to print a
+                  permanent three-item legend — `1–5 colour · 0 remove · ⌘⇧M
+                  note` — beside the help. Every binding still exists and every
+                  control still declares it to assistive technology through
+                  aria-keyshortcuts; the difference is that it is now a label on
+                  the control under the pointer instead of a manual under the
+                  bar. The full reference lives where a reference belongs, in
+                  the shortcuts sheet. */}
               <footer className="marking-palette-footer">
                 <span id="marking-palette-help" className="marking-palette-help" aria-live="polite">
-                  {captureFeedback ?? (paletteHelp ? paletteHelp.description
+                  {paletteHelp ? paletteHelp.description
                     : selection.mixedColors ? "Mixed washes selected — choose one to unify them."
-                      : "Highlight, note, or connect these words.")}
+                      : "Highlight, note, or connect these words."}
                 </span>
-                <span className="marking-palette-shortcuts" aria-hidden="true"><kbd>1–5</kbd> colour <i>·</i> <kbd>0</kbd> remove <i>·</i> <kbd>⌘⇧M</kbd> note</span>
+                <span className="marking-palette-key" aria-hidden="true">
+                  {paletteHelp?.key && <kbd>{paletteHelp.key}</kbd>}
+                </span>
               </footer>
             </div>
           </div>

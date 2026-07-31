@@ -264,17 +264,26 @@
 }
 
 /* ── More ────────────────────────────────────────────────────────────────────
-   A plain list, with the scope stated at the top so an action can never be
-   read against the wrong words. */
+   A plain list of things that can be done, with the scope stated at the top so
+   an action can never be read against the wrong words.
+
+   RESTATED 2026-07-30. Every declared row used to appear, and the ones this
+   window could not run arrived greyed with the reason set beside them — five
+   apologies against one live action, in a popover the reader had just summoned
+   by touching the text. The list now carries only what it can run. Because
+   only live rows survive, the row itself gets the room the reason column used
+   to take: one action per line, at reading weight, with air around it. */
+/* No top margin: both hosts already lay a gap between the bar and whatever
+   follows it, and adding one here spaced the list twice. */
 .marking-more {
-  margin-top: 10px;
-  padding-top: 8px;
+  margin-top: 0;
+  padding-top: 10px;
   border-top: 1px solid var(--border-subtle);
   background: var(--bg-reading);
 }
 
 .marking-more-scope {
-  margin: 0 0 6px;
+  margin: 0 0 5px;
   color: var(--text-tertiary);
   font: 400 0.6875rem/1.3 var(--font-ui);
   font-variant-caps: all-small-caps;
@@ -287,16 +296,17 @@
   list-style: none;
 }
 
-.marking-more-item {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
+/* Two classes, because styles.css gives `.marking-dock button` `font: inherit`
+   and a single-class rule here loses that tie — which sized the shelf's rows
+   off the dock instead of off the list. */
+.marking-more-list .marking-more-item {
+  display: block;
   width: 100%;
-  padding: 5px 0;
+  padding: 6px 0;
   border: 0;
   background: transparent;
   color: var(--text-primary);
-  font: 400 0.8125rem/1.35 var(--font-ui);
+  font: 400 0.8125rem/1.4 var(--font-ui);
   text-align: left;
   cursor: pointer;
   transition: color 120ms linear;
@@ -304,27 +314,35 @@
 
 .marking-more-item:hover { color: var(--study-gold); background: transparent; }
 
-/* An item that cannot act stays in place, greyed, and says why. It does not
-   vanish: a list that changes shape costs the reader the place they learned. */
-.marking-more-item:disabled {
-  color: var(--text-tertiary);
-  cursor: default;
-}
-
-.marking-more-reason {
-  color: var(--text-tertiary);
-  font: 400 0.75rem/1.35 var(--font-ui);
-}
-
-.marking-more-reason i { font-style: normal; padding-right: 2px; }
-
-/* ── Connect, as a workbench ────────────────────────────────────────────────
+/* ── Connect, as a composed sentence ────────────────────────────────────────
    It replaces the bar rather than floating beside it, and it stays through the
-   write — including the write that fails. */
-.marking-connect-draft {
+   write — including the write that fails.
+
+   RESTATED 2026-07-30. This was laid out as a horizontal strip: a count, a
+   numbered list, a hint, a glyph row, an italic instruction and two buttons,
+   all fighting for the same 430px. Nothing fit, so everything wrapped
+   mid-phrase. Authoring a connection is composing a short sentence about the
+   text — which phrases these are, what they are to each other, and why — and
+   the draft is now set down the page in that order, one idea per line.
+
+   The double class is load-bearing, not decoration. `.marking-session` in
+   styles.css declares `display: flex; align-items: center`, and this partial
+   is @imported BEFORE it, so a single-class rule here loses the tie and the
+   draft silently stays a row — which is exactly how it became a strip whose
+   columns were each narrower than the phrase inside them. */
+.marking-session.marking-connect-draft {
   display: grid;
-  gap: 8px;
+  gap: 11px;
+  align-items: start;
   background: var(--bg-reading);
+}
+
+.marking-connect-head {
+  margin: 0;
+  color: var(--text-tertiary);
+  font: 400 0.6875rem/1.3 var(--font-ui);
+  font-variant-caps: all-small-caps;
+  letter-spacing: 0.04em;
 }
 
 /* The draft is IN the palette, not floating beside it. `.marking-session`
@@ -348,8 +366,9 @@
 
 /* The seal spine: authored, in progress, and not yet saved — the same mark
    the margin puts beside your own notes. A mark on a reserved lane, never a
-   fill. */
-.marking-floating-host .marking-connect-draft::before {
+   fill. Both hosts plant it now: a draft is the same held thing on a shelf as
+   it is in a popover. */
+.marking-connect-draft::before {
   content: "";
   position: absolute;
   inset-block: 0;
@@ -358,23 +377,111 @@
   background: var(--study-gold);
 }
 
-.marking-connect-anchors {
-  display: grid;
-  gap: 2px;
-  margin: 0;
-  padding: 0 0 0 14px;
-  list-style: decimal;
-  color: var(--text-secondary);
-  font: 400 0.8125rem/1.45 var(--font-reading);
+.marking-dock-context .marking-session.marking-connect-draft {
+  /* A composed sentence keeps a measure. The shelf is up to 1120px wide, and
+     a draft stretched across all of it puts Cancel a hand's travel from Save
+     and sets the anchors against nothing. */
+  max-width: 560px;
+  padding-left: 10px;
 }
 
-.marking-connect-anchors q { quotes: "\201C" "\201D"; }
+.marking-dock-context .marking-more { max-width: 560px; }
 
-.marking-connect-kinds { display: block; }
+/* The held phrases, in a reserved numeral lane. A reference is an identifier,
+   so it is never clipped and never dressed as a quotation — and the numeral
+   is what carries the count, which is why the strip's "2 phrases" tag is gone.
+   The lane's last line is the next ordinal, waiting: the affordance drawn as
+   the shape of the act rather than written out as a standing instruction. */
+.marking-connect-anchors {
+  display: grid;
+  gap: 3px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.marking-connect-anchors li {
+  display: grid;
+  grid-template-columns: 12px minmax(0, 1fr);
+  align-items: baseline;
+  gap: 10px;
+}
+
+.marking-connect-index {
+  color: var(--text-tertiary);
+  font: 400 0.6875rem/1.5 var(--font-ui);
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.marking-connect-anchors .marking-connect-ref {
+  font: 500 0.8125rem/1.5 var(--font-ui);
+  letter-spacing: 0.01em;
+}
+
+.marking-connect-next .marking-connect-index { opacity: 0.42; }
+
+.marking-connect-next span {
+  color: var(--text-tertiary);
+  font: italic 400 0.8125rem/1.5 var(--font-reading);
+}
+
+/* Silent unless something happened, and gone from the layout when it is. */
+.marking-connect-status {
+  color: var(--text-secondary);
+  font: 400 0.75rem/1.45 var(--font-ui);
+}
+
+.marking-connect-status:empty { display: none; }
+
+/* The six kinds, as words — the same grammar the finished card in the margin
+   already uses, because it is the same vocabulary. Rev 04 §5: "never
+   abbreviated, never iconified, never colour-coded, always set in the UI
+   sans." The strip's six unlabelled pictograms broke that rule twice, once by
+   iconifying and once by hueing each glyph per kind. The current kind is
+   marked the way everything in this language is marked: by ink on a reserved
+   rule under the word, never by a fill. */
+.marking-connect-kinds {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 14px;
+}
+
+/* Two classes for the same reason the More row needs them: `.marking-dock
+   button { font: inherit }` in styles.css would otherwise size these words off
+   the shelf. */
+.marking-connect-kinds .marking-connect-kind {
+  padding: 2px 0;
+  border: 0;
+  border-bottom: 1px solid transparent;
+  background: none;
+  color: var(--text-secondary);
+  font: 500 0.75rem/1.3 var(--font-ui);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition: color 120ms linear, border-color 120ms linear;
+}
+
+.marking-connect-kinds .marking-connect-kind:hover:not(:disabled) { color: var(--text-primary); }
+
+.marking-connect-kinds .marking-connect-kind[aria-checked="true"] {
+  border-bottom-color: var(--accent-seal);
+  color: var(--accent-seal);
+}
+
+/* Arity, read off the kind exactly as the inspector reads it. Dimmed, not
+   removed: the reader needs to see that Contrast exists and that it is out of
+   reach, and the reason is on the control rather than printed beside it. */
+.marking-connect-kinds .marking-connect-kind[data-arity-blocked] {
+  color: var(--text-tertiary);
+  cursor: default;
+  opacity: 0.38;
+}
 
 .marking-connect-field {
   display: grid;
-  gap: 4px;
+  gap: 5px;
 }
 
 .marking-connect-field > span {
@@ -386,25 +493,41 @@
 
 .marking-connect-field textarea {
   width: 100%;
-  padding: 4px 0;
+  padding: 1px 0 6px;
   border: 0;
   border-bottom: 1px solid var(--border-subtle);
   border-radius: 0;
   background: transparent;
   color: var(--text-primary);
-  font: italic 400 0.8125rem/1.5 var(--font-reading);
+  font: italic 400 0.8125rem/1.55 var(--font-reading);
   resize: none;
   field-sizing: content;
 }
 
+.marking-connect-field textarea::placeholder { color: var(--text-tertiary); opacity: 0.72; }
 .marking-connect-field textarea:focus { outline: none; border-bottom-color: var(--study-gold); }
 .marking-connect-field textarea[readonly] { color: var(--text-secondary); border-bottom-style: dashed; }
 
+/* No rule above these. The field's own underline already closes the
+   composition, and a second hairline 11px below it read as a mistake rather
+   than as a division — the interval is the division. */
 .marking-connect-actions {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 4px;
+  padding-top: 2px;
 }
+
+.marking-connect-actions .marking-session-action {
+  min-height: 30px;
+  padding: 5px 10px;
+  font: 500 0.75rem/1 var(--font-ui);
+}
+
+/* Save and Cancel are pushed apart only when both are there. With one phrase
+   held there is nothing to save, and a lone Cancel flung to the right edge of
+   an otherwise empty rule reads as a panel with a hole in it. */
+.marking-connect-actions .marking-session-action.primary + .marking-session-action { margin-left: auto; }
 
 .marking-connect-kept-text {
   display: block;
@@ -417,8 +540,8 @@
 .marking-connect-draft[data-connect-state="one-anchor"] .marking-connect-kinds,
 .marking-connect-draft[data-connect-state="one-anchor"] .marking-connect-field { display: none; }
 
-.marking-connect-draft[data-connect-state="in-flight"] .marking-choice,
-.marking-connect-draft[data-connect-state="recovery"] .marking-choice { pointer-events: none; }
+.marking-connect-draft[data-connect-state="in-flight"] .marking-connect-kind,
+.marking-connect-draft[data-connect-state="recovery"] .marking-connect-kind { pointer-events: none; }
 
 /* In flight: the hairline runs the full width at the head of the draft, and
    the held phrases go quiet. The bar does not move and is not dismissed —
@@ -573,12 +696,27 @@
 
 .marking-floating-host .marking-palette-header { padding-bottom: 0; }
 
+/* The draft between selections, waiting for its next phrase.
+   RESTATED 2026-07-30: it used to park at the TOP-left of the stage, where it
+   sat over the chapter navigator and over the first verses of the page — and
+   the page is precisely what the reader is scanning for the phrase this draft
+   is waiting on. It now lies at the FOOT of the stage, a slip set down beside
+   the passage rather than on top of it, which is also where the dock keeps it.
+   It has no anchor to point at while it waits, so it drops the pointer too. */
 .marking-floating-host .marking-palette-session {
   position: fixed;
-  left: var(--mark-stage-left);
-  top: calc(var(--mark-stage-top) + 8px);
+  left: calc(var(--mark-stage-left) + 12px);
+  top: auto;
+  bottom: calc(100vh - var(--mark-stage-bottom) + 14px);
   width: min(430px, calc(var(--mark-stage-width) - 24px));
 }
+
+.marking-floating-host .marking-palette-session::after { display: none; }
+
+/* Padding is the panel's, not the draft's: inside the full palette the draft
+   sits under a header that already sets the inset, and on its own it needs
+   one. Both paths land on the same measure. */
+.marking-floating-host .marking-palette-session .marking-palette-frame { padding: 13px 15px 12px; }
 
 /* The dock is the same bar on a shelf. Its old three-column grid described a
    mode group, a context pane and an action cluster; there is one working area
@@ -612,6 +750,7 @@
   .marking-more,
   .marking-more-item,
   .marking-connect-draft,
+  .marking-connect-kind,
   .quire-hl-wash,
   .quire-hl-rule,
   .seal-progress-segment {
@@ -630,8 +769,16 @@
 @media (forced-colors: active) {
   .marking-bar-swatch .marking-pigment { forced-color-adjust: none; }
   .marking-bar-swatch.active::after { background: Highlight; }
-  .marking-more-item:disabled { color: GrayText; }
   .seal-progress-segment { background: Highlight; }
+  /* The kind's rule is the only mark that says which word is chosen, so in a
+     forced palette it has to be a system colour rather than the seal — and the
+     unchosen five have to give their rule up entirely. A forced palette
+     resolves `transparent` to CanvasText, which underlined all six and made
+     every kind look chosen at once. */
+  .marking-connect-kinds .marking-connect-kind { border-bottom-color: Canvas; }
+  .marking-connect-kinds .marking-connect-kind[aria-checked="true"] { border-bottom-color: Highlight; color: Highlight; }
+  .marking-connect-kinds .marking-connect-kind[data-arity-blocked] { color: GrayText; opacity: 1; }
+  .marking-connect-draft::before { background: Highlight; }
   .surface-state[data-surface-state="failed"] .surface-state-thing,
   .surface-state[data-surface-state="conflict"] .surface-state-thing,
   .surface-state[data-surface-state="offline"] .surface-state-thing,

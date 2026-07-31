@@ -228,7 +228,13 @@ test("desktop integration owns one draft rail, exit controller, attention scroll
   const margin = readFileSync(join(repoRoot, "src/renderer/components/LivingMargin.tsx"), "utf8");
   const app = readFileSync(join(repoRoot, "src/renderer/app.tsx"), "utf8");
   const main = readFileSync(join(repoRoot, "src/electron/main.ts"), "utf8");
-  assert.match(marking, /Select more text to keep adding\./);
+  // RESTATED 2026-07-30 — was `Select more text to keep adding.`, a standing
+  // hint in its own column of the old draft strip, where it wrapped to four
+  // lines and repeated an instruction the reader had already followed twice.
+  // The affordance is now the anchor list's own next-numbered line: the shape
+  // of the act, drawn in the lane the held phrases are already in.
+  assert.match(marking, /"Select more words to add another"/);
+  assert.match(marking, /<li className="marking-connect-next">/);
   assert.match(marking, />Save connection<\/button>/);
   assert.match(marking, />Cancel draft<\/button>/);
   assert.match(marking, /requestDraftExit\("escape"\)/);

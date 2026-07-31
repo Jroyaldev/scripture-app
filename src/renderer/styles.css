@@ -17509,6 +17509,8 @@ button.lang-phrase-diagram-node:focus-visible,
   .marking-palette-action,
   .marking-keep,
   .marking-back,
+  .marking-more-item,
+  .marking-connect-kind,
   .marking-session-action,
   .marking-dock button
 ):focus-visible {
@@ -17526,6 +17528,8 @@ button.lang-phrase-diagram-node:focus-visible,
   .marking-palette-action,
   .marking-keep,
   .marking-back,
+  .marking-more-item,
+  .marking-connect-kind,
   .marking-session-action,
   .marking-armed-status button,
   .marking-dock button
@@ -17536,7 +17540,6 @@ button.lang-phrase-diagram-node:focus-visible,
 .marking-choice svg,
 .marking-intent svg,
 .marking-icon-action svg,
-.marking-session-kind svg,
 .marking-dock svg {
   width: 18px;
   height: 18px;
@@ -18046,25 +18049,34 @@ button.lang-phrase-diagram-node:focus-visible,
   white-space: nowrap;
 }
 
-.marking-palette-shortcuts {
+/* RESTATED 2026-07-30 — was `.marking-palette-shortcuts`, a permanent
+   three-item legend (`1–5 colour · 0 remove · ⌘⇧M note`) printed under the bar
+   at every moment a reader had words selected. What sits here now is ONE key,
+   and only while the control it belongs to is under the pointer or holds
+   focus: a shortcut is a label on a thing, not a manual beneath it. Every
+   binding is unchanged and still declared through aria-keyshortcuts; the full
+   reference lives in the shortcuts sheet, where a reference belongs. */
+.marking-palette-key {
+  min-width: 0;
   color: var(--text-tertiary);
-  font: 500 8.5px/1 var(--font-mono);
-  letter-spacing: -.01em;
+  font: 500 0.625rem/1 var(--font-ui);
   white-space: nowrap;
 }
 
-.marking-palette-shortcuts i { padding-inline: 3px; font-style: normal; opacity: .48; }
-
-.marking-palette-shortcuts kbd {
+/* No keycap. The topbar already prints ⌘K as bare type, and this language
+   marks things with ink rather than with chrome, so a boxed key here would be
+   the one drawn widget on a surface made entirely of type and hairlines. */
+.marking-palette-key kbd {
   display: inline-grid;
-  padding: 2px;
+  padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
   color: var(--text-secondary);
-  font: 500 8px/1 var(--font-ui);
+  font: 500 0.6875rem/1 var(--font-mono);
   font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
   place-items: center;
 }
 
@@ -18175,18 +18187,11 @@ button.lang-phrase-diagram-node:focus-visible,
   animation: marking-rise-in var(--mark-dur-fast) var(--mark-spring-soft);
 }
 
-.marking-session-kind {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text-primary);
-  font-size: 10px;
-  font-weight: var(--fw-semibold);
-}
-
-.marking-session-kind svg { width: 16px; height: 16px; }
-.marking-session-copy { color: var(--text-tertiary); font-size: 10px; }
-.marking-session-copy { min-width: 0; flex: 1; }
+/* RETIRED 2026-07-30 — `.marking-session-kind` and `.marking-session-copy`,
+   the strip's glyph-and-count tag and its wrapping hint column. The draft's
+   head is a word, its count is the numeral lane of its own anchor list, and
+   what it has to say lives in `.marking-connect-status`, which is silent
+   unless something has actually happened. */
 .marking-session-recovery {
   color: var(--text-tertiary);
   font: 500 9px/1.2 var(--font-ui);
@@ -18549,8 +18554,11 @@ button.lang-phrase-diagram-node:focus-visible,
 .marking-dock-quote::before { content: open-quote; }
 .marking-dock-quote::after { content: close-quote; }
 
+/* `relative`, not `static`: the draft plants its seal spine against this box
+   in both hosts (2026-07-30), and a static parent would hang it off the shell.
+   It is still not the fixed, shadowed card `.marking-session` declares. */
 .marking-dock-context .marking-session {
-  position: static;
+  position: relative;
   width: 100%;
   max-width: 100%;
   min-height: 36px;
@@ -18745,20 +18753,19 @@ button.lang-phrase-diagram-node:focus-visible,
 .marking-dock-host[data-dock-layout="stacked"] .marking-dock-put-down { min-height: 44px; }
 .marking-dock-host[data-dock-layout="stacked"] .marking-dock-actions button { width: 44px; height: 44px; }
 .marking-dock-host[data-dock-layout="stacked"] .marking-session-action { min-width: 44px; }
+/* RESTATED 2026-07-30. This was a four-column row — kind, copy, action,
+   action — because the draft used to be a strip. The strip is what broke: at
+   this width every column was narrower than the phrase inside it, so the type
+   wrapped mid-phrase. The draft is one block set down the page in every host,
+   and the narrow shell's job is only to give its controls a thumb's worth of
+   height. */
 .marking-dock-host[data-dock-layout="stacked"] .marking-dock-context .marking-session {
   display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 6px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 11px;
 }
 
-.marking-dock-host[data-dock-layout="stacked"] .marking-dock-context .marking-session-kind { white-space: nowrap; }
-.marking-dock-host[data-dock-layout="stacked"] .marking-dock-context .marking-session-copy {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
+.marking-dock-host[data-dock-layout="stacked"] .marking-connect-actions .marking-session-action { min-height: 44px; }
 
 .marking-dock-host[data-dock-layout="stacked"][data-dock-state="rest"] .marking-dock {
   grid-template-columns: 1fr;
@@ -18862,7 +18869,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .marking-floating-host[data-stage-size="narrow"] .marking-palette-vocabulary { padding-inline: 7px; }
 .marking-floating-host[data-stage-size="narrow"] .marking-relationship-grid { gap: 2px; }
 .marking-floating-host[data-stage-size="narrow"] .marking-palette-footer { grid-template-columns: minmax(0, 1fr); }
-.marking-floating-host[data-stage-size="narrow"] .marking-palette-shortcuts { display: none; }
+.marking-floating-host[data-stage-size="narrow"] .marking-palette-key { display: none; }
 .marking-floating-host[data-stage-size="narrow"] .marking-palette-action { width: 32px; height: 32px; }
 
 @media (any-pointer: coarse) {

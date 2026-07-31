@@ -1573,7 +1573,10 @@ function occurrenceEvidence(
       ok: false,
       error: {
         code: "artifact-missing",
-        message: `Exact word projection is not installed for package ${packageId}.`,
+        // A reader reads this sentence on the marking palette, so it names the
+        // translation the way the topbar names it and drops "projection" and
+        // "package" — neither is a word this app uses where a reader looks.
+        message: `Exact word anchoring is not installed for ${packageId.toUpperCase()}.`,
       },
     };
   }

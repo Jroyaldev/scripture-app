@@ -16,8 +16,15 @@ const SHORTCUTS: Array<{ keys: string[]; description: string }> = [
   { keys: ["Enter"], description: "Select the focused verse for Study" },
   { keys: ["⇧ Enter"], description: "Extend the verse selection" },
   { keys: ["M"], description: "Mark the focused verse with the active marking surface" },
-  { keys: ["1–6"], description: "With the marking palette open: choose a relationship" },
-  { keys: ["⇧ 1–5"], description: "With the marking palette open: choose a wash" },
+  // Corrected 2026-07-30. The bar answers to BARE digits, not shifted ones,
+  // and it has had no relationship digits since Connect became an entry point
+  // rather than a choice of kind — this sheet had been describing an
+  // instrument that no longer exists. It is now the full reference for the
+  // marking bar, which prints no legend of its own.
+  { keys: ["1–5"], description: "With words selected: lay a wash" },
+  { keys: ["0"], description: "With words selected: lift the wash" },
+  { keys: ["⌘⇧M"], description: "With words selected: write a note" },
+  { keys: ["⇧↑", "⇧↓"], description: "With words selected: extend by a whole verse" },
   { keys: ["Tab", "⇧ Tab"], description: "Cycle Study lenses while the verse keeps focus" },
   { keys: ["Enter", "↓"], description: "From the active Study tab, enter its panel" },
   { keys: ["Esc"], description: "From a Study panel, return to its active tab" },

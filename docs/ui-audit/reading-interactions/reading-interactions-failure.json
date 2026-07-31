@@ -1,0 +1,41 @@
+{
+  "classification": "reading-interaction-contract-failure",
+  "error": {
+    "name": "Error",
+    "message": "{\"exceptionId\":1,\"text\":\"Uncaught (in promise) Error: Exact fixture capture refused: {\\\"ok\\\":false,\\\"status\\\":\\\"refused\\\",\\\"error\\\":{\\\"code\\\":\\\"selection-round-trip-mismatch\\\",\\\"message\\\":\\\"This translation cannot preserve those exact words yet. Adjust the selection or use a note or wash.\\\"}}\",\"lineNumber\":43,\"columnNumber\":15,\"scriptId\":\"13\",\"stackTrace\":{\"callFrames\":[{\"functionName\":\"capture\",\"scriptId\":\"13\",\"url\":\"\",\"lineNumber\":42,\"columnNumber\":14}]},\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"Error\",\"description\":\"Error: Exact fixture capture refused: {\\\"ok\\\":false,\\\"status\\\":\\\"refused\\\",\\\"error\\\":{\\\"code\\\":\\\"selection-round-trip-mismatch\\\",\\\"message\\\":\\\"This translation cannot preserve those exact words yet. Adjust the selection or use a note or wash.\\\"}}\\n    at capture (<anonymous>:43:15)\\n    at async closedThreeWordPhrase (<anonymous>:58:24)\\n    at async <anonymous>:84:32\",\"objectId\":\"8140571381473722494.1.1\"}}",
+    "stack": "Error: {\"exceptionId\":1,\"text\":\"Uncaught (in promise) Error: Exact fixture capture refused: {\\\"ok\\\":false,\\\"status\\\":\\\"refused\\\",\\\"error\\\":{\\\"code\\\":\\\"selection-round-trip-mismatch\\\",\\\"message\\\":\\\"This translation cannot preserve those exact words yet. Adjust the selection or use a note or wash.\\\"}}\",\"lineNumber\":43,\"columnNumber\":15,\"scriptId\":\"13\",\"stackTrace\":{\"callFrames\":[{\"functionName\":\"capture\",\"scriptId\":\"13\",\"url\":\"\",\"lineNumber\":42,\"columnNumber\":14}]},\"exception\":{\"type\":\"object\",\"subtype\":\"error\",\"className\":\"Error\",\"description\":\"Error: Exact fixture capture refused: {\\\"ok\\\":false,\\\"status\\\":\\\"refused\\\",\\\"error\\\":{\\\"code\\\":\\\"selection-round-trip-mismatch\\\",\\\"message\\\":\\\"This translation cannot preserve those exact words yet. Adjust the selection or use a note or wash.\\\"}}\\n    at capture (<anonymous>:43:15)\\n    at async closedThreeWordPhrase (<anonymous>:58:24)\\n    at async <anonymous>:84:32\",\"objectId\":\"8140571381473722494.1.1\"}}\n    at Object.evaluate (file:///Users/jonnyroyal/dev/scripture-app-quire/scripts/qa-reading-interactions.mjs:139:13)\n    at async file:///Users/jonnyroyal/dev/scripture-app-quire/scripts/qa-reading-interactions.mjs:1411:19"
+  },
+  "context": {
+    "phase": "exact-fixture-seed"
+  },
+  "childState": {
+    "exited": false,
+    "code": null,
+    "signal": null,
+    "spawnError": null
+  },
+  "childLog": "[electron:session-start] {\n  appVersion: '35.0.1',\n  electronVersion: '35.0.1',\n  crashDumpsPath: '/private/var/folders/rw/kszqnpcd2qs7xx7__t809jy80000gn/T/scripture-reading-interactions-qa-inMkam/user-data/Crashpad'\n}\n[electron:legacy-settings-adoption] { status: 'legacy-missing', adoptedKeys: [] }\n\nDevTools listening on ws://127.0.0.1:11518/devtools/browser/e51986f8-29ee-4411-8e05-535a02b4fefc\nSTEP morph overlay: 2564 codes (TEGMC ok, TEHMC ok) dir=/Users/jonnyroyal/dev/scripture-app-quire/data/scripture/morph\nTIPNR names index: 4259 entities (/Users/jonnyroyal/dev/scripture-app-quire/data/scripture/names/tipnr-index.json)\nHebrew orbit index: 8191 Strong’s keys (/Users/jonnyroyal/dev/scripture-app-quire/data/scripture/lexicons/hebrew-strong-orbit.json)\nOpenBible place research: 917 TIPNR identities\nOpenBible place research: 917 TIPNR identities\n[electron:semantic-runtime-stopped] { reason: 'library reinitialize' }\n",
+  "screenshotError": null,
+  "renderer": {
+    "url": "file:///Users/jonnyroyal/dev/scripture-app-quire/dist/renderer/index.html",
+    "viewport": {
+      "width": 860,
+      "height": 900
+    },
+    "activeElement": "<body>\n  <div id=\"root\"><div class=\"app-shell theme-dark dark reading-size-m verse-nums-always\" data-theme=\"dark\"><nav class=\"sidebar\" aria-label=\"Primary navigation\"><div class=\"sidebar-header\"><div class=\"brand-row\" aria-label=\"Pericope\"><div class=\"brand-mark\"><svg viewBox=\"0 0 494 759\" width=\"10.413702239789197\" height=\"16\" fill=\"currentColor\" role=\"presentation\" aria-hidden=\"true\"><path d=\"M354 0 A 207.2 207.2 0 1 0 261 398.2 L261 759 L354 759 Z\"></path><rect x=\"421\" width=\"73\" height=\"759\"></rect></svg></div><div class=\"brand-word\">Pericope</div></div><span class=\"control-tooltip-anchor\"><button type=\"button\" class=\"sidebar-collapse-btn\" aria-label=\"Collapse sidebar\" aria-expanded=\"true\"><svg viewBox=\"0 0 20 20\" width=\"14\" height=\"14\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><rect x=\"3\" y=\"4\" width=\"14\" height=\"12\" rx=\"2.5\"></rect><path d=\"M7.5 4v12\"></path></svg></button></span></div><div class=\"sidebar-nav\"><button class=\"nav-item active\" title=\"Read (1)\" aria-label=\"Read (1)\" aria-keyshortcuts=\"1\" aria-current=\"page\"><span class=\"nav-tile\" aria-hidden=\"true\"><svg viewBox=\"0 0 20 20\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M2.5 4.5c2.2-1 4.6-1 7 .3v11c-2.4-1.3-4.8-1.3-7-.3z\"></path><path d=\"M17 4.5c-2.2-1-4.6-1-7 .3v11c2.4-1.3 4.8-1.3 7-.3z\"></path></svg></span><span class=\"nav-label\">Read</span><span class=\"nav-shortcut\" aria-hidden=\"true\">1</span></button><button class=\"nav-item\" title=\"Write (2)\" aria-label=\"Write (2)\" aria-keyshortcuts=\"2\"><span class=\"nav-tile\" aria-hidden=\"true\"><svg viewBox=\"0 0 20 20\" width=\"18\" height=\"18\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 14.5V17h2.5L15 8.5l-2.5-2.5L4 14.5Z\"></path><path d=\"M11.2 6.3l2.5 2.5\"></path></svg></span><span class=\"nav-label\">Write</span><span class=\"nav-shortcut\" aria-hidden=\"tru",
+    "selectedVerses": [],
+    "markingSurface": "dock",
+    "layerStack": [],
+    "card": null,
+    "chooser": null,
+    "ticks": [],
+    "paintPlanes": {
+      "route": false,
+      "emphasis": false,
+      "tickLayer": false,
+      "routeCount": 0
+    },
+    "floatingLayers": [],
+    "escapeInterceptions": []
+  }
+}
