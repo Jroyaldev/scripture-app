@@ -12,6 +12,25 @@ const APPROVED_MARK_SOURCES = ["working-preacher", "bibleproject", "the-gospel-c
 const APPROVED_MARK_SOURCES_IMPORTED = ["enter-the-bible", "naked-bible", "spoken-gospel"];
 const ALL_APPROVED_MARK_SOURCES = [...APPROVED_MARK_SOURCES, ...APPROVED_MARK_SOURCES_IMPORTED];
 
+/**
+ * The public-feed footing, drawing a device — 2026-07-30.
+ *
+ * The maintainer decided on 2026-07-30 that the five sources added on the
+ * public-feed footing may carry their real marks, on the same terms the rest
+ * of this file describes: honorary permission sought before any public
+ * listing, takedowns honoured on request. The decision is recorded and dated
+ * at the head of docs/trusted-resource-permissions.md.
+ *
+ * These two are held in their OWN list rather than folded into the granted
+ * ones, and that separation is the point of the change rather than an
+ * accident of it: the granted-vs-unasked segmentation is what makes the later
+ * approval round possible, and a list that quietly merges is exactly the
+ * failure the permissions document is built to prevent. Nothing about the
+ * artwork's treatment differs; what differs is which conversation is still
+ * owed, and this constant is where the code says so.
+ */
+const DEVICE_SOURCES_PUBLIC_FEED = ["five-minutes-church-history"];
+
 test("reviewed manifests and cards retain the common link-only permission boundary", () => {
   for (const source of APPROVED_MARK_SOURCES) {
     const manifest = read(`data/resources/${source}/manifest.json`);
@@ -77,6 +96,46 @@ test("official marks ship only for approved sources, from bundled local assets",
   }
 
   assert.match(css, /--resource-mark:\s*none;/, "the default must carry no mark");
+});
+
+/**
+ * The device is the same guard one step narrower, and it is asserted
+ * separately so the two footings cannot be read off one list.
+ *
+ * A device is drawn BESIDE the publisher's name rather than instead of it, so
+ * it is `--resource-device` and never `--resource-mark`. Keeping the two
+ * properties apart is what keeps the two grants apart in `grep`.
+ */
+test("devices ship only for the sources the 2026-07-30 decision named", () => {
+  const css = read("src/renderer/styles.css");
+  const deviceRules = css.match(/--resource-device:\s*url\("[^"]+"\)/g) ?? [];
+  assert.equal(deviceRules.length, DEVICE_SOURCES_PUBLIC_FEED.length);
+
+  for (const rule of deviceRules) {
+    const url = /url\("([^"]+)"\)/.exec(rule)?.[1] ?? "";
+    assert.match(url, /^\.\/assets\/brand\//, "a device must be a bundled local asset, never a publisher URL");
+    assert.ok(existsSync(resolve(root, "src/renderer", url)), `missing bundled device: ${url}`);
+  }
+
+  for (const source of DEVICE_SOURCES_PUBLIC_FEED) {
+    assert.match(css, new RegExp(String.raw`\.taught-here-plate\[data-source="${source}"\][^}]*--resource-device:\s*url\(`),
+      `${source} must declare its own device`);
+    /* And a device NEVER takes the mark slot: the name it stands beside is
+       what identifies the show, and --resource-mark would indent that name
+       off-screen. */
+    assert.doesNotMatch(css, new RegExp(String.raw`\.taught-here-plate\[data-source="${source}"\][^}]*--resource-mark:\s*url\(`),
+      `${source} is a device beside a name, never a mark in place of one`);
+  }
+
+  assert.match(css, /--resource-device:\s*none;/, "the default must carry no device");
+
+  /* Nothing in pending/ may be reached by either property. It is a staging
+     area — it holds one asset explicitly marked as reconstructed rather than
+     supplied — and the renderer must not be able to find it. */
+  for (const rule of [...deviceRules, ...(css.match(/--resource-mark:\s*url\("[^"]+"\)/g) ?? [])]) {
+    assert.doesNotMatch(rule, /assets\/brand\/pending\//,
+      "a staged asset is being drawn; pending/ is not approved artwork");
+  }
 });
 
 test("permission review records the mark approval, its date, and its limits", () => {

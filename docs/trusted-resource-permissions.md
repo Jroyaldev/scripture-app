@@ -3,6 +3,61 @@
 Reviewed: 2026-07-20
 Mark approval recorded: 2026-07-26 (three sources), 2026-07-27 (Enter the Bible, Naked Bible), 2026-07-29 (Spoken Gospel)
 
+## The 2026-07-30 decision — marks are no longer gated on being asked
+
+**The maintainer decided on 2026-07-30 that the five sources on the public-feed
+footing may carry their real marks.** In his words: *"were moving past the
+permission doc for brand; well get approval later or accept takedowns but we
+wont stall."*
+
+The rule this replaces was written into this file on 2026-07-29 and is quoted
+below in "The second footing": *"These sources take generic treatment — their
+name in type, no mark — because no mark is approved for any of them."* That
+sentence is superseded. It is left standing where it was written, with a
+pointer here, because a boundary document that edits its own history is worth
+less than one that shows its working.
+
+The reasoning, which is the same reasoning the second footing already rests on:
+this project operates the way a podcast client operates over publicly offered
+RSS. A publisher's own mark, drawn at the size of a signature beside their own
+episode, on the ground their artwork was drawn for, is what every podcast
+client on the machine already does with the artwork the same feed serves. The
+standing policy is unchanged and is what makes this defensible rather than
+merely convenient:
+
+- **honorary permission is sought before any public listing**, from every
+  publisher, and the outreach backlog is the list of the unasked;
+- **a takedown is honoured immediately**, per source — the per-source gate below
+  is what keeps that a one-line change rather than a hunt;
+- **the granted-vs-unasked segmentation stays recorded and accurate**, in the
+  docs and in the code, because it is what makes the later approval round
+  possible at all. It is not weakened by this decision; it is the reason this
+  decision can be taken without losing the thread.
+
+Two things follow in the tree, and both are deliberately visible to `grep`:
+
+1. `--resource-mark` still names only the six publisher-granted sources.
+   The one public-feed source that gained artwork on this pass took a second
+   property, `--resource-device`, because that artwork stands BESIDE the show's
+   name rather than in place of it (see the brand inventory for why).
+   `tests/trusted-resource-permissions.test.ts` holds each list against its own
+   footing, in two named constants — `ALL_APPROVED_MARK_SOURCES` and
+   `DEVICE_SOURCES_PUBLIC_FEED` — so the two footings cannot be read off one
+   list, and a source cannot drift from one to the other unnoticed.
+2. Four of the five still show their name in type, and **that is now an
+   artwork finding rather than a permission one**: Premier's lockup is stacked
+   colour art that cannot be read at 26px, 1517's numeral is a fifth of its own
+   roundel's height, the Listener's wordmark ships with a grey plate baked into
+   its pixels, and Radically Christian's drop is the same oxblood as the ground
+   it would sit on. Every one of those four files was fetched from the
+   publisher, is staged in `src/renderer/assets/brand/pending/`, and is
+   recorded with its measurement in
+   `docs/trusted-resource-brand-inventory.md`.
+
+Nothing else in this document moves. The audio, transcript, artwork-storage and
+runtime-fetch boundaries are untouched by this decision, which is about marks
+and only marks.
+
 This is a product-engineering boundary, not a grant of rights or a substitute
 for legal review. Re-check the live publisher terms before expanding any source
 beyond the capabilities recorded in its versioned manifest.
@@ -21,11 +76,30 @@ Marks are approved for the sources listed here, and for no others:
 | Source | Mark | Brand surface |
 |---|---|---|
 | Working Preacher | `wp-stacked-white.svg` | `#9D2235` |
-| BibleProject | `bp-mono-wht.png` | `#00B3E5` |
+| BibleProject | `bibleproject-lockup-white.svg` | `#00B3E5` |
 | The Gospel Coalition | `tgc-mark-wht.svg` | `#79AE4A` |
 | Enter the Bible | `etb-main-logo-colour.svg` | `#FED141` |
 | Naked Bible Podcast | `naked-bible-emblem-white.png` | `#2F3437` |
 | Spoken Gospel | `spoken-gospel-lockup-white.png` | `#239948` |
+
+BibleProject's row changed file on 2026-07-30 and did not change grant: it was
+`bp-mono-wht.png`, the publisher's own supplied mono-white raster, and it is now
+that same mono-white lockup in the publisher's own vector outlines. The supplied
+raster is kept at `pending/bibleproject-lockup-white-supplied.png` as the
+authority the ink was matched against. Provenance for every file in this table
+is recorded in `docs/trusted-resource-brand-inventory.md`.
+
+And on the public-feed footing, by the 2026-07-30 decision above:
+
+| Source | Device | Brand surface |
+|---|---|---|
+| 5 Minutes in Church History | `ligonier-tree-white.svg` | `#4F645B` |
+
+One source, not five, and the other four are an artwork finding rather than a
+permission one — see the decision note at the top and the per-publisher entries
+in the brand inventory. 1517's roundel was acquired, staged and then measured
+out: the numeral inside it is 20.6% of the mark's own height, which is 3.1px at
+the size a chip draws a device.
 
 The 2026-07-20 review below records what each publisher *publishes* about reuse.
 It was never a finding that these marks could not be shown — only that the
@@ -126,6 +200,13 @@ looser:
    publishers each painting their own colour would be a colour chart rather
    than a margin, and the rule that already governs marks happens to produce
    the right restraint by itself.
+
+   **Amended 2026-07-30 by the decision at the head of this file: seven of the
+   eleven now carry a plate**, six with a mark in place of their name and one
+   with a device beside it. The restraint the paragraph above was reaching for
+   still holds and is now held by the artwork rather than by the permission —
+   three sources have no drawable mark, and the rule that a plate exists only
+   where artwork does is unchanged.
 2. **The accent does not cross onto the card.** `--player-accent` is declared
    for `.resource-card-face` at its DEFAULT value — the app's own gold — so the
    transport face on every card is the app's, not the publisher's. The
@@ -494,6 +575,14 @@ prevent.
 Nothing else moves. These sources take generic treatment — their name in type,
 no mark — because no mark is approved for any of them, and the rule that a mark
 ships only for an approved source is unchanged.
+
+> **SUPERSEDED 2026-07-30, on the maintainer's decision.** The paragraph above
+> is the rule the head of this file replaces: marks are no longer gated on
+> having asked. See "The 2026-07-30 decision" at the top for the wording, the
+> reasoning and what still holds — the outreach backlog, the takedown promise,
+> and the requirement that this list of five stay a distinct, named list.
+> Everything else in this section is current: the footing, the ids, the basis
+> map and the two sentences a reader sees are all unchanged by that decision.
 
 ### What the capability is
 
