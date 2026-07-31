@@ -1,0 +1,397 @@
+{
+  "runId": "2026-07-31T18-43-50-659-gpt-5.6-luna",
+  "startedAt": "2026-07-31T18:43:50.659Z",
+  "promptId": null,
+  "prompt": "how do ideas of going to heaven differ from the new heaven and new earth?",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "From Going to Heaven to New Creation",
+    "intro": "This tour follows a biblical distinction that is easy to blur: being with God after death is not necessarily the same thing as the Bible’s final hope. You’ll move from the familiar “go to heaven” picture, through the Bible’s heaven-and-earth story, into the resurrection of the body and the renewal of creation.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:heaven-earth-revisited",
+        "startSec": 77,
+        "endSec": 240,
+        "why": "Begin here because the hosts directly name the assumption behind your question: “the paradigm of zapping out of earth to go to heaven.” They explain that the Bible never uses “go to heaven” as its phrase for what happens after death, and they contrast that with the idea of escaping the material world into a disembodied heaven.",
+        "episodeTitle": "How Did the Biblical Authors Imagine Life After Death?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/0ad535fa-d5c2-4247-b5b8-cfdf6c8e86b7/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=0ad535fa-d5c2-4247-b5b8-cfdf6c8e86b7",
+        "durationSec": 3319,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:heaven-earth-q-r",
+        "startSec": 520,
+        "endSec": 780,
+        "why": "This clip supplies the larger biblical framework rather than treating heaven as the final destination. The hosts say God is “on a mission to heal that rift and bring heaven and earth back together,” then carefully distinguish what may happen immediately after death from “the resurrection into the new creation.” It also models humility, saying Scripture gives only limited information about the intermediate state.",
+        "episodeTitle": "Heaven & Earth Question & Response",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e377fa21-f15c-4ec8-b498-507f52e60c14/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e377fa21-f15c-4ec8-b498-507f52e60c14",
+        "durationSec": 2671,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "startSec": 1760,
+        "endSec": 1940,
+        "why": "Now hear the resurrection-shaped hope in concrete terms. The commentator says believers are not destined to be “disembodied spirits floating around on a cloud,” but will receive “an imperishable and immortal body” suited to a new heavens and new earth. The clip also connects that future to present faithfulness: because “your labor in the Lord is not in vain,” resurrection changes how we work and endure now.",
+        "episodeTitle": "1 Corinthians 15:29-58",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/d8ngn3/1_corinthians_1529-589yhwk.mp3",
+        "durationSec": 2010,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:b65bd89d-com-e0129c8f-9f93-392f-bcba-0def335d7c00",
+        "startSec": 0,
+        "endSec": 180,
+        "why": "Finish with Revelation’s climactic picture. The commentator places Revelation 21 after evil has been judged, then describes “the glorious renewing of creation and the union of heaven and earth once again.” The destination is presented as “resurrection and life on a new earth,” with God making all things new—not humans permanently abandoning creation.",
+        "episodeTitle": "Revelation 21:1-22:5",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/bwuev4wq3hdtt93e/revelation_211-2259g6v5.mp3",
+        "durationSec": 1707,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips distinguish two related hopes without pretending they are identical: believers may be with Jesus after death, but the final biblical horizon is bodily resurrection, renewed creation, and heaven and earth united under God’s dwelling presence. The tour leaves you with a hope that is not escape from the world, but its restoration.",
+    "totalSeconds": 783
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2346,
+      "promptTokens": 1131,
+      "completionTokens": 38,
+      "reasoningTokens": 22,
+      "cachedPromptTokens": 1100,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000037600000000000006
+    },
+    {
+      "i": 1,
+      "latencyMs": 4194,
+      "promptTokens": 1426,
+      "completionTokens": 231,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 1128,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00018705500000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 2915,
+      "promptTokens": 12549,
+      "completionTokens": 419,
+      "reasoningTokens": 45,
+      "cachedPromptTokens": 1423,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0016563050000000003
+    },
+    {
+      "i": 3,
+      "latencyMs": 4909,
+      "promptTokens": 17774,
+      "completionTokens": 441,
+      "reasoningTokens": 215,
+      "cachedPromptTokens": 12546,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010434850000000002
+    },
+    {
+      "i": 4,
+      "latencyMs": 10402,
+      "promptTokens": 20839,
+      "completionTokens": 1116,
+      "reasoningTokens": 503,
+      "cachedPromptTokens": 17771,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012307350000000002
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "going to heaven when you die new heaven new earth",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 93,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "resurrection not escape earth heaven",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 63,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "new heavens and new earth Revelation 21",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 55,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "where do we go after death intermediate state resurrection",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 47,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Revelation",
+        "chapter": 21,
+        "verse": 0,
+        "limit": 20
+      },
+      "ms": 68,
+      "summary": "20 of 328 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Isaiah",
+        "chapter": 65,
+        "verse": 0,
+        "limit": 15
+      },
+      "ms": 1,
+      "summary": "6 of 38 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "1 Corinthians",
+        "chapter": 15,
+        "verse": 0,
+        "limit": 15
+      },
+      "ms": 0,
+      "summary": "15 of 259 moments"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-revisited",
+        "fromSec": 60,
+        "toSec": 300
+      },
+      "ms": 7,
+      "summary": "60s–240s of How Did the Biblical Authors Imagine Life After Death?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-q-r",
+        "fromSec": 600,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "600s–780s of Heaven & Earth Question & Response"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:920f7f45-https-radicallychristian-com-p-9747",
+        "fromSec": 480,
+        "toSec": 780
+      },
+      "ms": 3,
+      "summary": "480s–660s of New Heavens and New Earth (Part One)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:14128a82-https-radicallychristian-com-p-9755",
+        "fromSec": 180,
+        "toSec": 480
+      },
+      "ms": 3,
+      "summary": "180s–360s of New Heavens and New Earth (Part Two)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 1760,
+        "toSec": 2010
+      },
+      "ms": 3,
+      "summary": "1760s–1940s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:a44eb206-c17d-11f0-ad05-2b5b9ed3042e",
+        "fromSec": 850,
+        "toSec": 1150
+      },
+      "ms": 0,
+      "summary": "850s–1030s of Where Do We Go When We Die?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:b65bd89d-com-e0129c8f-9f93-392f-bcba-0def335d7c00",
+        "fromSec": 0,
+        "toSec": 300
+      },
+      "ms": 3,
+      "summary": "0s–180s of Revelation 21:1-22:5"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:a44eb206-c17d-11f0-ad05-2b5b9ed3042e",
+        "fromSec": 160,
+        "toSec": 380
+      },
+      "ms": 0,
+      "summary": "160s–340s of Where Do We Go When We Die?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-q-r",
+        "fromSec": 500,
+        "toSec": 690
+      },
+      "ms": 0,
+      "summary": "500s–680s of Heaven & Earth Question & Response"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 1660,
+        "toSec": 1940
+      },
+      "ms": 0,
+      "summary": "1660s–1840s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:da6cb664-https-radicallychristian-com-p-9256",
+        "fromSec": 1680,
+        "toSec": 1940
+      },
+      "ms": 0,
+      "summary": "1680s–1860s of New Heavens New Earth – CrossTalk S4E3"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 20,
+    "promptTokens": 53719,
+    "completionTokens": 2245,
+    "reasoningTokens": 785,
+    "cachedPromptTokens": 33968,
+    "wallMs": 25236,
+    "modelLatencyMs": 24766,
+    "toolMs": 348
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004155,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right."
+  ],
+  "finishedAt": "2026-07-31T18:44:15.895Z"
+}
