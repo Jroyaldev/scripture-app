@@ -1,0 +1,45 @@
+{
+  "_README": "Bench set for the tour lab. Run the same eight prompts through both models and the run records line up into a fair table. Modes span the ways a real user arrives: a question, a grief, a text, a topic, a word, a whole book.",
+  "prompts": [
+    {
+      "id": "doctrinal-resurrection-body",
+      "mode": "doctrinal question",
+      "prompt": "If Jesus rose bodily, what happens to my body when I die? I want to understand what the New Testament actually claims about resurrection versus 'going to heaven'."
+    },
+    {
+      "id": "pastoral-grief",
+      "mode": "pastoral (grief / comfort)",
+      "prompt": "My mother died three weeks ago and I cannot pray. I don't want tidy answers — I want to hear people talk honestly about grief and where God is in it."
+    },
+    {
+      "id": "text-genesis-6",
+      "mode": "text",
+      "prompt": "Walk me through Genesis 6:1-4. Who are the sons of God and the Nephilim, and why is this passage there right before the flood?"
+    },
+    {
+      "id": "topic-divine-council",
+      "mode": "topic",
+      "prompt": "Teach me the divine council worldview from scratch — what it is, where the Old Testament assumes it, and why it matters for reading the New Testament."
+    },
+    {
+      "id": "word-study-hesed",
+      "mode": "narrow word study",
+      "prompt": "I keep hearing that the Hebrew word hesed can't be translated. What does hesed actually mean, and where does the Old Testament use it in a way that shows its range?"
+    },
+    {
+      "id": "book-orientation-romans",
+      "mode": "whole-book orientation",
+      "prompt": "I'm about to read Romans for the first time. Give me an orientation to the whole letter: what Paul is arguing, who he's arguing with, and how the parts fit together."
+    },
+    {
+      "id": "doctrinal-atonement",
+      "mode": "doctrinal question (contested)",
+      "prompt": "Did God pour out wrath on Jesus at the cross? I want to hear the different ways teachers explain what the crucifixion accomplished, including where they disagree."
+    },
+    {
+      "id": "pastoral-doubt",
+      "mode": "pastoral (doubt / deconstruction)",
+      "prompt": "I'm losing my faith and I'm frightened of it. Is doubt a failure? I want to hear people who take doubt seriously rather than scolding it."
+    }
+  ]
+}

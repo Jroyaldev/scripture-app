@@ -1,0 +1,21 @@
+{
+  "_README": "EDIT ME. These rates are USD per 1,000,000 tokens and are NOT authoritative. Both models here are newer than any pricing knowledge bundled with the code that wrote this file, so the numbers below are placeholders until a human checks the vendor's price page and replaces them. Cost = tokens x rate, EXCEPT where the endpoint reports its own accounted cost (OpenRouter-style `usage.cost`), which is always preferred and is labelled 'provider' in the run record.",
+  "_verifiedBy": null,
+  "_verifiedAt": null,
+  "models": {
+    "deepseek-v4-flash": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "gpt-5.6-luna": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10.0,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    }
+  }
+}
