@@ -17,6 +17,20 @@
       "cachedInputPerMTokensUsd": 0.125,
       "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
     },
+    "gpt-5.6-luna-high": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10.0,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort high). Effort changes how many tokens are spent, never the rate."
+    },
+    "gpt-5.6-luna-medium": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10.0,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
     "grok-4.5": {
       "requestedSlug": "x-ai/grok-4.5",
       "inputPerMTokensUsd": 3.0,

@@ -14,11 +14,12 @@ const REPO_ROOT = path.resolve(LAB_DIR, '..', '..');
 // The models the maintainer named, verbatim. `requestedSlug` is what we are
 // asked for; what the endpoint actually accepts is resolved at runtime.
 //
-// Six of the seven ride the same OpenRouter credentials (OPENAI_API_KEY /
-// OPENAI_BASE_URL), and that sharing stops at the key. Every spec owns a
-// DISTINCT `model` and `reasoning` env slot, so nothing anyone exports can
-// quietly repoint a roster of six at one slug: `OPENAI_MODEL` is not read by
-// anything, and each override says out loud which model it is for.
+// Every row but DeepSeek rides the same OpenRouter credentials
+// (OPENAI_API_KEY / OPENAI_BASE_URL), and that sharing stops at the key.
+// Every spec owns a DISTINCT `model` and `reasoning` env slot, so nothing
+// anyone exports can quietly repoint the whole roster at one slug:
+// `OPENAI_MODEL` is not read by anything, and each override says out loud
+// which model it is for.
 const OPENROUTER = { key: 'OPENAI_API_KEY', baseUrl: 'OPENAI_BASE_URL' };
 const OPENROUTER_URL = 'https://openrouter.ai/api/v1';
 
@@ -37,35 +38,38 @@ export const MODELS = [
     env: { ...OPENROUTER, model: 'LUNA_MODEL', reasoning: 'LUNA_REASONING' },
     defaultBaseUrl: 'https://api.openai.com/v1',
   },
+  /* Two luna rows that exist to vary ONE thing. Same slug, same credential,
+     same endpoint as the plain luna row above — only the pinned effort
+     differs, so a grid across the three is a controlled comparison of
+     thinking budget and of nothing else. Pinned via defaultReasoning, which
+     outranks the shared TOUR_REASONING dial on purpose: a variant that
+     followed the dial would just be the plain row twice. */
   {
-    key: 'grok-4.5',
-    requestedSlug: 'x-ai/grok-4.5',
-    label: 'Grok 4.5',
-    env: { ...OPENROUTER, model: 'GROK_MODEL', reasoning: 'GROK_REASONING' },
+    key: 'gpt-5.6-luna-high',
+    requestedSlug: 'openai/gpt-5.6-luna',
+    label: 'GPT-5.6 Luna (high)',
+    env: { ...OPENROUTER, model: 'LUNA_HIGH_MODEL', reasoning: 'LUNA_HIGH_REASONING' },
     defaultBaseUrl: OPENROUTER_URL,
-    // The maintainer asked for "grok 4.5 high" specifically, so this one does
-    // not inherit the shared TOUR_REASONING; GROK_REASONING still overrides.
     defaultReasoning: 'high',
   },
   {
-    key: 'ling-3.0-flash-free',
-    requestedSlug: 'inclusionai/ling-3.0-flash:free',
-    label: 'Ling 3.0 Flash (free)',
-    env: { ...OPENROUTER, model: 'LING_MODEL', reasoning: 'LING_REASONING' },
+    key: 'gpt-5.6-luna-medium',
+    requestedSlug: 'openai/gpt-5.6-luna',
+    label: 'GPT-5.6 Luna (medium)',
+    env: { ...OPENROUTER, model: 'LUNA_MEDIUM_MODEL', reasoning: 'LUNA_MEDIUM_REASONING' },
     defaultBaseUrl: OPENROUTER_URL,
+    defaultReasoning: 'medium',
   },
-/* Laguna S 2.1 (free) and Gemini 3.5 Flash Lite were on this roster for one
-   probe each, 2026-07-31, and removed the same day on the maintainer's call:
-   both burned all 16 model calls without ever submitting a valid tour
-   (NO_TOUR), while Ling — also free — passed. Their failed run records stay
-   in runs/ as the evidence. Capable of chat, not of driving this tool loop. */
-  {
-    key: 'gpt-5.6-luna-pro',
-    requestedSlug: 'openai/gpt-5.6-luna-pro',
-    label: 'GPT-5.6 Luna Pro',
-    env: { ...OPENROUTER, model: 'LUNA_PRO_MODEL', reasoning: 'LUNA_PRO_REASONING' },
-    defaultBaseUrl: OPENROUTER_URL,
-  },
+/* Departed rosters, kept on record because runs/ still names them:
+   — Laguna S 2.1 (free) and Gemini 3.5 Flash Lite, 2026-07-31, one probe
+     each: both burned all 16 model calls without ever submitting a valid
+     tour (NO_TOUR), while Ling — also free — passed. Capable of chat, not
+     of driving this tool loop.
+   — Grok 4.5 (pinned high) and GPT-5.6 Luna Pro, later the same day, on
+     cost — grok's one probe made the best single tour of the afternoon at
+     $0.188, but that is ~40× luna's per-tour spend on the defaults arm.
+     Ling left with them to focus the grid on deepseek-versus-luna; its
+     probes were coherent but descriptive, four of five single-source. */
 ];
 
 export const modelByKey = (key) => MODELS.find((m) => m.key === key || m.requestedSlug === key) || null;

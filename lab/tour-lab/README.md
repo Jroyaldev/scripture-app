@@ -63,25 +63,30 @@ drafts is kept in the run record so a model that needs three tries is visibly wo
 
 ## Models and auth
 
-All five are OpenAI-compatible chat/completions with tool calling, so one client class covers the lot.
-(The roster was seven for one afternoon, 2026-07-31: `poolside/laguna-s-2.1:free` and
-`google/gemini-3.5-flash-lite` each burned a probe's full 16 model calls without ever submitting a valid
-tour, and were removed the same day on the maintainer's call. Their failed run records stay in `runs/` as
-the evidence, and their `pricing.json` rows stay so those records still render.)
+Two models, four rows — the luna variants are the same slug with a pinned effort, there to make thinking
+budget the only variable in a comparison. All are OpenAI-compatible chat/completions with tool calling,
+so one client class covers the lot.
+
+(The roster peaked at seven on 2026-07-31 and was cut twice the same day, both times on the maintainer's
+call: `poolside/laguna-s-2.1:free` and `google/gemini-3.5-flash-lite` each burned a probe's full 16 model
+calls without ever submitting a valid tour; then `x-ai/grok-4.5` and `openai/gpt-5.6-luna-pro` went on
+cost — grok's one probe made the afternoon's best single tour at $0.188, which is ~40× luna's per-tour
+spend on the defaults arm — with `inclusionai/ling-3.0-flash:free` leaving alongside to focus the grid on
+deepseek-versus-luna. Every departed model's run records stay in `runs/` as the evidence, and their
+`pricing.json` rows stay so those records still render.)
 Credentials are read from the repo `.env` (untracked; the loader also checks sibling git worktrees, or set
 `TOUR_LAB_ENV_FILE`). Keys never reach the browser, the logs, or a run record.
 
-| model | key | base URL | model override | effort override |
-| --- | --- | --- | --- | --- |
-| `deepseek/deepseek-v4-flash-0731` | `DEEPSEEK_API_KEY` | `DEEPSEEK_BASE_URL` | `DEEPSEEK_MODEL` | `DEEPSEEK_REASONING` |
-| `openai/gpt-5.6-luna` | `OPENAI_API_KEY` | `OPENAI_BASE_URL` | `LUNA_MODEL` | `LUNA_REASONING` |
-| `x-ai/grok-4.5` | `OPENAI_API_KEY` | `OPENAI_BASE_URL` | `GROK_MODEL` | `GROK_REASONING` |
-| `inclusionai/ling-3.0-flash:free` | `OPENAI_API_KEY` | `OPENAI_BASE_URL` | `LING_MODEL` | `LING_REASONING` |
-| `openai/gpt-5.6-luna-pro` | `OPENAI_API_KEY` | `OPENAI_BASE_URL` | `LUNA_PRO_MODEL` | `LUNA_PRO_REASONING` |
+| row | model | key | model override | effort override | pinned effort |
+| --- | --- | --- | --- | --- | --- |
+| deepseek-v4-flash | `deepseek/deepseek-v4-flash-0731` | `DEEPSEEK_API_KEY` | `DEEPSEEK_MODEL` | `DEEPSEEK_REASONING` | — |
+| gpt-5.6-luna | `openai/gpt-5.6-luna` | `OPENAI_API_KEY` | `LUNA_MODEL` | `LUNA_REASONING` | — |
+| gpt-5.6-luna-high | `openai/gpt-5.6-luna` | `OPENAI_API_KEY` | `LUNA_HIGH_MODEL` | `LUNA_HIGH_REASONING` | `high` |
+| gpt-5.6-luna-medium | `openai/gpt-5.6-luna` | `OPENAI_API_KEY` | `LUNA_MEDIUM_MODEL` | `LUNA_MEDIUM_REASONING` | `medium` |
 
-Four of the five ride one OpenRouter credential, and **the sharing stops at the key**. Every model owns a
-distinct model-override slot, so no single variable can quietly repoint the whole roster at one slug —
-`OPENAI_MODEL` is read by nothing, and each override names the model it belongs to.
+Every row but DeepSeek rides one OpenRouter credential, and **the sharing stops at the key**. Every row owns
+a distinct model-override slot, so no single variable can quietly repoint the whole roster at one slug —
+`OPENAI_MODEL` is read by nothing, and each override names the row it belongs to.
 
 The requested slug is what we ask for; what the endpoint accepts is resolved at runtime. The base URL's
 host decides the form to try first — a vendor's own endpoint wants the bare name, an aggregator wants
@@ -90,9 +95,8 @@ requested build is not published, the lab falls back to the same family without 
 so loudly: in the run record, in the panel header, and in a banner above the tour. A model with no key
 is disabled in the UI with the env var it needs, and a keyless run returns one sentence, not a stack trace.
 
-As configured today every base URL is `https://openrouter.ai/api/v1`, which publishes all five slugs
-verbatim — including the `:free` one — so all five resolve exact via the models list and report
-their own accounted cost. (The fallback path is not dead code: pointed at `https://api.deepseek.com`,
+As configured today every base URL is `https://openrouter.ai/api/v1`, which publishes both slugs
+verbatim, so every row resolves exact via the models list and reports its own accounted cost. (The fallback path is not dead code: pointed at `https://api.deepseek.com`,
 which publishes only `deepseek-v4-flash` and `deepseek-v4-pro`, the DeepSeek row lands on the undated
 build through the family-prefix fallback and every record says so.)
 
@@ -100,8 +104,9 @@ build through the family-prefix fallback and every record says so.)
 
 `<MODEL>_REASONING`, then the model's own pinned default, then shared `TOUR_REASONING` — first one set
 wins, and `low|medium|high|xhigh|max` are all passed through to the aggregator's unified `reasoning`
-field. Only Grok 4.5 pins a default (`high`, as asked for); the other four inherit `TOUR_REASONING`,
-currently `max`. Unset everywhere leaves the vendor's own default. A direct vendor endpoint has no
+field. The two luna variants pin their efforts (`high` and `medium` — pinning is what they are for);
+deepseek and plain luna inherit `TOUR_REASONING`, currently `max`. Unset everywhere leaves the vendor's
+own default. A direct vendor endpoint has no
 unified field to carry an effort, so the header strikes it through rather than implying it was sent.
 
 **Every run record says which effort ran and where it came from**, in `model.reasoning`, alongside the

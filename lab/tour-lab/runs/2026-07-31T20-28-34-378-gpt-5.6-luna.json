@@ -1,0 +1,724 @@
+{
+  "runId": "2026-07-31T20-28-34-378-gpt-5.6-luna",
+  "startedAt": "2026-07-31T20:28:34.378Z",
+  "promptId": null,
+  "prompt": "what does john mean by new creation; or genesis allusions?",
+  "model": {
+    "key": "gpt-5.6-luna",
+    "label": "GPT-5.6 Luna",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "LUNA_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "John’s New Creation: Following the Genesis Echoes",
+    "intro": "This tour starts with John’s opening “in the beginning,” then follows the Genesis echoes through his prologue, his sevens and eighth-day resurrection, his water and Eden imagery, and the garden scene of John 20. The clips build a case for what John means by new creation rather than treating it as a detached slogan.",
+    "steps": [
+      {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "startSec": 360,
+        "endSec": 690,
+        "why": "This lays the foundation directly from John 1. The speakers say John “begins his gospel with Eden, with new creation,” and trace the darkness, light, water, Spirit, and Adam imagery to Jesus as the “new Adam,” who remakes and heals the fallen humanity. Hear this first for the basic meaning of the Genesis allusion.",
+        "episodeTitle": "John 1: In the Beginning Was the Word",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG8007534722.mp3",
+        "durationSec": 3919,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "bibleproject:podcast:beginning",
+        "startSec": 1235,
+        "endSec": 1470,
+        "why": "This moves from imagery to literary structure. The hosts argue that John’s prologue has “exactly the literary design” of Genesis 1—an introduction, “two sequences of three,” and a concluding section—and connect its unfinished shape with Jesus’ death, empty tomb, and “new creation made complete.”",
+        "episodeTitle": "In the Beginning – John 1",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/8f0c5975-65cf-4a02-baf0-786ba6649656/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=8f0c5975-65cf-4a02-baf0-786ba6649656",
+        "durationSec": 3671,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:3c0fc244-3dc3-11f1-ab33-5f07c6c92de3",
+        "startSec": 2950,
+        "endSec": 3310,
+        "why": "Now the lens widens to the whole Gospel. The speakers trace John’s opening days through the Cana wedding, explain the seven signs, and then identify the resurrection as an eighth sign: “New creation.” This shows why John links Genesis, the Torah’s eighth day, weddings, and resurrection across the book.",
+        "episodeTitle": "Gospel of John Overview: A Unique Eyewitness",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG5222140559.mp3",
+        "durationSec": 3787,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:db54663c-6a8e-11f1-8d65-4723e9decce5",
+        "startSec": 2240,
+        "endSec": 2420,
+        "why": "This makes the Genesis pattern concrete in John 4. The speakers describe Jesus’ living water as moving people from “the death world you’re in of Genesis 1” into the “life and Eden world of Genesis 2,” then say, “I am the temple. I am the water of life. I am the spirit.” It shows new creation as God’s life reaching compromised and wounded people.",
+        "episodeTitle": "John Overview: Living Water",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG6305125345.mp3",
+        "durationSec": 4717,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "startSec": 780,
+        "endSec": 1090,
+        "why": "The tour lands at John 20, where the pattern becomes resurrection and restored humanity. The clip keeps the “first day of the week” in view, has Mary mistake Jesus for “the gardener,” and explains that Jesus’ breathing on the disciples recalls Genesis 2:7: “humanity restored” and “life reborn.”",
+        "episodeTitle": "John 20:1-31",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/z8yyjpv9fmtit6hd/john_201-3185o5y.mp3",
+        "durationSec": 1726,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:beginning",
+        "startSec": 2720,
+        "endSec": 2900,
+        "why": "This final perspective names the conflict underneath John’s creation language. The hosts describe darkness as the “anti-creation forces” dragging humanity toward disorder, then connect the resurrection with the claim that “the darkness couldn’t overcome the light.” It gives the preceding clips their final horizon: new creation is the triumph and continuation of God’s ordering, life-giving work.",
+        "episodeTitle": "In the Beginning – John 1",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/8f0c5975-65cf-4a02-baf0-786ba6649656/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=8f0c5975-65cf-4a02-baf0-786ba6649656",
+        "durationSec": 3671,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these teachers present John’s new creation as Genesis being reopened and carried forward in Jesus: the Word brings light, the new Adam brings life, water and Spirit make an Eden-like people, and the resurrection begins the eighth day. John’s allusions are not decorative references; they are the way he tells you what Jesus is doing and what his followers are becoming.",
+    "totalSeconds": 1595
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2984,
+      "promptTokens": 1128,
+      "completionTokens": 218,
+      "reasoningTokens": 202,
+      "cachedPromptTokens": 1125,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00014235000000000002
+    },
+    {
+      "i": 1,
+      "latencyMs": 4152,
+      "promptTokens": 1423,
+      "completionTokens": 475,
+      "reasoningTokens": 224,
+      "cachedPromptTokens": 1420,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00029950000000000007
+    },
+    {
+      "i": 2,
+      "latencyMs": 4348,
+      "promptTokens": 21180,
+      "completionTokens": 464,
+      "reasoningTokens": 201,
+      "cachedPromptTokens": 1420,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0027625250000000005
+    },
+    {
+      "i": 3,
+      "latencyMs": 13364,
+      "promptTokens": 44376,
+      "completionTokens": 1664,
+      "reasoningTokens": 908,
+      "cachedPromptTokens": 21177,
+      "toolCalls": 15,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.004109970000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 12277,
+      "promptTokens": 59455,
+      "completionTokens": 1415,
+      "reasoningTokens": 989,
+      "cachedPromptTokens": 44373,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0031779050000000004
+    },
+    {
+      "i": 5,
+      "latencyMs": 36011,
+      "promptTokens": 65249,
+      "completionTokens": 3957,
+      "reasoningTokens": 3514,
+      "cachedPromptTokens": 59452,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0036932700000000007
+    },
+    {
+      "i": 6,
+      "latencyMs": 60881,
+      "promptTokens": 69218,
+      "completionTokens": 7276,
+      "reasoningTokens": 6423,
+      "cachedPromptTokens": 65246,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.005514485
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "John new creation Genesis allusion",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 141,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "In the beginning Word creation John Genesis",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 119,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "John Gospel creation new creation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 95,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "John 20 garden Genesis Adam new creation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 86,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "John 1 Genesis 1 creation days",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 130,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 1,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 53,
+      "summary": "16 of 308 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 1,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "40 of 922 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 20,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "10 of 102 moments"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John new creation eighth day resurrection",
+        "sourceId": "spoken-gospel",
+        "limit": 15
+      },
+      "ms": 204,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John first day garden gardener resurrection creation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 133,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John Gospel Genesis allusions light water garden temple",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 117,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John seven signs eighth day new creation",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 112,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John 20 first day garden Mary gardener Adam Eve",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 93,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John prologue Genesis 1 literary design days temple",
+        "sourceId": "bibleproject",
+        "limit": 15
+      },
+      "ms": 139,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John water Genesis creation new creation",
+        "sourceId": "spoken-gospel",
+        "limit": 15
+      },
+      "ms": 163,
+      "summary": "15 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John 20 new creation Genesis",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 104,
+      "summary": "15 hits"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "fromSec": 300,
+        "toSec": 620
+      },
+      "ms": 0,
+      "summary": "300s–480s of John 1: In the Beginning Was the Word"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "fromSec": 1740,
+        "toSec": 1960
+      },
+      "ms": 0,
+      "summary": "1740s–1920s of John 1: In the Beginning Was the Word"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "fromSec": 2290,
+        "toSec": 2530
+      },
+      "ms": 0,
+      "summary": "2290s–2470s of John 1: In the Beginning Was the Word"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:beginning",
+        "fromSec": 1190,
+        "toSec": 1450
+      },
+      "ms": 6,
+      "summary": "1190s–1370s of In the Beginning – John 1"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:beginning",
+        "fromSec": 2720,
+        "toSec": 3010
+      },
+      "ms": 0,
+      "summary": "2720s–2900s of In the Beginning – John 1"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:3c0fc244-3dc3-11f1-ab33-5f07c6c92de3",
+        "fromSec": 3030,
+        "toSec": 3350
+      },
+      "ms": 7,
+      "summary": "3030s–3210s of Gospel of John Overview: A Unique Eyewitness"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "fromSec": 470,
+        "toSec": 800
+      },
+      "ms": 2,
+      "summary": "470s–650s of John 20:1-31"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:f345efc2-5463-11f1-973c-33c8ab1ad718",
+        "fromSec": 1900,
+        "toSec": 2180
+      },
+      "ms": 7,
+      "summary": "1900s–2080s of John Overview: Water in the Old Testament"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:db54663c-6a8e-11f1-8d65-4723e9decce5",
+        "fromSec": 2520,
+        "toSec": 2840
+      },
+      "ms": 0,
+      "summary": "2520s–2700s of John Overview: Living Water"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571"
+      },
+      "ms": 2,
+      "summary": "John 1: In the Beginning Was the Word (3919s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:beginning"
+      },
+      "ms": 1,
+      "summary": "In the Beginning – John 1 (3671s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:3c0fc244-3dc3-11f1-ab33-5f07c6c92de3"
+      },
+      "ms": 0,
+      "summary": "Gospel of John Overview: A Unique Eyewitness (3787s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9"
+      },
+      "ms": 2,
+      "summary": "John 20:1-31 (1726s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:f345efc2-5463-11f1-973c-33c8ab1ad718"
+      },
+      "ms": 0,
+      "summary": "John Overview: Water in the Old Testament (4850s)"
+    },
+    {
+      "at": 3,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:db54663c-6a8e-11f1-8d65-4723e9decce5"
+      },
+      "ms": 1,
+      "summary": "John Overview: Living Water (4717s)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "fromSec": 480,
+        "toSec": 680
+      },
+      "ms": 0,
+      "summary": "480s–660s of John 1: In the Beginning Was the Word"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:beginning",
+        "fromSec": 1370,
+        "toSec": 1550
+      },
+      "ms": 0,
+      "summary": "1370s–1550s of In the Beginning – John 1"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:beginning",
+        "fromSec": 1650,
+        "toSec": 1850
+      },
+      "ms": 0,
+      "summary": "1650s–1830s of In the Beginning – John 1"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:beginning",
+        "fromSec": 2890,
+        "toSec": 3180
+      },
+      "ms": 0,
+      "summary": "2890s–3070s of In the Beginning – John 1"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:3c0fc244-3dc3-11f1-ab33-5f07c6c92de3",
+        "fromSec": 2840,
+        "toSec": 3045
+      },
+      "ms": 0,
+      "summary": "2840s–3020s of Gospel of John Overview: A Unique Eyewitness"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "fromSec": 780,
+        "toSec": 960
+      },
+      "ms": 0,
+      "summary": "780s–960s of John 20:1-31"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "fromSec": 960,
+        "toSec": 1160
+      },
+      "ms": 0,
+      "summary": "960s–1140s of John 20:1-31"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:db54663c-6a8e-11f1-8d65-4723e9decce5",
+        "fromSec": 2240,
+        "toSec": 2440
+      },
+      "ms": 0,
+      "summary": "2240s–2420s of John Overview: Living Water"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "fromSec": 330,
+        "toSec": 510
+      },
+      "ms": 0,
+      "summary": "330s–510s of John 1: In the Beginning Was the Word"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "fromSec": 510,
+        "toSec": 690
+      },
+      "ms": 0,
+      "summary": "510s–690s of John 1: In the Beginning Was the Word"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:beginning",
+        "fromSec": 1230,
+        "toSec": 1410
+      },
+      "ms": 0,
+      "summary": "1230s–1410s of In the Beginning – John 1"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:beginning",
+        "fromSec": 1410,
+        "toSec": 1590
+      },
+      "ms": 0,
+      "summary": "1410s–1590s of In the Beginning – John 1"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:3c0fc244-3dc3-11f1-ab33-5f07c6c92de3",
+        "fromSec": 3020,
+        "toSec": 3200
+      },
+      "ms": 0,
+      "summary": "3020s–3200s of Gospel of John Overview: A Unique Eyewitness"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 7,
+    "toolCalls": 49,
+    "promptTokens": 262029,
+    "completionTokens": 15469,
+    "reasoningTokens": 12461,
+    "cachedPromptTokens": 194213,
+    "wallMs": 135835,
+    "modelLatencyMs": 134017,
+    "toolMs": 1718
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.0197,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "PLACEHOLDER — guessed from the GPT-5 flagship tier. When this model runs through an OpenRouter-style endpoint the provider's own reported cost supersedes this table anyway."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T20:30:50.213Z"
+}

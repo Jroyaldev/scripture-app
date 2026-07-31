@@ -1,0 +1,643 @@
+{
+  "runId": "2026-07-31T20-45-12-522-deepseek-v4-flash",
+  "startedAt": "2026-07-31T20:45:12.522Z",
+  "promptId": null,
+  "prompt": "what does john mean by new creation; or genesis allusions?",
+  "model": {
+    "key": "deepseek-v4-flash",
+    "label": "DeepSeek V4 Flash",
+    "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolvedSlug": "deepseek/deepseek-v4-flash-0731",
+    "resolution": {
+      "slug": "deepseek/deepseek-v4-flash-0731",
+      "requested": "deepseek/deepseek-v4-flash-0731",
+      "configured": "deepseek/deepseek-v4-flash-0731",
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "deepseek/deepseek-v4-flash-0731",
+        "deepseek-v4-flash-0731"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "DEEPSEEK_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "John's New Creation: The Genesis Allusions of the Gospel of John",
+    "intro": "You asked what John means by \"new creation\" — and where his Genesis allusions are. This tour walks the Gospel of John from its first word to its empty tomb, showing how John deliberately rewrites Genesis 1 and 2: the Word in the beginning, light in the darkness, being born of water and Spirit, a wedding, a garden, a new tomb, and a risen Jesus who breathes on his friends. By the end you'll see the whole gospel as one long creation story — with its seventh day still to come.",
+    "steps": [
+      {
+        "recordId": "forty-minutes-ot:podcast:807d2da752ed662a0b6413e24f92a20b",
+        "startSec": 2085,
+        "endSec": 2170,
+        "why": "A foundation for the whole question: this Old Testament teacher insists that in the Bible redemption is God recreating, God is fixing creation — creation and redemption are one project, not two. Then he lands the key claim about John 1: by using light and darkness and in the beginning and the word, John is saying Christ brings not only a fix but a better creation, the church fathers' we gain more in Christ than we lost in Adam, because the Word became flesh and bound our existence to his own.",
+        "episodeTitle": "40 Minutes in the Old Testament: Episode 1",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_OT_EP_1.mp3?dest-id=245197",
+        "durationSec": 2527,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:beginning",
+        "startSec": 1280,
+        "endSec": 1470,
+        "why": "The sharpest structural argument on the table: John doesn't just borrow Genesis 1's language — he's literally imitated the design, six poetic strophes matching six days of creation. The prologue's closing line is deliberately left unfinished, in the slot where Genesis puts the seventh day, so the story demands a completion. Then the payoff: on the cross Jesus says it is finished with the same Greek root as Genesis' sixth day, and his death and then the empty tomb is the seventh day, the bookend of new creation made complete.",
+        "episodeTitle": "In the Beginning – John 1",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/8f0c5975-65cf-4a02-baf0-786ba6649656/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=8f0c5975-65cf-4a02-baf0-786ba6649656",
+        "durationSec": 3671,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:f6b3cfaf-com-52824f93-6d49-3ca5-bad0-062cdfa5891e",
+        "startSec": 560,
+        "endSec": 720,
+        "why": "How a person enters the new creation: a verse-by-verse reading of John 3 that unpacks the double meaning of born again / born from above, and shows that Jesus' clarification — born of water and the Spirit — is one birth that entails both water and spirit, a complete remaking of the person, not a second edition of the same life. This is John's own language for new creation applied to the individual, with Ezekiel 36 as the promised background.",
+        "episodeTitle": "John 3:1-21",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/5vyyhviyp33sp9pa/john_31-2169wty.mp3",
+        "durationSec": 2072,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:a44083ce-5463-11f1-b34d-b790002d90a8",
+        "startSec": 2560,
+        "endSec": 2705,
+        "why": "The first sign at Cana read as a Genesis echo: the water jars of purification become the finest wine, and the hosts of this conversation say outright that water into wine is a new creation moment, the sign that the groom is here and the messianic banquet has begun — Joel's mountains dripping new wine arriving in John 2. It shows how John's signs work: each one is a small act of re-creation pointing to Jesus is Yahweh in the flesh. Note: one jar-shy of seven, since John does sevens.",
+        "episodeTitle": "John Overview: What is a Sign?",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG2350846777.mp3",
+        "durationSec": 5342,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:8a1e8a3f-com-9f669b61-e723-3ed0-a57d-5df9d9cba98d",
+        "startSec": 1180,
+        "endSec": 1300,
+        "why": "John's burial scene in his own words, with the details that matter: in the place where he was crucified, there was a garden... and in the garden was a new tomb in which no one had yet been laid. A garden, a new tomb, no corpse yet inside — John is not telling us this for archaeology. This teacher narrates the burial plainly, letting the Genesis-shaped details sit there before the resurrection scene that will activate them.",
+        "episodeTitle": "John 19:17-42",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/b998rbk6gvbtkkq8/john_1917-428vwd2.mp3",
+        "durationSec": 1383,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:e1d1cb1c-1ba2-11f0-9e6a-730b0b3fac80",
+        "startSec": 614,
+        "endSec": 720,
+        "why": "The hinge of the whole tour, from NT Wright: John's first day of the week, repeated twice in chapter 20, means this is the beginning of God's new creation. This is the eighth day of creation, if you like. This is when everything is coming out new. He then connects the risen Jesus breathing on his disciples to God breathing into human nostrils the breath of life in Genesis 2, and reads as the Father sent me, so I send you as the church's commission to be for the world what Jesus was for Israel.",
+        "episodeTitle": "BONUS Subscriber only Easter Show: What does Easter mean for the mission of the Church today? Tom Wright and Mike Bird",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR4249819305.mp3?updated=1749648274",
+        "durationSec": 1578,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:c383141e-bde8-11ed-acd3-679be11d90c3",
+        "startSec": 740,
+        "endSec": 920,
+        "why": "The tour lands here: what new creation means for the people who follow the risen Jesus. The commission from the Garden of Eden finally coming back — Adam and Eve were told to be fruitful and multiply, and now that commission resumes as the nations are invited into a new family. Because Jesus lives in his people, the Garden of Eden travels with them, and wherever disciples are made, new gardens are being constructed. It closes with the promise that this story ends in a final resurrection day when all the dead are raised to live in the King's kingdom.",
+        "episodeTitle": "Holy Week Special: Resurrection Sunday",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG9239573207.mp3?updated=1681492812",
+        "durationSec": 1274,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "What John means by new creation is not a slogan — it's a story he retells. He opens with Genesis 1 so that everything after it — water into wine, being born of the Spirit, a crucifixion in a garden, a new tomb, a first day of the week, a breath on his friends — reads as the first creation being remade. Genesis gave the world its seventh day; John's gospel holds it open, unfinished, until the risen Jesus appears and the garden begins to grow again, this time wherever his people go. Listen in that order, and you'll hear the whole gospel the way John wrote it: as the beginning of a better creation.",
+    "totalSeconds": 986
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 5723,
+      "promptTokens": 1751,
+      "completionTokens": 462,
+      "reasoningTokens": 319,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0001461992
+    },
+    {
+      "i": 1,
+      "latencyMs": 8397,
+      "promptTokens": 7079,
+      "completionTokens": 646,
+      "reasoningTokens": 469,
+      "cachedPromptTokens": 1664,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009436392
+    },
+    {
+      "i": 2,
+      "latencyMs": 18986,
+      "promptTokens": 13812,
+      "completionTokens": 1783,
+      "reasoningTokens": 1330,
+      "cachedPromptTokens": 7040,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001467032
+    },
+    {
+      "i": 3,
+      "latencyMs": 10886,
+      "promptTokens": 18693,
+      "completionTokens": 1114,
+      "reasoningTokens": 723,
+      "cachedPromptTokens": 13696,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010498488
+    },
+    {
+      "i": 4,
+      "latencyMs": 6226,
+      "promptTokens": 22789,
+      "completionTokens": 516,
+      "reasoningTokens": 273,
+      "cachedPromptTokens": 18688,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007709464
+    },
+    {
+      "i": 5,
+      "latencyMs": 5337,
+      "promptTokens": 26966,
+      "completionTokens": 405,
+      "reasoningTokens": 166,
+      "cachedPromptTokens": 22784,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007626752
+    },
+    {
+      "i": 6,
+      "latencyMs": 9828,
+      "promptTokens": 31842,
+      "completionTokens": 876,
+      "reasoningTokens": 557,
+      "cachedPromptTokens": 26880,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001015224
+    },
+    {
+      "i": 7,
+      "latencyMs": 8363,
+      "promptTokens": 34470,
+      "completionTokens": 713,
+      "reasoningTokens": 430,
+      "cachedPromptTokens": 31744,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0006701632
+    },
+    {
+      "i": 8,
+      "latencyMs": 25316,
+      "promptTokens": 36726,
+      "completionTokens": 2180,
+      "reasoningTokens": 1932,
+      "cachedPromptTokens": 34432,
+      "toolCalls": 2,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010279696
+    },
+    {
+      "i": 9,
+      "latencyMs": 55854,
+      "promptTokens": 38454,
+      "completionTokens": 4577,
+      "reasoningTokens": 4459,
+      "cachedPromptTokens": 36608,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0016425024
+    },
+    {
+      "i": 10,
+      "latencyMs": 39760,
+      "promptTokens": 38999,
+      "completionTokens": 3412,
+      "reasoningTokens": 1901,
+      "cachedPromptTokens": 38400,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00114674
+    },
+    {
+      "i": 11,
+      "latencyMs": 10476,
+      "promptTokens": 40566,
+      "completionTokens": 1515,
+      "reasoningTokens": 41,
+      "cachedPromptTokens": 38912,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007647136
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "new creation John Genesis allusions"
+      },
+      "ms": 93,
+      "summary": "8 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "John's prologue in the beginning Genesis"
+      },
+      "ms": 51,
+      "summary": "8 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Mary Magdalene gardener Jesus resurrection garden"
+      },
+      "ms": 29,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "he breathed on them Holy Spirit John 20 Genesis 2 Adam"
+      },
+      "ms": 101,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "born from above born again Nicodemus new creation"
+      },
+      "ms": 58,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "six stone water jars Cana wedding purification"
+      },
+      "ms": 63,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "first day of the week resurrection new creation"
+      },
+      "ms": 37,
+      "summary": "8 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:807d2da752ed662a0b6413e24f92a20b",
+        "fromSec": 2030,
+        "toSec": 2210
+      },
+      "ms": 7,
+      "summary": "2030s–2210s of 40 Minutes in the Old Testament: Episode 1"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:beginning",
+        "fromSec": 1280,
+        "toSec": 1460
+      },
+      "ms": 5,
+      "summary": "1280s–1460s of In the Beginning – John 1"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "fromSec": 300,
+        "toSec": 480
+      },
+      "ms": 5,
+      "summary": "300s–480s of John 1: In the Beginning Was the Word"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "fromSec": 990,
+        "toSec": 1170
+      },
+      "ms": 4,
+      "summary": "990s–1170s of John 20:1-31"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "garden tomb Jesus buried garden Rabboni"
+      },
+      "ms": 38,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "search_corpus",
+      "args": {
+        "query": "gardener mistook Jesus for gardener Eden"
+      },
+      "ms": 101,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8a1e8a3f-com-9f669b61-e723-3ed0-a57d-5df9d9cba98d",
+        "fromSec": 1180,
+        "toSec": 1360
+      },
+      "ms": 0,
+      "summary": "1180s–1360s of John 19:17-42"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "fromSec": 0,
+        "toSec": 180
+      },
+      "ms": 0,
+      "summary": "0s–180s of John 20:1-31"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:db54663c-6a8e-11f1-8d65-4723e9decce5",
+        "fromSec": 780,
+        "toSec": 960
+      },
+      "ms": 2,
+      "summary": "780s–960s of John Overview: Living Water"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 600,
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "toSec": 990
+      },
+      "ms": 0,
+      "summary": "600s–780s of John 20:1-31"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "John 20 Mary sees Jesus gardener do not cling to me"
+      },
+      "ms": 54,
+      "summary": "8 hits"
+    },
+    {
+      "at": 4,
+      "name": "search_corpus",
+      "args": {
+        "query": "Spoken Gospel John 20 resurrection"
+      },
+      "ms": 69,
+      "summary": "8 hits"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 240,
+        "recordId": "ask-nt-wright:podcast:5b3e2826-4d1f-11f0-869e-63a5b6840ce4",
+        "toSec": 420
+      },
+      "ms": 5,
+      "summary": "240s–420s of Is God male? NT Wright on gender and divinity"
+    },
+    {
+      "at": 5,
+      "name": "search_corpus",
+      "args": {
+        "query": "new tomb garden no one had been laid Eden new Adam"
+      },
+      "ms": 101,
+      "summary": "8 hits"
+    },
+    {
+      "at": 5,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "JHN",
+        "chapter": 20
+      },
+      "ms": 0,
+      "summary": "25 of 102 moments"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 560,
+        "recordId": "spoken-gospel:podcast:c383141e-bde8-11ed-acd3-679be11d90c3",
+        "toSec": 1100
+      },
+      "ms": 0,
+      "summary": "560s–740s of Holy Week Special: Resurrection Sunday"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 560,
+        "recordId": "listeners-commentary:podcast:f6b3cfaf-com-52824f93-6d49-3ca5-bad0-062cdfa5891e",
+        "toSec": 740
+      },
+      "ms": 5,
+      "summary": "560s–740s of John 3:1-21"
+    },
+    {
+      "at": 6,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 3340,
+        "recordId": "bibleproject:podcast:jesus-cursed-tree",
+        "toSec": 3520
+      },
+      "ms": 0,
+      "summary": "3340s–3520s of Jesus on the Cursed Tree"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 740,
+        "recordId": "spoken-gospel:podcast:c383141e-bde8-11ed-acd3-679be11d90c3",
+        "toSec": 920
+      },
+      "ms": 0,
+      "summary": "740s–920s of Holy Week Special: Resurrection Sunday"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 3520,
+        "recordId": "bibleproject:podcast:jesus-cursed-tree",
+        "toSec": 3700
+      },
+      "ms": 0,
+      "summary": "3520s–3700s of Jesus on the Cursed Tree"
+    },
+    {
+      "at": 7,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 600,
+        "recordId": "spoken-gospel:podcast:db54663c-6a8e-11f1-8d65-4723e9decce5",
+        "toSec": 780
+      },
+      "ms": 0,
+      "summary": "600s–780s of John Overview: Living Water"
+    },
+    {
+      "at": 8,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 2560,
+        "recordId": "spoken-gospel:podcast:a44083ce-5463-11f1-b34d-b790002d90a8",
+        "toSec": 2740
+      },
+      "ms": 0,
+      "summary": "2560s–2740s of John Overview: What is a Sign?"
+    },
+    {
+      "at": 8,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 590,
+        "recordId": "ask-nt-wright:podcast:e1d1cb1c-1ba2-11f0-9e6a-730b0b3fac80",
+        "toSec": 770
+      },
+      "ms": 4,
+      "summary": "590s–770s of BONUS Subscriber only Easter Show: What does Easter mean for the mission of the Church today? Tom Wright and Mike Bird"
+    },
+    {
+      "at": 9,
+      "name": "transcript_window",
+      "args": {
+        "fromSec": 920,
+        "recordId": "spoken-gospel:podcast:c383141e-bde8-11ed-acd3-679be11d90c3",
+        "toSec": 1010
+      },
+      "ms": 0,
+      "summary": "920s–1010s of Holy Week Special: Resurrection Sunday"
+    }
+  ],
+  "rejections": [
+    {
+      "at": 10,
+      "errors": [
+        "title: required non-empty string",
+        "intro: required, at least 40 characters",
+        "closing: required, at least 30 characters",
+        "steps: required array"
+      ],
+      "submitted": {}
+    }
+  ],
+  "totals": {
+    "modelCalls": 12,
+    "toolCalls": 34,
+    "promptTokens": 312147,
+    "completionTokens": 18199,
+    "reasoningTokens": 12600,
+    "cachedPromptTokens": 272512,
+    "wallMs": 206086,
+    "modelLatencyMs": 205152,
+    "toolMs": 834
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.011408,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "deepseek/deepseek-v4-flash-0731",
+      "inputPerMTokensUsd": 0.28,
+      "outputPerMTokensUsd": 0.42,
+      "cachedInputPerMTokensUsd": 0.028,
+      "_note": "PLACEHOLDER — carried over from the DeepSeek V3-era flash tier. Verify at https://api-docs.deepseek.com/quick_start/pricing before quoting any of these numbers."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T20:48:38.608Z"
+}
