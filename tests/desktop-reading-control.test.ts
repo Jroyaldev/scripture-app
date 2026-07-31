@@ -7,7 +7,10 @@ import {
   compareConnectionsCanonical,
   canonicalConnectionAnchors,
 } from "../src/core/annotations/connection-order.js";
-import { selectionProjectionRoundTrips } from "../src/core/annotations/occurrence-alignment.js";
+import {
+  selectionProjectionRoundTrips,
+  selectionSettlesIntoProjection,
+} from "../src/core/annotations/occurrence-alignment.js";
 import { connectionDraftExitActions } from "../src/renderer/utils/connectionDraftLifecycle.js";
 import {
   closeStudyWorkspaceGroup,
@@ -65,12 +68,38 @@ function connection(
   };
 }
 
-test("active-package connection capture refuses lexical widening", () => {
+/**
+ * RESTATED 2026-07-31 by the Old Testament connection fix.
+ *
+ * This test was titled "active-package connection capture refuses lexical
+ * widening" and its first assertion existed to prove that marking "Holy
+ * Spirit" where the canonical unit renders "the Holy Spirit" was REFUSED at
+ * authoring. That claim is withdrawn. `backbone-token:v1` is the
+ * original-language word layer, so widening is what Hebrew does to English by
+ * nature: under the old rule 80-90% of single-word marks in Genesis,
+ * Deuteronomy, the Psalms and Isaiah were refused in every installed
+ * translation, and the reader could not author a connection in the Old
+ * Testament at all.
+ *
+ * `selectionProjectionRoundTrips` is UNCHANGED and still reports widening as
+ * inexact — that fact is true and worth naming. What changed is that
+ * authoring now admits a settling reprojection (`selectionSettlesIntoProjection`)
+ * and refuses only a reprojection that loses or reorders the reader's words.
+ */
+test("authoring settles a widening reprojection and still refuses a lossy one", () => {
   assert.equal(selectionProjectionRoundTrips(
     [{ verse: 2, char_start: 37, quote: "Holy Spirit" }],
     [{ verse: 2, char_start: 33, quote: "the Holy Spirit" }],
   ), false);
+  assert.equal(selectionSettlesIntoProjection(
+    [{ verse: 2, char_start: 37, quote: "Holy Spirit" }],
+    [{ verse: 2, char_start: 33, quote: "the Holy Spirit" }],
+  ), true);
   assert.equal(selectionProjectionRoundTrips(
+    [{ verse: 3, char_start: 55, quote: "baptism" }],
+    [{ verse: 3, char_start: 55, quote: "baptism" }],
+  ), true);
+  assert.equal(selectionSettlesIntoProjection(
     [{ verse: 3, char_start: 55, quote: "baptism" }],
     [{ verse: 3, char_start: 55, quote: "baptism" }],
   ), true);
@@ -78,6 +107,21 @@ test("active-package connection capture refuses lexical widening", () => {
     [{ verse: 6, char_start: 42, quote: "Holy Spirit" }],
     [{ verse: 6, char_start: 42, quote: "Holy Spirit" }],
   ), true);
+  // A reprojection that drops a marked word is still an artifact defect.
+  assert.equal(selectionSettlesIntoProjection(
+    [{ verse: 2, char_start: 33, quote: "the Holy Spirit" }],
+    [{ verse: 2, char_start: 37, quote: "Holy Spirit" }],
+  ), false);
+  // So is one that reorders them.
+  assert.equal(selectionSettlesIntoProjection(
+    [{ verse: 2, char_start: 33, quote: "Holy Spirit" }],
+    [{ verse: 2, char_start: 33, quote: "Spirit Holy" }],
+  ), false);
+  // An empty mark can never settle into anything.
+  assert.equal(selectionSettlesIntoProjection(
+    [{ verse: 2, char_start: 33, quote: "," }],
+    [{ verse: 2, char_start: 33, quote: "the Holy Spirit" }],
+  ), false);
 });
 
 test("passage connections and their anchors ignore creation and authoring order", () => {

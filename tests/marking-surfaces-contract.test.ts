@@ -839,7 +839,17 @@ test("connection authoring holds exact phrases without creating a route or durab
   assert.match(draftType, /kind: ConnectionKind;[\s\S]*anchors: readonly ConnectionPaintAnchor\[\];[\s\S]*label: string;/);
   assert.doesNotMatch(draftType, /\bid\b|format_version/);
   assert.match(marking, /const connectionDraft = useMemo<ConnectionDraftModel \| null>[\s\S]*const anchors = session\.paintAnchors/);
-  assert.match(marking, /paintAnchors: \[\.\.\.base\.paintAnchors, \.\.\.current\.paintAnchors\]/);
+  // RESTATED 2026-07-31 by the Old Testament connection fix. This line read
+  // `assert.match(marking, /paintAnchors: \[\.\.\.base\.paintAnchors, \.\.\.current\.paintAnchors\]/)`
+  // — the in-flight draft always painted the reader's raw drag. It now paints
+  // what the ANCHOR holds: when the canonical unit settles wider than the drag
+  // (one Hebrew word rendering as "In the beginning"), the settled fragments
+  // are the honest paint and the raw drag would be a lie. The claim the
+  // contract still enforces is unchanged in substance — the draft paints
+  // package-local fragments accumulated onto the session, never a durable
+  // record.
+  assert.match(marking, /const heldPaintAnchors = current\.capture\.settledPaintAnchors \?\? current\.paintAnchors/);
+  assert.match(marking, /paintAnchors: \[\.\.\.base\.paintAnchors, \.\.\.heldPaintAnchors\]/);
   assert.match(marking, /onConnectionDraftChange\(connectionDraft\)/);
   assert.match(page, /const \[connectionDraft, setConnectionDraft\] = useState<ConnectionDraftModel \| null>\(null\)/);
   assert.match(page, /draftConnection=\{connectionDraft\?\.contextKey === `\$\{sessionOwnerTabId\}:\$\{book\}:\$\{chapter\}:\$\{packageId\}` \? connectionDraft : null\}/);

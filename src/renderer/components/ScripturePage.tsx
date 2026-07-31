@@ -3701,10 +3701,33 @@ export function ScripturePage({
         });
         return;
       }
+      // A settled capture means the canonical unit is wider than the words the
+      // reader dragged over (a Hebrew word carrying its article, say). Carry
+      // the settled fragments so the surface can hold and show exactly what
+      // the anchor holds instead of the raw drag. Render evidence only — it is
+      // never persisted with the anchor.
+      const settled = result.value.settled ?? null;
+      const settledPaintAnchors: ConnectionPaintAnchor[] = [];
+      for (const fragment of settled ?? []) {
+        settledPaintAnchors.push({
+          book: result.value.anchor.book,
+          chapter: result.value.anchor.chapter,
+          verse_start: fragment.verse,
+          verse_end: fragment.verse,
+          fragments: [{
+            verse: fragment.verse,
+            char_start: fragment.char_start,
+            char_end: fragment.char_end,
+            quote: fragment.quote,
+          }],
+        });
+      }
       setSelectionCapture({
         nonce,
         contextKey,
-        capture: { status: "exact", anchor: result.value.anchor },
+        capture: settledPaintAnchors.length > 0
+          ? { status: "exact", anchor: result.value.anchor, settledPaintAnchors }
+          : { status: "exact", anchor: result.value.anchor },
       });
     });
     return () => {

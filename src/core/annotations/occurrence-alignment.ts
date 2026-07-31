@@ -302,6 +302,14 @@ export type CaptureOccurrenceSelectionResult =
       readonly ok: true;
       readonly status: "exact";
       readonly anchor: BackboneTokenAnchor;
+      /**
+       * Package-local render evidence for the words this anchor actually
+       * holds, so the reader is shown the settled phrase before authoring.
+       * It is transport-only: it never enters the durable anchor, never
+       * reaches an event payload, and no persisted key changes because of it
+       * (ANCHOR_KEYS stays closed — see retired-anchor-fields.ts).
+       */
+      readonly settled?: readonly OccurrenceProjectionFragment[];
     }
   | {
       readonly ok: false;
@@ -493,6 +501,59 @@ export function selectionProjectionRoundTrips(
     .flatMap((piece) => lexicalWordsForRoundTrip(piece.quote));
   return selectedWords.length === projectedWords.length
     && selectedWords.every((word, index) => word === projectedWords[index]);
+}
+
+/**
+ * Authoring admission rule (2026-07-31 — the Old Testament connection fix).
+ *
+ * RESTATES the equality rule above, which authoring used until today. That
+ * rule said: a selection is admissible only if reprojecting its anchor
+ * reproduces the selected words EXACTLY. Under it the Old Testament was
+ * effectively unauthorable — `backbone-token:v1` is the ORIGINAL-LANGUAGE
+ * word layer (Hebrew for the OT, Greek for the NT; see
+ * data/scripture/backbone-token-v1.jsonl), and a Hebrew word carries its
+ * prepositions, articles, conjunctions and pronominal suffixes inside itself.
+ * The publisher tables agree: BSB's own alignment row for GEN 1:1 is
+ * `{"word":"In the beginning","strongs":["H7225"]}` — three English words,
+ * one canonical token. So almost every single English word an OT reader
+ * marked reprojected wider than itself and was refused. Measured live on this
+ * branch before the fix: single-word admission was 9-21% across BSB/WEB/KJV/
+ * YLT in GEN 1, DEU 32, PSA 23 and ISA 53, against 37-65% in JHN 1 and ROM 8.
+ *
+ * The new rule keeps the same durable identity and the same precision bar and
+ * only changes what counts as admissible: the reprojection must CONTAIN every
+ * selected word, in order. A wider reprojection is the canonical unit settling
+ * around the reader's words, and the host returns those settled words so the
+ * surface can show exactly what will be held. A reprojection that DROPS or
+ * REORDERS a selected word is still a defect and is still refused — that is
+ * the artifact promise this predicate exists to police.
+ *
+ * This is containment of whole lexical words, never substring or phrase
+ * matching: lab-era `indexOf` phrase anchoring is what broke selection in the
+ * first place and the backbone-token contract exists to keep it impossible.
+ */
+export function selectionSettlesIntoProjection(
+  selections: readonly Pick<OccurrenceSelectionPiece, "verse" | "char_start" | "quote">[],
+  projection: readonly Pick<OccurrenceProjectionFragment, "verse" | "char_start" | "quote">[],
+): boolean {
+  const comparePiece = (
+    left: { verse: number; char_start: number },
+    right: { verse: number; char_start: number },
+  ): number => left.verse - right.verse || left.char_start - right.char_start;
+  const selectedWords = [...selections]
+    .sort(comparePiece)
+    .flatMap((piece) => lexicalWordsForRoundTrip(piece.quote));
+  const projectedWords = [...projection]
+    .sort(comparePiece)
+    .flatMap((piece) => lexicalWordsForRoundTrip(piece.quote));
+  if (selectedWords.length === 0) return false;
+  let cursor = 0;
+  for (const word of selectedWords) {
+    while (cursor < projectedWords.length && projectedWords[cursor] !== word) cursor++;
+    if (cursor >= projectedWords.length) return false;
+    cursor++;
+  }
+  return true;
 }
 
 export type ProjectBackboneTokenAnchorRequest = {

@@ -27,7 +27,20 @@ type ConnectionPassageAnchor = Pick<
 
 export type MarkingSelectionCapture =
   | { status: "pending" }
-  | { status: "exact"; anchor: ConnectionAnchorV2 }
+  | {
+      status: "exact";
+      anchor: ConnectionAnchorV2;
+      /**
+       * Present only when the canonical unit settled wider than the raw drag
+       * (2026-07-31, the Old Testament connection fix): one Hebrew word
+       * renders as "In the beginning", so marking any one of those three
+       * English words holds all three. These are the words the anchor
+       * actually holds, and the in-flight connection shows them so the reader
+       * is never told one thing and given another. Render evidence only —
+       * nothing here is persisted with the anchor.
+       */
+      settledPaintAnchors?: readonly ConnectionPaintAnchor[];
+    }
   | { status: "refused"; message: string };
 
 export interface MarkingSelectionModel {
@@ -1445,10 +1458,13 @@ export function MarkingSurface({
       onClearSelection(current.nonce);
       return true;
     }
+    // Hold exactly what the anchor holds. When the canonical unit settled
+    // wider than the drag, the settled fragments are the honest paint.
+    const heldPaintAnchors = current.capture.settledPaintAnchors ?? current.paintAnchors;
     const next: ConnectionSession = {
       ...base,
       anchors: [...base.anchors, current.capture.anchor],
-      paintAnchors: [...base.paintAnchors, ...current.paintAnchors],
+      paintAnchors: [...base.paintAnchors, ...heldPaintAnchors],
       labels: [...base.labels, current.rangeLabel],
       feedback: undefined,
       notice: undefined,
@@ -1456,9 +1472,17 @@ export function MarkingSurface({
     setSession(next);
     setTray(null);
     setTool({ type: "connect", kind });
+    const settledQuote = current.capture.settledPaintAnchors
+      ? current.capture.settledPaintAnchors
+        .flatMap((anchor) => anchor.fragments.map((fragment) => fragment.quote))
+        .join(" ")
+        .replace(/\s+/g, " ")
+        .trim()
+      : "";
+    const heldPrefix = settledQuote ? `Held “${settledQuote}” · ` : "";
     setStatus(next.anchors.length === 1
-      ? "1 phrase · Select another phrase to connect."
-      : `${next.anchors.length} phrases · Name the relationship, then save.`);
+      ? `${heldPrefix}1 phrase · Select another phrase to connect.`
+      : `${heldPrefix}${next.anchors.length} phrases · Name the relationship, then save.`);
     onClearSelection(current.nonce);
     onRequestReadingFocus([current.capture.anchor], current.nonce);
     // A binary relation completes itself the moment its counterpart lands —

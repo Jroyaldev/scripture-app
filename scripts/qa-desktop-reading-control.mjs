@@ -263,17 +263,45 @@ try {
         const end = second?.index == null ? first.index + first[0].length : second.index + second[0].length;
         const spec = { verse, quote: verseText.slice(first.index, end) };
         const result = await capture(spec);
-        if (result.ok && result.status === "exact") return { spec, anchor: result.anchor };
+        /* 2026-07-31: requiring no settled span pins this fixture to one whose
+         * reprojection is word-for-word identical to the drag. Since the Old
+         * Testament connection fix, a settling span is also admitted, and
+         * taking the first admitted pair moved this tour's anchors onto a
+         * geometry the planner honestly reports as needs-space — which would
+         * have this gate assert a route where none is claimed. The gate is
+         * about canonical order and attention, not about which words carry
+         * them, so it keeps the words it has always used. */
+        if (result.ok && result.status === "exact" && !result.settled) {
+          return { spec, anchor: result.anchor };
+        }
       }
       throw new Error("No exact phrase found in Acts 19:" + verse);
     };
 
+    /* RESTATED 2026-07-31 by the Old Testament connection fix. This block used
+     * to read:
+     *
+     *   if (wideningResult.ok || wideningResult.error?.code !== "selection-round-trip-mismatch") {
+     *     throw new Error("Known widening was not refused: " + ...);
+     *   }
+     *
+     * i.e. it proved that marking "Holy Spirit" where the canonical unit
+     * renders "the Holy Spirit" was REFUSED. That refusal made the Old
+     * Testament unauthorable — backbone-token:v1 is the original-language word
+     * layer and a Hebrew word carries its article and preposition inside
+     * itself. Authoring now SETTLES onto the canonical unit and reports the
+     * settled words. What this gate still proves is the half that matters:
+     * a capture is a read and writes no event, whether it settles or not. */
     const widening = { verse: 2, quote: "Holy Spirit" };
     const beforeWidening = await window.api.library.queryRange("ACT", 19, 1, "ACT", 19, 28);
     const wideningResult = await capture(widening);
     const afterWidening = await window.api.library.queryRange("ACT", 19, 1, "ACT", 19, 28);
-    if (wideningResult.ok || wideningResult.error?.code !== "selection-round-trip-mismatch") {
-      throw new Error("Known widening was not refused: " + JSON.stringify(wideningResult));
+    if (!wideningResult.ok || wideningResult.status !== "exact") {
+      throw new Error("Known widening did not settle: " + JSON.stringify(wideningResult));
+    }
+    const settledQuote = (wideningResult.settled ?? []).map((piece) => piece.quote).join(" ");
+    if (!settledQuote.includes("Holy Spirit") || settledQuote === "Holy Spirit") {
+      throw new Error("Settled words were not reported for a widening capture: " + JSON.stringify(wideningResult));
     }
     if (afterWidening.connections.length !== beforeWidening.connections.length) {
       throw new Error("Widening capture wrote an event");
@@ -825,14 +853,20 @@ try {
   await driver.waitFor(`!document.querySelector('.connection-card')?.getAttribute("data-pending-mutation")`);
   assert.deepEqual(readFileSync(connectionEventLogPath), connectionEventLogBytes);
 
-  await selectPhrase(driver, fixture.widening, "refused");
-  await driver.evaluate(`document.querySelector('[data-marking-surface="palette"] [data-relationship-kind="series"]')?.click()`);
-  await sleep(500);
-  if (!await driver.evaluate(`document.body.textContent?.includes("This translation cannot preserve those exact words yet")`)) {
-    await driver.evaluate(`document.querySelector('[data-marking-surface="palette"] [data-relationship-kind="series"]')?.click()`);
-  }
-  await driver.waitFor(`document.body.textContent?.includes("This translation cannot preserve those exact words yet")`);
-  assert.equal(await driver.evaluate(`Boolean(document.querySelector(".marking-session"))`), false);
+  /* RESTATED 2026-07-31 by the Old Testament connection fix. This block read:
+   *
+   *   await selectPhrase(driver, fixture.widening, "refused");
+   *   ... waitFor body text "This translation cannot preserve those exact words yet"
+   *   assert.equal(... Boolean(document.querySelector(".marking-session")), false);
+   *
+   * i.e. it proved that a phrase whose canonical unit renders wider was
+   * refused at the palette and opened no session. That sentence is gone from
+   * the app and the claim with it: the same refusal made the whole Old
+   * Testament unauthorable, because backbone-token:v1 is the
+   * original-language word layer. Marking such a phrase now SETTLES onto the
+   * canonical unit, opens a session holding the settled words, and says which
+   * words it holds. */
+  await selectPhrase(driver, fixture.widening, "exact");
   assert.equal(await driver.evaluate(`getSelection()?.toString()`), "Holy Spirit");
   assert.deepEqual(readFileSync(connectionEventLogPath), connectionEventLogBytes);
   assert.equal(await driver.evaluate(selectPhraseExpression(fixture.baptism)), fixture.baptism.quote);

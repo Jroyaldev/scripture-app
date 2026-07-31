@@ -97,3 +97,88 @@ So Rev 04 kept the bracket's bones and removed its atmosphere. What the reader m
 7. Lab-era phrase-string `indexOf` matching (2384365, pre-76a572f) — the thing that actually broke selection; the backbone-token contract exists specifically to make it impossible.
 
 **Transition summary (why each change happened):** bows → ribbons (34c3d5a: hand-ink feel) → traces (6a93741: density collisions seen in screenshots) → loom engine (60d6efb: obstacles and corridors from first principles) → bracket grammar (eda2d11: three ornament families rejected at visual review; calm colinear vocabulary approved) → production (64d0e5f) → Rev 04 reduction (f202614: designer withdrew the studies; washes/veil/hues ruled violations of Law 5, the plane model, and reserve).
+
+---
+
+## Era 6 — Settling: the Old Testament becomes authorable (2026-07-31)
+
+**The complaint.** "the old testament is still not allowing connections only the new; we were supposed to remove the complex phrase / original language; and use just the english…. why cant we do connections in ot?"
+
+**The mechanism, measured live before the fix.** `backbone-token:v1` is the
+ORIGINAL-LANGUAGE word layer — `data/scripture/backbone-token-v1.jsonl` carries
+`"language": "Hebrew"` tokens for the Old Testament and `"language": "Greek"`
+for the New. A Hebrew word carries its preposition, article, conjunction and
+pronominal suffix inside itself, and the publishers' own alignment tables say
+so: BSB's row for GEN 1:1 is `{"word":"In the beginning","strongs":["H7225"]}`
+— three English words, one canonical token, so all three lexical fragments in
+`data/scripture/packages/bsb/occurrence-alignments-v1.jsonl` carry occurrence
+position 1.
+
+Authoring then ran the marked words through
+`captureOccurrenceAlignedSelection` → `projectBackboneTokenAnchor` →
+`selectionProjectionRoundTrips` (`src/electron/main.ts`), and that last gate
+demanded the reprojection reproduce the marked words EXACTLY. Marking
+"beginning" anchored Hebrew token 1, which reprojects as "In the beginning",
+which is not "beginning" — refused, with "This translation cannot preserve
+those exact words yet."
+
+Single-word admission, measured against the real packages by driving the app
+(GEN 1, DEU 32, PSA 23, ISA 53 vs JHN 1, ROM 8, all four installed
+translations):
+
+| | BSB | WEB | KJV | YLT |
+| --- | --- | --- | --- | --- |
+| Old Testament | 10–16% | 13–19% | 9–13% | 16–21% |
+| New Testament | 47–58% | 38–59% | 40–61% | 44–65% |
+
+The artifact was never the problem — the occurrence-alignment index and the
+backbone token catalog both carry all 31,102 verses across all 66 books. The
+GATE was the problem, and the asymmetry it produced is exactly the difference
+between Hebrew and Greek word shape.
+
+**The change.** `selectionSettlesIntoProjection`
+(`src/core/annotations/occurrence-alignment.ts`) replaces equality with
+containment: the reprojection must CONTAIN every marked word, in order. A
+wider reprojection is the canonical unit settling around the reader's words,
+and the host returns those settled words (`settled`, transport-only) so the
+surface holds and shows what the anchor holds. A reprojection that DROPS or
+REORDERS a marked word is still an artifact defect and is still refused. After
+the change, single-word admission is 82–100% everywhere, and the Old
+Testament no longer differs from the New.
+
+**No persisted format moved.** `ANCHOR_KEYS` is untouched, `OCCURRENCE_KEYS` is
+untouched, `backbone-token:v1` is untouched, and every anchor written before
+today still validates and projects byte-identically. The settled fragments are
+package-local render evidence on the IPC reply only; nothing new reaches an
+event payload, so `retired-anchor-fields.ts` gains no entry.
+
+**What this costs, said plainly.** Marking one English word inside a Hebrew
+word holds the whole Hebrew word's English span — "beginning" in Genesis 1:1
+holds "In the beginning"; "shepherd" in Psalm 23:1 holds "is my shepherd". The
+reader sees that span held before saving and on the card afterwards. Going
+finer than the original-language word is not a gate we can relax: below that
+token there is no coordinate two translations share, so English-word precision
+and cross-translation projection are mathematically exclusive. Buying the
+finer unit would mean a versioned anchor format that is package-scoped — a
+decision nobody has made, and one that must be made out loud if it ever is.
+
+**Still refused, honestly.** A lexical fragment the package's own table left
+unaligned has no canonical occurrence, so marking it alone still refuses with
+`display-only-selection` (visible mostly in YLT). Punctuation alone still
+refuses with `zero-canonical-occurrences`; a part-word still refuses with
+`partial-word-selection`. Those refusals name real absences rather than
+Hebrew.
+
+**Contracts restated on this date** (each carries the quoted old claim in
+place): `tests/desktop-reading-control.test.ts` ("active-package connection
+capture refuses lexical widening"), `tests/marking-surfaces-contract.test.ts`
+(the draft paints `current.paintAnchors`), and
+`scripts/qa-desktop-reading-control.mjs` (the ACT 19:2 "Holy Spirit" widening
+must be refused, and the palette must print "This translation cannot preserve
+those exact words yet").
+
+**Proof.** `docs/ui-audit/connections/ot-authoring/` — eleven connections
+authored with the real marking gesture and saved through the palette in
+Genesis 1, Deuteronomy 32, Psalm 23, Isaiah 53, John 1 and Romans 8 across
+BSB, WEB, KJV and YLT; each reloaded from the durable log and painted, ten of
+the eleven drawing a route and the eleventh honestly reporting needs-space.

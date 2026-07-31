@@ -86,6 +86,7 @@ import {
   captureOccurrenceAlignedSelection,
   projectBackboneTokenAnchor,
   selectionProjectionRoundTrips,
+  selectionSettlesIntoProjection,
   type OccurrenceAlignmentVerseEvidence,
   type OccurrenceSelectionPiece,
 } from "../core/annotations/occurrence-alignment.js";
@@ -3162,17 +3163,33 @@ function registerIpcHandlers(): void {
         error: { code: projection.error.code, message: projection.error.message },
       };
     }
-    if (!selectionProjectionRoundTrips(normalized.value, projection.fragments)) {
+    /**
+     * RESTATED 2026-07-31 (the Old Testament connection fix). This gate used
+     * `selectionProjectionRoundTrips` and refused with "This translation
+     * cannot preserve those exact words yet." whenever reprojection came back
+     * wider than the selection. Because `backbone-token:v1` is the
+     * original-language word layer, a Hebrew word swallows the English
+     * article/preposition beside it, so that refusal fired on 80-90% of
+     * single-word marks in the OT and the reader could not author there at
+     * all. Authoring now admits a settling reprojection and refuses only a
+     * reprojection that loses or reorders the reader's words, which is an
+     * artifact defect rather than a fact about Hebrew.
+     */
+    if (!selectionSettlesIntoProjection(normalized.value, projection.fragments)) {
       return {
         ok: false,
         status: "refused",
         error: {
           code: "selection-round-trip-mismatch",
-          message: "This translation cannot preserve those exact words yet. Adjust the selection or use a note or wash.",
+          message: "Those words could not be resolved against this translation's alignment. Adjust the selection or use a note or wash.",
         },
       };
     }
-    return capture;
+    // The settled fragments are render evidence for the surface only. They are
+    // never persisted and never travel with the durable anchor.
+    return selectionProjectionRoundTrips(normalized.value, projection.fragments)
+      ? capture
+      : { ...capture, settled: projection.fragments };
   }, (message) => ({
     ok: false,
     status: "refused",
