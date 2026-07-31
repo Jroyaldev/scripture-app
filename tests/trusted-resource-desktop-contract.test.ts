@@ -18,43 +18,61 @@ test("typed resource IPC is sender-bound, manifest-backed, and official-host all
   assert.match(preload, /trustedResources:[\s\S]*trusted-resources-query[\s\S]*trusted-resource-open/);
 });
 
-test("Living Margin shows a publisher's whole answer, and still only links to it", () => {
+test("the Resources room shows a publisher's whole answer, and still only links to it", () => {
+  /* RESTATED 2026-07-30 · the block became a room.
+     This read `TrustedResourcesBlock` out of LivingMargin — the publisher index
+     that stood at the foot of the Overview tab. That block is gone and its work
+     is in components/Resources, the study panel's fifth lens: one room, one
+     card geometry, one identity key, holding the chapter's episodes AND its
+     link-only material together. What this test protects is unchanged and moves
+     with the work: a publisher's whole answer is shown, and the app still only
+     links to it. */
+  const room = read("src/renderer/components/Resources.tsx");
   const margin = read("src/renderer/components/LivingMargin.tsx");
-  const start = margin.indexOf("function TrustedResourcesBlock");
-  const end = margin.indexOf("function DeepNoteCard", start);
-  const block = margin.slice(start, end);
+
   /* "Trusted" read as an endorsement of what a publisher teaches. What was
      reviewed is the index — which sources may appear and what may be shown of
-     them — not the content. The heading says so now. */
-  assert.match(block, /Published resources/);
+     them — not the content. Neither the lens nor the room says "trusted" to a
+     reader anywhere. */
+  assert.match(margin, /\{ id: "resources", label: "Resources", accessibleLabel: "Resources for this passage" \}/);
+  assert.doesNotMatch(room, />\s*Trusted/);
 
   /* The block used to render `resources.slice(0, 3)` — one featured card and two
      compact ones — so a publisher holding four good answers showed one and threw
-     three away silently, and two publishers filled the margin before a third was
-     ever consulted. A chip is now a publisher, and opening it shows everything
-     that publisher has for the passage in the ranking's own order. Re-introducing
-     a cap here is what this guards: an answer dropped without saying so reads as
-     an answer that does not exist. */
-  assert.doesNotMatch(block, /resources\.slice\(0,\s*\d/,
-    "the margin caps the cards it will show, which hides answers without saying so");
-  assert.match(block, /setOpenedSource/, "a publisher chip must open that publisher");
-  assert.match(block, /groups\.map/, "opened publishers render every card they matched");
+     three away silently. The room caps nothing: every entry it holds is drawn,
+     which is what `content-visibility` in the stylesheet is for. The ONE cap in
+     this file is the Overview digest, and it has a door beside it. */
+  assert.doesNotMatch(room, /entries\.slice\(0,\s*\d/,
+    "the room caps the cards it will show, which hides answers without saying so");
+  assert.match(room, /shown\.map\(\(entry\) =>/, "the room draws everything it holds");
+  assert.match(room, /entries\.slice\(0, DIGEST\)/);
+  assert.match(room, /className="resources-door"/,
+    "a digest without a door is a cap that hides answers");
+  assert.match(room, /setOnly\(only === chip\.id \? null : chip\.id\)/,
+    "a publisher chip must narrow the room to that publisher");
 
   /* The permission boundary is unchanged and does not move with the layout:
      the card links out, it does not reproduce. Audio is the one grant on top,
      and it is held to a press — see trusted-resource-permissions. */
-  assert.match(block, /openOfficial/);
-  assert.doesNotMatch(block, />Save/);
-  assert.doesNotMatch(block, /<img|artwork|embed|description/);
+  assert.match(room, /openOfficial/);
+  assert.doesNotMatch(room, />Save/);
+  /* Sharpened 2026-07-30, and narrowed to what it was always about. It read
+     `/<img|artwork|embed|description/` — four bare words against a whole file,
+     which caught this room's own comment about the app's embedding index. What
+     the boundary forbids is REPRODUCING a publisher's material: their images,
+     their prose, their players. It is markup and field names that say that. */
+  assert.doesNotMatch(
+    room,
+    /<img\b|<iframe\b|<video\b|dangerouslySetInnerHTML|record\.(?:description|excerpt|body|artworkUrl|logoUrl|embedUrl|mediaUrl)/,
+    "the room may name a publisher's material and link to it; it may not reproduce it",
+  );
 
-  /* The element itself is no longer here. It was, and being here is what killed
-     it: the block unmounts on every study tab, passage and panel close, so an
-     episode lasted exactly as long as a reader stayed put. The transport moved
-     to the app shell — components/PodcastPlayer — and the card now only presses
-     play on it. So the guard moves with the element rather than lapsing: what
-     it protects is that nothing is fetched from a publisher before a reader
-     asks, and that is a property of wherever the element actually is. */
-  assert.doesNotMatch(block, /<audio/,
+  /* The element itself is not here. It was in the margin once, and being there
+     is what killed it: the block unmounts on every study tab, passage and panel
+     close, so an episode lasted exactly as long as a reader stayed put. The
+     transport is in the app shell — components/PodcastPlayer — and a card now
+     only presses play on it. */
+  assert.doesNotMatch(room, /<audio/,
     "the margin must not own an audio element again — it cannot keep one alive");
   const player = read("src/renderer/components/PodcastPlayer.tsx");
   assert.match(player, /<audio/, "the transport must be exactly where the guard below looks");

@@ -990,3 +990,35 @@ test("a study promoted out of another round-trips the validator byte for byte", 
       `${name} must come back from the validator unchanged`);
   }
 });
+
+test("every lens the margin can be left on survives a round trip", () => {
+  /* NEW GATE · 2026-07-30, from the taste pass on the player wave.
+     The study panel gained a fifth lens — Resources — and this validator's
+     `MARGIN_TABS` did not follow it. `normalizePassageView` returns null for
+     an unknown tab, so it rejected the WHOLE passage view rather than the one
+     field, and the effect on a reader was not "your lens was forgotten" but a
+     permanent failure banner: the renderer asks the store to save, the store
+     hands back a workspace that is not the one asked for, the acknowledgement
+     check correctly refuses it, and the tab strip reads "Library did not
+     answer" with a Retry that can never succeed. It shipped in two consecutive
+     waves of audit captures before anyone looked at the top bar.
+     `NavigationMarginTab` in src/renderer/utils/navigationHistory.ts is the
+     one list this has to match. Adding a lens there without adding it here is
+     the regression; this is what catches it. */
+  const lenses = ["overview", "resources", "connections", "passage", "notes"] as const;
+  for (const lens of lenses) {
+    const seed = rendererView("ACT", 19);
+    const onLens: PassageViewState = {
+      ...seed,
+      margin: { ...seed.margin, activeTab: lens, scrollTopByTab: { [lens]: 12 } },
+    };
+    const workspace = createStudyWorkspace(onLens, {
+      groupId: "study-1",
+      passageTabId: "acts-19",
+    });
+    const round = normalizeStudyWorkspace(JSON.parse(JSON.stringify(workspace)));
+    assert.equal(round.ok, true, `the validator rejects a margin left on ${lens}`);
+    assert.deepEqual(round.value, JSON.parse(JSON.stringify(workspace)),
+      `a margin left on ${lens} does not come back unchanged, so every later save reports a failure`);
+  }
+});

@@ -379,12 +379,22 @@ test("authored connection inspection is a contextual margin view over the reader
 });
 
 test("Overview is the quiet default, with stable keyboard deep-dive tabs over the current scope", () => {
-  assert.match(margin, /type MarginTab = "overview" \| "connections" \| "passage" \| "notes"/);
+  /* RESTATED 2026-07-30 · a fifth lens.
+     This asserted four, in a fixed order, and both halves of that were right
+     when the panel had four things to hold. Resources joins them: the answer
+     to "who has taught this chapter" is chapter-sized — 18 moments at the
+     median, 922 at Genesis 1 — and it had been a block at the bottom of
+     Overview that could only fit by hiding 97% of itself behind three shut
+     drawers. The ORDER is the thing this assertion was really protecting, and
+     it is unchanged in its reasoning: Overview leads, then the material a
+     reader arrives asking for, then their own work, then the app's. */
+  assert.match(margin, /type MarginTab = "overview" \| "resources" \| "connections" \| "passage" \| "notes"/);
   assert.match(
     margin,
-    /const MARGIN_TABS[\s\S]*\{ id: "overview", label: "Overview"[\s\S]*\{ id: "notes", label: "Notes"[\s\S]*\{ id: "connections", label: "Connections"[\s\S]*\{ id: "passage", label: "Words"/,
-    "Overview leads, then the reader's own material, then the app's — the rail is ordered by whose work it is",
+    /const MARGIN_TABS[\s\S]*\{ id: "overview", label: "Overview"[\s\S]*\{ id: "resources", label: "Resources"[\s\S]*\{ id: "notes", label: "Notes"[\s\S]*\{ id: "connections", label: "Connections"[\s\S]*\{ id: "passage", label: "Words"/,
+    "Overview leads, then what the chapter has been taught with, then the reader's own material, then the app's",
   );
+  assert.match(margin, /hidden=\{activeTab !== "resources"\}/);
   assert.match(margin, /const activeTab = marginSession\.activeTab/);
   assert.doesNotMatch(margin, /internalActiveTab|controlledActiveTab/);
   assert.match(margin, /role="tablist" aria-label="Study views" aria-orientation="horizontal"/);

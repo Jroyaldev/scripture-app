@@ -7,6 +7,13 @@ This is a product-engineering boundary, not a grant of rights or a substitute
 for legal review. Re-check the live publisher terms before expanding any source
 beyond the capabilities recorded in its versioned manifest.
 
+`docs/trusted-resource-brand-inventory.md` is the stock-take that sits beside
+this file, added 2026-07-30: which publishers have an approved mark and which
+are colour-only, whose reverse needs a dark field, whose accent was hand-picked
+and why, what each palette measures against its own ground, and what asset
+would close each gap. That file records state and asks questions; **this file
+is what says what may be shown.**
+
 ## Approved sources
 
 Marks are approved for the sources listed here, and for no others:
@@ -104,10 +111,10 @@ regression, and that tour is what catches it.
 #### The plate at two sizes — amended 2026-07-30
 
 The chapter's episodes are now drawn on one margin surface
-(`src/renderer/components/TaughtHere.tsx`) rather than two, and its rows carry
+(`src/renderer/components/Resources.tsx`) rather than two, and its cards carry
 the same plate at a smaller size. This section is amended rather than extended:
 **the plate is one object at two sizes**, 26px at the dock's masthead and 16px
-on a margin row, and no fourth crossing is added.
+on a card, and no fourth crossing is added.
 
 Three things follow, and they are narrower than the dock's terms rather than
 looser:
@@ -119,14 +126,22 @@ looser:
    publishers each painting their own colour would be a colour chart rather
    than a margin, and the rule that already governs marks happens to produce
    the right restraint by itself.
-2. **The accent does not cross onto the row.** `--player-accent` is declared
-   for `.taught-here-row` at its DEFAULT value — the app's own gold — so the
-   transport face on every row is the app's, not the publisher's. The
+2. **The accent does not cross onto the card.** `--player-accent` is declared
+   for `.resource-card-face` at its DEFAULT value — the app's own gold — so the
+   transport face on every card is the app's, not the publisher's. The
    publisher's accent stays where this section put it: the dock, which is one
    episode the reader chose.
 3. **The name still stands in the accessibility tree** in both forms, as
-   above. On a row the plate replaces a grey publisher name that used to sit in
-   the meta line, so nothing is added to the row; something is exchanged.
+   above. On a card the plate IS the identity line, so nothing is added; the
+   grey publisher name that used to sit in a row's meta line is what it
+   replaces.
+4. **The shelf is the plate's own row of chips**, and it takes the same terms
+   at chip size: the publisher's colour, their approved mark where there is
+   one, and their name set in type where there is not. Added back 2026-07-30
+   with the room — the shelf had been deleted by the merge, and with it the
+   filter and the route into resource settings. A chip is a filter over the
+   room and nothing else: it narrows what is drawn and it never reproduces
+   anything.
 
 There is a **third size**, and it leaves the app's window: the artwork handed
 to the system's Now Playing panel is the plate at 512px, painted onto a canvas
@@ -136,12 +151,30 @@ machine — and a source with no approved mark gets no artwork, which is the sam
 rule stated once more. The alternative was a remote artwork URL, which is the
 request-nobody-pressed this document exists to refuse.
 
-`scripts/qa-podcast-player.mjs` asserts the row's transport face is the app's
-family at 22px, that the merged surface exists exactly once per chapter, that
-the publisher index below it starts no audio at all — which is what stops the
-two surfaces drifting back into two brand policies for the same episodes — and
-that the system artwork is a `data:` image rather than anything on a
-publisher's host.
+`scripts/qa-podcast-player.mjs` asserts the card's transport face is the app's
+family at 20px, that the room exists exactly once per chapter, that nothing
+else in the study panel offers to start audio — which is what stops the two
+surfaces drifting back into two brand policies for the same episodes — and that
+the system artwork is a `data:` image rather than anything on a publisher's
+host.
+
+#### The sheet became a column — amended 2026-07-30
+
+The geometry section above is written about a dock whose expanded form was an
+overlay: a sheet capped at `min(56vh, 520px)` that opened upward over the study
+panel, out of the panel's own reservation, so that opening it moved nothing.
+That is superseded, and the permission terms are unchanged by it — this
+amendment exists because the sheet is named in this document and a reader of it
+should not be sent to a surface that no longer works that way.
+
+**The study column has two residents and exactly one of them is unfolded.**
+Opening the player gives it the whole column and folds the Living Margin to a
+single line; unfolding the margin folds the player back to its corner. What
+this changes for the permissions above is only the SIZE of the surfaces they
+govern, and in the direction that matters: the plate stays 26px on a mast that
+is now wider, so the publisher's crossing does not grow with the column, and
+the fitted accent still lands in exactly three places. The three-crossings rule
+is unchanged and a fourth still requires amending this section.
 
 ## Shipping boundary
 
@@ -419,19 +452,38 @@ What that position does **not** say, and what this file exists to keep saying:
 
   - `PassageMoment.basis`, attached in `readPassageIndex` from the map above
     rather than read from the artifact — an artifact is a file anything can
-    write, and a publisher's footing is a fact about a conversation. The merged
-    margin surface states it once at its foot, counting the shows actually on
-    screen: *"Machine-read from published audio. 3 of these 8 publishers gave
-    permission; 5 have not been asked yet."*
-  - The player's sheet says it for the episode in hand, under the episode's own
+    write, and a publisher's footing is a fact about a conversation. The
+    Resources room states it once at its foot, counting the shows actually on
+    screen.
+  - The player says it for the episode in hand, under the episode's own
     masthead and beside the `auto` mark that already says no person wrote these
-    words: *"Transcript machine-read from Radically Christian's public feed. We
-    have not asked them yet."*
+    words.
 
-  It is one sentence per surface, not a badge per row: the footing is a fact
+  It is one sentence per surface, not a badge per card: the footing is a fact
   about a publisher rather than about an episode, and a notice repeated
   twenty-five times stops being read. `scripts/qa-podcast-player.mjs` asserts
   both are present and that the wording matches the basis the map records.
+
+  **Said in a reader's language — restated 2026-07-30.** The first wording of
+  these two sentences reported our outreach backlog: *"3 of these 8 publishers
+  gave permission; 5 have not been asked yet"* and *"…from Radically
+  Christian's public feed. We have not asked them yet."* Both are true, and
+  neither is a fact about the thing the reader is looking at — "we have not
+  asked them" is a line from our to-do list printed on a reading surface. What
+  this document requires is that the DISTINCTION stay visible, and it does:
+
+  - granted — *"Transcript machine-read from Naked Bible Podcast's audio, with
+    their permission."*
+  - public feed — *"Transcript machine-read from Radically Christian's public
+    feed."*
+  - and on the room, over a shelf of both — *"Transcripts machine-read from
+    published audio — some with the publisher's permission, some from their
+    public feed."*
+
+  A reader can tell which of the two they are looking at, in words about the
+  transcript rather than about us. `tests/resources-contract.test.ts` holds
+  both halves: that each surface still names a permission and a public feed,
+  and that neither says "not been asked" to anybody.
 
 The gate treats both footings alike on purpose — the enforcement is about
 whether a source is enabled at all. What is not allowed to blur is the record of

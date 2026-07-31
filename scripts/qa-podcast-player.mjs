@@ -56,6 +56,10 @@ const CAPTURE_SCREENSHOTS = !process.argv.includes("--no-screenshots");
 // end, so this chapter is guaranteed an episode with an audioUrl on it.
 const PASSAGE = "1 Samuel 30";
 const ELSEWHERE = "Acts 19";
+/* The density case, and it is a real one rather than a stress test: Genesis 1
+   holds 922 moments against a corpus median of 18, and it is the chapter the
+   old drawer showed 25 of. The room is measured and captured here. */
+const DENSE = "Genesis 1";
 
 /* Every source with a palette block in styles.css, plus one that has none.
    The last entry is not a typo: an unregistered feed is a real configuration —
@@ -171,24 +175,40 @@ async function screenshot(name, selector = null, { settle = 240 } = {}) {
       if (!element) return null;
       const zoom = window.outerWidth / window.innerWidth;
       const rect = element.getBoundingClientRect();
-      return {
-        x: (rect.x - 26) * zoom,
-        y: (rect.y - 26) * zoom,
-        width: (rect.width + 52) * zoom,
-        height: (rect.height + 52) * zoom,
-        scale: 2,
-      };
+      /* CLAMPED TO THE VIEWPORT, added 2026-07-30. The 26px of air around the
+         subject is what makes a clipped capture readable, and it is also what
+         runs a full-width column past the window's own right edge: the study
+         column ends at the frame's 10px inset, so 26 more is 16 outside. With
+         captureBeyondViewport false the engine refuses the whole capture
+         rather than trimming it, and a refused capture is a state nobody looks
+         at. Integers for the same reason: fractional device pixels are what
+         turns "refuses sometimes" into "refuses on this machine". */
+      const left = Math.max(0, Math.round((rect.x - 26) * zoom));
+      const top = Math.max(0, Math.round((rect.y - 26) * zoom));
+      const right = Math.min(window.innerWidth * zoom, Math.round((rect.right + 26) * zoom));
+      const bottom = Math.min(window.innerHeight * zoom, Math.round((rect.bottom + 26) * zoom));
+      return { x: left, y: top, width: right - left, height: bottom - top, scale: 2 };
     })()`);
     if (!clip) throw new Error(`Cannot capture missing element: ${selector}`);
   }
   await cdp.send("Page.bringToFront");
   if (settle > 0) await sleep(settle);
-  const response = await cdp.send("Page.captureScreenshot", {
-    format: "png",
-    captureBeyondViewport: false,
-    ...(clip ? { clip } : {}),
-  });
-  if (!response.result?.data) throw new Error(`Could not capture ${name}`);
+  /* Asked more than once, because the engine sometimes cannot answer.
+     Measured 2026-07-30: the SAME clip refuses and then succeeds a moment
+     later — the compositor has no frame to hand back yet — and the refusal is
+     a protocol error rather than an empty image, so a single ask turns a
+     working tour into a failing one at random. Three asks, a beat apart. */
+  let response = null;
+  for (let ask = 0; ask < 3; ask += 1) {
+    response = await cdp.send("Page.captureScreenshot", {
+      format: "png",
+      captureBeyondViewport: false,
+      ...(clip ? { clip } : {}),
+    });
+    if (response.result?.data) break;
+    await sleep(240);
+  }
+  if (!response?.result?.data) throw new Error(`Could not capture ${name}`);
   mkdirSync(OUT_DIR, { recursive: true });
   const path = `${OUT_DIR}/${name}.png`;
   writeFileSync(path, Buffer.from(response.result.data, "base64"));
@@ -209,6 +229,20 @@ function forgetCapture(name) {
   if (!CAPTURE_SCREENSHOTS) return;
   rmSync(`${OUT_DIR}/${name}.png`, { force: true });
 }
+
+/* ── Withdrawn, rather than left standing ─────────────────────────────────
+   The merged surface these named is gone: its work is the Resources room, and
+   a room is not the same picture under a different name. Deleted at the top of
+   the run rather than at the end of it, so a run that fails halfway still
+   leaves no picture of a surface that does not exist. That failure is exactly
+   how this feature's audit went wrong the first time. */
+for (const retired of [
+  "paper-margin-merged",
+  "dark-margin-merged",
+  "porcelain-margin-merged",
+  "onyx-margin-merged",
+  "forced-colors-margin-merged",
+]) forgetCapture(retired);
 
 /* Scoped by the caller, always. `.transport-play` stopped naming one element on
    2026-07-30: the merged margin surface carries the same face on every row, so
@@ -347,7 +381,14 @@ async function navigatePassage(passage) {
 const DOCK_TRUTH = `(() => {
   const dock = document.querySelector(".podcast-dock");
   const audio = document.querySelector("audio");
-  if (!dock) return { present: false, audioSrc: audio?.getAttribute("src") ?? null, audioTime: audio?.currentTime ?? null };
+  if (!dock) return {
+    present: false,
+    audioSrc: audio?.getAttribute("src") ?? null,
+    audioTime: audio?.currentTime ?? null,
+    // With no dock there is no second resident, so the column is the margin's
+    // — and this is where a fold that outlived its player would show.
+    folded: document.querySelector(".living-margin")?.getAttribute("data-folded") ?? null,
+  };
   return {
     present: true,
     status: dock.getAttribute("data-status"),
@@ -401,6 +442,12 @@ const DOCK_TRUTH = `(() => {
       const toasts = document.querySelector(".toast-container");
       return toasts ? Math.round(parseFloat(getComputedStyle(toasts).bottom)) : null;
     })(),
+    // The reading page's own measure. Added 2026-07-30 with the column swap:
+    // the player widens the study column while it owns it, and the ceiling on
+    // that width is that the passage must not re-wrap. The page's text is
+    // max-width bound, so this number is the proof rather than the intent.
+    verseWidth: Math.round(document.querySelector(".verse-line")?.getBoundingClientRect().width ?? 0),
+    folded: document.querySelector(".living-margin")?.getAttribute("data-folded") ?? null,
     // The masthead's own top edge. A dock with no max-height could grow past
     // the top of a short window, and the dock clips what it cannot hold — so
     // the masthead, which is where the only control that stops the episode
@@ -557,103 +604,219 @@ assert.equal(atRest.present, false, "the dock draws itself only once something i
 assert.equal(atRest.audioSrc, null, "audio must not be fetched before a reader presses play");
 console.log("at rest", atRest);
 
-await waitFor(`Boolean(document.querySelector(".taught-here"))`, 20_000);
+await waitFor(`Boolean(document.querySelector(".resources-digest"))`, 20_000);
 
-/* ── One surface for this chapter's episode audio ──────────────────────────
-   Added 2026-07-30, with the build that merged them. Two blocks used to draw
-   the same episodes — 25 of 28 on the reference chapter — with two mastheads,
-   two orders, two brand policies and an identity key that was the same string
-   in both, which is why pressing a moment for an already-running episode had
-   to be special-cased in the machine. This is the gate that keeps them one.
+/* ── One room for this chapter's material ──────────────────────────────────
+   RESTATED 2026-07-30 with the column swap and the room.
 
-   Every band is opened first: the surface rests shut on purpose, and what is
-   being measured is the row grammar rather than the resting state. */
-await evaluate(`document.querySelectorAll(".taught-here-toggle").forEach((toggle) => {
-  if (toggle.getAttribute("aria-expanded") !== "true") toggle.click();
-})`);
-await waitFor(`document.querySelectorAll(".taught-here-row").length > 0`);
+   The finding this section was written for is unchanged and still gated: two
+   blocks used to draw the same episodes — 25 of 28 on the reference chapter —
+   with two mastheads, two orders, two brand policies and an identity key that
+   was the same string in both, which is why pressing a moment for an
+   already-running episode had to be special-cased in the machine.
+
+   What changed is where the one answer lives. Overview carries a digest and a
+   door; the room is the study panel's fifth lens, and it holds the chapter's
+   episodes AND its link-only material under one card and one key. So the tour
+   enters through the door, which is also the shortest way to prove the door
+   works. */
+await evaluate(`document.querySelector(".resources-door")?.click()`);
+await waitFor(`Boolean(document.querySelector('#margin-resources-panel:not([hidden]) .resources'))`, 10_000);
+await waitFor(`document.querySelectorAll(".resource-card").length > 0`, 20_000);
 await sleep(320);
 
-const merged = await evaluate(`(() => {
-  const surfaces = document.querySelectorAll(".taught-here");
-  const rows = [...document.querySelectorAll(".taught-here-row")];
+const room = await evaluate(`(() => {
+  /* SCOPED TO THE OPEN LENS. The margin draws three mutually exclusive states
+     and each of them holds an Overview panel with the room's own card in its
+     digest — hidden, so those cards have no geometry, and a probe that finds
+     them first measures nothing. Ask the lens that is open. */
+  const lens = document.querySelector("#margin-resources-panel:not([hidden])");
+  const rooms = lens.querySelectorAll(".resources");
+  const cards = [...lens.querySelectorAll(".resource-card-face")];
+  const shelf = [...lens.querySelectorAll(".resource-shelf .trusted-resource-imprint")];
   return {
-    surfaces: surfaces.length,
-    rows: rows.length,
-    // The duplication, at the level it actually caused a defect: the identity
-    // key. Two surfaces keying the same episode is what made a press pause it.
-    keys: rows.length,
-    // Nothing in the publisher index starts audio any more. Every row that had
-    // an audioUrl moved onto the surface above it.
-    playInIndex: document.querySelectorAll(".trusted-resource-play").length,
-    // The relation, in reader's words, on every row that states one. A schema
-    // token or an empty span reaching this list is the regression.
-    said: [...new Set(rows.map((row) => row.querySelector(".taught-here-said")?.textContent?.trim() ?? ""))],
-    // The plate is the ONE publisher crossing on the row, and only where a
-    // mark is approved: everyone else takes their name in type.
-    plated: rows.filter((row) => {
-      const plate = row.querySelector(".taught-here-plate");
-      const mark = row.querySelector(".taught-here-mark");
+    rooms: rooms.length,
+    cards: cards.length,
+    // The lens is the one place this chapter's material is drawn. A second
+    // surface anywhere in the panel is the duplication coming back.
+    otherSurfaces: document.querySelectorAll(".taught-here, .trusted-resource-card").length,
+    lensCards: lens.querySelectorAll(".resource-card").length,
+    // Nothing else starts audio: no play control outside the room's own cards.
+    playOutside: [...document.querySelectorAll(".living-margin .transport-play")]
+      .filter((play) => !play.closest(".resource-card-face") && !play.closest(".taught-here-walk")).length,
+    // THE FACE. Four things, and the fifth is what this gate refuses: no
+    // relation word, no timestamp, no evidence sentence on any card.
+    grammar: cards.every((card) => card.querySelector(".resource-card-title")
+      && card.querySelector(".resource-card-ref")
+      && card.querySelector(".resource-card-extent")
+      && (card.querySelector(".resource-card-plate") || card.querySelector(".resource-card-out"))),
+    stray: cards.some((card) => /worked through|brought in alongside|mentioned|alluded to/
+      .test(card.textContent ?? "")),
+    // One control per card, and it is the card: the face IS the button, and
+    // nothing inside it is a second tab stop.
+    controls: [...new Set([...lens.querySelectorAll(".resource-card")]
+      .map((card) => card.querySelectorAll("button").length))],
+    // The relation is still SAID, where a screen reader is owed the claim.
+    spoken: cards.filter((card) => /worked through|brought in alongside|mentioned|alluded to/
+      .test(card.getAttribute("aria-label") ?? "")).length,
+    // The shelf: colour, marks, a filter, and the route into settings.
+    shelfChips: shelf.length,
+    shelfMarked: shelf.filter((chip) => {
+      const mark = chip.querySelector(".trusted-resource-source");
       return mark ? getComputedStyle(mark).backgroundImage !== "none" : false;
     }).length,
-    footing: document.querySelector(".taught-here-footing")?.textContent?.trim() ?? null,
-    walk: document.querySelector(".taught-here-walk")?.getAttribute("aria-label") ?? null,
-    // Every row states its extent and, where the transcript found it, a second.
-    grammar: rows.every((row) => row.querySelector(".taught-here-episode")
-      && row.querySelector(".taught-here-extent")
-      && row.querySelector(".taught-here-ref")
-      && row.querySelector(".taught-here-said")
-      && row.querySelector(".transport-play")),
+    shelfColoured: shelf.filter((chip) => {
+      const ground = getComputedStyle(chip).backgroundColor;
+      return ground !== "rgba(0, 0, 0, 0)" && ground !== "transparent";
+    }).length,
+    filter: shelf.some((chip) => chip.hasAttribute("aria-pressed")),
+    settings: Boolean(lens.querySelector(".resource-shelf .trusted-resource-imprint.is-settings")),
+    /* THE PLATE LAW, on the shelf · added 2026-07-30 with the taste pass. The
+       chips were 30px with a 14px corner — a full-round pill on a frame whose
+       radius law is 0.22 × the shorter dimension — which is why the same brand
+       colours read as premium on the dock's 26px plate and as a rack here. One
+       object, one law: 26 and 6, the same numbers .podcast-mast-plate takes. */
+    shelfPlate: [...new Set(shelf.map((chip) => {
+      const box = getComputedStyle(chip);
+      /* Concatenated rather than interpolated: this whole probe is a template
+         literal on the driver's side, so a nested one is evaluated in Node. */
+      return String(Math.round(parseFloat(box.height))) + "/" + box.borderTopLeftRadius;
+    }))],
+    /* AND THE INK ON IT. The chip declared a ground and no colour, so a
+       <button>'s initial ButtonText — flat black — was set on the publisher's
+       own colour: four of the five name-in-type plates measured under 4.5 and
+       one under 2. Measured here rather than asserted from the palette,
+       because the failure was the ABSENCE of a declaration. */
+    shelfInk: (() => {
+      const channel = (v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+      const luminance = (colour) => {
+        const [r, g, b] = colour.match(/[\\d.]+/g).map(Number);
+        return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+      };
+      const against = (ink, ground) => {
+        const [high, low] = [luminance(ink), luminance(ground)].sort((a, b) => b - a);
+        return Math.round(((high + 0.05) / (low + 0.05)) * 100) / 100;
+      };
+      return shelf
+        .filter((chip) => {
+          /* Only the plates that draw a NAME. An approved mark is artwork with
+             its own indent, and its ink is never painted. */
+          const name = chip.querySelector(".trusted-resource-source");
+          const ground = getComputedStyle(chip).backgroundColor;
+          return name && getComputedStyle(name).backgroundImage === "none"
+            && ground !== "rgba(0, 0, 0, 0)";
+        })
+        .map((chip) => {
+          const box = getComputedStyle(chip);
+          const after = getComputedStyle(chip, "::after");
+          const ink = after.content !== "none" ? after.color : box.color;
+          return { source: chip.dataset.source, ratio: against(ink, box.backgroundColor) };
+        });
+    })(),
+    /* THE RUN · added 2026-07-30. A publisher announces itself once per run:
+       the first card of a run carries the wordmark, the cards under it carry
+       the same plate reduced to the publisher's colour. Asserted as the thing
+       that was wrong — the same artwork drawn on two consecutive cards. */
+    twiceRunning: (() => {
+      let last = null;
+      let seen = 0;
+      for (const card of cards) {
+        const plate = card.querySelector(".resource-card-plate");
+        const mark = plate?.querySelector(".taught-here-mark");
+        const drawn = mark ? getComputedStyle(mark).backgroundImage !== "none" : false;
+        const source = plate?.dataset.source ?? null;
+        if (drawn && source && source === last) seen += 1;
+        last = source;
+      }
+      return seen;
+    })(),
+    reduced: cards.filter((card) => card.querySelector('.resource-card-plate[data-repeat="true"]')).length,
+    // The plate is the ONE publisher crossing on a card, and only where a mark
+    // is approved: everyone else takes their name in type.
+    plated: cards.filter((card) => {
+      const mark = card.querySelector(".taught-here-mark");
+      return mark ? getComputedStyle(mark).backgroundImage !== "none" : false;
+    }).length,
+    footing: lens.querySelector(".taught-here-footing")?.textContent?.trim() ?? null,
+    walk: lens.querySelector(".taught-here-walk")?.getAttribute("aria-label") ?? null,
+    // Two sizes, no more.
+    sizes: [...new Set([...lens.querySelectorAll(".resource-card")].map((card) => card.dataset.weight))].sort(),
   };
 })()`);
-assert.equal(merged.surfaces, 1, "a chapter has one surface for its episode audio");
-assert.ok(merged.rows > 0, "the merged surface drew no rows");
-assert.equal(merged.playInIndex, 0,
-  "the publisher index is starting audio again — that is the duplication coming back");
-assert.equal(merged.grammar, true, "a row is missing part of the one row grammar");
-const TOKENS = ["crossref", "mention", "allusion", "subject", ""];
-for (const said of merged.said) {
-  assert.ok(!TOKENS.includes(said),
-    `a relation reached the margin as a schema token or an empty span: ${JSON.stringify(said)}`);
+assert.equal(room.rooms, 1, "a chapter has one room for its material");
+assert.ok(room.cards > 0, "the room drew no cards");
+assert.equal(room.otherSurfaces, 0,
+  "a second surface is drawing this chapter's material — that is the duplication coming back");
+assert.equal(room.playOutside, 0,
+  "something outside the room is offering to start audio");
+assert.equal(room.grammar, true, "a card is missing part of the one face");
+assert.equal(room.stray, false,
+  "a relation word reached a card's face; aboutness does its work in the ordering");
+assert.deepEqual(room.controls, [1], "a card holds exactly one control, and it is the card");
+assert.ok(room.spoken > 0, "no card says its claim in its accessible name");
+assert.ok(room.shelfChips > 1, "the publisher shelf is missing");
+assert.ok(room.shelfColoured >= room.shelfChips - 1,
+  `${room.shelfChips - room.shelfColoured} shelf chips have no colour on them`);
+assert.ok(room.shelfMarked > 0, "no approved mark is drawn on the shelf");
+assert.equal(room.filter, true, "the shelf is a drawer again rather than a filter");
+assert.equal(room.settings, true, "the route into resource settings is missing from the shelf");
+assert.deepEqual(room.shelfPlate, ["26/6px"],
+  `the shelf left the plate law: ${room.shelfPlate.join(", ")} (want 26px tall, 6px corner)`);
+/* The reference chapter's shelf is short and may hold only approved marks; the
+   dense chapter below carries all eleven and is where the count is gated. */
+for (const plate of room.shelfInk) {
+  assert.ok(plate.ratio >= ACCENT_FLOOR,
+    `${plate.source} sets its name on its own ground at ${plate.ratio}:1`);
 }
-assert.match(merged.footing ?? "", /Machine-read from published audio/,
+assert.equal(room.twiceRunning, 0,
+  "a publisher's wordmark is drawn twice running; the run announces itself once");
+assert.ok(room.reduced > 0, "no card carries the run's reduced plate");
+assert.ok(room.sizes.every((size) => ["heavy", "light"].includes(size)),
+  `the card family grew a third size: ${room.sizes.join(", ")}`);
+assert.match(room.footing ?? "", /machine-read/i,
   "the two footings are not disclosed on the surface that shows them");
-assert.match(merged.walk ?? "", /^Listen through .+ — \d+ treatments, longest first, .+ in all$/,
-  "the walk must declare its whole extent before it is pressed");
-console.log("merged surface", merged);
+assert.doesNotMatch(room.footing ?? "", /not been asked/i,
+  "the reading surface is telling a reader what is on our outreach backlog");
+/* RESTATED 2026-07-30 (taste pass). The shape asserted here was
+   "— N treatments, longest first, X in all", which is the specification chain
+   the room's own voice replaced; what the gate is FOR is that the offer
+   declares itself before it is pressed, and it now declares one thing more —
+   that a five-hour walk can be left. Facts, not phrasing. */
+assert.match(room.walk ?? "", /^Listen through .+ — the \d+ fullest treatments, end to end, about .+\. Leave it whenever you like\.$/,
+  "the walk must declare its whole extent, and that it can be left, before it is pressed");
+console.log("the room", room);
 
 await sleep(200);
-await screenshot("paper-margin-merged", ".taught-here");
+await screenshot("paper-resources", ".living-margin");
 
-/* One transport language, and this surface was the fourth that started audio
-   with no transport glyph on it at all. The row's own press IS the transport,
-   so it carries the FACE rather than a second button inside it — a 22px circle
-   inside a 300px row would be a smaller target than the row containing it, and
-   two controls for one offer is two tab stops to walk past. */
+/* One transport language, and the room's cards were the fourth surface to
+   start audio with no transport glyph at all. The card's press IS the
+   transport, so it carries the FACE rather than a second button inside it. */
 const family = await evaluate(`(() => {
-  const row = [...document.querySelectorAll(".taught-here-row")]
+  const lens = document.querySelector("#margin-resources-panel:not([hidden])");
+  const card = [...lens.querySelectorAll(".resource-card-face")]
     .find((candidate) => candidate.querySelector('.taught-here-plate[data-source="naked-bible"]'));
-  const mark = row?.querySelector(".taught-here-play");
+  const mark = card?.querySelector(".resource-card-play");
   const style = mark ? getComputedStyle(mark) : null;
   return {
-    row: Boolean(row),
+    card: Boolean(card),
     isFamily: mark?.classList.contains("transport-play") ?? null,
     size: style ? Math.round(parseFloat(style.width)) : null,
     filled: style?.backgroundColor ?? null,
     round: style?.borderRadius ?? null,
     glyphs: mark?.querySelectorAll(".transport-glyph").length ?? null,
     grid: [...(mark?.querySelectorAll("svg") ?? [])].map((svg) => svg.getAttribute("viewBox")),
-    // One tab stop for the offer, on the row itself.
-    stops: row ? row.querySelectorAll("button").length : null,
+    // One tab stop for the offer, on the card itself.
+    stops: card ? card.querySelectorAll("button").length : null,
   };
 })()`);
-assert.equal(family.row, true, "no Naked Bible row on the merged surface to press");
-assert.equal(family.isFamily, true, "the margin row's play is not in the transport family");
-assert.equal(family.size, 22, "the family at the margin row's own scale");
+assert.equal(family.card, true, "no Naked Bible card in the room to press");
+assert.equal(family.isFamily, true, "the card's play is not in the transport family");
+assert.equal(family.size, 20, "the family at the room's own scale");
 assert.equal(family.glyphs, 2, "play and pause are both in the tree so one can cross into the other");
 assert.deepEqual([...new Set(family.grid)], ["0 0 24 24"], "one icon grid");
 assert.notEqual(family.filled, "rgba(0, 0, 0, 0)", "the family is filled, on every surface");
-assert.equal(family.stops, 0, "the row is the control; a second button inside it is a second tab stop");
+assert.equal(family.stops, 0, "the card is the control; a second button inside it is a second tab stop");
 console.log("transport family", family);
 
 /* Cold, and only for the press. Chromium's disk cache turns the second run of
@@ -666,18 +829,29 @@ console.log("transport family", family);
    a stall the persistence assertions below correctly read as a stopped
    episode. */
 await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
-/* The LONGEST Naked Bible treatment on this chapter, marked by name. The bare
+/* The LONGEST Naked Bible treatment on this chapter, marked by name. A bare
    `:has(...)` selector took whichever came first, which on this chapter is a
    forty-eight-second mention forty-two minutes into a forty-four minute file —
    a launch with no room after it for any of the seek assertions below, and not
-   what a reader arriving at a chapter is being offered first. */
+   what a reader arriving at a chapter is being offered first. The room's own
+   ordering puts the longest treatment first, so this is also a gate on the
+   ordering: the card the tour wants is the card a reader is offered. */
 await evaluate(`(() => {
-  const rows = [...document.querySelectorAll('.taught-here-row')]
-    .filter((row) => row.querySelector('.taught-here-plate[data-source="naked-bible"]'))
-    .filter((row) => row.querySelector(".taught-here-said")?.textContent?.trim() === "worked through");
-  rows[0]?.setAttribute("data-qa-target", "press");
-  return rows.length;
+  const lens = document.querySelector("#margin-resources-panel:not([hidden])");
+  const cards = [...lens.querySelectorAll('.resource-card-face')]
+    .filter((card) => card.querySelector('.taught-here-plate[data-source="naked-bible"]'))
+    .filter((card) => /worked through/.test(card.getAttribute("aria-label") ?? ""));
+  cards[0]?.setAttribute("data-qa-target", "press");
+  return cards.length;
 })()`);
+/* Brought into the room's own viewport BY HAND, because the room is nine
+   hundred cards long on a dense chapter and every card carries
+   `content-visibility: auto`. A skipped card still has a box — that is what
+   `contain-intrinsic-size` is for — but its CONTENTS have no geometry at all,
+   so a coordinate press taken off the face lands at 0,0, which on this shell
+   is the sidebar. Scroll the card, not the face. */
+await evaluate(`document.querySelector('[data-qa-target="press"]')?.closest(".resource-card")?.scrollIntoView({ block: "center" })`);
+await sleep(320);
 await clickElement('[data-qa-target="press"]');
 await waitFor(`Boolean(document.querySelector(".podcast-dock"))`);
 
@@ -881,63 +1055,131 @@ async function stillPlaying(what) {
 
 await navigatePassage(ELSEWHERE);
 
-/* ── Density is a CONTROL, not a sentence ─────────────────────────────────
-   Measured on a dense chapter rather than the reference one: this is the
-   whole point of the band, and the reference chapter has eleven entries.
-   Genesis 1 holds 922 moments, and this drawer used to end at row 25 with an
-   inert <li> reading "897 more, shortest last" — a sentence shaped like a
-   disclosure in front of 97% of the answer, beside a stylesheet that still
-   carried a button's worth of rules for a control somebody had removed.
+/* ── Density is a ROOM, not a drawer ──────────────────────────────────────
+   RESTATED 2026-07-30. This measured a density CONTROL — "897 more, shortest
+   last" as a button rather than as inert text — which was the right fix for a
+   block that had to live at the foot of a tab. The reader rejected the shape
+   itself: no drawers of 25, no inventory sentence, no counts standing in front
+   of the answer.
 
-   Two presses, because there are two intentions: another page, or all of it.
-   Both are asserted to actually reveal rows, which the sentence never did. */
-await waitFor(`document.querySelectorAll(".taught-here-group").length > 0`, 20_000);
+   Measured on a dense chapter rather than the reference one, because this is
+   the whole point of the room and the reference chapter has eleven entries.
+   Genesis 1 holds 922 moments. Every one of them is a card, the ordering is
+   what makes the first screen the right one, and the ones nobody has reached
+   are cheap until they are. */
+await navigatePassage(DENSE);
+await evaluate(`[...document.querySelectorAll(".margin-tab")].find((tab) => tab.textContent.startsWith("Resources"))?.click()`);
+await waitFor(`Boolean(document.querySelector('#margin-resources-panel:not([hidden]) .resources'))`, 10_000);
+await waitFor(`document.querySelectorAll(".resource-card").length > 100`, 25_000);
+/* From the top, so what is captured is the room a reader arrives in: the shelf
+   over the walk over the first screen of cards. The tour has scrolled this
+   panel to reach a card by name further up. */
+await evaluate(`document.querySelector(".living-margin").scrollTop = 0`);
+await sleep(500);
 const density = await evaluate(`(() => {
-  const bands = [...document.querySelectorAll(".taught-here-group")];
-  const band = bands.sort((a, b) =>
-    Number(b.querySelector(".taught-here-count").textContent)
-    - Number(a.querySelector(".taught-here-count").textContent))[0];
-  if (!band) return null;
-  const held = Number(band.querySelector(".taught-here-count").textContent);
-  /* Every OTHER band shut first, so the probes below can name "the open one"
-     and mean this one. */
-  for (const other of bands) {
-    const toggle = other.querySelector(".taught-here-toggle");
-    const wanted = other === band;
-    if ((toggle.getAttribute("aria-expanded") === "true") !== wanted) toggle.click();
-  }
-  return { held };
+  const lens = document.querySelector("#margin-resources-panel:not([hidden])");
+  const cards = [...lens.querySelectorAll(".resource-card")];
+  const first = cards[0]?.querySelector(".resource-card-face");
+  return {
+    cards: cards.length,
+    // No drawer, no page, no sentence in front of the rest of the answer.
+    drawers: document.querySelectorAll(".taught-here-group, .taught-here-more").length,
+    lens: Boolean(lens),
+    // The room's own cheapness, which is what makes drawing all of them honest.
+    lazy: cards.filter((card) => getComputedStyle(card).contentVisibility === "auto").length,
+    // And the first card is the strongest answer rather than the first row of
+    // an alphabet: aboutness ranks a long treatment of this chapter above a
+    // one-line mention of it.
+    firstSays: first?.getAttribute("aria-label") ?? null,
+    firstExtent: first?.querySelector(".resource-card-extent")?.textContent?.trim() ?? null,
+    heavy: lens.querySelectorAll('.resource-card[data-weight="heavy"]').length,
+  };
 })()`);
-if (density && density.held > 25) {
-  await waitFor(`document.querySelectorAll(".taught-here-row").length > 0`);
-  const paged = await evaluate(`(() => {
-    const band = document.querySelector('.taught-here-group[data-open="true"]');
-    const first = band.querySelectorAll(".taught-here-row").length;
-    const more = band.querySelector(".taught-here-more");
-    const label = more?.textContent?.trim() ?? null;
-    const tag = more?.tagName ?? null;
-    const all = band.querySelector(".taught-here-more.is-all");
-    more?.click();
-    return { first, label, tag, hasAll: Boolean(all) };
-  })()`);
-  await sleep(200);
-  const after = await evaluate(`document.querySelector('.taught-here-group[data-open="true"]').querySelectorAll(".taught-here-row").length`);
-  assert.equal(paged.tag, "BUTTON", "the density control is inert text again");
-  assert.match(paged.label ?? "", /shortest last/, "a partial list must say what it is holding back");
-  assert.ok(after > paged.first, `"more" revealed nothing: ${paged.first} → ${after}`);
-  if (paged.hasAll) {
-    await evaluate(`document.querySelector(".taught-here-more.is-all")?.click()`);
-    await sleep(240);
-    const whole = await evaluate(`document.querySelector('.taught-here-group[data-open="true"]').querySelectorAll(".taught-here-row").length`);
-    assert.equal(whole, density.held, `"all" showed ${whole} of ${density.held}`);
-    console.log("density", { ...paged, after, whole });
-  } else {
-    console.log("density", { ...paged, after });
-  }
-  await evaluate(`document.querySelector('.taught-here-group[data-open="true"] .taught-here-toggle')?.click()`);
-} else {
-  console.log(`density: the densest band here holds ${density?.held ?? 0} (control not exercised)`);
+assert.ok(density.cards > 25,
+  `the dense chapter drew ${density.cards} cards — the room is capping the answer again`);
+assert.equal(density.drawers, 0, "the drawer is back in front of the answer");
+assert.equal(density.lazy, density.cards, "the room is drawing nine hundred cards eagerly");
+/* Heavy is rare by construction — within three quarters of a point of the best
+   answer in the room — and on a chapter with nine hundred entries that is a
+   handful. A room where a tenth of the cards are heavy is a chart. */
+assert.ok(density.heavy >= 1, "no card in a 900-card room earned the second size");
+assert.ok(density.heavy <= Math.max(6, Math.round(density.cards * 0.02)),
+  `${density.heavy} of ${density.cards} cards took the heavy size; the family is a chart`);
+assert.match(density.firstSays ?? "", /worked through/,
+  "the room opens on something other than a treatment of this chapter");
+console.log("density", density);
+
+/* ── THE SHELF, WHERE ALL ELEVEN ARE ON IT · added 2026-07-30 ───────────────
+   The reference chapter carries two or three publishers; Genesis 1 carries the
+   whole library, which is the only place the shelf's own composition and its
+   ink can be measured against every palette at once.
+
+   THE INK is the gate that matters. The chip declared a ground and no colour,
+   so a <button>'s initial ButtonText — flat black — was painted on five
+   publishers' own colours: Radically Christian measured 1.75:1 here. Measured
+   in the engine rather than read off the palette, because the failure was the
+   ABSENCE of a declaration and a palette audit would have found nothing. */
+const shelfInk = await evaluate(`(() => {
+  const lens = document.querySelector("#margin-resources-panel:not([hidden])");
+  const chips = [...lens.querySelectorAll(".resource-shelf .trusted-resource-imprint")];
+  const channel = (v) => { const c = v / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; };
+  const luminance = (colour) => {
+    const [r, g, b] = colour.match(/[\\d.]+/g).map(Number);
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  };
+  const against = (ink, ground) => {
+    const [high, low] = [luminance(ink), luminance(ground)].sort((a, b) => b - a);
+    return Math.round(((high + 0.05) / (low + 0.05)) * 100) / 100;
+  };
+  return chips
+    .filter((chip) => {
+      const name = chip.querySelector(".trusted-resource-source");
+      const ground = getComputedStyle(chip).backgroundColor;
+      return name && getComputedStyle(name).backgroundImage === "none"
+        && ground !== "rgba(0, 0, 0, 0)";
+    })
+    .map((chip) => {
+      const box = getComputedStyle(chip);
+      const after = getComputedStyle(chip, "::after");
+      const ink = after.content !== "none" ? after.color : box.color;
+      return { source: chip.dataset.source, ratio: against(ink, box.backgroundColor) };
+    });
+})()`);
+assert.ok(shelfInk.length >= 4,
+  `only ${shelfInk.length} name-in-type plates on the dense chapter's shelf; the ink gate is looking at nothing`);
+for (const plate of shelfInk) {
+  assert.ok(plate.ratio >= ACCENT_FLOOR,
+    `${plate.source} sets its name on its own ground at ${plate.ratio}:1`);
 }
+console.log("shelf ink", shelfInk);
+
+await screenshot("paper-resources-dense", ".living-margin");
+
+/* The three discovery treatments, from the same cards and the same ordering.
+   NOT a product control and never asserted as one — see the room's own note
+   and tests/resources-contract. The tour renders each of them so the reader
+   can choose between pictures of real data rather than between descriptions. */
+for (const shape of ["weight", "even", "spine"]) {
+  await evaluate(`(() => {
+    document.documentElement.dataset.discoveryShape = ${JSON.stringify(shape)};
+    window.dispatchEvent(new Event("quire:discovery-shape"));
+  })()`);
+  await evaluate(`document.querySelector(".living-margin").scrollTop = 0`);
+  await sleep(450);
+  /* Captured against the PANEL rather than the lens. The lens is nine hundred
+     cards and fifty thousand pixels tall on this chapter, and a capture that
+     names it scrolls it into view by its own centre — which is a picture of
+     the middle of the room rather than of the room a reader arrives in. */
+  await screenshot(`paper-discovery-${shape}`, ".living-margin");
+}
+await evaluate(`(() => {
+  delete document.documentElement.dataset.discoveryShape;
+  window.dispatchEvent(new Event("quire:discovery-shape"));
+})()`);
+await sleep(300);
+await navigatePassage(ELSEWHERE);
+await sleep(200);
+
 await stillPlaying("a passage change");
 /* The dock still names the MOMENT's own passage, not the chapter now on
    screen — and the reader is on Acts 19, so the two are unmistakably
@@ -1088,20 +1330,160 @@ const accountedFor = await evaluate(`(() => {
 })()`);
 assert.equal(accountedFor, true, "the open sheet accounts for itself in none of its four forms");
 
-/* The sheet is a place: it opens over the study panel, not through it. The
-   reservation is made once, against the collapsed dock, so none of these three
-   numbers may move when several hundred pixels of transcript appear. */
-const openSheet = await evaluate(DOCK_TRUTH);
-assert.equal(openSheet.reserved, beforeSheet.reserved,
-  `opening the sheet changed the dock's reservation: ${beforeSheet.reserved} → ${openSheet.reserved}`);
-assert.equal(openSheet.marginFloor, beforeSheet.marginFloor,
-  `opening the sheet re-laid out the study panel: ${beforeSheet.marginFloor} → ${openSheet.marginFloor}`);
-assert.equal(openSheet.toastLane, beforeSheet.toastLane,
-  `opening the sheet relocated the toast lane: ${beforeSheet.toastLane} → ${openSheet.toastLane}`);
-assert.ok(openSheet.rect.height > beforeSheet.rect.height + 100, "the sheet did not actually open");
-assert.ok(openSheet.mastTop >= 0,
-  `the sheet pushed the masthead — and the only control that stops the episode — off screen at ${openSheet.mastTop}`);
-console.log("sheet is a place", { before: beforeSheet.rect.height, open: openSheet.rect.height, reserved: openSheet.reserved });
+/* ── THE COLUMN SWAP ───────────────────────────────────────────────────────
+   RESTATED 2026-07-30, and it replaces the three assertions that stood here.
+
+   They asserted that opening the sheet moved NOTHING outside itself — the
+   dock's reservation, the study panel's floor and the toast lane all unchanged
+   — because Build 2's sheet was an overlay that opened upward over the panel.
+   That was honest about layout and dishonest about attention: an open sheet
+   covered most of the margin, so two surfaces claimed one column at once.
+
+   The column has two residents now and exactly one of them is unfolded. What
+   this gate holds is the geometry that makes that true: the two share a left
+   edge and a width, the folded tab sits at the column's own top, the player
+   takes everything from one gutter below it down to the frame's inset, and the
+   panel behind the tab is inert rather than merely hidden. */
+const openSheet = await evaluate(`(() => {
+  const dock = document.querySelector(".podcast-dock");
+  const margin = document.querySelector(".living-margin");
+  const tab = document.querySelector(".margin-fold-tab");
+  const panel = margin?.querySelector(".margin-workspace-panel");
+  const box = dock.getBoundingClientRect();
+  const marginBox = margin?.getBoundingClientRect() ?? null;
+  const tabBox = tab?.getBoundingClientRect() ?? null;
+  const line = document.querySelector(".podcast-transcript-line");
+  const lineStyle = line ? getComputedStyle(line) : null;
+  const measure = (() => {
+    if (!line || !lineStyle) return null;
+    const canvas = document.createElement("canvas");
+    const paint = canvas.getContext("2d");
+    paint.font = lineStyle.fontSize + " " + lineStyle.fontFamily;
+    const alphabet = "abcdefghijklmnopqrstuvwxyz ";
+    const per = paint.measureText(alphabet).width / alphabet.length;
+    const width = line.getBoundingClientRect().width
+      - parseFloat(lineStyle.paddingLeft) - parseFloat(lineStyle.paddingRight);
+    return { width: Math.round(width), characters: Math.round(width / per) };
+  })();
+  return {
+    dock: { top: Math.round(box.top), bottom: Math.round(box.bottom), left: Math.round(box.left), width: Math.round(box.width), height: Math.round(box.height) },
+    margin: marginBox ? { top: Math.round(marginBox.top), bottom: Math.round(marginBox.bottom), left: Math.round(marginBox.left), width: Math.round(marginBox.width) } : null,
+    folded: margin?.getAttribute("data-folded") ?? null,
+    tab: tabBox ? { height: Math.round(tabBox.height), text: tab.textContent?.trim() ?? "" } : null,
+    inert: panel?.hasAttribute("inert") ?? null,
+    /* Asked rather than counted. inert leaves the controls in the DOM — the
+       panel keeps its React state and its scroll, which is the whole point of
+       folding rather than closing — so what has to be true is that none of
+       them can TAKE focus. */
+    reachable: (() => {
+      const first = panel?.querySelector("button:not([disabled])");
+      if (!first) return 0;
+      const held = document.activeElement;
+      first.focus();
+      const took = document.activeElement === first ? 1 : 0;
+      if (held instanceof HTMLElement) held.focus();
+      return took;
+    })(),
+    innerHeight: window.innerHeight,
+    inset: Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--page-inset"))),
+    gutter: Math.round(parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--pane-gutter"))),
+    /* Measured through a probe rather than parsed. --frame-top is composed —
+       calc(var(--page-inset) + var(--register-strip)) — and getPropertyValue
+       hands back the SPECIFIED value for a custom property, which parseFloat
+       reads as NaN. A one-frame element with that height is the only way to
+       ask the engine what the token resolves to. */
+    frameTop: (() => {
+      const probe = document.createElement("div");
+      probe.style.cssText = "position:absolute;visibility:hidden;height:var(--frame-top)";
+      document.body.append(probe);
+      const height = Math.round(probe.getBoundingClientRect().height);
+      probe.remove();
+      return height;
+    })(),
+    bodyTop: Math.round(document.querySelector(".scripture-body").getBoundingClientRect().top),
+    verseWidth: Math.round(document.querySelector(".verse-line")?.getBoundingClientRect().width ?? 0),
+    measure,
+  };
+})()`);
+assert.equal(openSheet.folded, "true", "the player took the column and the margin did not fold");
+assert.equal(openSheet.margin.left, openSheet.dock.left,
+  "the two residents do not share a left edge");
+assert.equal(openSheet.margin.width, openSheet.dock.width,
+  "the two residents do not share a width");
+/* The column's own top is --frame-top, which is where `.scripture-body`
+   actually begins. The stylesheet composes --player-column-top from that token
+   rather than asserting a number, and this is where the two are compared. */
+assert.equal(openSheet.bodyTop, openSheet.frameTop,
+  `the study column begins at ${openSheet.bodyTop}, not at --frame-top ${openSheet.frameTop}`);
+assert.equal(openSheet.margin.top, openSheet.bodyTop, "the folded tab is not at the column's top");
+assert.equal(openSheet.dock.top, openSheet.margin.bottom + openSheet.gutter,
+  "the player does not begin one gutter below the folded tab");
+assert.equal(openSheet.innerHeight - openSheet.dock.bottom, openSheet.inset,
+  "the player does not reach the frame's own bottom inset");
+assert.equal(openSheet.inert, true, "the folded panel is hidden but still reachable");
+assert.equal(openSheet.reachable, 0, "a control inside the folded panel is still in the tab order");
+assert.match(openSheet.tab?.text ?? "", /·/, "the folded tab must name what it is still following");
+assert.ok(openSheet.tab.height <= 40, `the folded tab is ${openSheet.tab.height}px — that is a panel`);
+assert.ok(openSheet.dock.height > beforeSheet.rect.height + 200,
+  "the player did not actually take the column");
+/* THE MEASURE, which the column swap is what makes possible. 46 characters was
+   a documented defect and the old comment said it "cannot be more without
+   taking width from the study panel the dock is inscribed in" — the player IS
+   that panel's column now. The floor is the app's own reading band. */
+assert.ok((openSheet.measure?.characters ?? 0) >= 52,
+  `the transcript measures ${openSheet.measure?.characters} characters — the column swap bought nothing`);
+/* And it is not bought from the passage: the reading page's text is max-width
+   bound, so widening the column spends the stage's side air and stops there. */
+assert.equal(openSheet.verseWidth, beforeSheet.verseWidth,
+  `opening the player re-wrapped the reading page: ${beforeSheet.verseWidth} → ${openSheet.verseWidth}`);
+console.log("the column swap", openSheet);
+await screenshot("paper-column-open");
+await screenshot("paper-column-folded-tab", ".margin-fold-tab");
+
+/* THE SWAP ITSELF, mid-gesture. Both residents are moving here — the tab
+   unfolding downward and the player folding back into its corner — and the
+   only way to know whether that reads as one movement or as two surfaces
+   fighting is to look at a frame of it. 110ms is a little under half of
+   --transport-move, so it is the middle of the transition rather than either
+   end of it. The settle is zero on purpose; see `screenshot`. */
+await evaluate(`document.querySelector('.margin-fold-tab')?.click()`);
+await sleep(110);
+await screenshot("paper-column-swapping", null, { settle: 0 });
+await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "false"`);
+await sleep(320);
+/* And the resting state: the margin unfolded, the player folded into the
+   bottom of the same column. The two folded forms are each other's inverse and
+   this is the picture that says whether that is true. */
+await parkPointer();
+await screenshot("paper-column-rest");
+const rest = await evaluate(`(() => {
+  const dock = document.querySelector(".podcast-dock").getBoundingClientRect();
+  const margin = document.querySelector(".living-margin");
+  const box = margin.getBoundingClientRect();
+  return {
+    folded: margin.getAttribute("data-folded"),
+    tab: Boolean(document.querySelector(".margin-fold-tab")),
+    marginLeft: Math.round(box.left),
+    dockLeft: Math.round(dock.left),
+    marginWidth: Math.round(box.width),
+    dockWidth: Math.round(dock.width),
+    seam: Math.round(dock.top - box.bottom),
+    arrow: document.querySelector('.podcast-mast-icon[aria-expanded="false"]')?.getAttribute("aria-label") ?? null,
+  };
+})()`);
+assert.equal(rest.folded, null, "the margin is still folded with the player back in its corner");
+assert.equal(rest.tab, false, "the folded tab outlived the fold");
+assert.equal(rest.marginLeft, rest.dockLeft, "at rest the two residents do not share a left edge");
+assert.equal(rest.marginWidth, rest.dockWidth, "at rest the two residents do not share a width");
+assert.ok(rest.seam >= 0 && rest.seam <= 24, `the seam between the residents is ${rest.seam}px`);
+assert.match(rest.arrow ?? "", /takes the study column$/,
+  "the arrow on the folded resident must say what it is about to do");
+console.log("the column at rest", rest);
+/* Back open for the transcript assertions below, which are about the sheet's
+   own machine rather than about the column. */
+await clickElement('.podcast-mast-icon[aria-expanded="false"]');
+await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "true"`);
+await sleep(320);
 
 const transcriptAtRest = await evaluate(`(() => {
   const list = document.querySelector(".podcast-transcript");
@@ -1566,7 +1948,19 @@ for (const theme of ["dark", "porcelain", "onyx"]) {
      paper answering the reader's choice — and the plate holding the
      publisher's colour through all four, which is the one thing on it that
      must not follow the theme. */
-  await screenshot(`${theme}-margin-merged`, ".taught-here");
+  await screenshot(`${theme}-resources`, ".living-margin");
+  /* And the column swap in every atmosphere. Both residents are on paper the
+     reader chose — the folded tab, the open player, and the one seam between
+     them — so this is the picture that says whether the two forms still read
+     as one column when the polarity flips. */
+  await clickElement('.podcast-mast-icon[aria-expanded="false"]');
+  await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "true"`);
+  await evaluate(`document.activeElement instanceof HTMLElement && document.activeElement.blur()`);
+  await parkPointer();
+  await screenshot(`${theme}-column-open`);
+  await clickElement('.podcast-mast-icon[aria-expanded="true"]');
+  await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "false"`);
+  await parkPointer();
   if (theme === "dark") await screenshot("ink-dock-in-place");
 }
 
@@ -1626,11 +2020,36 @@ const forced = await evaluate(`(() => {
 })()`);
 assert.notEqual(forced.ground, forced.border, "the dock's forced ground and its hairline are the same colour");
 await screenshot("forced-colors-dock", ".podcast-dock");
-/* The taught-here family had NO forced-colors coverage at all: hover was the
-   only thing distinguishing a pointed-at row and it flattens to Canvas, the
-   masthead's 3px rule lost its distinction from the hairlines, and the two
-   real buttons on it had no focus rule anywhere in the stylesheet. */
-await screenshot("forced-colors-margin-merged", ".taught-here");
+/* The room in the reader's own two colours. Its ancestor had NO forced-colors
+   coverage at all — hover was the only thing distinguishing a pointed-at row
+   and it flattens to Canvas — and the card family it replaces it with is
+   covered here from the beginning: the face's hairline, the running mark, the
+   ↗ ring, and the plate's one documented opt-out. */
+await screenshot("forced-colors-resources", ".living-margin");
+/* The column in the reader's own two colours: the folded tab's kicker, its
+   seal dot where there is one, and the open player beside it. */
+await clickElement('.podcast-mast-icon[aria-expanded="false"]');
+await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "true"`);
+await evaluate(`document.activeElement instanceof HTMLElement && document.activeElement.blur()`);
+await parkPointer();
+await screenshot("forced-colors-column-open");
+await clickElement('.podcast-mast-icon[aria-expanded="true"]');
+await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "false"`);
+await parkPointer();
+const forcedRoom = await evaluate(`(() => {
+  const face = document.querySelector(".resource-card-face");
+  const plate = document.querySelector(".resource-card-plate");
+  return {
+    faceBorder: face ? getComputedStyle(face).borderTopColor : null,
+    faceGround: face ? getComputedStyle(face).backgroundColor : null,
+    plateOptOut: plate ? getComputedStyle(plate).forcedColorAdjust : null,
+  };
+})()`);
+assert.notEqual(forcedRoom.faceBorder, forcedRoom.faceGround,
+  "a card's own edge disappears in the reader's colours");
+assert.equal(forcedRoom.plateOptOut, "none",
+  "the plate must keep the publisher's own pair — the marks are approved reverses");
+console.log("forced colors, the room", forcedRoom);
 console.log("forced colors", forced);
 await cdp.send("Emulation.setEmulatedMedia", { features: [] });
 await sleep(320);
@@ -1662,6 +2081,37 @@ if (narrow.overlap !== null) {
 await parkPointer();
 await screenshot("paper-dock-narrow");
 console.log("narrow", narrow);
+
+/* ── Exclusivity at every width ────────────────────────────────────────────
+   The compact band is where the audit's ⊘ finding lived: an already-crushed
+   pane, plus a reservation for a dock whose height had grown, opened a strip
+   of dead canvas between them. The answer here is the answer at 1512 — the two
+   residents never hold the band at once. */
+await clickElement('.podcast-mast-icon[aria-expanded="false"]');
+await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "true"`);
+await sleep(360);
+const narrowOpen = await evaluate(`(() => {
+  const dock = document.querySelector(".podcast-dock").getBoundingClientRect();
+  const margin = document.querySelector(".living-margin");
+  const box = margin?.getBoundingClientRect() ?? null;
+  return {
+    folded: margin?.getAttribute("data-folded") ?? null,
+    marginHeight: box ? Math.round(box.height) : null,
+    overlap: box ? Math.round(box.bottom - dock.top) : null,
+    dockHeight: Math.round(dock.height),
+    inner: window.innerHeight,
+  };
+})()`);
+assert.equal(narrowOpen.folded, "true", "the compact margin did not fold for the open player");
+assert.ok(narrowOpen.marginHeight <= 44,
+  `the folded margin is ${narrowOpen.marginHeight}px at compact width`);
+assert.ok(narrowOpen.overlap <= 0,
+  `the folded margin runs ${narrowOpen.overlap}px under the open player`);
+await parkPointer();
+await screenshot("paper-column-narrow");
+console.log("narrow, open", narrowOpen);
+await clickElement('.podcast-mast-icon[aria-expanded="true"]');
+await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expanded") === "false"`);
 await cdp.send("Emulation.clearDeviceMetricsOverride");
 await sleep(760);
 
@@ -1692,19 +2142,27 @@ const refused = await evaluate(`(() => {
   swatch.remove();
   return {
     code: document.querySelector("audio").error?.code ?? null,
-    refusal: line?.textContent?.trim() ?? null,
+    /* The SENTENCE, without the chip beside it. The way out lives on the same
+       line since 2026-07-30 (see C1), so reading the row's whole text reads
+       the button too. */
+    refusal: line?.querySelector(".podcast-dock-refusal-said")?.textContent?.trim() ?? null,
     // A truncated reason is not a reason. The sentence has to fit the line it
     // was given, in the language the app is set to, without an ellipsis.
-    clipped: line ? line.scrollWidth > line.clientWidth : null,
+    clipped: (() => {
+      const said = line?.querySelector(".podcast-dock-refusal-said");
+      return said ? said.scrollWidth > said.clientWidth : null;
+    })(),
     // In the app's error ink. It used to be --resource-ink — the same colour as
     // every other word on the surface — on a dock otherwise byte-identical to
     // paused, so a failure cost ten pixels of body text and nothing else.
-    ink: line ? getComputedStyle(line).color : null,
+    ink: line ? getComputedStyle(line.querySelector(".podcast-dock-refusal-said") ?? line).color : null,
     error,
     seal: shell.getPropertyValue("--error").trim(),
     clock: document.querySelector(".podcast-dock-clock"),
     height: Math.round(document.querySelector(".podcast-dock").getBoundingClientRect().height),
     stop: Boolean(document.querySelector('[aria-label^="Stop"]')),
+    out: Boolean(document.querySelector(".podcast-mast-out")),
+    outSays: document.querySelector(".podcast-mast-out")?.getAttribute("aria-label") ?? null,
   };
 })()`);
 assert.equal(refused.code, 4, "the policy must refuse an unapproved media host");
@@ -1723,6 +2181,12 @@ assert.equal(refused.clock, null, "the refusal takes the clock's line rather tha
 assert.equal(refused.height, beforeRefusal.rect.height,
   `a failure changed the dock's height: ${beforeRefusal.rect.height} → ${refused.height}`);
 assert.equal(refused.stop, true, "a failed dock must still be closeable");
+/* C1 · and the way out the sentence is written around. "The way out is the
+   link that was always beside play" was still in the code while the link
+   itself had become a sentence inside a sheet that is SHUT in this state. */
+assert.equal(refused.out, true, "the refusal has no route to the publisher's own page");
+assert.match(refused.outSays ?? "", /^Open .+ at .+ — opens the official page$/,
+  "the way out does not say where it goes");
 await parkPointer();
 await screenshot("paper-dock-refused", ".podcast-dock");
 console.log("refused", refused);
@@ -1731,9 +2195,15 @@ console.log("refused", refused);
 // dock rather than left open on a server that is not ours.
 await clickElement('[aria-label^="Stop"]');
 await waitFor(`!document.querySelector(".podcast-dock")`);
+/* The dock leaves immediately and the FILE leaves one ramp later — ~120ms, so
+   that letting go of a running episode is not a click in the reader's ears.
+   See the ease note in PodcastPlayer: the ramp's callback is what releases the
+   element, so this waits for the release rather than racing it. */
+await waitFor(`document.querySelector("audio")?.getAttribute("src") === null`, 2_000);
 const stopped = await evaluate(DOCK_TRUTH);
 assert.equal(stopped.present, false);
 assert.equal(stopped.audioSrc, null, "stopping must release the publisher's file, not merely pause it");
+assert.equal(stopped.folded, null, "stopping must give the study column back to the margin");
 console.log("stopped", stopped);
 
 await navigatePassage(original.passage);

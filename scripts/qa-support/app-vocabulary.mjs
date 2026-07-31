@@ -228,6 +228,23 @@ export const ATTRIBUTE_VOCABULARY = Object.freeze({
     source: "src/renderer/components/CommandPalette.tsx · QueryShape, plus \"resting\" before anything is typed",
     values: ["resting", "reference", "phrase", "question", "name", "text"],
   },
+  // How the Resources room is laying its cards out. Added 2026-07-30, and the
+  // only entry in this table that is deliberately NOT settled: the discovery
+  // treatment is the open question of the player wave, and the reader chooses
+  // between three renderings of the same cards and the same ordering.
+  // "digest" is Overview's four-card square, which is the room's card at the
+  // room's smaller size and never a fourth shape.
+  "data-discovery": {
+    source: "src/renderer/components/Resources.tsx · DiscoveryShape",
+    values: ["weight", "even", "spine", "digest"],
+  },
+  // Which of the two card sizes this one takes. It is a fact about the answer
+  // rather than about the card: a treatment long enough to be the reason a
+  // reader is here takes the full width, and everything else is a tile.
+  "data-weight": {
+    source: "src/renderer/components/Resources.tsx · ResourceCard",
+    values: ["heavy", "light"],
+  },
   "data-tool-armed": {
     source: "src/renderer/components/MarkingSurface.tsx · const toolKey",
     // "false" is a real emitted string, not a boolean: `tool?.type ?? "false"`.

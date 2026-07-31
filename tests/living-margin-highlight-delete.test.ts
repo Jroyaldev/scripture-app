@@ -46,6 +46,14 @@ test("LivingMargin removes highlights by the persisted highlight id from the pin
     useCallback<T extends (...args: never[]) => unknown>(fn: T): T {
       return fn;
     },
+    /* Added 2026-07-30 with the column swap. The panel reads one boolean off
+       the player's module — whether the player has taken the study column — so
+       that the two residents of that column cannot both believe they are open.
+       A render-only stub answers it the way React would on a first render:
+       from the snapshot, with nothing subscribed. */
+    useSyncExternalStore<T>(_subscribe: unknown, getSnapshot: () => T): T {
+      return getSnapshot();
+    },
   };
 
   const marginData = {

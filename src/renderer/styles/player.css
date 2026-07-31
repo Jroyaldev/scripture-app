@@ -122,6 +122,72 @@
   --player-mark-h: calc(var(--resource-mark-height) * 0.8);
 }
 
+/* ── The column swap ────────────────────────────────────────────────────────
+
+   SUPERSEDES the corner sheet, dated 2026-07-30.
+
+   Build 2's contract is three paragraphs up and it is kept as written for the
+   FOLDED player: the collapsed dock publishes its height once, the study panel
+   reserves that number as its floor, and nothing outside the dock moves. What
+   is superseded is what opening it does.
+
+   The sheet used to open upward as an OVERLAY, over the study panel and out of
+   its reservation — the honest answer to a real problem (a measurement wired to
+   a violent consequence: the panel shortening by several hundred pixels in a
+   300ms grid transition, mid-scroll). It bought stability with attention. At
+   `max-height: min(56vh, 520px)` an open sheet covered most of the margin, so
+   "read the transcript while the passage list is open" became sequential where
+   it had been simultaneous, and two surfaces claimed one column at once.
+
+   The reader chose the better answer: the column has TWO RESIDENTS and exactly
+   one of them is unfolded. Open the player and it takes the whole side column
+   while the Living Margin folds to a single line naming what it still follows;
+   unfold the margin and the player folds back to its corner. Nothing overlaps,
+   nothing is covered, nothing is destroyed, and the two folded forms mirror
+   each other — a tab at the top of the column with its arrow pointing down, a
+   dock at the bottom with its arrow pointing up.
+
+   Exclusivity is enforced in ONE place, and it is not this file: `playerExpanded`
+   in PodcastPlayer.tsx is the only boolean either resident reads. CSS keys on
+   the dock's own `data-expanded`, so the two can never disagree.
+
+   THE COLUMN'S OWN TOP is the one number here that is not derived from a
+   token — see --player-column-top in styles.css, which is measured by the tour
+   rather than asserted by this comment. */
+.podcast-dock[data-expanded="true"] {
+  /* The column widens when the voice is the thing being read. The dock has
+     always been "inscribed in the study panel's own footprint", and it still
+     is: --player-column-w is what the column IS while the player owns it, and
+     the folded margin above takes exactly the same width, so the two residents
+     share one edge on both sides.
+
+     It is a measure decision more than a layout one — see .podcast-transcript,
+     where the arithmetic is. A 380px column gives a 17px reading serif about
+     46 characters; the app gives its own page 60–75. */
+  width: var(--player-column-w);
+  height: calc(
+    100vh - var(--player-column-top) - var(--page-inset)
+    - var(--margin-fold-h) - var(--pane-gutter)
+  );
+  /* The height above IS the cap now. Leaving the old one in place would clamp
+     the column to 56vh in the one state that is supposed to fill it. */
+  max-height: none;
+
+  /* Four rows: the mast, the sheet, the transport and the rail. The sheet is
+     the one that grows, and the other three are the same height they are when
+     the dock is folded — which is what makes the folded and unfolded players
+     the same object rather than two. (The two live regions above them are
+     `.sr-only`, which is `position: absolute`, so they are not grid items and
+     do not count here.) */
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
+}
+
+/* With no margin in the shell there is no second resident, so there is no
+   folded tab to clear and the player takes the column from its own top. */
+.app-shell:not(:has(.living-margin)) .podcast-dock[data-expanded="true"] {
+  height: calc(100vh - var(--player-column-top) - var(--page-inset));
+}
+
 /* A shelved Dock owns the bottom band of the READING STAGE. That band is only
    this player's problem when the study panel is closed and the dock is floating
    over the page; with the panel open the two surfaces are in different columns
@@ -193,19 +259,30 @@
      name with no mark was "40 MINUTES IN THE OLD TES…".
 
      Five things want this line: the plate, the kind chip, the passage chip and
-     three 24px icons. The order in which they yield is:
+     three 24px icons.
 
-       1. the passage chip ellipses, because it is a shortcut to something the
-          sheet also names and the reading canvas also holds;
-       2. the plate shrinks — and the mark shrinks WITH it, by `contain`, so
+     RESTATED 2026-07-30 (R1), and the order is reversed. It used to read:
+     "1. the passage chip ellipses, because it is a shortcut to something the
+     sheet also names and the reading canvas also holds; 2. the plate shrinks;
+     3. nothing else." That ranked the READER'S OWN LOCATION below the
+     publisher's wordmark, by design, in a row whose whole job is to say what
+     is playing and where — and the name-only case proved it, truncating both
+     identifiers at once: "NAKED BIBLE POD…" beside "1 Samuel 30:…".
+
+     The passage is the reader's; the wordmark is the publisher's; the surface
+     belongs to the app. So:
+
+       1. the plate shrinks — and the mark shrinks WITH it, by `contain`, so
           the artwork is never clipped and the name ellipses inside its own
           colour rather than against the paper;
+       2. the passage chip ellipses, once the wordmark has already yielded;
        3. nothing else. The kind chip and the three icons are `flex: none`.
 
-     44% is where the widest mark on the shelf (Spoken Gospel's lockup, 7.671:1)
-     stops shrinking at 380px: 0.44 × 348 = 153, and the mark at 16.8px tall
-     wants 129 plus 16 of padding. */
-  max-width: 44%;
+     30% rather than 44%: 0.30 × 348 = 104, which still holds the six approved
+     marks at plate height (the widest, Spoken Gospel's 7.671:1 lockup, wants
+     129 at 16.8px and shrinks by `contain` to fit — a mark that shrinks is
+     still a mark, and a passage cut to "1 Samuel 30:…" is not a passage). */
+  max-width: 30%;
   border-radius: var(--radius-sm);
   background: var(--resource-source);
   color: var(--resource-ink);
@@ -479,6 +556,21 @@
   min-height: 0;
   max-height: min(56vh, 520px);
   overflow-y: auto;
+  /* R5 · opaque, dated 2026-07-30. The sheet fades in from zero over the study
+     panel, and since Build 2 both surfaces are cream: for the length of the
+     fade the panel's own text was legible THROUGH the transcript, in the same
+     colour, the same face and the same size, and the two interleaved into
+     nonsense. A surface arriving has to arrive against paper. (The column swap
+     folds the margin away underneath it, so this now guards the frame between
+     the fold and the fade rather than the whole transition — which is exactly
+     one frame, and one frame of that is still one too many.) */
+  background: var(--bg-float);
+  /* R4 · the bar gets a lane of its own. It used to draw over the sticky
+     header stack — through the right edge of CLEAR, which is the only way out
+     of a search short of retyping, and through the moment card's own line. A
+     control whose hit area is under a scrollbar that scrolls something else is
+     a control that misses. */
+  scrollbar-gutter: stable;
   /* Horizontal is CLIPPED, not merely unscrolled. `overflow-y: auto` alone
      computes the other axis to `auto` too, so anything a pixel too wide turns
      this into a horizontally scrollable box — and then any focus or
@@ -499,6 +591,52 @@
   opacity: 1;
   transform: none;
   transition-delay: 60ms, 0ms;
+
+  /* ── A column, not a card ─────────────────────────────────────────────────
+     The sheet fills the column the player has taken, and its CHILDREN own the
+     scrolling rather than this box. That is the difference between a sheet and
+     a place: a 520px card can be one scroller with everything inside it, and a
+     700px column with a transcript in it cannot — the transcript would sit at
+     its own 340px cap in the middle of half a screen of empty paper, and the
+     reader would have two scrollbars to choose between for one act.
+
+     So: the episode's masthead, the moment and the tabs are fixed at the top,
+     and whichever panel is open takes the rest. `overflow-y: auto` survives as
+     the floor for a short window — if the head block alone outgrows the
+     column, this scrolls rather than clipping the transcript to nothing. */
+  display: flex;
+  flex-direction: column;
+  max-height: none;
+  height: 100%;
+}
+
+.podcast-dock[data-expanded="true"] .podcast-sheet {
+  min-height: 0;
+}
+
+.podcast-dock[data-expanded="true"] :where(.podcast-transcript-block, .podcast-refs-view) {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.podcast-dock[data-expanded="true"] .podcast-refs-view { overflow-y: auto; }
+
+.podcast-dock[data-expanded="true"] .podcast-transcript-stage {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.podcast-dock[data-expanded="true"] .podcast-transcript {
+  flex: 1 1 auto;
+  /* The floor is what keeps the two scrollers from fighting on a short window:
+     below this the sheet takes over the scrolling and the transcript stops
+     shrinking. */
+  min-height: 180px;
+  max-height: none;
 }
 
 /* ── The episode ──────────────────────────────────────────────────────────── */
@@ -616,54 +754,77 @@
 
 .podcast-chapter[aria-current="true"] .podcast-chapter-ref { font-weight: var(--fw-semibold); }
 
-/* ── The view switcher ────────────────────────────────────────────────────── */
+/* ── The view switcher ──────────────────────────────────────────────────────
 
-/* Two words and a count, on a rail rather than as buttons: it is a place
-   indicator more than a control, and a pair of drawn buttons in a 380px sheet
-   reads as chrome competing with the words underneath. */
+   ONE TAB IDIOM, dated 2026-07-30 (C5).
+
+   This was a segmented control: a filled --bg-float pill with a 1px ring,
+   sitting in a --player-hover tray. The app's own law for a tab is written at
+   styles.css §"margin-tab" — transparent ground, a change of INK, and "Law 2 ·
+   a 2px seal mark on the edge nearest the content it opens" in --study-gold —
+   and the two were on screen at once, about forty pixels apart, in the same
+   column: the margin's four tabs above and this pair below.
+
+   It was defensible while the sheet was a dark, deliberately foreign surface
+   with the publisher's paint on it. Build 2 made the surface the app's own and
+   left the last foreign control standing on it; the column swap puts the two
+   strips in the same column at the same width. There is one law and this obeys
+   it: same face, same 12.5px, same seal on the edge nearest what it opens,
+   same underline rule beneath the row.
+
+   It keeps its own scale — this strip names two panels inside a player, not
+   four lenses on a study — but scale is not idiom. */
 .podcast-views {
   display: flex;
-  gap: 2px;
-  margin: 0 0 var(--sp-xs);
-  padding: 3px;
-  border-radius: var(--radius-md);
-  background: var(--player-hover);
+  gap: 18px;
+  margin: 0 calc(-1 * var(--sp-sm)) var(--sp-xs);
+  padding: 0 var(--sp-md);
+  border-bottom: 1px solid var(--border-subtle);
+  background: none;
 }
 
 .podcast-view-tab {
-  flex: 1;
-  display: flex;
+  position: relative;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 5px var(--sp-sm);
+  gap: 5px;
+  min-height: 30px;
+  padding: 0 2px;
   border: 0;
-  /* The one derived radius the canon actually asks for: a tray at 8 with 3px of
-     padding holds a child at 5, and that is what makes the two curves read as
-     concentric rather than as two decisions. */
-  border-radius: calc(var(--radius-md) - 3px);
   background: none;
   color: var(--text-tertiary);
-  font: var(--fw-medium) 0.6875rem/1 var(--font-ui);
+  font: var(--fw-medium) 0.78125rem/1 var(--font-ui);
+  white-space: nowrap;
   cursor: pointer;
-  transition: background var(--transition-fast), color var(--transition-fast);
+  transition: color var(--transition-fast);
 }
 
-.podcast-view-tab[aria-selected="true"] {
-  background: var(--bg-float);
-  box-shadow: 0 0 0 1px var(--border-subtle);
-  color: var(--text-primary);
-}
-
-.podcast-view-tab:not([aria-selected="true"]):hover { color: var(--text-primary); }
-.podcast-view-tab:not([aria-selected="true"]):active { background: var(--player-hover-strong); }
-
-.podcast-view-count {
-  padding: 0 4px;
+/* Law 2 · the seal on the edge nearest the content it opens. */
+.podcast-view-tab::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  bottom: -1px;
+  left: 0;
+  height: 2px;
   border-radius: var(--radius-mark);
-  background: var(--player-hover-strong);
-  font: 0.5625rem/1.6 var(--font-mono);
+  background: var(--study-gold);
+  opacity: 0;
+  transition: opacity var(--transition-fast);
+}
+
+.podcast-view-tab[aria-selected="true"] { color: var(--text-primary); }
+.podcast-view-tab[aria-selected="true"]::after { opacity: 1; }
+.podcast-view-tab:not([aria-selected="true"]):hover { color: var(--text-secondary); }
+
+/* A count is a fact about the tab, on the tab's own line and in its own face —
+   the margin's rule, and it replaces a mono chip on a tinted pill. */
+.podcast-view-count {
+  color: var(--text-tertiary);
+  font-family: var(--font-ui);
+  font-size: 0.78125rem;
   font-variant-numeric: tabular-nums;
+  font-weight: var(--fw-normal);
 }
 
 /* ── Walking the hits ──────────────────────────────────────────────────────
@@ -1072,20 +1233,15 @@
 
 .podcast-transcript-search:focus-visible { outline: none; }
 
+/* C7, dated 2026-07-30 — the unlabelled ring is gone rather than named.
+   It was a hand-rolled mask-composite circle standing between the query and
+   the ‹ 1/34 › group: no label, no state, and no job that CLEAR two controls to
+   its right does not already do in a word. A search row carrying five controls
+   does not get a sixth that means "clear" a second time. */
 .podcast-transcript-search::-webkit-search-cancel-button {
   -webkit-appearance: none;
-  width: 11px;
-  height: 11px;
-  background: currentColor;
-  opacity: 0.4;
-  cursor: pointer;
-  mask: radial-gradient(circle, #000 99%, transparent 100%) exclude,
-    linear-gradient(#000, #000);
-  mask-composite: exclude;
-  border-radius: 50%;
+  display: none;
 }
-
-.podcast-transcript-search::-webkit-search-cancel-button:hover { opacity: 0.8; }
 
 /* The whole provenance claim, in four letters. The model id belongs in the
    title attribute and in the file, not permanently in a reader's eyeline —
@@ -1114,18 +1270,16 @@
    every line is noise competing with the words. The time survives as the seek
    target behind each line, which is the only thing it was ever needed for. */
 .podcast-transcript {
-  /* A window onto a voice, not a list. Roughly five lines, and the height
-     yields on a short screen rather than pushing the masthead off the top. */
+  /* A window onto a voice, not a list. Roughly five lines while the player is
+     folded into its corner; the whole column while it is open — see the
+     expanded rules above, where this cap is lifted. */
   max-height: clamp(160px, 38vh, 340px);
   margin: 0;
-  /* 30 above, and below the pill's own height plus its inset plus a gutter —
-     44 — so the LAST hit in a filtered list can be pressed. Scrolled to its
-     end, the final row used to sit exactly where the Follow pill floats, and a
-     coordinate press on it landed on the pill: the search cleared and it read
-     as a seek that never happened. Constant in both states, so nothing moves
-     when the pill appears. */
-  padding: 30px 0 44px;
-  scroll-padding-block-end: 44px;
+  /* 30 above and 12 below. It used to be 44 below, to hold a lane open for the
+     Follow pill floating over the list — the pill has its own lane now (see
+     .podcast-transcript-lane), so this is just the fade's own room. */
+  padding: 30px 0 12px;
+  scroll-padding-block-end: 12px;
   overflow-y: auto;
   /* Horizontal is CLIPPED, not merely unscrolled — see .podcast-sheet-inner. */
   overflow-x: clip;
@@ -1143,7 +1297,7 @@
     to bottom,
     transparent 0,
     #000 34px,
-    #000 calc(100% - 44px),
+    #000 calc(100% - 34px),
     transparent 100%
   );
 }
@@ -1156,13 +1310,33 @@
    gained horizontal overflow, the scrollbar appeared and vanished as the
    active line moved, and the whole box shifted a few pixels each time — the
    wiggle. Depth here is carried by focus and contrast, which cost no layout. */
-/* The measure, stated rather than left to happen. A 380px dock leaves a 324px
-   column, which at this size is about 46 characters — short of the 60–75 the
-   app gives the reading page, and it cannot be more without taking width from
-   the study panel the dock is inscribed in. What the app CAN give it, and now
-   does, is its own reading face at its own reading leading (--lh-reading, the
-   32px band's own ratio) instead of 17px at 1.5 chosen for this box alone. The
-   line is a little smaller and reads a good deal better. */
+/* ── The measure ────────────────────────────────────────────────────────────
+   RESTATED 2026-07-30, because the constraint it was written under is gone.
+
+   It said: "a 380px dock leaves a 324px column, which at this size is about 46
+   characters — short of the 60–75 the app gives the reading page, and it
+   cannot be more without taking width from the study panel the dock is
+   inscribed in." Both halves were true and the second is what changed. The
+   player IS the study panel's column now, for as long as it is open, so there
+   is no second pane to take width from — there is one column with one resident
+   in it, and the resident is a page of body copy.
+
+   The arithmetic, at 1512 where --player-column-w resolves to 484:
+
+     484 column − 32 the dock's own two content edges = 452
+     452 + 16 the transcript block's bleed  (margin: 0 −8) = 468
+     468 − 24 the line's own two edges                     = 444px of text
+
+   444px of 16px Source Serif is about 60 characters, which is the bottom of
+   the app's own band rather than eleven characters below it. The ceiling on
+   --player-column-w is set by the other side of the same trade: the reading
+   page's text is max-width bound, so this spends the stage's side air and
+   stops before it spends a line of the passage. The tour measures both — the
+   characters here, and that the verse column did not re-wrap.
+
+   Folded, the dock is 380 and the transcript is the 46-character window it has
+   always been. That is not a defect at 380: it is a corner, and nobody reads a
+   corner. */
 .podcast-transcript-line {
   display: block;
   width: 100%;
@@ -1212,8 +1386,23 @@
 
 /* Past the ramp's reach. The ramp is written onto three lines either side of
    the voice and the box shows fewer than four, so this is every line nobody is
-   looking at — and on a two-hour episode that is 2,274 of them. */
-.podcast-transcript-line:not([data-d]) { opacity: 0.22; }
+   looking at — and on a two-hour episode that is 2,274 of them.
+
+   R3, dated 2026-07-30 — one declaration, and it is the number rather than the
+   blur. This was 0.22, the same value as `data-d="3"`, so the ramp's last two
+   steps were identical in opacity and distinguishable only by a blur running
+   the WRONG WAY: the farther line was the sharper one, and that seam is what
+   read as banding at the ramp's own edge.
+
+   The audit's smallest fix was to give this the blur its neighbour has. That
+   closes the seam and reopens the thing this rule was written to close: blur
+   is a per-element paint pass, and on a two-hour episode it is 2,274 of them
+   to shade a window that shows four lines. The other one-line fix does the
+   same job — 1 → 0.5 → 0.32 → 0.22 → 0.16 is monotone, so nothing inverts, and
+   nothing behind the ramp is painted twice. It also says the truer thing:
+   blur means "just behind the voice", and a line twenty minutes away is not
+   behind the voice, it is elsewhere. */
+.podcast-transcript-line:not([data-d]) { opacity: 0.16; }
 
 /* No voice in the list to be near — a search, or nothing playing yet. Said
    once on the container rather than by flattening every line's distance to
@@ -1225,15 +1414,23 @@
   filter: none;
 }
 
-/* Pointing at a line brings it into focus wherever it sits, so a reader can
-   read ahead without stopping the audio or losing the playhead. */
-.podcast-transcript-line:hover {
-  background: var(--player-hover);
-  opacity: 0.92;
-  filter: none;
-}
+/* Pointing at a line lifts it enough to read ahead without stopping the audio
+   or losing the playhead.
 
-.podcast-transcript-line[data-d="0"]:hover { background: none; }
+   R2, dated 2026-07-30. This used to promote the pointed-at line to full
+   sharpness AND give it a fill — `background: var(--player-hover); opacity:
+   0.92; filter: none` — which put two lines on the surface competing to be the
+   voice, and gave the SLAB to the one that is not playing. Worse, the slab was
+   the same grey as the moment card 400px above it, so one fill meant both
+   "this is the reader's declared moment" and "the pointer happens to be here".
+
+   Sharpness means playing, and nothing else. Hover is a mark on the edge — the
+   same 2px inset the app uses wherever it says "this row, right now" — and the
+   line keeps whatever distance from the voice it actually has. */
+.podcast-transcript-line:hover {
+  box-shadow: inset 2px 0 0 var(--border-medium);
+  opacity: 0.92;
+}
 .podcast-transcript-line:active { background: var(--player-press); }
 
 .podcast-transcript-line:focus-visible {
@@ -1320,22 +1517,32 @@
 
 /* ── The offer back ───────────────────────────────────────────────────────── */
 
+/* ── The pill's own lane ────────────────────────────────────────────────────
+   C6, dated 2026-07-30. The pill was absolutely positioned over the bottom of
+   the list, and a dark pill drawn over a transcript covers about half of
+   whichever line it lands on — a different line every time the reader scrolls.
+   The list's bottom padding had already been widened to 44px so that the last
+   line could still be PRESSED, which is the same defect being admitted one row
+   at a time.
+
+   The lane is in flow, it is always there, and it is the same height whether
+   or not the pill is in it — so nothing moves when the pill arrives, and the
+   words end where the lane begins. It is also why the pill can now sit after
+   the list in the document, which is the reading order it always looked like
+   it had. */
+.podcast-transcript-lane {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  flex: none;
+}
+
 /* One word, one line, and it cannot become two: a pill that wraps is a pill
    that was the wrong size. Drawn in the app's own ink rather than a brand hex
    floating over the app's paper — and it casts no shadow of its own, because
    it is INSIDE the one surface that is already casting the app's one shadow. */
 .podcast-transcript-follow {
-  position: absolute;
-  /* Stated, because DOM order no longer states it. The pill comes BEFORE the
-     list in the document — a control a keyboard reader can only reach by
-     tabbing through two thousand lines is not an offer — and the lines carry
-     `filter`, which makes each blurred one a stacking context painted in the
-     same pass as a positioned element. In tree order that put the three lines
-     either side of the voice ON TOP of the pill, and a press on it landed on
-     the line underneath. One positive index puts it back above them for good. */
-  z-index: 1;
-  left: 50%;
-  bottom: var(--sp-sm);
   display: flex;
   align-items: center;
   gap: 5px;
@@ -1347,7 +1554,6 @@
   font: var(--fw-medium) 0.6875rem/1 var(--font-ui);
   white-space: nowrap;
   cursor: pointer;
-  transform: translateX(-50%);
   animation: podcast-follow-in var(--transport-move) var(--ease-transport);
   transition: filter var(--transition-fast);
 }
@@ -1373,8 +1579,8 @@
 }
 
 @keyframes podcast-follow-in {
-  from { opacity: 0; transform: translate(-50%, 7px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
+  from { opacity: 0; transform: translateY(7px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 /* ── What the sheet says when it has nothing ──────────────────────────────── */
@@ -1456,16 +1662,37 @@
   margin: 0;
 }
 
+/* The publisher's own span label, in the chapter form of this line. (Still
+   never supplied — see .podcast-chapters.) */
 .podcast-dock-now-ref {
   flex: 0 0 auto;
   font: var(--fw-semibold) 0.8125rem/1.3 var(--font-reading);
   letter-spacing: -0.008em;
 }
 
+/* R1, dated 2026-07-30 — the two ranks, the right way round.
+   The title is the only string on this row that identifies the thing playing,
+   and it was set in the secondary ramp at 12px and clipped, under a relation
+   word in semibold serif at full ink. A qualifier had the weight of a subject
+   and the dock at rest could not say what was in it. */
 .podcast-dock-now-title {
+  flex: 0 1 auto;
+  overflow: hidden;
+  color: var(--text-primary);
+  font: var(--fw-semibold) 0.8125rem/1.35 var(--font-ui);
+  letter-spacing: -0.006em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Which of the four claims this is — the thing a reader cannot recover from
+   anywhere else once the player is folded. It is a qualifier, so it is set as
+   one: the small UI face, ink-3, and it yields the line before the title does. */
+.podcast-dock-now-said {
+  flex: 0 4 auto;
   overflow: hidden;
   color: var(--text-tertiary);
-  font: 0.75rem/1.3 var(--font-ui);
+  font: 0.6875rem/1.4 var(--font-ui);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -1527,6 +1754,26 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.podcast-dock-refusal-said {
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The third glyph, for one state. It is the mast's own icon in every respect —
+   same box, same hover, same ring — and it is drawn only while the dock has a
+   failure on it, so the row keeps its width budget in the eleven states that
+   are not failures. */
+.podcast-mast-out { color: var(--error); }
+.podcast-mast-out:hover { color: var(--error); }
+
+/* The way out, put back 2026-07-30 (C1) — on the MAST rather than here. The
+   refusal's own copy is written around "the link that was always beside play",
+   and the link had become a sentence inside a sheet that is shut in exactly
+   this state. It could not come back to this line: the corner's line column is
+   about 226px and the sentence wants 223 of them, so a chip beside it ellipses
+   the reason. See .podcast-mast-out. */
 
 .podcast-rate {
   padding: 1px 6px;
@@ -1928,6 +2175,8 @@
   .podcast-transcript-follow,
   .podcast-transcript-cite,
   .podcast-transcript-step,
+  .podcast-view-tab,
+  .podcast-view-tab::after,
   .podcast-walk-step,
   .podcast-walk-leave,
   .podcast-ref-read,
@@ -2102,6 +2351,9 @@
      the plate keeps the publisher's own pair. */
   .podcast-mast-kind,
   .podcast-mast-passage,
+  .podcast-dock-now-said,
+  .podcast-view-tab,
+  .podcast-view-count,
   .podcast-episode-title,
   .podcast-episode-meta,
   .podcast-episode-official,
@@ -2159,21 +2411,25 @@
   .podcast-rate,
   .podcast-transcript-clear,
   .podcast-walk-leave,
-  .podcast-view-tab,
   .transport-play,
   .transport-skip {
     border: 1px solid ButtonText;
     background: ButtonFace;
     color: ButtonText;
   }
-  .podcast-view-tab[aria-selected="true"],
+  /* The tab strip obeys the app's law here too: no fill, and the seal mark is
+     the reader's own Highlight. A selected tab whose only signal is a
+     colour-mix background is a strip of two identical words in this mode,
+     which is what the old segmented control left behind. */
+  .podcast-views { border-bottom-color: CanvasText; }
+  .podcast-view-tab[aria-selected="true"] { color: Highlight; }
+  .podcast-view-tab::after { background: Highlight; }
   .podcast-chapter[aria-current="true"],
   .podcast-transcript-follow {
     background: Highlight;
     color: HighlightText;
   }
   .podcast-transcript-follow { border: 1px solid HighlightText; }
-  .podcast-view-count { background: transparent; color: inherit; }
   .podcast-ref:hover,
   .podcast-chapter:hover,
   .podcast-transcript-line:hover { background: Highlight; color: HighlightText; }
@@ -2228,6 +2484,17 @@
     bottom: var(--page-inset);
     left: var(--page-inset);
     width: auto;
+  }
+
+  /* The column is a band here, so the open player takes a share of the height
+     rather than a width — and it takes exactly the share the folded margin
+     above it reserves, from the same token. Without this the desktop rule's
+     full-column height applies at 900px too and the player draws straight over
+     the resident it just folded, which is the one thing the swap exists to
+     stop. */
+  .podcast-dock[data-expanded="true"] {
+    width: auto;
+    height: var(--player-compact-h);
   }
 
   /* With the room, the plate stops competing: a full-width mast has no width

@@ -14,7 +14,26 @@ const RAW_TAB_REFERENCE_LIMIT = TAB_LIMIT * 2;
 // 512 leaves ample format headroom while bounding nested validation work.
 const SELECTION_PIECE_LIMIT = 512;
 
-type PersistedMarginTab = "overview" | "connections" | "passage" | "notes";
+/**
+ * The margin's lenses, as the store will keep them.
+ *
+ * `resources` added 2026-07-30, and it is a REPAIR rather than a feature. The
+ * study panel gained a fifth lens in the renderer — `NavigationMarginTab` in
+ * src/renderer/utils/navigationHistory.ts — and this list did not follow it.
+ * `normalizePassageView` returns null for an unknown tab, which means it
+ * rejects the WHOLE passage view rather than the one field: the moment a
+ * reader opened Resources, every workspace write came back changed, the
+ * renderer's acknowledgement check correctly saw a snapshot it had not asked
+ * for, and the tab strip reported "Library did not answer" with a Retry that
+ * could never succeed — because the next write was rejected the same way.
+ *
+ * Two things were wrong at once and this fixes both: the reader's own lens is
+ * remembered again, and the strip stops claiming a failure that never was.
+ * The evidence is in the audit captures: docs/ui-audit/podcast-player/
+ * paper-column-open.png shipped in two consecutive waves with that banner
+ * across the top bar, because the tour opens Resources before it captures.
+ */
+type PersistedMarginTab = "overview" | "resources" | "connections" | "passage" | "notes";
 type PersistedEntityKind = "person" | "place" | "other";
 
 export type PersistedMarginScope =
@@ -211,6 +230,7 @@ function normalizeScope(value: unknown): PersistedMarginScope | undefined {
 
 const MARGIN_TABS = new Set<PersistedMarginTab>([
   "overview",
+  "resources",
   "connections",
   "passage",
   "notes",

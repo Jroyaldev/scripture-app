@@ -1,6 +1,11 @@
 export const NAVIGATION_HISTORY_LIMIT = 50;
 
-export type NavigationMarginTab = "overview" | "connections" | "passage" | "notes";
+/* "resources" joined the four on 2026-07-30 — the study panel's fifth lens.
+   This union is the only place a margin tab is named for history and session
+   restore; nothing validates it against a list at runtime, so an entry saved
+   by an older build restores as one of the four it knew and a `resources`
+   entry restores as itself. */
+export type NavigationMarginTab = "overview" | "resources" | "connections" | "passage" | "notes";
 
 export type NavigationMarginScope =
   | { kind: "kept"; book: string; chapter: number; verse: number; endVerse?: number; label?: string }
