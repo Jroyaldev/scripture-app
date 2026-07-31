@@ -18,14 +18,14 @@ export const MODELS = [
     key: 'deepseek-v4-flash',
     requestedSlug: 'deepseek/deepseek-v4-flash-0731',
     label: 'DeepSeek V4 Flash',
-    env: { key: 'DEEPSEEK_API_KEY', baseUrl: 'DEEPSEEK_BASE_URL', model: 'DEEPSEEK_MODEL' },
+    env: { key: 'DEEPSEEK_API_KEY', baseUrl: 'DEEPSEEK_BASE_URL', model: 'DEEPSEEK_MODEL', reasoning: 'DEEPSEEK_REASONING' },
     defaultBaseUrl: 'https://api.deepseek.com',
   },
   {
     key: 'gpt-5.6-luna',
     requestedSlug: 'openai/gpt-5.6-luna',
     label: 'GPT-5.6 Luna',
-    env: { key: 'OPENAI_API_KEY', baseUrl: 'OPENAI_BASE_URL', model: 'OPENAI_MODEL' },
+    env: { key: 'OPENAI_API_KEY', baseUrl: 'OPENAI_BASE_URL', model: 'OPENAI_MODEL', reasoning: 'OPENAI_REASONING' },
     defaultBaseUrl: 'https://api.openai.com/v1',
   },
 ];
@@ -219,6 +219,16 @@ export class ModelClient {
     this.spec = spec;
     this.apiKey = readEnv(spec.env.key);
     this.baseUrl = (readEnv(spec.env.baseUrl) || spec.defaultBaseUrl).replace(/\/$/, '');
+    /* Reasoning effort, pinned rather than defaulted. The first benchmark ran
+       both models at their vendor DEFAULTS, and the run records show what that
+       meant: DeepSeek spent 9-18K reasoning tokens per tour, luna 0.3-1.6K -
+       the "speed gap" was mostly an uncontrolled thinking-budget gap. Set
+       <PREFIX>_REASONING (or shared TOUR_REASONING) to low|medium|high to pin
+       it; sent only to aggregator endpoints, whose unified `reasoning` field
+       maps to each vendor's own control. Unset = vendor default, as before,
+       and the run record says which. */
+    const effort = (readEnv(spec.env.reasoning || '') || readEnv('TOUR_REASONING') || '').toLowerCase();
+    this.reasoningEffort = ['low', 'medium', 'high'].includes(effort) ? effort : null;
     this.resolution = null;
   }
 
@@ -272,6 +282,9 @@ export class ModelClient {
     }
     // OpenRouter-style endpoints will hand back their own accounted cost.
     if (resolution.endpointStyle === 'aggregator') body.usage = { include: true };
+    if (this.reasoningEffort && resolution.endpointStyle === 'aggregator') {
+      body.reasoning = { effort: this.reasoningEffort };
+    }
 
     const started = Date.now();
     let res;
