@@ -1,0 +1,393 @@
+{
+  "runId": "2026-08-01T16-50-21-737-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T16:50:21.737Z",
+  "promptId": null,
+  "prompt": "pauls use of the ot",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Paul’s Use of the Old Testament: From Scripture to Messiah and Community",
+    "intro": "This tour follows a central question: when Paul quotes Israel’s Scriptures, is he preserving their meaning, finding something new, or both? You’ll begin with a practical way to hear biblical quotations in context, then move through Paul’s reading of Abraham, Israel, Gentile inclusion, and the community shaped by Christ. The final clip gathers the whole movement around Paul’s phrase “according to the Scriptures.”",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:how-much-context-do-we-really-need",
+        "startSec": 596,
+        "endSec": 826,
+        "why": "Start here for the basic listening method. The speakers explain why a quotation can sound disconnected from its Old Testament setting, then urge you to read the whole source and notice both “the context and the difference.” They also say Paul and the other apostles were “steeped in these texts,” which helps frame his use as something more than isolated proof-texting.",
+        "episodeTitle": "How Much Context Do We Really Need?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/8012ab51-e47a-41ad-97f4-7d0953c6bb93/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=8012ab51-e47a-41ad-97f4-7d0953c6bb93",
+        "durationSec": 3368,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:3276",
+        "startSec": 1262,
+        "endSec": 1435,
+        "why": "This gives a concrete example from Romans 4. The discussion says Paul reads Abraham “through the lens of Christ” and finds meaning that could not have been seen before the Christ event, but insists he is not detaching Abraham from the Old Testament story. The important conclusion is a both-and: Paul is “being creative” while also tracing continuity with the Scripture’s messianic profile.",
+        "episodeTitle": "Naked Bible 420: Paul’s Use of the Old Testament Series: Romans 4",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2022/04/NakedBible420_PaulOTSeries_Romans4.mp3",
+        "durationSec": 2512,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:938b5db3-ae7c-4c0a-a752-8dd987db8f49",
+        "startSec": 1780,
+        "endSec": 1875,
+        "why": "Now hear how this reading of the Old Testament serves the gospel. The speakers summarize Paul’s claim that Jesus died and rose “according to the scriptures,” and say the law’s proper use is to expose sin, reveal the need for a Savior, and point to Jesus. This moves the question from technique to purpose: Scripture interprets the Messiah and the Messiah clarifies Scripture.",
+        "episodeTitle": "1 Timothy 1: The Gospel of Patience",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG7654763057.mp3?updated=1664486067",
+        "durationSec": 3341,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "naked-bible:podcast:3277",
+        "startSec": 1246,
+        "endSec": 1405,
+        "why": "Romans 9 shows Paul applying Israel’s story to the question of Israel and Gentiles. The speaker emphasizes that Paul has “a high view of Israel,” then explains his use of Isaac and the promise: belonging to Abraham’s family is not finally reduced to natural descent but is defined by God’s promise. This is a key example of Paul using the Old Testament to argue for Gentile inclusion without simply discarding Israel.",
+        "episodeTitle": "Naked Bible 421: Paul’s Use of the Old Testament Series: Romans 9-11",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2022/04/NakedBible421_PaulOTSeries_Romans9_11.mp3",
+        "durationSec": 3080,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:3283",
+        "startSec": 1645,
+        "endSec": 1750,
+        "why": "End with the communal and ethical result. The speaker connects Paul’s “thoroughgoing Christological hermeneutic” to how believers treat one another, then brings Malachi’s failed priesthood and promised messenger into the background of Romans. The closing principle is especially useful: Paul’s interpretations are “fresh” and “new,” yet “the Old Testament story…anticipated all that Paul is doing.”",
+        "episodeTitle": "Naked Bible 422: Paul’s Use of the Old Testament Series: Romans 12-16",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2022/04/NakedBible422_PaulOTSeries_Romans12_16.mp3",
+        "durationSec": 3791,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips present Paul neither as a careless proof-texter nor as someone merely repeating the Old Testament without transformation. He rereads Israel’s story in light of the Messiah, finds its promise opening toward Gentiles, and turns that rereading into a new kind of united community. As you continue, try reading each passage Paul quotes in its full setting—and then ask what Paul is doing with it in the light of Christ.",
+    "totalSeconds": 762
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 1976,
+      "promptTokens": 1595,
+      "completionTokens": 60,
+      "reasoningTokens": 44,
+      "cachedPromptTokens": 1574,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000054290000000000004
+    },
+    {
+      "i": 1,
+      "latencyMs": 3487,
+      "promptTokens": 1890,
+      "completionTokens": 203,
+      "reasoningTokens": 41,
+      "cachedPromptTokens": 1592,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00017489500000000003
+    },
+    {
+      "i": 2,
+      "latencyMs": 4868,
+      "promptTokens": 11794,
+      "completionTokens": 402,
+      "reasoningTokens": 107,
+      "cachedPromptTokens": 1887,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014983700000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 2960,
+      "promptTokens": 14844,
+      "completionTokens": 294,
+      "reasoningTokens": 61,
+      "cachedPromptTokens": 11791,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0006758600000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 8816,
+      "promptTokens": 19530,
+      "completionTokens": 1023,
+      "reasoningTokens": 251,
+      "cachedPromptTokens": 14841,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0013482600000000002
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 3,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Paul quotes the Old Testament scripture",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 87,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Paul reads Israel's scriptures Christ",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 75,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Paul use of Scripture quotations Romans Galatians",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 66,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "according to the Scriptures Paul Old Testament",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 64,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Paul's Bible Jewish Scripture rereads",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 73,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:how-much-context-do-we-really-need",
+        "fromSec": 350,
+        "toSec": 1100
+      },
+      "ms": 0,
+      "summary": "16 skim lines, 350s–1100s of How Much Context Do We Really Need?"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:87-who-was-the-apostle-paul-and-why-does-he-still-matter",
+        "fromSec": 250,
+        "toSec": 850
+      },
+      "ms": 1,
+      "summary": "error: unknown recordId \"ask-nt-wright:podcast:87-who-was-the-apostle-paul-and-why-does-he-still-matter\""
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:3276",
+        "fromSec": 1250,
+        "toSec": 1900
+      },
+      "ms": 0,
+      "summary": "14 skim lines, 1250s–1900s of Naked Bible 420: Paul’s Use of the Old Testament Series: Romans 4"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:3277",
+        "fromSec": 1050,
+        "toSec": 1650
+      },
+      "ms": 6,
+      "summary": "13 skim lines, 1050s–1650s of Naked Bible 421: Paul’s Use of the Old Testament Series: Romans 9-11"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:3283",
+        "fromSec": 1450,
+        "toSec": 2100
+      },
+      "ms": 0,
+      "summary": "14 skim lines, 1450s–2100s of Naked Bible 422: Paul’s Use of the Old Testament Series: Romans 12-16"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:938b5db3-ae7c-4c0a-a752-8dd987db8f49",
+        "fromSec": 1650,
+        "toSec": 2150
+      },
+      "ms": 0,
+      "summary": "11 skim lines, 1650s–2150s of 1 Timothy 1: The Gospel of Patience"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:how-much-context-do-we-really-need",
+        "fromSec": 526,
+        "toSec": 880
+      },
+      "ms": 0,
+      "summary": "526s–826s of How Much Context Do We Really Need?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:3276",
+        "fromSec": 1260,
+        "toSec": 1435
+      },
+      "ms": 0,
+      "summary": "1260s–1435s of Naked Bible 420: Paul’s Use of the Old Testament Series: Romans 4"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:3277",
+        "fromSec": 1210,
+        "toSec": 1405
+      },
+      "ms": 0,
+      "summary": "1210s–1405s of Naked Bible 421: Paul’s Use of the Old Testament Series: Romans 9-11"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:3283",
+        "fromSec": 1450,
+        "toSec": 1765
+      },
+      "ms": 0,
+      "summary": "1450s–1750s of Naked Bible 422: Paul’s Use of the Old Testament Series: Romans 12-16"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:938b5db3-ae7c-4c0a-a752-8dd987db8f49",
+        "fromSec": 1780,
+        "toSec": 1875
+      },
+      "ms": 0,
+      "summary": "1780s–1875s of 1 Timothy 1: The Gospel of Patience"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 18,
+    "tapeSec": 1065,
+    "deniedWindows": 0,
+    "promptTokens": 49653,
+    "completionTokens": 1982,
+    "reasoningTokens": 504,
+    "cachedPromptTokens": 31685,
+    "wallMs": 22484,
+    "modelLatencyMs": 22107,
+    "toolMs": 375
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003752,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T16:50:44.221Z"
+}

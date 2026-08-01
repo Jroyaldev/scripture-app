@@ -430,7 +430,11 @@ Include only the keys the chosen form needs; stage directions are optional and m
           && cueNorm.includes(` ${norm(sc.highlight.quote)} `))
           ? { quote: sc.highlight.quote.trim() }
           : null;
-        return { groups, footnotes, allusions, terms, compare, chain, caveat, highlight };
+        const asides = (Array.isArray(sc.asides) ? sc.asides : [])
+          .filter((a) => a && typeof a.text === 'string' && a.text.trim().length >= 8)
+          .slice(0, 2)
+          .map((a) => ({ text: a.text.trim().slice(0, 70), cue: cueOk(a.cue) ? a.cue.trim() : null }));
+        return { groups, footnotes, allusions, terms, compare, chain, caveat, highlight, asides };
       };
 
       try {
@@ -460,9 +464,10 @@ Direct up to 4 SCENES — as many as the teaching has MOVEMENTS, no more. ONE sc
 - "chain": at most 1 — when the teacher traces one line through scripture: {"refs":["Isaiah 53:1","John 12:38","Romans 10:16"],"note":"max 60 chars","cue":"..."} — 2 to 4 single verses in the order the chain runs.
 - "caveat": at most 1 — when the teacher says what the passage does NOT say: {"text":"max 90 chars","cue":"..."}.
 - "highlight": at most 1, USED SPARINGLY — one sentence worth keeping, copied VERBATIM from the transcript (12-140 chars): {"quote":"..."}. Most clips have none.
+- "asides": up to 2 — for a stretch where the teacher is talking but no verse language is in play (context, story, setup): one line naming what they are doing: {"text":"setting the letter's context","cue":"..."} — max 70 chars, present tense, no hype.
 
 Spread your directions across the WHOLE clip — the stage draws each artifact at the moment its cue is spoken, and long empty stretches are dead air. Every cue is verbatim from the transcript. Fewer, truer artifacts beat coverage. A clip that discusses no specific verse gets {"scenes":[]}.
-Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{"words":["saw","took"],"label":"Eden echo","cue":"..."}],"footnotes":[],"allusions":[],"terms":[],"compare":null,"chain":null,"caveat":null,"highlight":null}]}`);
+Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{"words":["saw","took"],"label":"Eden echo","cue":"..."}],"footnotes":[],"allusions":[],"terms":[],"compare":null,"chain":null,"caveat":null,"highlight":null,"asides":[]}]}`);
 
         const scenes = [];
         for (const sc of (Array.isArray(raw?.scenes) ? raw.scenes : []).slice(0, 4)) {
@@ -489,7 +494,7 @@ Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{
         scenes.forEach((sc, i) => { if (i && sc.at < scenes[i - 1].at + 12) sc.at = scenes[i - 1].at + 12; });
 
         const artifactsOf = (sc) => [
-          ...sc.groups, ...sc.footnotes, ...sc.terms, ...sc.allusions,
+          ...sc.groups, ...sc.footnotes, ...sc.terms, ...sc.allusions, ...(sc.asides || []),
           ...[sc.compare, sc.chain, sc.caveat, sc.highlight].filter(Boolean),
         ];
         scenes.forEach((sc, i) => {
@@ -501,7 +506,7 @@ Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{
             const lastWord = Math.max(...g.wordTimes.map((w) => w.at ?? -1));
             g.at = locatePhrase(g.cue) ?? (lastWord >= 0 ? lastWord : null);
           }
-          for (const a of [...sc.footnotes, ...sc.terms, ...sc.allusions]) a.at = locatePhrase(a.cue);
+          for (const a of [...sc.footnotes, ...sc.terms, ...sc.allusions, ...(sc.asides || [])]) a.at = locatePhrase(a.cue);
           for (const a of [sc.compare, sc.chain, sc.caveat].filter(Boolean)) a.at = locatePhrase(a.cue);
           if (sc.highlight) sc.highlight.at = locatePhrase(sc.highlight.quote);
           const missing = artifactsOf(sc).filter((a) => a.at == null || a.at < winStart - 2 || a.at > winEnd + 5);
@@ -531,7 +536,7 @@ Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{
 ${stretch}
 
 Direct 1-3 additional artifacts drawn FROM THIS STRETCH ONLY, for that same verse (its text: ${host.verses.map((v) => v.text).join(' ').slice(0, 600)}). Same rules as before — group words must appear in the verse text, every cue is a phrase copied verbatim from THIS stretch, fewer and truer beats coverage.
-Answer ONLY with JSON: {"groups":[{"words":["...","..."],"label":"...","cue":"..."}],"footnotes":[],"terms":[],"allusions":[],"caveat":null,"highlight":null}`, 6000);
+An "aside" is often the right direction for a stretch like this — one line naming what the teacher is doing: {"asides":[{"text":"setting the letter's context","cue":"..."}]} (max 70 chars, present tense).\nAnswer ONLY with JSON: {"groups":[...],"footnotes":[],"terms":[],"allusions":[],"asides":[],"caveat":null,"highlight":null}`, 6000);
             if (extraRaw) {
               const stretchNorm = ` ${norm(stretch)} `;
               const extra = validateArtifacts(extraRaw, host.verseNorm, stretchNorm);
@@ -549,6 +554,8 @@ Answer ONLY with JSON: {"groups":[{"words":["...","..."],"label":"...","cue":"..
               for (const f of extra.footnotes.slice(0, 1)) host.footnotes.push(clampIn(f));
               for (const t of extra.terms.slice(0, 1)) host.terms.push(clampIn(t));
               for (const a of extra.allusions.slice(0, 1)) host.allusions.push(clampIn(a));
+              host.asides = host.asides || [];
+              for (const a of (extra.asides || []).slice(0, 2)) host.asides.push(clampIn(a));
               if (extra.caveat && !host.caveat) host.caveat = clampIn(extra.caveat);
               if (extra.highlight && !host.highlight) host.highlight = clampIn(extra.highlight);
             }

@@ -386,6 +386,7 @@ function beginDirection(li, index, scenes) {
       footnotes: (s.footnotes || []).map((f) => ({ ...f })),
       allusions: (s.allusions || []).map((a) => ({ ...a })),
       terms: (s.terms || []).map((t) => ({ ...t })),
+      asides: (s.asides || []).map((a) => ({ ...a })),
       compare: s.compare ? { ...s.compare } : null,
       chain: s.chain ? { ...s.chain } : null,
       caveat: s.caveat ? { ...s.caveat } : null,
@@ -398,7 +399,7 @@ function beginDirection(li, index, scenes) {
       }
       timeline.push({ at: g.at ?? sc.at ?? 0, kind: 'group', scene: sc, a: g });
     }
-    for (const [kind, list] of [['footnote', sc.footnotes], ['term', sc.terms], ['allusion', sc.allusions]]) {
+    for (const [kind, list] of [['footnote', sc.footnotes], ['term', sc.terms], ['allusion', sc.allusions], ['aside', sc.asides || []]]) {
       for (const a of list) timeline.push({ at: a.at ?? sc.at ?? 0, kind, scene: sc, a });
     }
     for (const [kind, a] of [['compare', sc.compare], ['chain', sc.chain], ['caveat', sc.caveat], ['highlight', sc.highlight]]) {
@@ -413,7 +414,7 @@ function beginDirection(li, index, scenes) {
   current.sceneIdx = -1;
 }
 
-const TH_BOXES = ['.compare', '.chain', '.terms', '.allusions', '.footnotes', '.caveats'];
+const TH_BOXES = ['.compare', '.chain', '.terms', '.allusions', '.footnotes', '.caveats', '.asides'];
 
 function activateScene(scene, idx) {
   if (!current || idx <= current.sceneIdx) return;
@@ -467,9 +468,16 @@ function renderEvent(ev) {
       for (const prev of th.querySelectorAll('.allusion')) prev.classList.add('past');
       const el = document.createElement('div');
       el.className = 'allusion appear';
-      el.innerHTML = `<span class="box-ref">${escapeHtml(ev.a.ref)}</span>${escapeHtml(ev.a.text)}`
+      el.innerHTML = `<span class="box-ref">${escapeHtml(ev.a.ref)}</span>${wrapBoxWords(ev.a.text)}`
         + (ev.a.note ? `<span class="box-note">${escapeHtml(ev.a.note)}</span>` : '');
       th.querySelector('.allusions').appendChild(el);
+      break;
+    }
+    case 'aside': {
+      /* One quiet line naming what the teacher is doing — presence for the
+         stretches where no verse language is in play. Only ever one. */
+      const box = th.querySelector('.asides');
+      box.innerHTML = `<p class="aside appear">${escapeHtml(ev.a.text)}</p>`;
       break;
     }
     case 'footnote': {
@@ -510,7 +518,7 @@ function renderEvent(ev) {
           if (!current || !el.isConnected) return;
           const link = document.createElement('div');
           link.className = 'chain-link appear';
-          link.innerHTML = `<span class="box-ref">${escapeHtml(l.ref)}</span>${escapeHtml(trim(l.text, 110))}`;
+          link.innerHTML = `<span class="box-ref">${escapeHtml(l.ref)}</span>${wrapBoxWords(trim(l.text, 110))}`;
           el.appendChild(link);
           if (i === ev.a.links.length - 1 && ev.a.note) {
             el.insertAdjacentHTML('beforeend', `<span class="box-note">${escapeHtml(ev.a.note)}</span>`);
@@ -537,6 +545,26 @@ function renderEvent(ev) {
       current.hlTimer = setTimeout(releaseHighlight, 11000);
       break;
     }
+  }
+}
+
+/* Boxes light their words as the teacher says them: significant words in
+   an allusion or chain text are wrapped so the caption clock can find and
+   gild them the moment they are spoken — the teacher usually alludes to a
+   word, and the box should answer. */
+function wrapBoxWords(text) {
+  return escapeHtml(text).replace(/(?<![\w>])([A-Za-z][\w'’-]{2,})(?![\w])/g, (w) => {
+    const n = normalize(w);
+    if (n.length < 3 || STOP.has(n)) return w;
+    return `<span class="bw" data-bw="${escapeHtml(n)}">${w}</span>`;
+  });
+}
+
+function lightBoxWords(segText) {
+  const said = new Set(normalize(segText).split(' '));
+  if (!said.size) return;
+  for (const el of TH().querySelectorAll('.bw:not(.lit-word)')) {
+    if (said.has(el.dataset.bw)) el.classList.add('lit-word');
   }
 }
 
@@ -611,6 +639,21 @@ function drawMark(mark) {
   lanes[laneIndex].push(span);
   const lane = -14 - laneIndex * 11;
 
+  /* Labels get slots the same way: one shared column, and a label whose
+     natural height is taken steps outward until it is not — two groups on
+     the same lines were writing their names over each other. */
+  svg._labelSlots = svg._labelSlots || [];
+  const slotFor = (wantY) => {
+    let y = wantY;
+    let step = 0;
+    while (svg._labelSlots.some((s) => Math.abs(s - y) < 13)) {
+      step += 1;
+      y = wantY + (step % 2 ? 1 : -1) * Math.ceil(step / 2) * 15;
+    }
+    svg._labelSlots.push(y);
+    return y;
+  };
+
   const g = document.createElementNS(NS, 'g');
   g.setAttribute('class', 'markg');
   svg.appendChild(g);
@@ -646,7 +689,7 @@ function drawMark(mark) {
     const label = document.createElementNS(NS, 'text');
     if (window.innerWidth >= 900) {
       label.setAttribute('x', lane - 8);
-      label.setAttribute('y', midY + 3);
+      label.setAttribute('y', slotFor(midY + 3));
       label.setAttribute('text-anchor', 'end');
     } else {
       label.setAttribute('x', lane - 5);
@@ -733,10 +776,27 @@ function buildVoices(tour) {
 const player = $('#player');
 let current = null;
 
+let pendingPlay = null;
+
 function toggleStep(li, step, index) {
+  if (pendingPlay === index) { pendingPlay = null; li.querySelector('.play').classList.remove('waiting'); return; }
   if (current && current.li === li) { stopAudio(); return; }
   stopAudio();
   if (!step.audioUrl) { honestNote(li, 'This publisher keeps its audio on its own site.'); return; }
+  /* The stage never opens undirected: if this step's directions are still
+     on their way (rare — they prefetch while the intro is read), the press
+     waits for them, the button breathing quietly instead of spinning. */
+  if (!directorCache[index]) {
+    pendingPlay = index;
+    li.querySelector('.play').classList.add('waiting');
+    fetchDirector(step, index).then(() => {
+      li.querySelector('.play').classList.remove('waiting');
+      if (pendingPlay !== index) return;
+      pendingPlay = null;
+      toggleStep(li, step, index);
+    });
+    return;
+  }
   current = { li, step, index, segments: null, phrases: quotedPhrases(step.why), capKey: null, scenes: null, timeline: null, fired: 0, sceneIdx: -1 };
   li.classList.add('playing');
 
@@ -814,6 +874,7 @@ function updateCaption(t) {
   cap.textContent = seg.t;
   cap.classList.add('show');
   if (current.timeline) {
+    lightBoxWords(seg.t);
     /* The compare box breathes with the tape: when the teacher says one of
        the words that binds the two texts, it pulses once. */
     if (current.compareEl?.isConnected && current.compareWords) {

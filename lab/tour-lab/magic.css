@@ -500,3 +500,19 @@ body.in-theater { overflow: hidden; }
 }
 .th-progress { flex: 1; height: 1.5px; background: var(--hair); border-radius: 1px; overflow: hidden; }
 .th-progress i { display: block; height: 100%; width: 0; background: color-mix(in oklab, var(--gold) 70%, transparent); transition: width 400ms linear; }
+
+/* The aside: one quiet line naming what the teacher is doing. */
+.aside {
+  margin-top: 30px;
+  text-align: center;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-3);
+}
+
+/* Box words gild the moment the teacher says them. */
+.bw.lit-word { color: var(--gold); transition: color 500ms var(--ease); }
+
+/* A press that arrived before the directions: the button breathes. */
+.play.waiting { animation: breathe 1600ms var(--ease) infinite; }
+@keyframes breathe { 0%, 100% { opacity: 1; } 50% { opacity: 0.45; } }
