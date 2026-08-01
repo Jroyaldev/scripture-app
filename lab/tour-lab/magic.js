@@ -623,9 +623,16 @@ function drawMark(mark) {
   const leader = 10;
   const parts = [];
   for (const run of runs) parts.push(`M ${run.x1} ${run.y} H ${run.x2}`);
-  parts.push(`M ${lane + R + leader} ${first.y} H ${lane + R} Q ${lane} ${first.y} ${lane} ${first.y + R} V ${last.y}`);
-  for (const run of runs) {
-    if (run !== first) parts.push(`M ${lane} ${run.y} H ${lane + leader}`);
+  if (last.y - first.y > R + 2) {
+    parts.push(`M ${lane + R + leader} ${first.y} H ${lane + R} Q ${lane} ${first.y} ${lane} ${first.y + R} V ${last.y}`);
+    for (const run of runs) {
+      if (run !== first) parts.push(`M ${lane} ${run.y} H ${lane + leader}`);
+    }
+  } else {
+    /* Every word on one line: there is nothing to gather vertically, and a
+       corner would curl back onto itself — the reader's zoom caught exactly
+       that. A flat reach into the margin carries the label instead. */
+    parts.push(`M ${lane} ${first.y} H ${lane + R + leader}`);
   }
   const path = document.createElementNS(NS, 'path');
   path.setAttribute('d', parts.join(' '));
