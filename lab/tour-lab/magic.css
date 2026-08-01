@@ -309,9 +309,9 @@ svg.smarks g.markg.past { opacity: 0.3; }
 /* A word lights the moment it is said; its bracket completes later. */
 .sword.lit { border-bottom: 1px solid color-mix(in oklab, var(--gold) 75%, transparent); padding-bottom: 1px; transition: border-color 400ms var(--ease); }
 
-/* The spotlight lowers the room. */
-#theater .verses { transition: opacity 700ms var(--ease); }
-#theater .verses.dimmed { opacity: 0.35; }
+/* The spotlight lowers the whole room, not just the verse. */
+.th-body > * { transition: opacity 700ms var(--ease); }
+.th-body.spot > *:not(.big-quote) { opacity: 0.3; }
 
 /* The compare box breathes when its binding words are spoken. */
 em.rel.pulse { animation: pulse-word 1200ms var(--ease); }
@@ -401,8 +401,13 @@ body.in-theater { overflow: hidden; }
   color: var(--ink);
   font-size: 20px;
   line-height: 1.85;
-  padding-left: 40px;
+  /* The gutter owns its labels: wide enough that a bracket name never
+     leaves the block and meets the scroll container's clip. */
+  padding-left: 42px;
   display: none;
+}
+@media (min-width: 900px) {
+  #theater .verses { padding-left: 132px; }
 }
 #theater .verses.has { display: block; }
 #theater .verses sup { font-size: 11px; color: var(--ink-3); margin-right: 5px; }
@@ -438,6 +443,7 @@ body.in-theater { overflow: hidden; }
   gap: 14px;
 }
 @media (max-width: 620px) { .compare-grid { grid-template-columns: 1fr; } }
+.compare-grid.single { grid-template-columns: 1fr; }
 .cmp {
   border: 1px solid var(--hair);
   border-radius: 8px;

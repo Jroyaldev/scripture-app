@@ -381,11 +381,18 @@ Include only the keys the chosen form needs; stage directions are optional and m
               const w = String(raw).trim();
               if (!w || w.length > 28 || w.split(/\s+/).length > 3) continue;
               const isPhrase = /\s/.test(w);
-              if ((isPhrase || !STOPWORDS.has(norm(w))) && verseNorm.includes(` ${norm(w)} `)) words.push(w);
+              if (!isPhrase && STOPWORDS.has(norm(w))) continue; // a function word is not repairable, it is noise
+              if (verseNorm.includes(` ${norm(w)} `)) words.push(w);
               else dropped.push(w);
             }
+            /* A group that blankets the verse stops emphasizing anything:
+               words are trimmed, longest first, until they cover at most a
+               third of the verse text. */
+            const verseLen = verseNorm.length;
+            let kept = [...words].sort((a, b) => b.length - a.length);
+            while (kept.length > 2 && kept.reduce((n, w) => n + w.length, 0) > verseLen * 0.33) kept.shift();
             return {
-              words,
+              words: words.filter((w) => kept.includes(w)),
               dropped,
               label: (typeof g.label === 'string' && g.label.trim() && g.label.trim().length <= 18) ? g.label.trim() : null,
               cue: cueOk(g.cue) ? g.cue.trim() : null,
@@ -410,9 +417,10 @@ Include only the keys the chosen form needs; stage directions are optional and m
           const av = ar[3] ? Number(ar[3]) : 1;
           const ap = readPassage({ book: ar[1], chapter: Number(ar[2]), fromVerse: av, toVerse: av });
           if (ap.error || !ap.verses?.length) continue;
+          const atext = ap.verses[0].text;
           allusions.push({
             ref: `${ap.bookName} ${ap.chapter}:${av}`,
-            text: ap.verses[0].text.slice(0, 170),
+            text: atext.length > 170 ? atext.slice(0, 170).replace(/\s+\S*$/, '') + '…' : atext,
             note: (typeof a.note === 'string' && a.note.trim()) ? a.note.trim().slice(0, 60) : null,
             cue: cueOk(a.cue) ? a.cue.trim() : null,
           });
@@ -480,11 +488,11 @@ Direct up to 4 SCENES — as many as the teaching has MOVEMENTS, no more. ONE sc
 - "groups": up to 2 word-groups inside that verse the teaching turns on — 2-4 single words each that appear in the verse text, a label (max 18 characters), and optionally that group's own verbatim cue phrase.
 - "footnotes": up to 2 — when the teacher gives a translation or textual note about ONE word of the verse: {"word":"...","note":"the teacher's point, max 90 chars","cue":"..."}. The word must be in the verse text.
 - "allusions": up to 2 — when the teacher says this verse echoes or draws on ANOTHER passage: {"verse":"Psalm 82:1","note":"what the teacher says it carries, max 60 chars","cue":"..."}. Only allusions the teacher actually makes.
-- "terms": up to 2 — when the teacher explains an original-language word: {"term":"hesed","gloss":"the teacher's gloss, max 48 chars","cue":"..."}.
+- "terms": up to 2 — when the teacher explains an original-language word: {"term":"hesed","gloss":"the teacher's gloss, max 48 chars","cue":"..."}. Any transliterated Hebrew or Greek word the teacher dwells on (elohim, hesed, hilasterion, shalom) deserves its card.
 - "compare": at most 1 — when the teacher sets two passages side by side: {"a":"Genesis 6:2","b":"Genesis 3:6","axis":"likeness" or "difference","note":"max 60 chars","cue":"..."}. The shared or contrasting wording is found automatically; your job is naming the two texts and which way the comparison cuts.
-- "chain": at most 1 — when the teacher traces one line through scripture: {"refs":["Isaiah 53:1","John 12:38","Romans 10:16"],"note":"max 60 chars","cue":"..."} — 2 to 4 single verses in the order the chain runs.
+- "chain": at most 1 — when the teacher traces one line through scripture: {"refs":["Isaiah 53:1","John 12:38","Romans 10:16"],"note":"max 60 chars","cue":"..."} — 2 to 4 single verses in the order the chain runs. The classic case: an Old Testament line quoted in the New — when the teacher makes that move, the chain is the right box, not two separate scenes.
 - "caveat": at most 1 — when the teacher says what the passage does NOT say: {"text":"max 90 chars","cue":"..."}.
-- "highlight": at most 1, USED SPARINGLY — one sentence worth keeping, copied VERBATIM from the transcript (12-140 chars): {"quote":"..."}. Most clips have none.
+- "highlight": at most 1, USED SPARINGLY — one sentence worth keeping ABOUT THE TEXT OR ITS MEANING, copied VERBATIM from the transcript (12-140 chars): {"quote":"..."}. Never a sentence about method, markers, the episode, or the speakers themselves. Most clips have none.
 - "asides": up to 2 — for a stretch where the teacher is talking but no verse language is in play (context, story, setup): one line naming what they are doing: {"text":"setting the letter's context","cue":"..."} — max 70 chars, present tense, no hype.
 
 The stage displays the World English Bible; the teacher may read another translation. Direct with the words the TEACHING turns on even if the displayed translation phrases them differently ("none" against "no one", "sons of God" against "God's sons") — mismatches are mapped onto the displayed text afterward, meaning for meaning. A word may be a short phrase of up to 3 words.
@@ -531,10 +539,11 @@ Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.lengt
             const mapped = Array.isArray(mapRaw?.map) ? mapRaw.map : [];
             repairs.forEach((r, i) => {
               const t = mapped[i];
-              if (typeof t === 'string' && t.trim() && t.trim().length <= 28
-                && t.trim().split(/\s+/).length <= 3
-                && r.sc.verseNorm.includes(` ${norm(t.trim())} `)) {
-                r.apply(t.trim());
+              const tt = typeof t === 'string' ? t.trim() : '';
+              if (tt && tt.length <= 28 && tt.split(/\s+/).length <= 3
+                && !(!/\s/.test(tt) && STOPWORDS.has(norm(tt)))
+                && r.sc.verseNorm.includes(` ${norm(tt)} `)) {
+                r.apply(tt);
               }
             });
           } catch { /* unrepaired words simply stay absent */ }
@@ -569,6 +578,13 @@ Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.lengt
           const missing = artifactsOf(sc).filter((a) => a.at == null || a.at < winStart - 2 || a.at > winEnd + 5);
           missing.forEach((a, k) => { a.at = Math.round(winStart + ((k + 1) * span) / (missing.length + 1)); });
         });
+        /* An aside exists to fill silence: one that lands within 25s of any
+           other beat is clutter on a scene that already has life. */
+        for (const sc of scenes) {
+          const others = artifactsOf(sc).filter((a) => !(sc.asides || []).includes(a)).map((a) => a.at);
+          sc.asides = (sc.asides || []).filter((a) => !others.some((t) => Math.abs(t - a.at) < 25));
+        }
+
         /* Beats never stack: minimum 2.5s between arrivals. */
         const flat = scenes.flatMap(artifactsOf).sort((a, b) => a.at - b.at);
         for (let i = 1; i < flat.length; i++) {

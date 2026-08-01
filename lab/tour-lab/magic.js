@@ -490,17 +490,26 @@ function renderEvent(ev) {
       break;
     }
     case 'footnote': {
+      /* Print's own answer to two notes on one page: the glyphs take
+         turns — dagger, double dagger, section. */
+      const glyph = ['†', '‡', '§'][th.querySelectorAll('.footnote').length % 3];
       const q = th.querySelector('.verses');
       const span = getOrWrap(q, ev.a.word);
-      if (span && !span.querySelector('.fnmark')) span.insertAdjacentHTML('beforeend', '<sup class="fnmark">†</sup>');
+      if (span && !span.querySelector('.fnmark')) span.insertAdjacentHTML('beforeend', `<sup class="fnmark">${glyph}</sup>`);
       const el = document.createElement('p');
       el.className = 'footnote appear';
-      el.innerHTML = `<sup>†</sup> <b>${escapeHtml(ev.a.word)}</b> — ${escapeHtml(ev.a.note)}`;
+      el.innerHTML = `<sup>${glyph}</sup> <b>${escapeHtml(ev.a.word)}</b> — ${escapeHtml(ev.a.note)}`;
       th.querySelector('.footnotes').appendChild(el);
       break;
     }
     case 'compare': {
       const { a, b, note, axis } = ev.a;
+      /* When one side IS the verse already on stage, the box shows only
+         its counterpart, full width — a compare that repeats the scene
+         verse is furniture pretending to be information. */
+      const sceneRef = normalize(ev.scene?.ref || '');
+      const sides = [[a, b.text], [b, a.text]].filter(([side]) => normalize(side.ref) !== sceneRef);
+      if (sides.length === 0) break;
       /* likeness underlines what binds the two texts; difference underlines
          each side's own pivots — the same box, cutting the other way. */
       const common = sharedWords(a.text, b.text);
@@ -509,7 +518,8 @@ function renderEvent(ev) {
         : common;
       const el = document.createElement('div');
       el.className = 'compare-grid appear';
-      el.innerHTML = [[a, b.text], [b, a.text]].map(([side, otherText]) =>
+      if (sides.length === 1) el.classList.add('single');
+      el.innerHTML = sides.map(([side, otherText]) =>
         `<div class="cmp"><span class="box-ref">${escapeHtml(side.ref)}</span>${markRelevant(side.text, marksFor(side.text, otherText))}</div>`
       ).join('') + (note ? `<span class="box-note cmp-note">${escapeHtml(note)}</span>` : '');
       th.querySelector('.compare').appendChild(el);
@@ -551,7 +561,7 @@ function renderEvent(ev) {
       bq.textContent = `“${ev.a.quote}”`;
       bq.classList.add('mounted');
       requestAnimationFrame(() => bq.classList.add('show'));
-      th.querySelector('.verses').classList.add('dimmed');
+      th.querySelector('.th-body').classList.add('spot');
       clearTimeout(current.hlTimer);
       current.hlTimer = setTimeout(releaseHighlight, 11000);
       break;
@@ -584,7 +594,7 @@ function releaseHighlight() {
   const bq = th.querySelector('.big-quote');
   bq.classList.remove('show');
   setTimeout(() => { if (!bq.classList.contains('show')) bq.classList.remove('mounted'); }, 950);
-  th.querySelector('.verses').classList.remove('dimmed');
+  th.querySelector('.th-body').classList.remove('spot');
   if (current) clearTimeout(current.hlTimer);
 }
 
@@ -671,7 +681,7 @@ function drawMark(mark) {
   const slotForY = (wantY) => {
     let y = wantY;
     let step = 0;
-    while (svg._labelSlots.some((v) => Math.abs(v - y) < 13)) {
+    while (svg._labelSlots.some((v) => Math.abs(v - y) < 16)) {
       step += 1;
       y = wantY + (step % 2 ? 1 : -1) * Math.ceil(step / 2) * 15;
     }
@@ -710,14 +720,17 @@ function drawMark(mark) {
        where the left margin cannot hold a word. */
     const label = document.createElementNS(NS, 'text');
     if (window.innerWidth >= 900) {
-      label.setAttribute('x', lane - 8);
+      /* One ledger column for every label, outside the deepest common
+         lanes — per-lane alignment scattered stacked labels diagonally
+         into each other's dashes. */
+      label.setAttribute('x', Math.min(lane, -25) - 10);
       label.setAttribute('y', labelY);
       label.setAttribute('text-anchor', 'end');
     } else {
       label.setAttribute('x', lane - 5);
-      label.setAttribute('y', midY);
+      label.setAttribute('y', labelY);
       label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('transform', `rotate(-90 ${lane - 5} ${midY})`);
+      label.setAttribute('transform', `rotate(-90 ${lane - 5} ${labelY})`);
     }
     label.textContent = mark.label;
     g.appendChild(label);
