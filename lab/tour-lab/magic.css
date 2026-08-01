@@ -211,6 +211,36 @@ em.rel {
   padding-bottom: 1px;
 }
 
+/* The director's artifacts: term cards, allusion boxes, footnotes — every
+   one grounded in what the teacher actually said and the texts checked
+   server-side. */
+.term-chip { margin-top: 10px; font-size: 14px; color: var(--ink-2); }
+.term-chip i { color: var(--ink); font-size: 15.5px; }
+
+.allusion {
+  margin-top: 10px;
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 13.5px;
+  color: var(--ink-2);
+  transition: opacity 700ms var(--ease);
+}
+.allusion.past { opacity: 0.4; }
+.allusion-ref {
+  display: block;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 10.5px;
+  color: var(--gold);
+  margin-bottom: 4px;
+}
+.allusion-note { display: block; margin-top: 5px; font-style: italic; color: var(--ink-3); }
+
+.footnote { margin-top: 8px; font-size: 13px; color: var(--ink-3); }
+.footnote b { color: var(--ink-2); font-weight: 600; }
+.footnote sup, .fnmark { color: var(--gold); font-size: 10px; }
+
 /* The words as they are said. */
 .caption {
   margin: 10px 0 0;
@@ -326,6 +356,9 @@ svg.smarks text {
   letter-spacing: 0.13em;
   text-transform: uppercase;
 }
+/* The current thought holds the light; earlier groups step back. */
+svg.smarks g.markg { transition: opacity 700ms var(--ease); }
+svg.smarks g.markg.past { opacity: 0.3; }
 .sword { color: var(--ink); }
 
 /* the voices — arithmetic on the tour, drawn as one quiet strip. */

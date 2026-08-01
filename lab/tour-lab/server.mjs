@@ -256,7 +256,7 @@ const server = http.createServer(async (req, res) => {
         const whispers = Array.isArray(parsed?.whispers)
           ? parsed.whispers.slice(0, steps.length).map((w) => String(w).slice(0, 120))
           : [];
-        return sendJson(res, 200, { whispers });
+        return sendJson(res, 200, { whispers, usd: reply.usage?.providerCostUsd ?? null });
       } catch (err) {
         // The page degrades to no whisper, never to an error in the reader's face.
         return sendJson(res, 200, { whispers: [], note: err?.message || String(err) });
@@ -299,9 +299,112 @@ Include only the keys the chosen form needs; stage directions are optional and m
         });
         const m = String(reply.message.content || '').match(/\{[\s\S]*\}/);
         const plan = validateFormPlan(m ? JSON.parse(m[0]) : null, steps.length);
+        plan.usd = reply.usage?.providerCostUsd ?? null;
         return sendJson(res, 200, plan);
       } catch (err) {
         return sendJson(res, 200, { form: 'standard', note: err?.message || String(err) });
+      }
+    }
+
+    // The director's pass: one deeper call per playing step, grounded in
+    // the ACTUAL tape and the ACTUAL verse text. The planning call works
+    // from summaries; this one reads the clip's transcript, names the
+    // scenes (verse + word groups + verbatim cue phrases), and every claim
+    // is checked here against the real texts before the page sees it — a
+    // word not in the verse or a cue not on the tape is silently dropped.
+    if (p === '/api/direct' && req.method === 'POST') {
+      const body = await readBody(req);
+      const tr = loadTranscript(String(body.recordId || ''));
+      if (!tr) return sendJson(res, 200, { scenes: [] });
+      const from = Math.max(0, Number(body.fromSec) || 0);
+      const to = Math.min(from + 900, Number(body.toSec) || from + 900);
+      const tape = tr.segments.filter((s) => s.e >= from && s.s <= to).map((s) => s.t).join(' ').slice(0, 11000);
+      if (tape.length < 200) return sendJson(res, 200, { scenes: [] });
+      const norm = (s) => String(s).toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim();
+      const tapeNorm = ` ${norm(tape)} `;
+      try {
+        const client = clientFor('gpt-5.6-luna-medium');
+        const reply = await client.chat({
+          maxTokens: 8000,
+          messages: [{
+            role: 'user',
+            content: `You are directing a small visual stage a listener watches while a podcast clip plays. Here is the clip's full transcript:
+
+${tape}
+
+The clip's purpose in its tour: ${String(body.why || '').slice(0, 400)}
+
+Direct up to 3 SCENES, in the order the clip reaches them. Each scene:
+- "verse": the passage being discussed at that point — "Book chapter:verse" or a range of at most 3 verses. Only passages genuinely walked through, not passing mentions.
+- "cue": a distinctive phrase of 3-8 words COPIED VERBATIM from the transcript at the moment this scene should appear.
+- "groups": up to 2 word-groups inside that verse the teaching turns on — 2-4 single words each that appear in the verse text, a label (max 18 characters), and optionally that group's own verbatim cue phrase.
+- "footnotes": up to 2 — when the teacher gives a translation or textual note about ONE word of the verse: {"word":"...","note":"the teacher's point, max 90 chars","cue":"..."}. The word must be in the verse text.
+- "allusions": up to 2 — when the teacher says this verse echoes or draws on ANOTHER passage: {"verse":"Psalm 82:1","note":"what the teacher says it carries, max 60 chars","cue":"..."}. Only allusions the teacher actually makes.
+- "terms": up to 2 — when the teacher explains an original-language word: {"term":"hesed","gloss":"the teacher's gloss, max 48 chars","cue":"..."}.
+
+Every artifact is optional and every cue is a verbatim transcript phrase; an artifact without a cue appears when its scene does. Fewer, truer artifacts beat coverage. A clip that discusses no specific verse gets {"scenes":[]}.
+Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{"words":["saw","took"],"label":"Eden echo","cue":"..."}],"footnotes":[],"allusions":[],"terms":[]}]}`,
+          }],
+        });
+        const m = String(reply.message.content || '').match(/\{[\s\S]*\}/);
+        const raw = m ? JSON.parse(m[0]) : null;
+        const scenes = [];
+        for (const sc of (Array.isArray(raw?.scenes) ? raw.scenes : []).slice(0, 3)) {
+          const ref = String(sc?.verse || '').match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3}):(\d{1,3})(?:\s*[–-]\s*(\d{1,3}))?$/);
+          if (!ref) continue;
+          const fromV = Number(ref[3]);
+          const toV = ref[4] ? Math.min(Number(ref[4]), fromV + 2) : fromV;
+          const passage = readPassage({ book: ref[1], chapter: Number(ref[2]), fromVerse: fromV, toVerse: toV });
+          if (passage.error || !passage.verses?.length) continue;
+          const verseNorm = ` ${norm(passage.verses.map((v) => v.text).join(' '))} `;
+          const cueOk = (c) => typeof c === 'string' && c.trim().length >= 8 && c.length <= 80 && tapeNorm.includes(` ${norm(c)} `);
+          const groups = (Array.isArray(sc.groups) ? sc.groups : [])
+            .filter((g) => g && Array.isArray(g.words) && g.words.length >= 2 && g.words.length <= 4)
+            .map((g) => ({
+              words: g.words.map((w) => String(w).trim()).filter((w) => w && !/\s/.test(w) && verseNorm.includes(` ${norm(w)} `)),
+              label: (typeof g.label === 'string' && g.label.trim() && g.label.trim().length <= 18) ? g.label.trim() : null,
+              cue: cueOk(g.cue) ? g.cue.trim() : null,
+            }))
+            .filter((g) => g.words.length >= 2)
+            .slice(0, 2);
+          const footnotes = (Array.isArray(sc.footnotes) ? sc.footnotes : [])
+            .filter((f) => f && typeof f.word === 'string' && !/\s/.test(f.word.trim())
+              && verseNorm.includes(` ${norm(f.word)} `)
+              && typeof f.note === 'string' && f.note.trim().length >= 4)
+            .slice(0, 2)
+            .map((f) => ({ word: f.word.trim(), note: f.note.trim().slice(0, 90), cue: cueOk(f.cue) ? f.cue.trim() : null }));
+          const allusions = [];
+          for (const a of (Array.isArray(sc.allusions) ? sc.allusions : []).slice(0, 2)) {
+            const ar = String(a?.verse || '').match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3})(?::(\d{1,3}))?$/);
+            if (!ar) continue;
+            const av = ar[3] ? Number(ar[3]) : 1;
+            const ap = readPassage({ book: ar[1], chapter: Number(ar[2]), fromVerse: av, toVerse: av });
+            if (ap.error || !ap.verses?.length) continue;
+            allusions.push({
+              ref: `${ap.bookName} ${ap.chapter}:${av}`,
+              text: ap.verses[0].text.slice(0, 170),
+              note: (typeof a.note === 'string' && a.note.trim()) ? a.note.trim().slice(0, 60) : null,
+              cue: cueOk(a.cue) ? a.cue.trim() : null,
+            });
+          }
+          const terms = (Array.isArray(sc.terms) ? sc.terms : [])
+            .filter((t) => t && typeof t.term === 'string' && t.term.trim().length >= 2 && t.term.trim().length <= 24
+              && typeof t.gloss === 'string' && t.gloss.trim().length >= 3)
+            .slice(0, 2)
+            .map((t) => ({ term: t.term.trim(), gloss: t.gloss.trim().slice(0, 48), cue: cueOk(t.cue) ? t.cue.trim() : null }));
+          scenes.push({
+            ref: `${passage.bookName} ${passage.chapter}:${fromV}${toV > fromV ? '–' + toV : ''}`,
+            verses: passage.verses,
+            cue: cueOk(sc.cue) ? sc.cue.trim() : null,
+            groups,
+            footnotes,
+            allusions,
+            terms,
+          });
+        }
+        return sendJson(res, 200, { scenes, usd: reply.usage?.providerCostUsd ?? null });
+      } catch (err) {
+        return sendJson(res, 200, { scenes: [], note: err?.message || String(err) });
       }
     }
 

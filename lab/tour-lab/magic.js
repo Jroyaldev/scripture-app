@@ -232,6 +232,9 @@ function presentTour(tour, prompt) {
       </div>
       <div class="stage">
         <blockquote class="verses"></blockquote>
+        <div class="terms"></div>
+        <div class="allusions"></div>
+        <div class="footnotes"></div>
         <p class="caption" aria-live="off"></p>
       </div>
       <div class="why"></div>
@@ -418,12 +421,22 @@ function drawMark(li, mark) {
     svg.setAttribute('class', 'smarks');
     q.appendChild(svg);
   }
+  /* The current thought holds the light: earlier groups step back rather
+     than compete, and each group owns its own gutter lane — two brackets
+     sharing one lane wrote their labels over each other. */
+  const priorGroups = [...svg.querySelectorAll('g.markg')];
+  for (const g of priorGroups) g.classList.add('past');
+  const laneIndex = priorGroups.length;
+  const g = document.createElementNS(NS, 'g');
+  g.setAttribute('class', 'markg');
+  svg.appendChild(g);
+
   const qr = q.getBoundingClientRect();
   const runs = spans.map((sp) => {
     const r = sp.getBoundingClientRect();
     return { x1: r.left - qr.left, x2: r.right - qr.left, y: r.bottom - qr.top + 1.5 };
   }).sort((a, b) => a.y - b.y || a.x1 - b.x1);
-  const lane = -14;
+  const lane = -14 - laneIndex * 11;
   const R = 8;
   const first = runs[0];
   const last = runs[runs.length - 1];
@@ -434,7 +447,7 @@ function drawMark(li, mark) {
   }
   const path = document.createElementNS(NS, 'path');
   path.setAttribute('d', parts.join(' '));
-  svg.appendChild(path);
+  g.appendChild(path);
   if (mark.label) {
     const midY = (first.y + last.y) / 2;
     const label = document.createElementNS(NS, 'text');
@@ -443,7 +456,7 @@ function drawMark(li, mark) {
     label.setAttribute('text-anchor', 'middle');
     label.setAttribute('transform', `rotate(-90 ${lane - 5} ${midY})`);
     label.textContent = mark.label;
-    svg.appendChild(label);
+    g.appendChild(label);
   }
   /* Ink arriving, not appearing. */
   const len = path.getTotalLength();
@@ -464,6 +477,100 @@ function cueMarks(segText) {
       mark.drawn = true;
       drawMark(current.li, mark);
     }
+  }
+}
+
+// -------------------------------------------------- the director's pass
+// One deeper call per playing step, grounded server-side in the actual
+// tape and the actual verse text. Its scenes run the stage: the verse in
+// discussion (which can change mid-clip), word groups, footnotes, allusion
+// boxes, term cards — each appearing when its verbatim cue phrase is
+// actually said, with a proportional fallback if the tape never surfaces
+// the cue. When the director has scenes, the coarse plan-stage yields.
+
+const directorCache = {};
+
+function fetchDirector(step, index) {
+  if (directorCache[index]) return Promise.resolve(directorCache[index]);
+  return fetch('/api/direct', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ recordId: step.recordId, fromSec: step.startSec, toSec: step.endSec, why: step.why }),
+  })
+    .then((r) => r.json())
+    .then((d) => { directorCache[index] = d; return d; })
+    .catch(() => ({ scenes: [] }));
+}
+
+function beginDirection(li, index, scenes) {
+  if (!current || current.li !== li || !scenes?.length) return;
+  current.scenes = scenes.map((s) => ({
+    ...s,
+    shown: false,
+    groups: (s.groups || []).map((g) => ({ ...g, drawn: false })),
+    footnotes: (s.footnotes || []).map((f) => ({ ...f, drawn: false })),
+    allusions: (s.allusions || []).map((a) => ({ ...a, drawn: false })),
+    terms: (s.terms || []).map((t) => ({ ...t, drawn: false })),
+  }));
+  current.sceneIdx = -1;
+  activateScene(0);
+}
+
+function activateScene(k) {
+  if (!current?.scenes || k >= current.scenes.length || k <= current.sceneIdx) return;
+  current.sceneIdx = k;
+  const scene = current.scenes[k];
+  scene.shown = true;
+  const li = current.li;
+  const q = li.querySelector('.verses');
+  for (const sel of ['.terms', '.allusions', '.footnotes']) li.querySelector(sel).innerHTML = '';
+  q.classList.remove('has');
+  setTimeout(() => {
+    if (!current || current.scenes?.[current.sceneIdx] !== scene) return;
+    q.innerHTML = scene.verses.map((v) => `<sup>${v.verse}</sup>${escapeHtml(v.text)}`).join(' ')
+      + `<span class="verses-ref">${escapeHtml(scene.ref)}</span>`;
+    q.classList.add('has');
+    cueArtifacts('');
+  }, 240);
+}
+
+/* Uncued artifacts appear with their scene; cued ones wait to be said. */
+function cueArtifacts(saidBuf, { force = false } = {}) {
+  const scene = current?.scenes?.[current.sceneIdx];
+  if (!scene) return;
+  const li = current.li;
+  const ready = (a) => !a.drawn && (force || !a.cue || saidBuf.includes(` ${normalize(a.cue)} `));
+  for (const g of scene.groups) {
+    if (ready(g)) { g.drawn = true; drawMark(li, g); }
+  }
+  for (const t of scene.terms) {
+    if (!ready(t)) continue;
+    t.drawn = true;
+    const el = document.createElement('p');
+    el.className = 'term-chip';
+    el.innerHTML = `<i>${escapeHtml(t.term)}</i> — ${escapeHtml(t.gloss)}`;
+    li.querySelector('.terms').appendChild(el);
+  }
+  for (const a of scene.allusions) {
+    if (!ready(a)) continue;
+    a.drawn = true;
+    for (const prev of li.querySelectorAll('.allusion')) prev.classList.add('past');
+    const el = document.createElement('div');
+    el.className = 'allusion';
+    el.innerHTML = `<span class="allusion-ref">${escapeHtml(a.ref)}</span>${escapeHtml(a.text)}`
+      + (a.note ? `<span class="allusion-note">${escapeHtml(a.note)}</span>` : '');
+    li.querySelector('.allusions').appendChild(el);
+  }
+  for (const f of scene.footnotes) {
+    if (!ready(f)) continue;
+    f.drawn = true;
+    const q = li.querySelector('.verses');
+    const span = wrapWord(q, f.word);
+    if (span) span.insertAdjacentHTML('beforeend', '<sup class="fnmark">†</sup>');
+    const el = document.createElement('p');
+    el.className = 'footnote';
+    el.innerHTML = `<sup>†</sup> <b>${escapeHtml(f.word)}</b> — ${escapeHtml(f.note)}`;
+    li.querySelector('.footnotes').appendChild(el);
   }
 }
 
@@ -506,7 +613,7 @@ function toggleStep(li, step, index) {
   if (current && current.li === li) { stopAudio(); return; }
   stopAudio();
   if (!step.audioUrl) { honestNote(li, 'This publisher keeps its audio on its own site.'); return; }
-  current = { li, step, index, segments: null, phrases: quotedPhrases(step.why), capKey: null };
+  current = { li, step, index, segments: null, phrases: quotedPhrases(step.why), capKey: null, saidBuf: '', scenes: null, sceneIdx: -1 };
   li.classList.add('playing');
   setGlyph(li, true);
 
@@ -528,14 +635,22 @@ function toggleStep(li, step, index) {
     .then((d) => { if (current && current.li === li && Array.isArray(d.segments)) current.segments = d.segments; })
     .catch(() => {});
 
+  fetchDirector(step, index).then((d) => beginDirection(li, index, d.scenes));
+
   player.ontimeupdate = () => {
     if (!current) return;
     const t = player.currentTime;
     updateCaption(t);
     updateProgress(li, step, t);
-    /* A directed group whose words the caption never caught still deserves
-       its drawing before the clip lands. */
-    if (t > step.startSec + (step.endSec - step.startSec) * 0.7) {
+    /* Proportional fallbacks: cues that the tape never surfaced must not
+       strand a scene or its artifacts. */
+    const frac = (t - step.startSec) / (step.endSec - step.startSec);
+    if (current.scenes) {
+      const n = current.scenes.length;
+      const due = Math.min(n - 1, Math.floor(frac * (n + 0.6)));
+      if (due > current.sceneIdx) activateScene(due);
+      if (frac > 0.85) cueArtifacts('', { force: true });
+    } else if (frac > 0.7) {
       const dir = stageDirections[index];
       for (const mark of dir?.marks || []) {
         if (!mark.drawn) { mark.drawn = true; drawMark(li, mark); }
@@ -559,7 +674,15 @@ function updateCaption(t) {
   if (silent) { cap.classList.remove('show'); return; }
   cap.innerHTML = markRelevant(seg.t, current.phrases, { wholePhrasesOnly: true });
   cap.classList.add('show');
-  cueMarks(seg.t);
+  if (current.scenes) {
+    current.saidBuf = (current.saidBuf + ' ' + normalize(seg.t)).slice(-600);
+    const buf = ` ${current.saidBuf} `;
+    const next = current.scenes[current.sceneIdx + 1];
+    if (next?.cue && buf.includes(` ${normalize(next.cue)} `)) activateScene(current.sceneIdx + 1);
+    cueArtifacts(buf);
+  } else {
+    cueMarks(seg.t);
+  }
 }
 
 function updateProgress(li, step, t) {
