@@ -609,8 +609,27 @@ Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.lengt
           for (const a of [...sc.footnotes, ...sc.terms, ...sc.allusions, ...(sc.asides || [])]) a.at = locatePhrase(a.cue);
           for (const a of [sc.compare, sc.chain, sc.caveat].filter(Boolean)) a.at = locatePhrase(a.cue);
           if (sc.highlight) sc.highlight.at = locatePhrase(sc.highlight.quote);
+          /* The attention budget, by channel. Cue-located beats keep their
+             moment — the teacher's own speech paced them, and sync is
+             sacred. The highlight is substitutive (it dims the room and
+             becomes the field), so it is governed by scarcity, never
+             density. Only beats whose timing the house INVENTED are
+             budgeted: each seeks the center of the largest empty stretch,
+             at least 15s from anything located. */
+          const anchored = artifactsOf(sc)
+            .filter((a) => a.at != null && a.at >= winStart - 2 && a.at <= winEnd + 5)
+            .map((a) => a.at);
           const missing = artifactsOf(sc).filter((a) => a.at == null || a.at < winStart - 2 || a.at > winEnd + 5);
-          missing.forEach((a, k) => { a.at = Math.round(winStart + ((k + 1) * span) / (missing.length + 1)); });
+          for (const a of missing) {
+            const marks = [winStart, ...anchored.sort((x, y) => x - y), winEnd];
+            let best = { len: -1, at: winStart + span / 2 };
+            for (let m = 1; m < marks.length; m++) {
+              const len = marks[m] - marks[m - 1];
+              if (len > best.len) best = { len, at: (marks[m] + marks[m - 1]) / 2 };
+            }
+            a.at = Math.round(best.at);
+            anchored.push(a.at);
+          }
         });
         /* An aside exists to fill silence: one that lands within 25s of any
            other beat is clutter on a scene that already has life. */
@@ -620,7 +639,7 @@ Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.lengt
         }
 
         /* Beats never stack: minimum 2.5s between arrivals. */
-        const flat = scenes.flatMap(artifactsOf).sort((a, b) => a.at - b.at);
+        const flat = scenes.flatMap((sc) => artifactsOf(sc).filter((a) => a !== sc.highlight)).sort((a, b) => a.at - b.at);
         for (let i = 1; i < flat.length; i++) {
           if (flat[i].at < flat[i - 1].at + 2.5) flat[i].at = Math.round((flat[i - 1].at + 2.5) * 10) / 10;
         }
