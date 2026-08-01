@@ -462,7 +462,10 @@ Include only the keys the chosen form needs; stage directions are optional and m
         const asides = (Array.isArray(sc.asides) ? sc.asides : [])
           .filter((a) => a && typeof a.text === 'string' && a.text.trim().length >= 8)
           .slice(0, 2)
-          .map((a) => ({ text: a.text.trim().slice(0, 70), cue: cueOk(a.cue) ? a.cue.trim() : null }));
+          .map((a) => {
+            const t = a.text.trim();
+            return { text: t.length > 70 ? t.slice(0, 70).replace(/\s+\S*$/, '') + '…' : t, cue: cueOk(a.cue) ? a.cue.trim() : null };
+          });
         return { groups, footnotes, allusions, terms, compare, chain, caveat, highlight, asides };
       };
 
@@ -515,6 +518,37 @@ Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{
             cue: (typeof sc.cue === 'string' && sc.cue.trim().length >= 8) ? sc.cue.trim() : null,
             ...validateArtifacts(sc, verseNorm, tapeNorm),
           });
+        }
+
+        /* ---- the sceneless clip: presence without a verse ----
+           A topical or story clip that walks through no passage still
+           deserves a stage that breathes: a handful of asides naming what
+           the teacher is doing, and at most one sentence worth keeping.
+           They ride in one verse-less scene the page knows how to dress. */
+        if (!scenes.length) {
+          try {
+            const bare = await callModel(`A visual stage accompanies this podcast clip, but the clip walks through no specific Bible passage. Here is its transcript:
+
+${tape.slice(0, 8000)}
+
+Direct 2-4 ASIDES — one quiet line each naming what the teacher is doing at that point ("telling the story of...", "answering why...", max 70 chars, present tense) — each with a cue phrase of 3-8 words COPIED VERBATIM from the transcript at that moment. Optionally ONE highlight: a sentence worth keeping about the subject, verbatim (12-140 chars).
+Answer ONLY with JSON: {"asides":[{"text":"...","cue":"..."}],"highlight":null}`, 5000);
+            if (bare) {
+              const extra = validateArtifacts({ asides: bare.asides, highlight: bare.highlight }, '  ', tapeNorm);
+              if (extra.asides.length) {
+                scenes.push({
+                  ref: null,
+                  verses: [],
+                  verseNorm: '  ',
+                  cue: null,
+                  groups: [], footnotes: [], allusions: [], terms: [],
+                  compare: null, chain: null, caveat: null,
+                  highlight: extra.highlight,
+                  asides: extra.asides,
+                });
+              }
+            }
+          } catch { /* an empty stage stays empty honestly */ }
         }
 
         /* ---- the repair exchange: meaning for meaning ----

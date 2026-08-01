@@ -517,6 +517,9 @@ body.in-theater { overflow: hidden; }
   font-size: 15px;
   color: var(--ink-3);
 }
+/* On a verse-less stage the aside is the protagonist. */
+.th-body.bare { display: flex; flex-direction: column; justify-content: center; min-height: 46vh; }
+.th-body.bare .aside { font-size: 20px; color: var(--ink-2); line-height: 1.6; }
 
 /* Box words gild the moment the teacher says them. */
 .bw.lit-word { color: var(--gold); transition: color 500ms var(--ease); }

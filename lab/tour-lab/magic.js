@@ -431,9 +431,19 @@ function activateScene(scene, idx) {
     if (current?.playToken !== token || current.scenes?.[current.sceneIdx] !== scene) return;
     for (const sel of TH_BOXES) th.querySelector(sel).innerHTML = '';
     const q = th.querySelector('.verses');
-    q.innerHTML = scene.verses.map((v) => `<sup>${v.verse}</sup>${escapeHtml(v.text)}`).join(' ')
-      + `<span class="verses-ref">${escapeHtml(scene.ref)}</span>`;
-    q.classList.add('has');
+    if (scene.verses?.length) {
+      q.innerHTML = scene.verses.map((v) => `<sup>${v.verse}</sup>${escapeHtml(v.text)}`).join(' ')
+        + `<span class="verses-ref">${escapeHtml(scene.ref)}</span>`;
+      q.classList.add('has');
+    } else {
+      /* A sceneless clip: the stage holds asides and, at most, one kept
+         sentence — presence without pretending there is a passage. The
+         room arranges itself around them. */
+      q.classList.remove('has');
+      q.innerHTML = '';
+      body.classList.add('bare');
+    }
+    if (scene.verses?.length) body.classList.remove('bare');
     body.classList.remove('turning');
   }, firstScene ? 40 : 420);
 }
@@ -538,7 +548,13 @@ function renderEvent(ev) {
           if (current?.playToken !== chainToken || !el.isConnected) return;
           const link = document.createElement('div');
           link.className = 'chain-link appear';
-          link.innerHTML = `<span class="box-ref">${escapeHtml(l.ref)}</span>${wrapBoxWords(trim(l.text, 110))}`;
+          /* A link that IS the verse on stage is the chain's terminus —
+             its reference gathers the line; repeating its text teaches
+             nothing twice. */
+          const isStage = normalize(l.ref) === normalize(ev.scene?.ref || '');
+          link.innerHTML = isStage
+            ? `<span class="box-ref">${escapeHtml(l.ref)} — the verse above</span>`
+            : `<span class="box-ref">${escapeHtml(l.ref)}</span>${wrapBoxWords(trim(l.text, 110))}`;
           el.appendChild(link);
           if (i === ev.a.links.length - 1 && ev.a.note) {
             el.insertAdjacentHTML('beforeend', `<span class="box-note">${escapeHtml(ev.a.note)}</span>`);
