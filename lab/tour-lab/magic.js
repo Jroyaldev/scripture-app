@@ -614,11 +614,18 @@ function drawMark(mark) {
   const g = document.createElementNS(NS, 'g');
   g.setAttribute('class', 'markg');
   svg.appendChild(g);
+  /* Stage grammar, learned the hard way: a connector that travels to the
+     word at underline height reads as underlining the whole line. On this
+     wide stage the words carry their own underlines, and the lane carries
+     the gathering — one soft corner into a short leader at the top, a
+     short tick at each other run — nothing ever runs beneath the text. */
   const R = 8;
-  const parts = [`M ${first.x1} ${first.y} H ${lane + R} Q ${lane} ${first.y} ${lane} ${first.y + R} V ${last.y}`];
+  const leader = 10;
+  const parts = [];
+  for (const run of runs) parts.push(`M ${run.x1} ${run.y} H ${run.x2}`);
+  parts.push(`M ${lane + R + leader} ${first.y} H ${lane + R} Q ${lane} ${first.y} ${lane} ${first.y + R} V ${last.y}`);
   for (const run of runs) {
-    parts.push(`M ${run.x1} ${run.y} H ${run.x2}`);
-    if (run !== first) parts.push(`M ${lane} ${run.y} H ${run.x1}`);
+    if (run !== first) parts.push(`M ${lane} ${run.y} H ${lane + leader}`);
   }
   const path = document.createElementNS(NS, 'path');
   path.setAttribute('d', parts.join(' '));
