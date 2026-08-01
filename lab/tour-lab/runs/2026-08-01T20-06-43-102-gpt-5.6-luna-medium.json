@@ -1,0 +1,361 @@
+{
+  "runId": "2026-08-01T20-06-43-102-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T20:06:43.102Z",
+  "promptId": null,
+  "prompt": "poor vs poor in spirit",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "~deepseek/deepseek-v4-flash-latest",
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Poor vs. Poor in Spirit: What Jesus Means",
+    "intro": "This tour starts with Matthew 5:3 itself, then opens up the phrase “poor in spirit” from two angles: humility before God and the social powerlessness Jesus’ audience experienced. It then compares Matthew’s wording with Luke’s “blessed are the poor,” before bringing the distinction into personal practice without turning poverty into a virtue to imitate mechanically.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:b2e9117f-com-80139bf7-a6b8-3a62-9e34-1e1ea3c365a7",
+        "startSec": 648,
+        "endSec": 881,
+        "why": "Begin with a close reading of Matthew 5:3. The teacher distinguishes being blessed from earning blessing—“they’re not blessed because of who they are, they’re blessed because of what they receive in God’s kingdom”—and explains “poor in spirit” as people who are “at the bottom of the heap,” with the kingdom’s door open to them.",
+        "episodeTitle": "Matthew 5:1-12",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/5kwme7/matthew_51-12bfz7r.mp3",
+        "durationSec": 1769,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:powerless-grieving-and-unimportant-beatitudes-pt-2",
+        "startSec": 510,
+        "endSec": 713,
+        "why": "This clip complicates the familiar spiritualized reading. The speakers describe both a “religious meaning” and an “economic meaning,” then propose “the good life belongs to the powerless” as an interpretive paraphrase. It helps you hear that “poor in spirit” may involve lack of social power and influence, not merely a private feeling of humility.",
+        "episodeTitle": "Sermon on the Mount E5: The Powerless, Grieving, and Unimportant",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/9127acc8-c318-4792-969e-49ed32c059a3/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=9127acc8-c318-4792-969e-49ed32c059a3",
+        "durationSec": 2440,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:luke-part-3",
+        "startSec": 1925,
+        "endSec": 2125,
+        "why": "Now compare the Gospel accounts directly: “In Matthew, Jesus says, Blessed are the poor in spirit. In Luke, he says, Blessed are the poor.” The speakers explain Luke’s broader category of poor as people’s cultural status—outcasts and those on the margins—and connect Jesus’ welcome to the arrival of God’s kingdom and “good news and freedom.”",
+        "episodeTitle": "Good News for the Poor",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/86a129f7-0855-4f8a-bf60-eeefdc3914ce/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=86a129f7-0855-4f8a-bf60-eeefdc3914ce",
+        "durationSec": 3360,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "radically-christian:podcast:bf8dff31-substack-post-187598925",
+        "startSec": 1005,
+        "endSec": 1145,
+        "why": "End by making the phrase personal without reducing it to economic status or self-loathing. The speaker contrasts the Pharisee’s “I’m doing it right” posture with the person who comes “with nothing but themselves as humble sinners” and prays, “have mercy on me, a sinner.” That gives the tour a practical test: poor in spirit means receiving mercy rather than claiming superiority.",
+        "episodeTitle": "Spiritual Imposter Syndrome",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/187598925/103a32d3-30a6-4412-9c39-e338a10af91c/transcoded.mp3?post_id=187598925&relation=podcast&Expires=1785437852&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=M1h5sheN3PAkHgsJBXC2nfDvGZgJUSuDantvZPi1MPOsgPsLUbMUqEounLEu6QoZWJLwDJGKR9ccYET0y2FjE2jEaO5G5yAUeqZEdf7BlPk4t86qcwASGOe4W6-mU4KpPOnQmUgBGkr6Gam0VakkhbjYSuzmfPgLwtJXbEomTLXxzvzD9lrucr1yxx1f92OmvWhydzdXrGPfP2dyyIyEc0gPwfcj0T5VRz~AggFEVqYcAQSYzaxzsEX81HoXpB3sefDkyWB3QDzNHSGu-k3W2xFzmbTei~mIrzbNdCNKpu2BSAoY4rB3rJC-ZQx1-HyyJ93VFgVLutj~UbIrc5SjTQ__",
+        "durationSec": 3076,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips resist two opposite mistakes: treating “poor in spirit” as nothing more than feeling bad about yourself, or treating Matthew’s wording as if it erased Jesus’ concern for materially and socially poor people. The common thread is open-handed dependence on God’s kingdom—and a kingdom that comes especially good news to people who have no grounds for self-congratulation or worldly security.",
+    "totalSeconds": 776
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3657,
+      "promptTokens": 1594,
+      "completionTokens": 38,
+      "reasoningTokens": 22,
+      "cachedPromptTokens": 1591,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00003901
+    },
+    {
+      "i": 1,
+      "latencyMs": 2535,
+      "promptTokens": 1889,
+      "completionTokens": 233,
+      "reasoningTokens": 31,
+      "cachedPromptTokens": 1886,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00015896000000000004
+    },
+    {
+      "i": 2,
+      "latencyMs": 3333,
+      "promptTokens": 11509,
+      "completionTokens": 278,
+      "reasoningTokens": 54,
+      "cachedPromptTokens": 1886,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0013884600000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 2320,
+      "promptTokens": 13621,
+      "completionTokens": 217,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 11506,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00050956
+    },
+    {
+      "i": 4,
+      "latencyMs": 9235,
+      "promptTokens": 17419,
+      "completionTokens": 878,
+      "reasoningTokens": 230,
+      "cachedPromptTokens": 13618,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0011380300000000002
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "poor in spirit poor poverty Matthew five",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 95,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "blessed are the poor in spirit kingdom heaven",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 54,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Luke poor Matthew poor in spirit difference",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 59,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Matthew",
+        "chapter": 5,
+        "verse": 3,
+        "limit": 20
+      },
+      "ms": 0,
+      "summary": "20 of 398 moments"
+    },
+    {
+      "at": 1,
+      "name": "read_passage",
+      "args": {
+        "book": "Matthew",
+        "chapter": 5,
+        "fromVerse": 1,
+        "toVerse": 12
+      },
+      "ms": 0,
+      "summary": "Matthew 5:1–12 (WEB)"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "poverty materially poor spiritually humble Beatitudes",
+        "sourceId": "radically-christian",
+        "limit": 8
+      },
+      "ms": 40,
+      "summary": "8 hits"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:b2e9117f-com-80139bf7-a6b8-3a62-9e34-1e1ea3c365a7",
+        "fromSec": 560,
+        "toSec": 1050
+      },
+      "ms": 0,
+      "summary": "11 skim lines, 560s–1050s of Matthew 5:1-12"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:luke-part-3",
+        "fromSec": 1850,
+        "toSec": 2450
+      },
+      "ms": 0,
+      "summary": "13 skim lines, 1850s–2450s of Good News for the Poor"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:powerless-grieving-and-unimportant-beatitudes-pt-2",
+        "fromSec": 350,
+        "toSec": 1100
+      },
+      "ms": 0,
+      "summary": "16 skim lines, 350s–1100s of Sermon on the Mount E5: The Powerless, Grieving, and Unimportant"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "radically-christian:podcast:bf8dff31-substack-post-187598925",
+        "fromSec": 900,
+        "toSec": 1250
+      },
+      "ms": 0,
+      "summary": "7 skim lines, 900s–1250s of Spiritual Imposter Syndrome"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:b2e9117f-com-80139bf7-a6b8-3a62-9e34-1e1ea3c365a7",
+        "fromSec": 648,
+        "toSec": 895
+      },
+      "ms": 0,
+      "summary": "648s–895s of Matthew 5:1-12"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:luke-part-3",
+        "fromSec": 1925,
+        "toSec": 2125
+      },
+      "ms": 0,
+      "summary": "1925s–2125s of Good News for the Poor"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:powerless-grieving-and-unimportant-beatitudes-pt-2",
+        "fromSec": 510,
+        "toSec": 850
+      },
+      "ms": 0,
+      "summary": "510s–810s of Sermon on the Mount E5: The Powerless, Grieving, and Unimportant"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:bf8dff31-substack-post-187598925",
+        "fromSec": 1005,
+        "toSec": 1145
+      },
+      "ms": 0,
+      "summary": "1005s–1145s of Spiritual Imposter Syndrome"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 16,
+    "tapeSec": 887,
+    "deniedWindows": 0,
+    "promptTokens": 46032,
+    "completionTokens": 1644,
+    "reasoningTokens": 337,
+    "cachedPromptTokens": 30487,
+    "wallMs": 21334,
+    "modelLatencyMs": 21080,
+    "toolMs": 250
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003234,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T20:07:04.436Z"
+}

@@ -1,0 +1,409 @@
+{
+  "runId": "2026-08-01T20-15-16-298-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T20:15:16.298Z",
+  "promptId": null,
+  "prompt": "revelation 1",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "~deepseek/deepseek-v4-flash-latest",
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Revelation 1: An unveiling of Jesus to suffering churches",
+    "intro": "This tour walks through Revelation 1 as an unveiling meant to be heard, kept, and lived—not merely a puzzle about the distant future. You’ll begin with the book’s purpose and audience, then follow its symbolic sevens into John’s overwhelming vision of Jesus, and end with the reassurance and interpretive clues Jesus gives John himself.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:33ac7cf4-com-a16412d9-1281-3664-b0a3-f7637d157ed4",
+        "startSec": 126,
+        "endSec": 726,
+        "why": "Begin here for the chapter’s orientation: the speaker explains that Revelation is an “unveiling,” addressed to real churches, and framed to help them “stay faithful to Jesus.” He also explains why the book comes with a blessing for those who “read, hear, and keep” it, rather than treating prophecy as mere prediction.",
+        "episodeTitle": "Revelation 1:1-8",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/g2bje5sw3qnx58mc/revelation_11-88z0zq.mp3",
+        "durationSec": 1208,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:2943",
+        "startSec": 195,
+        "endSec": 495,
+        "why": "This clip slows down over Revelation 1:4–6 and the chapter’s network of sevens. The speaker traces how the “seven spirits,” seven lampstands, and seven stars are connected elsewhere in the chapter, including the explicit identification of the lampstands as the churches and the stars as their angels or messengers.",
+        "episodeTitle": "Naked Bible 354: Revelation 1:4-6",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2020/12/NakedBible354_Revelation1_4_6.mp3",
+        "durationSec": 3831,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:2954",
+        "startSec": 462,
+        "endSec": 762,
+        "why": "Now listen for the Old Testament backdrop behind the vision. The speaker combines Revelation 1:7 and 1:12–16 with Daniel 7, showing why the figure who looks like a “son of man” is presented with imagery associated with the Ancient of Days, while also wearing priestly clothing and standing among the lampstands.",
+        "episodeTitle": "Naked Bible 355: Revelation 1:7-20",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2020/12/NakedBible355_Revelation1_7_20.mp3",
+        "durationSec": 4328,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:c8a44698-com-3d2fc9b8-7af2-39c7-9759-f6ed48939efd",
+        "startSec": 692,
+        "endSec": 930,
+        "why": "End with the vision’s pastoral center. After John falls “like a dead man,” Jesus says, “Do not be afraid,” identifies himself as “the first and the last” and “the living one,” and explains that the stars and lampstands are not left to speculation: they represent the churches’ angels or messengers and the churches themselves.",
+        "episodeTitle": "Revelation 1:9-20",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/scf2mkmpf24yyv7p/revelation_19-209es8b.mp3",
+        "durationSec": 1185,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips present Revelation 1 as both cosmic and close at hand: the risen Jesus is glorious, sovereign over death, and present among pressured communities. The chapter gives you its own reading posture—hear the symbols carefully, receive the blessing, and persevere faithfully with the churches to whom the vision was first sent.",
+    "totalSeconds": 1438
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2437,
+      "promptTokens": 1594,
+      "completionTokens": 200,
+      "reasoningTokens": 21,
+      "cachedPromptTokens": 1591,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00013621000000000003
+    },
+    {
+      "i": 1,
+      "latencyMs": 3193,
+      "promptTokens": 9514,
+      "completionTokens": 331,
+      "reasoningTokens": 71,
+      "cachedPromptTokens": 1591,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012048100000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 2131,
+      "promptTokens": 14296,
+      "completionTokens": 214,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 9511,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008215600000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 2650,
+      "promptTokens": 19098,
+      "completionTokens": 266,
+      "reasoningTokens": 87,
+      "cachedPromptTokens": 14293,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009030800000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 3935,
+      "promptTokens": 22788,
+      "completionTokens": 365,
+      "reasoningTokens": 297,
+      "cachedPromptTokens": 19095,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008715000000000001
+    },
+    {
+      "i": 5,
+      "latencyMs": 7902,
+      "promptTokens": 23833,
+      "completionTokens": 962,
+      "reasoningTokens": 357,
+      "cachedPromptTokens": 22785,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009359750000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Revelation",
+        "chapter": 1,
+        "verse": 0,
+        "limit": 30
+      },
+      "ms": 1,
+      "summary": "11 of 95 moments"
+    },
+    {
+      "at": 0,
+      "name": "read_passage",
+      "args": {
+        "book": "Revelation",
+        "chapter": 1,
+        "fromVerse": 1,
+        "toVerse": 20
+      },
+      "ms": 2,
+      "summary": "Revelation 1:1–20 (WEB)"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Revelation chapter one Jesus Christ revelation seven churches seven spirits",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 64,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "one like a son of man lampstands stars Revelation",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 54,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "alpha omega first and last Revelation chapter 1",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 35,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:2938",
+        "fromSec": 1500,
+        "toSec": 2300
+      },
+      "ms": 1,
+      "summary": "17 skim lines, 1500s–2300s of Naked Bible 353: Revelation 1:4"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:2943",
+        "fromSec": 0,
+        "toSec": 1200
+      },
+      "ms": 0,
+      "summary": "25 skim lines, 0s–1200s of Naked Bible 354: Revelation 1:4-6"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:2954",
+        "fromSec": 0,
+        "toSec": 1500
+      },
+      "ms": 0,
+      "summary": "31 skim lines, 0s–1500s of Naked Bible 355: Revelation 1:7-20"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:33ac7cf4-com-a16412d9-1281-3664-b0a3-f7637d157ed4",
+        "fromSec": 0,
+        "toSec": 1208
+      },
+      "ms": 0,
+      "summary": "24 skim lines, 0s–1208s of Revelation 1:1-8"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:c8a44698-com-3d2fc9b8-7af2-39c7-9759-f6ed48939efd",
+        "fromSec": 0,
+        "toSec": 1185
+      },
+      "ms": 0,
+      "summary": "25 skim lines, 0s–1185s of Revelation 1:9-20"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:33ac7cf4-com-a16412d9-1281-3664-b0a3-f7637d157ed4",
+        "fromSec": 126,
+        "toSec": 1115
+      },
+      "ms": 0,
+      "summary": "126s–426s of Revelation 1:1-8"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:c8a44698-com-3d2fc9b8-7af2-39c7-9759-f6ed48939efd",
+        "fromSec": 132,
+        "toSec": 930
+      },
+      "ms": 0,
+      "summary": "132s–432s of Revelation 1:9-20"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2954",
+        "fromSec": 206,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "206s–506s of Naked Bible 355: Revelation 1:7-20"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2943",
+        "fromSec": 195,
+        "toSec": 1030
+      },
+      "ms": 0,
+      "summary": "195s–495s of Naked Bible 354: Revelation 1:4-6"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:33ac7cf4-com-a16412d9-1281-3664-b0a3-f7637d157ed4",
+        "fromSec": 426,
+        "toSec": 780
+      },
+      "ms": 0,
+      "summary": "426s–726s of Revelation 1:1-8"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:c8a44698-com-3d2fc9b8-7af2-39c7-9759-f6ed48939efd",
+        "fromSec": 392,
+        "toSec": 930
+      },
+      "ms": 1,
+      "summary": "392s–692s of Revelation 1:9-20"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2954",
+        "fromSec": 462,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "462s–762s of Naked Bible 355: Revelation 1:7-20"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:c8a44698-com-3d2fc9b8-7af2-39c7-9759-f6ed48939efd",
+        "fromSec": 692,
+        "toSec": 930
+      },
+      "ms": 0,
+      "summary": "692s–930s of Revelation 1:9-20"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 6,
+    "toolCalls": 19,
+    "tapeSec": 2338,
+    "deniedWindows": 0,
+    "promptTokens": 91123,
+    "completionTokens": 2338,
+    "reasoningTokens": 833,
+    "cachedPromptTokens": 68866,
+    "wallMs": 22408,
+    "modelLatencyMs": 22248,
+    "toolMs": 158
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004873,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T20:15:38.706Z"
+}

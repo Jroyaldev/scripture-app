@@ -1,0 +1,418 @@
+{
+  "runId": "2026-08-01T19-16-19-325-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T19:16:19.325Z",
+  "promptId": null,
+  "prompt": "the garden metaphor throughout scripture",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "~deepseek/deepseek-v4-flash-latest",
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "From Eden to the Garden-City: The Garden Metaphor Throughout Scripture",
+    "intro": "This tour traces the garden image as a storyline rather than a collection of isolated references: Eden as God’s life-giving dwelling, the tabernacle as a portable return to that presence, prophetic restoration as a garden emerging from wilderness, and Revelation’s final garden-city where God dwells with humanity. Listen for recurring rivers, trees, planting, priestly work, and the movement from exile to restored communion.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:series-h2r-p20-metaphor-e2-mountain-garden-human-ideal",
+        "startSec": 930,
+        "endSec": 1230,
+        "why": "Begin with the foundational picture in Genesis 1–2. The speakers describe Eden as a divinely provided refuge where “a river was there watering the garden,” then connect it to the temple and to Exodus 15’s promise that God will “plant” his people at his sanctuary. This gives you the basic garden metaphor: a place where heaven and earth meet and God provides life.",
+        "episodeTitle": "The Mountain Garden & the Human Ideal",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/9db9e3e0-f6cd-444d-bd25-46d9b4ad132d/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=9db9e3e0-f6cd-444d-bd25-46d9b4ad132d",
+        "durationSec": 2790,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:f4b3ac7e-ea96-4654-8f9c-ee1169fbac8f",
+        "startSec": 1250,
+        "endSec": 1550,
+        "why": "This clip shows how the garden pattern is replayed in Israel’s tabernacle. The speakers point to its east-facing entrance, cherubim, plant imagery, lampstand as a tree of life, law as a tree of knowledge, and God dwelling among his people, concluding, “This is Eden.” It also presses the central question of the metaphor: “Do I want heaven or do I want God?”",
+        "episodeTitle": "Exodus 24-27, 30: Tabernacle Plans (w/ Kristen Hatton)",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG5817271582.mp3?updated=1664486139",
+        "durationSec": 3014,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "bibleproject:podcast:the-wilderness-of-the-sea",
+        "startSec": 2560,
+        "endSec": 2817,
+        "why": "Now hear how the prophets use garden imagery for restoration after exile. The speakers explain that a devastated land becoming “like the Garden of Eden” is creation language: “a garden being planted out of the wilderness.” This expands the metaphor from one sacred place to God renewing a people and their circumstances when they appear to face “non-life.”",
+        "episodeTitle": "The Wilderness E2: The Wilderness of the Sea",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/0e94b2d2-861c-43a6-8623-86f8230a59ea/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=0e94b2d2-861c-43a6-8623-86f8230a59ea",
+        "durationSec": 3453,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:back-to-the-tree-of-life",
+        "startSec": 2400,
+        "endSec": 2660,
+        "why": "This bridge into the final vision explains the garden as both present and future: participation in the tree of life begins now, “like a mustard seed,” but is not yet complete. The speakers then move to Revelation 21, where New Jerusalem descends, the tabernacle is among humanity, and “New Jerusalem, Temple, Eden” become one united image rather than an escape from earth.",
+        "episodeTitle": "Back to the Tree of Life",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/0b7290bf-a0c7-4e5d-82fd-7ccd232e4385/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=0b7290bf-a0c7-4e5d-82fd-7ccd232e4385",
+        "durationSec": 3141,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:back-to-the-tree-of-life",
+        "startSec": 2640,
+        "endSec": 2920,
+        "why": "Finish with Revelation 22’s river and tree of life. The speakers highlight the river flowing from God and the Lamb, the tree bearing fruit and leaves “for the healing of the nations,” and the way the image gathers Israel, Jesus, new humanity, and the nations into one future. The clip lands the whole biblical arc in the claim that Jesus “open[s] the way back to the tree of life.”",
+        "episodeTitle": "Back to the Tree of Life",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/0b7290bf-a0c7-4e5d-82fd-7ccd232e4385/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=0b7290bf-a0c7-4e5d-82fd-7ccd232e4385",
+        "durationSec": 3141,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips present the garden as a recurring biblical picture of God’s presence, life, vocation, and blessing: planted in Eden, echoed in sanctuary and temple, promised in the restoration of ruined places, and finally extended to the whole renewed creation. The destination is not merely a beautiful place but God dwelling with humanity, with the river and tree’s life reaching outward for the healing of the nations.",
+    "totalSeconds": 1397
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3323,
+      "promptTokens": 1594,
+      "completionTokens": 109,
+      "reasoningTokens": 93,
+      "cachedPromptTokens": 1574,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00008356500000000002
+    },
+    {
+      "i": 1,
+      "latencyMs": 2332,
+      "promptTokens": 1889,
+      "completionTokens": 211,
+      "reasoningTokens": 25,
+      "cachedPromptTokens": 1591,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00017968500000000004
+    },
+    {
+      "i": 2,
+      "latencyMs": 3443,
+      "promptTokens": 13508,
+      "completionTokens": 394,
+      "reasoningTokens": 91,
+      "cachedPromptTokens": 1886,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0017079350000000003
+    },
+    {
+      "i": 3,
+      "latencyMs": 3820,
+      "promptTokens": 19402,
+      "completionTokens": 367,
+      "reasoningTokens": 196,
+      "cachedPromptTokens": 13505,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010923000000000003
+    },
+    {
+      "i": 4,
+      "latencyMs": 5048,
+      "promptTokens": 23168,
+      "completionTokens": 288,
+      "reasoningTokens": 242,
+      "cachedPromptTokens": 19399,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008378400000000001
+    },
+    {
+      "i": 5,
+      "latencyMs": 7660,
+      "promptTokens": 24249,
+      "completionTokens": 892,
+      "reasoningTokens": 105,
+      "cachedPromptTokens": 23165,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009022750000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 4,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "garden creation Eden sanctuary presence God",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 116,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "garden temple tabernacle Eden",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 88,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "garden vineyard new creation Revelation river tree",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 95,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Adam garden exile cherubim",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 94,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Song of Songs garden bride garden imagery",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 82,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Isaiah garden wilderness restoration garden",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 92,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "read_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 2,
+        "fromVerse": 8,
+        "toVerse": 15
+      },
+      "ms": 2,
+      "summary": "Genesis 2:8–15 (WEB)"
+    },
+    {
+      "at": 2,
+      "name": "read_passage",
+      "args": {
+        "book": "Ezekiel",
+        "chapter": 47,
+        "fromVerse": 1,
+        "toVerse": 12
+      },
+      "ms": 1,
+      "summary": "Ezekiel 47:1–12 (WEB)"
+    },
+    {
+      "at": 2,
+      "name": "read_passage",
+      "args": {
+        "book": "Revelation",
+        "chapter": 22,
+        "fromVerse": 1,
+        "toVerse": 5
+      },
+      "ms": 1,
+      "summary": "Revelation 22:1–5 (WEB)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:series-h2r-p20-metaphor-e2-mountain-garden-human-ideal",
+        "fromSec": 980,
+        "toSec": 1400
+      },
+      "ms": 5,
+      "summary": "980s–1280s of The Mountain Garden & the Human Ideal"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:the-wilderness-of-the-sea",
+        "fromSec": 2560,
+        "toSec": 2820
+      },
+      "ms": 0,
+      "summary": "2560s–2820s of The Wilderness E2: The Wilderness of the Sea"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:back-to-the-tree-of-life",
+        "fromSec": 2500,
+        "toSec": 2920
+      },
+      "ms": 5,
+      "summary": "2500s–2800s of Back to the Tree of Life"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:f4b3ac7e-ea96-4654-8f9c-ee1169fbac8f",
+        "fromSec": 1320,
+        "toSec": 1660
+      },
+      "ms": 4,
+      "summary": "1320s–1620s of Exodus 24-27, 30: Tabernacle Plans (w/ Kristen Hatton)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:series-h2r-p20-metaphor-e2-mountain-garden-human-ideal",
+        "fromSec": 930,
+        "toSec": 1280
+      },
+      "ms": 0,
+      "summary": "930s–1230s of The Mountain Garden & the Human Ideal"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:f4b3ac7e-ea96-4654-8f9c-ee1169fbac8f",
+        "fromSec": 1250,
+        "toSec": 1570
+      },
+      "ms": 0,
+      "summary": "1250s–1550s of Exodus 24-27, 30: Tabernacle Plans (w/ Kristen Hatton)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:back-to-the-tree-of-life",
+        "fromSec": 2640,
+        "toSec": 2920
+      },
+      "ms": 0,
+      "summary": "2640s–2920s of Back to the Tree of Life"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:back-to-the-tree-of-life",
+        "fromSec": 2400,
+        "toSec": 2660
+      },
+      "ms": 0,
+      "summary": "2400s–2660s of Back to the Tree of Life"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 6,
+    "toolCalls": 19,
+    "tapeSec": 2300,
+    "deniedWindows": 0,
+    "promptTokens": 83810,
+    "completionTokens": 2261,
+    "reasoningTokens": 752,
+    "cachedPromptTokens": 61120,
+    "wallMs": 26220,
+    "modelLatencyMs": 25626,
+    "toolMs": 589
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004804,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T19:16:45.545Z"
+}

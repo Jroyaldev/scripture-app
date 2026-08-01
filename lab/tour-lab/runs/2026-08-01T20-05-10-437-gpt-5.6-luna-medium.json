@@ -1,0 +1,418 @@
+{
+  "runId": "2026-08-01T20-05-10-437-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T20:05:10.437Z",
+  "promptId": null,
+  "prompt": "poor vs poor in spirit",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "~deepseek/deepseek-v4-flash-latest",
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Poor, and Poor in Spirit: Hearing Matthew and Luke Together",
+    "intro": "This tour starts with Matthew’s exact wording, then listens for what “in spirit” may add. It widens the lens through Luke’s “poor,” where poverty includes social exclusion as well as money, and ends by asking how Jesus’ blessing should reshape the way we relate to power and possessions.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:b2e9117f-com-80139bf7-a6b8-3a62-9e34-1e1ea3c365a7",
+        "startSec": 650,
+        "endSec": 880,
+        "why": "Begin with a close reading of Matthew 5:3. The teacher explicitly contrasts Matthew’s “poor in spirit” with Luke’s “poor,” cautions that “in spirit” may not simply mean spiritually deficient, and describes the people in view as “at the bottom of the heap” with “nothing to offer.” The clip lands on why they are blessed: “the kingdom of heaven is open and available to them.”",
+        "episodeTitle": "Matthew 5:1-12",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/5kwme7/matthew_51-12bfz7r.mp3",
+        "durationSec": 1769,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:powerless-grieving-and-unimportant-beatitudes-pt-2",
+        "startSec": 330,
+        "endSec": 630,
+        "why": "This gives the phrase a richer word-picture rather than reducing it to either humility or private depression. The speakers connect spirit with life-energy and explain “impoverished” as “not having resources,” then argue that Jesus is thinking socially: “without power,” lacking economic, social, and religious influence. Their summary is deliberately interpretive—“the good life belongs to the powerless”—and they also note that literal poverty and spiritual or religious powerlessness often went together for Jesus’ hearers.",
+        "episodeTitle": "Sermon on the Mount E5: The Powerless, Grieving, and Unimportant",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/9127acc8-c318-4792-969e-49ed32c059a3/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=9127acc8-c318-4792-969e-49ed32c059a3",
+        "durationSec": 2440,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:luke-part-3",
+        "startSec": 1780,
+        "endSec": 2080,
+        "why": "Now hear Luke’s side of the comparison. The speakers explain that biblical “poor” can include difficult circumstances, dishonor, shame, and being an outsider; Jesus’ mission reaches blind people, lepers, the ritually excluded, and even wealthy outcasts such as Levi. The key distinction is stated plainly: “In Matthew, Jesus says, Blessed are the poor in spirit. In Luke, he says, Blessed are the poor,” with Luke emphasizing those pushed outside the boundaries of God’s people.",
+        "episodeTitle": "Good News for the Poor",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/86a129f7-0855-4f8a-bf60-eeefdc3914ce/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=86a129f7-0855-4f8a-bf60-eeefdc3914ce",
+        "durationSec": 3360,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:why-do-beatitudes-matter-overworked-and-hopeless",
+        "startSec": 1680,
+        "endSec": 1880,
+        "why": "Finish by turning interpretation into response without making poverty a spiritual achievement. In answer to whether people should try to become poor in spirit, the speakers say the Beatitudes are not commands to manufacture these conditions. They describe a faithful response as changing how we relate to possessions and putting ourselves more honestly “in a place of need on God and on my community,” illustrated by Zacchaeus making restitution and giving generously.",
+        "episodeTitle": "Sermon on the Mount Q+R 1: Why Do the Beatitudes Matter for the Overworked and Hopeless?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/8d64c376-471b-4aaf-b19e-463b6cdf0f99/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=8d64c376-471b-4aaf-b19e-463b6cdf0f99",
+        "durationSec": 4088,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips suggest that “poor in spirit” is not a slogan for self-contempt, and “poor” is not safely narrowed to income alone. Jesus names people who lack resources, status, power, or standing—and announces that God’s kingdom is open to them. The final question is not how to perform poverty, but whether our lives make room for dependence, solidarity, generosity, and the people Jesus calls blessed.",
+    "totalSeconds": 1030
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3216,
+      "promptTokens": 1594,
+      "completionTokens": 47,
+      "reasoningTokens": 31,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00022737500000000004
+    },
+    {
+      "i": 1,
+      "latencyMs": 2556,
+      "promptTokens": 1889,
+      "completionTokens": 266,
+      "reasoningTokens": 41,
+      "cachedPromptTokens": 1591,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00021268500000000003
+    },
+    {
+      "i": 2,
+      "latencyMs": 2664,
+      "promptTokens": 11764,
+      "completionTokens": 312,
+      "reasoningTokens": 28,
+      "cachedPromptTokens": 1886,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014407350000000003
+    },
+    {
+      "i": 3,
+      "latencyMs": 2142,
+      "promptTokens": 14945,
+      "completionTokens": 277,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 11761,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000681735
+    },
+    {
+      "i": 4,
+      "latencyMs": 3073,
+      "promptTokens": 19888,
+      "completionTokens": 213,
+      "reasoningTokens": 161,
+      "cachedPromptTokens": 14942,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008953950000000001
+    },
+    {
+      "i": 5,
+      "latencyMs": 7478,
+      "promptTokens": 21023,
+      "completionTokens": 863,
+      "reasoningTokens": 147,
+      "cachedPromptTokens": 19885,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008588250000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "poor in spirit poor blessed Matthew beatitudes",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 97,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Luke poor Matthew poor in spirit difference",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 72,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "poverty poor materially poor in spirit",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 77,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Matthew",
+        "chapter": 5,
+        "verse": 3,
+        "limit": 20
+      },
+      "ms": 61,
+      "summary": "20 of 398 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Luke",
+        "chapter": 6,
+        "verse": 20,
+        "limit": 20
+      },
+      "ms": 0,
+      "summary": "17 of 39 moments"
+    },
+    {
+      "at": 1,
+      "name": "read_passage",
+      "args": {
+        "book": "Matthew",
+        "chapter": 5,
+        "fromVerse": 1,
+        "toVerse": 12
+      },
+      "ms": 1,
+      "summary": "Matthew 5:1–12 (WEB)"
+    },
+    {
+      "at": 1,
+      "name": "read_passage",
+      "args": {
+        "book": "Luke",
+        "chapter": 6,
+        "fromVerse": 17,
+        "toVerse": 26
+      },
+      "ms": 0,
+      "summary": "Luke 6:17–26 (WEB)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:b2e9117f-com-80139bf7-a6b8-3a62-9e34-1e1ea3c365a7",
+        "fromSec": 300,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "13 skim lines, 300s–900s of Matthew 5:1-12"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:46ce2271-com-93d4bf8e-f42c-3f12-b867-d58d11dcbf0d",
+        "fromSec": 150,
+        "toSec": 800
+      },
+      "ms": 4,
+      "summary": "14 skim lines, 150s–800s of Luke 6:20-26"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:luke-part-3",
+        "fromSec": 1700,
+        "toSec": 2300
+      },
+      "ms": 0,
+      "summary": "13 skim lines, 1700s–2300s of Good News for the Poor"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:powerless-grieving-and-unimportant-beatitudes-pt-2",
+        "fromSec": 0,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "19 skim lines, 0s–900s of Sermon on the Mount E5: The Powerless, Grieving, and Unimportant"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:why-do-beatitudes-matter-overworked-and-hopeless",
+        "fromSec": 1500,
+        "toSec": 2250
+      },
+      "ms": 0,
+      "summary": "16 skim lines, 1500s–2250s of Sermon on the Mount Q+R 1: Why Do the Beatitudes Matter for the Overworked and Hopeless?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:b2e9117f-com-80139bf7-a6b8-3a62-9e34-1e1ea3c365a7",
+        "fromSec": 650,
+        "toSec": 880
+      },
+      "ms": 0,
+      "summary": "650s–880s of Matthew 5:1-12"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:46ce2271-com-93d4bf8e-f42c-3f12-b867-d58d11dcbf0d",
+        "fromSec": 450,
+        "toSec": 650
+      },
+      "ms": 0,
+      "summary": "450s–650s of Luke 6:20-26"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:powerless-grieving-and-unimportant-beatitudes-pt-2",
+        "fromSec": 40,
+        "toSec": 360
+      },
+      "ms": 0,
+      "summary": "40s–340s of Sermon on the Mount E5: The Powerless, Grieving, and Unimportant"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:luke-part-3",
+        "fromSec": 1780,
+        "toSec": 2130
+      },
+      "ms": 0,
+      "summary": "1780s–2080s of Good News for the Poor"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:why-do-beatitudes-matter-overworked-and-hopeless",
+        "fromSec": 1680,
+        "toSec": 1880
+      },
+      "ms": 0,
+      "summary": "1680s–1880s of Sermon on the Mount Q+R 1: Why Do the Beatitudes Matter for the Overworked and Hopeless?"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:powerless-grieving-and-unimportant-beatitudes-pt-2",
+        "fromSec": 330,
+        "toSec": 650
+      },
+      "ms": 0,
+      "summary": "330s–630s of Sermon on the Mount E5: The Powerless, Grieving, and Unimportant"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 6,
+    "toolCalls": 20,
+    "tapeSec": 1530,
+    "deniedWindows": 0,
+    "promptTokens": 71103,
+    "completionTokens": 1978,
+    "reasoningTokens": 408,
+    "cachedPromptTokens": 50065,
+    "wallMs": 21446,
+    "modelLatencyMs": 21129,
+    "toolMs": 314
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004317,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T20:05:31.883Z"
+}

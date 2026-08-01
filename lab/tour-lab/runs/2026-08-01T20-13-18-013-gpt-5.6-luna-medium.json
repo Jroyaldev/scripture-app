@@ -1,0 +1,387 @@
+{
+  "runId": "2026-08-01T20-13-18-013-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T20:13:18.013Z",
+  "promptId": null,
+  "prompt": "revelation 1",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "~deepseek/deepseek-v4-flash-latest",
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Revelation 1: An unveiling of Jesus to suffering churches",
+    "intro": "This tour walks through Revelation 1 in the order the chapter itself unfolds: what kind of book this is, who first received it, what its opening blessing asks of hearers, and finally the overwhelming vision of Jesus among the lampstands. Listen for how the chapter moves from symbol and setting toward courage: John is not given a puzzle detached from life, but a vision meant to help real churches remain faithful.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:jewish-apocalyptic-imagination",
+        "startSec": 333,
+        "endSec": 633,
+        "why": "Begin here for the chapter’s literary and theological orientation. The speakers trace the chain from “God the Father gave Jesus” to the messenger and John, and explain that Revelation is simultaneously “an apocalypse,” “a prophecy,” and a letter to seven churches. This gives you a useful lens before hearing the symbols themselves.",
+        "episodeTitle": "The Jewish Apocalyptic Imagination",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/96e226f5-2108-4e87-b65d-1640239914c5/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=96e226f5-2108-4e87-b65d-1640239914c5",
+        "durationSec": 2299,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:33ac7cf4-com-a16412d9-1281-3664-b0a3-f7637d157ed4",
+        "startSec": 126,
+        "endSec": 426,
+        "why": "This clip works through Revelation 1:1–2 and clarifies what “the revelation of Jesus Christ” means in the speaker’s reading: chiefly a revelation from Jesus, not merely information about him. It also explains that the message “must soon take place” addresses the original churches, and that the visions are communicated through “sign language or symbol language.”",
+        "episodeTitle": "Revelation 1:1-8",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/g2bje5sw3qnx58mc/revelation_11-88z0zq.mp3",
+        "durationSec": 1208,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:33ac7cf4-com-a16412d9-1281-3664-b0a3-f7637d157ed4",
+        "startSec": 426,
+        "endSec": 726,
+        "why": "Now hear the rest of the opening frame, including the blessing on those who “read,” “hear,” and “keep” the prophecy. The speaker emphasizes that Revelation is not “merely telling the future,” but a prophetic call to remain faithful to Jesus, then walks through the greeting to the seven churches and Jesus as “the faithful witness” and “the firstborn from the dead.”",
+        "episodeTitle": "Revelation 1:1-8",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/g2bje5sw3qnx58mc/revelation_11-88z0zq.mp3",
+        "durationSec": 1208,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:c8a44698-com-3d2fc9b8-7af2-39c7-9759-f6ed48939efd",
+        "startSec": 432,
+        "endSec": 732,
+        "why": "Finish with the vision in Revelation 1:12–18. The speaker explains the seven lampstands, the “one like a son of man” in priestly clothing, and the imagery of white hair, fire, bronze, many waters, and the two-edged sword as biblical language portraying exalted glory. The clip lands where the vision becomes personal: John falls “like a dead man,” and Jesus answers, “Do not be afraid,” identifying himself as “the first and the last” and “the living one.”",
+        "episodeTitle": "Revelation 1:9-20",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/scf2mkmpf24yyv7p/revelation_19-209es8b.mp3",
+        "durationSec": 1185,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips let Revelation 1 set its own agenda: hear the book as an unveiling, receive it as a word addressed to churches under pressure, and let the strange imagery direct your attention to the living Jesus. The chapter ends not with speculation but with his reassurance and authority: he was dead, is alive forever, and holds “the keys of Death and of Hades.”",
+    "totalSeconds": 1200
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2555,
+      "promptTokens": 1594,
+      "completionTokens": 208,
+      "reasoningTokens": 21,
+      "cachedPromptTokens": 1574,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00014296500000000002
+    },
+    {
+      "i": 1,
+      "latencyMs": 3235,
+      "promptTokens": 9612,
+      "completionTokens": 356,
+      "reasoningTokens": 67,
+      "cachedPromptTokens": 1591,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00123206
+    },
+    {
+      "i": 2,
+      "latencyMs": 2126,
+      "promptTokens": 14334,
+      "completionTokens": 245,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 9609,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008336400000000001
+    },
+    {
+      "i": 3,
+      "latencyMs": 2823,
+      "promptTokens": 18832,
+      "completionTokens": 243,
+      "reasoningTokens": 60,
+      "cachedPromptTokens": 14331,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008516600000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 10441,
+      "promptTokens": 22505,
+      "completionTokens": 1261,
+      "reasoningTokens": 552,
+      "cachedPromptTokens": 18829,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014043150000000002
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Revelation",
+        "chapter": 1,
+        "verse": 0,
+        "limit": 25
+      },
+      "ms": 81,
+      "summary": "11 of 95 moments"
+    },
+    {
+      "at": 0,
+      "name": "read_passage",
+      "args": {
+        "book": "Revelation",
+        "chapter": 1,
+        "fromVerse": 1,
+        "toVerse": 20
+      },
+      "ms": 2,
+      "summary": "Revelation 1:1–20 (WEB)"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Revelation chapter one Jesus Christ revelation John Patmos seven churches",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 68,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "one like a son of man eyes like flame feet bronze seven stars lampstands",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 61,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "I am the Alpha and the Omega first and last Revelation",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 36,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:33ac7cf4-com-a16412d9-1281-3664-b0a3-f7637d157ed4",
+        "fromSec": 0,
+        "toSec": 1208
+      },
+      "ms": 1,
+      "summary": "24 skim lines, 0s–1208s of Revelation 1:1-8"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:c8a44698-com-3d2fc9b8-7af2-39c7-9759-f6ed48939efd",
+        "fromSec": 0,
+        "toSec": 1185
+      },
+      "ms": 0,
+      "summary": "25 skim lines, 0s–1185s of Revelation 1:9-20"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:2954",
+        "fromSec": 0,
+        "toSec": 1500
+      },
+      "ms": 0,
+      "summary": "31 skim lines, 0s–1500s of Naked Bible 355: Revelation 1:7-20"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:jewish-apocalyptic-imagination",
+        "fromSec": 300,
+        "toSec": 1300
+      },
+      "ms": 0,
+      "summary": "19 skim lines, 300s–1300s of The Jewish Apocalyptic Imagination"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:9b496117-com-0b5ab412-6d8e-3e28-aa94-bb51c83308a0",
+        "fromSec": 0,
+        "toSec": 1100
+      },
+      "ms": 3,
+      "summary": "23 skim lines, 0s–1100s of Backstory to Revelation"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:33ac7cf4-com-a16412d9-1281-3664-b0a3-f7637d157ed4",
+        "fromSec": 126,
+        "toSec": 1110
+      },
+      "ms": 0,
+      "summary": "126s–426s of Revelation 1:1-8"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:c8a44698-com-3d2fc9b8-7af2-39c7-9759-f6ed48939efd",
+        "fromSec": 132,
+        "toSec": 1100
+      },
+      "ms": 0,
+      "summary": "132s–432s of Revelation 1:9-20"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:jewish-apocalyptic-imagination",
+        "fromSec": 333,
+        "toSec": 1040
+      },
+      "ms": 0,
+      "summary": "333s–633s of The Jewish Apocalyptic Imagination"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:9b496117-com-0b5ab412-6d8e-3e28-aa94-bb51c83308a0",
+        "fromSec": 164,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "164s–464s of Backstory to Revelation"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:33ac7cf4-com-a16412d9-1281-3664-b0a3-f7637d157ed4",
+        "fromSec": 426,
+        "toSec": 760
+      },
+      "ms": 0,
+      "summary": "426s–726s of Revelation 1:1-8"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:c8a44698-com-3d2fc9b8-7af2-39c7-9759-f6ed48939efd",
+        "fromSec": 432,
+        "toSec": 930
+      },
+      "ms": 0,
+      "summary": "432s–732s of Revelation 1:9-20"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:jewish-apocalyptic-imagination",
+        "fromSec": 633,
+        "toSec": 1040
+      },
+      "ms": 0,
+      "summary": "633s–933s of The Jewish Apocalyptic Imagination"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 18,
+    "tapeSec": 2100,
+    "deniedWindows": 0,
+    "promptTokens": 66877,
+    "completionTokens": 2313,
+    "reasoningTokens": 700,
+    "cachedPromptTokens": 45934,
+    "wallMs": 21437,
+    "modelLatencyMs": 21180,
+    "toolMs": 252
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004465,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T20:13:39.451Z"
+}

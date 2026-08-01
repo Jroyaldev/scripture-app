@@ -1,0 +1,448 @@
+{
+  "runId": "2026-08-01T18-53-49-737-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T18:53:49.737Z",
+  "promptId": null,
+  "prompt": "How the prophets work as literature?",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "~deepseek/deepseek-v4-flash-latest",
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "How the Prophets Work as Literature",
+    "intro": "This tour starts by clearing away the assumption that prophecy is mainly a code of future predictions. It then gives you a way to hear the prophets’ non-linear composition, notice their deliberate poetic craft and imagery, and finally see how a prophet’s performed actions can function as literature in public. The goal is not to make every prophetic book easy, but to give you handles for reading what is actually on the page.",
+    "steps": [
+      {
+        "recordId": "spoken-gospel:podcast:cbf22436-4efd-4ea1-8c4e-c82b1bf3a72c",
+        "startSec": 888,
+        "endSec": 1014,
+        "why": "Begin here because the hosts name the most common literary misreading directly: asking prophecy first, “what does this mean about the future?” They instead locate Hosea as speech “to a particular people at a particular time,” and redirect attention to what the text reveals about God’s character—“a husband who loves his wife.”",
+        "episodeTitle": "Hosea Introduction",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG2857749401.mp3?updated=1664486092",
+        "durationSec": 3638,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "bibleproject:podcast:what-prophecy",
+        "startSec": 304,
+        "endSec": 570,
+        "why": "This supplies the big formal map. The hosts explain why the prophets can feel disordered: they are “not linear and sequential” but “cyclical and symphonic,” with repeated themes and assumptions about readers already immersed in Torah and Israel’s history. It is a useful description of how these books ask to be read rather than a promise that they follow a modern outline.",
+        "episodeTitle": "What Prophecy is For",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/acb2c478-5dd5-481c-bfe7-e856a1ad05f2/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=acb2c478-5dd5-481c-bfe7-e856a1ad05f2",
+        "durationSec": 3484,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:ff318f27-3bc5-4401-b3e3-2374f5ce0158",
+        "startSec": 235,
+        "endSec": 335,
+        "why": "Now move from large-scale structure to verbal craftsmanship. The discussion of Micah stresses that prophetic poetry is “intricately woven,” “detailed, thought-out” and “meticulous,” using cadence, meter, puns, irony, and Hebrew parallelism. That makes the prophet a literary artist carefully shaping a message, not merely someone improvising a prediction.",
+        "episodeTitle": "Micah Introduction",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG3486776493.mp3?updated=1693931176",
+        "durationSec": 3473,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "naked-bible:podcast:1147",
+        "startSec": 506,
+        "endSec": 700,
+        "why": "This clip gives you a technical ear for the poetry itself. It contrasts English expectations of sound-rhyme with Hebrew poetry that “rhymes in thought,” then connects its patterns, meter, word-pairing, and deliberate artistry to a view of inspiration in which the human writer is genuinely doing literary work.",
+        "episodeTitle": "Naked Bible 135: Ezekiel 19-20",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2016/12/NakedBible135_Ezekiel19_20.mp3",
+        "durationSec": 5054,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:1040",
+        "startSec": 220,
+        "endSec": 440,
+        "why": "Finish with a concrete example of prophetic literature becoming embodied performance. Ezekiel is told to pack “an exile’s baggage,” dig through the wall, and carry it out in sight of the people—an action intended to “vividly display something.” The clip shows how prophetic communication can combine oracle, audience objections, symbolism, and enacted sign into one literary-rhetorical event.",
+        "episodeTitle": "Naked Bible 121: Ezekiel 12-13",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2016/10/NakedBible121_Ezekiel12_13.mp3",
+        "durationSec": 3099,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "As you continue, try reading a prophetic book less like a sequence of predictions and more like a carefully arranged performance: repeated motifs, poems that echo and intensify, images that make an argument, and actions that turn words into public signs. Then ask both what the prophet says to the original people and how the book’s final shape teaches you to hear that message.",
+    "totalSeconds": 906
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2637,
+      "promptTokens": 1596,
+      "completionTokens": 37,
+      "reasoningTokens": 21,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00022162500000000003
+    },
+    {
+      "i": 1,
+      "latencyMs": 3114,
+      "promptTokens": 1891,
+      "completionTokens": 173,
+      "reasoningTokens": 16,
+      "cachedPromptTokens": 1593,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00015690500000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 2269,
+      "promptTokens": 8126,
+      "completionTokens": 181,
+      "reasoningTokens": 25,
+      "cachedPromptTokens": 1888,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009071550000000001
+    },
+    {
+      "i": 3,
+      "latencyMs": 3460,
+      "promptTokens": 14512,
+      "completionTokens": 268,
+      "reasoningTokens": 55,
+      "cachedPromptTokens": 8123,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010405800000000002
+    },
+    {
+      "i": 4,
+      "latencyMs": 1867,
+      "promptTokens": 17961,
+      "completionTokens": 204,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 14509,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000698915
+    },
+    {
+      "i": 5,
+      "latencyMs": 3452,
+      "promptTokens": 21534,
+      "completionTokens": 194,
+      "reasoningTokens": 49,
+      "cachedPromptTokens": 17958,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007429050000000001
+    },
+    {
+      "i": 6,
+      "latencyMs": 7445,
+      "promptTokens": 24180,
+      "completionTokens": 828,
+      "reasoningTokens": 107,
+      "cachedPromptTokens": 21531,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010431600000000002
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 3,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "prophets literary style poetry metaphor imagery symbolism",
+        "sourceId": "bibleproject",
+        "limit": 8
+      },
+      "ms": 121,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "how to read prophetic books prophecy genre context audience",
+        "sourceId": "forty-minutes-ot",
+        "limit": 8
+      },
+      "ms": 45,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "prophetic literature judgment hope lawsuit oracle",
+        "sourceId": "listeners-commentary",
+        "limit": 8
+      },
+      "ms": 37,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "prophets poetry rhetoric sign acts visions",
+        "sourceId": "naked-bible",
+        "limit": 8
+      },
+      "ms": 60,
+      "summary": "8 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "prophets are poets prophetic books literary design",
+        "sourceId": "bibleproject",
+        "limit": 10
+      },
+      "ms": 115,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Isaiah literary design prophetic book poetry",
+        "sourceId": "bibleproject",
+        "limit": 10
+      },
+      "ms": 95,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Ezekiel symbolic acts prophetic literature meaning",
+        "sourceId": "naked-bible",
+        "limit": 6
+      },
+      "ms": 39,
+      "summary": "6 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "prophet speaks to Israel present future warning hope poetry",
+        "sourceId": "spoken-gospel",
+        "limit": 8
+      },
+      "ms": 81,
+      "summary": "8 hits"
+    },
+    {
+      "at": 3,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:cbf22436-4efd-4ea1-8c4e-c82b1bf3a72c",
+        "fromSec": 700,
+        "toSec": 1300
+      },
+      "ms": 1,
+      "summary": "13 skim lines, 700s–1300s of Hosea Introduction"
+    },
+    {
+      "at": 3,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:what-prophecy",
+        "fromSec": 0,
+        "toSec": 3484
+      },
+      "ms": 0,
+      "summary": "30 skim lines, 0s–1500s of What Prophecy is For"
+    },
+    {
+      "at": 3,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:ff318f27-3bc5-4401-b3e3-2374f5ce0158",
+        "fromSec": 0,
+        "toSec": 1200
+      },
+      "ms": 1,
+      "summary": "26 skim lines, 0s–1200s of Micah Introduction"
+    },
+    {
+      "at": 3,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:1040",
+        "fromSec": 0,
+        "toSec": 1000
+      },
+      "ms": 0,
+      "summary": "20 skim lines, 0s–1000s of Naked Bible 121: Ezekiel 12-13"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:what-prophecy",
+        "fromSec": 300,
+        "toSec": 570
+      },
+      "ms": 1,
+      "summary": "300s–570s of What Prophecy is For"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:cbf22436-4efd-4ea1-8c4e-c82b1bf3a72c",
+        "fromSec": 875,
+        "toSec": 1045
+      },
+      "ms": 0,
+      "summary": "875s–1045s of Hosea Introduction"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:ff318f27-3bc5-4401-b3e3-2374f5ce0158",
+        "fromSec": 235,
+        "toSec": 335
+      },
+      "ms": 0,
+      "summary": "235s–335s of Micah Introduction"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:1040",
+        "fromSec": 180,
+        "toSec": 440
+      },
+      "ms": 0,
+      "summary": "180s–440s of Naked Bible 121: Ezekiel 12-13"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:what-prophecy",
+        "fromSec": 700,
+        "toSec": 920
+      },
+      "ms": 0,
+      "summary": "700s–920s of What Prophecy is For"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:series-h2r-p19-metaphor-e1-metaphor-our-imagination",
+        "fromSec": 1860,
+        "toSec": 2070
+      },
+      "ms": 7,
+      "summary": "1860s–2070s of Metaphor & Our Imagination"
+    },
+    {
+      "at": 5,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:1147",
+        "fromSec": 480,
+        "toSec": 700
+      },
+      "ms": 8,
+      "summary": "480s–700s of Naked Bible 135: Ezekiel 19-20"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 7,
+    "toolCalls": 21,
+    "tapeSec": 1450,
+    "deniedWindows": 0,
+    "promptTokens": 89800,
+    "completionTokens": 1885,
+    "reasoningTokens": 273,
+    "cachedPromptTokens": 65602,
+    "wallMs": 24864,
+    "modelLatencyMs": 24244,
+    "toolMs": 614
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004811,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T18:54:14.601Z"
+}
