@@ -61,6 +61,16 @@ export const MODELS = [
     defaultReasoning: 'medium',
   },
   {
+    /* The director's model for /magic visualizations as of 2026-08-01 —
+       a smarter tier than the luna family, pinned at high effort. */
+    key: 'gpt-5.6-sol-high',
+    requestedSlug: 'openai/gpt-5.6-sol',
+    label: 'GPT-5.6 Sol (high)',
+    env: { ...OPENROUTER, model: 'SOL_HIGH_MODEL', reasoning: 'SOL_HIGH_REASONING' },
+    defaultBaseUrl: OPENROUTER_URL,
+    defaultReasoning: 'high',
+  },
+  {
     key: 'gpt-5.6-luna-pro',
     requestedSlug: 'openai/gpt-5.6-luna-pro',
     label: 'GPT-5.6 Luna Pro',

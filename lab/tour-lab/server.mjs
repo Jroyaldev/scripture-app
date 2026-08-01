@@ -470,10 +470,11 @@ Include only the keys the chosen form needs; stage directions are optional and m
       };
 
       try {
-        const client = clientFor('gpt-5.6-luna-medium');
+        /* body.model is a lab dial for A/B runs; production callers omit it. */
+        const client = clientFor(typeof body.model === 'string' && body.model ? body.model : 'gpt-5.6-sol-high');
         const spent = [];
         const toks = { in: 0, out: 0, reasoning: 0 };
-        const callModel = async (content, maxTokens = 8000) => {
+        const callModel = async (content, maxTokens = 16000) => {
           const reply = await client.chat({ maxTokens, messages: [{ role: 'user', content }] });
           toks.in += reply.usage?.promptTokens || 0;
           toks.out += reply.usage?.completionTokens || 0;
@@ -509,11 +510,11 @@ Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{
         const scenes = [];
         for (const sc of (Array.isArray(raw?.scenes) ? raw.scenes : []).slice(0, 4)) {
           const ref = String(sc?.verse || '').match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3}):(\d{1,3})(?:\s*[–-]\s*(\d{1,3}))?$/);
-          if (!ref) continue;
+          if (!ref) { console.log(`[direct] dropped scene, unparsable verse: "${sc?.verse}"`); continue; }
           const fromV = Number(ref[3]);
           const toV = ref[4] ? Math.min(Number(ref[4]), fromV + 2) : fromV;
           const passage = readPassage({ book: ref[1], chapter: Number(ref[2]), fromVerse: fromV, toVerse: toV });
-          if (passage.error || !passage.verses?.length) continue;
+          if (passage.error || !passage.verses?.length) { console.log(`[direct] dropped scene, passage lookup failed: "${sc?.verse}"`); continue; }
           const verseNorm = ` ${norm(passage.verses.map((v) => v.text).join(' '))} `;
           scenes.push({
             ref: `${passage.bookName} ${passage.chapter}:${fromV}${toV > fromV ? '–' + toV : ''}`,
