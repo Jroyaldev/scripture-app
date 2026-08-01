@@ -1,0 +1,326 @@
+{
+  "runId": "2026-08-01T00-16-49-853-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T00:16:49.853Z",
+  "promptId": null,
+  "prompt": "My mother died and I cannot pray",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "When Grief Has Taken Your Words",
+    "intro": "Your mother’s death has not only brought sorrow; it has made prayer feel impossible. This tour does not ask you to hurry past that or manufacture feelings you do not have. It begins by making room for your heartbreak, then shows how the Bible gives grief words—and finally offers companionship for the moments when even those words are gone.",
+    "steps": [
+      {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "startSec": 136,
+        "endSec": 380,
+        "why": "Begin here because the question is strikingly close to yours: a grieving daughter asks how to pray when belief feels doubtful and her grief feels ‘selfish and unimportant.’ Wright answers first with permission rather than technique: ‘this is not selfish and it is not unimportant,’ then points to Jesus weeping at Lazarus’s tomb and in Gethsemane. He suggests staying with those scenes before rushing to resurrection or resolution.",
+        "episodeTitle": "#196 Pain and suffering Part 2 (Classic)",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR3879333769.mp3?updated=1749653312",
+        "durationSec": 1455,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:8bbb1a44-cb2e-4ed4-b796-ca59c46978bf",
+        "startSec": 297,
+        "endSec": 525,
+        "why": "Now listen for a biblical shape for what you are carrying. The speakers describe lament as taking sorrow, fear, anger, and mourning and ‘translating those into words.’ They explain that lament can say plainly, ‘Here’s our situation… why is this happening? Where are you?’ This makes prayer less like performing faith and more like bringing the actual death and its aftermath before God.",
+        "episodeTitle": "2 Samuel 1:17-2:4 (Episode 259)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_min_ep_259.mp3?dest-id=245197",
+        "durationSec": 2389,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:8f69bf0a-com-59af7369-e75d-395e-85a6-34ac29b8e25e",
+        "startSec": 140,
+        "endSec": 440,
+        "why": "This is for the days when lament itself feels beyond you. The teacher reads Romans 8:26 as an answer to ‘I don’t even know what to say’: ‘we don’t know how to pray as we should.’ The clip dwells on the Spirit helping in weakness and interceding with ‘groanings too deep for words’—not demanding that you first become articulate or spiritually strong.",
+        "episodeTitle": "Romans 8:26-39",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/8rp82y/romans_826-39blqmq.mp3",
+        "durationSec": 1393,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "startSec": 918,
+        "endSec": 1194,
+        "why": "Close with a way to hold two realities together without pretending the pain is smaller than it is. In discussing Psalm 22, the speakers say suffering and faith ‘are not mutually exclusive,’ and contrast the psalmist’s felt absence—‘My God, my God, why have you forsaken me?’—with what he knows: ‘yet you are holy.’ Their point is not to erase grief, but to let honest sorrow and a thread of hope remain in the same prayer.",
+        "episodeTitle": "Psalm 22: Lament Psalms (w/ Cameron Cole)",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG7303573431.mp3?updated=1686154567",
+        "durationSec": 2801,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "For now, prayer may be a sentence from a psalm, a protest, a tear, or only a groan. Nothing in these clips requires you to sound composed before you come to God. If all you can manage is “Where are you?” or “Help,” that is already the kind of honest address these teachers are inviting you to bring.",
+    "totalSeconds": 1048
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2708,
+      "promptTokens": 1596,
+      "completionTokens": 34,
+      "reasoningTokens": 18,
+      "cachedPromptTokens": 1574,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00003881500000000001
+    },
+    {
+      "i": 1,
+      "latencyMs": 2913,
+      "promptTokens": 1891,
+      "completionTokens": 188,
+      "reasoningTokens": 33,
+      "cachedPromptTokens": 1593,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00016590500000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 3351,
+      "promptTokens": 12050,
+      "completionTokens": 358,
+      "reasoningTokens": 53,
+      "cachedPromptTokens": 1888,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0015038550000000003
+    },
+    {
+      "i": 3,
+      "latencyMs": 4343,
+      "promptTokens": 18236,
+      "completionTokens": 288,
+      "reasoningTokens": 226,
+      "cachedPromptTokens": 12047,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010668200000000002
+    },
+    {
+      "i": 4,
+      "latencyMs": 10811,
+      "promptTokens": 19208,
+      "completionTokens": 1038,
+      "reasoningTokens": 324,
+      "cachedPromptTokens": 18233,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009269300000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 3,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "mother died grief cannot pray",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 82,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "loss lament God silence prayer",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 56,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "grief after death praying",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 39,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "when you cannot pray suffering",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 56,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Psalms lament sorrow God hear me",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 41,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:f189e210-8df4-11ee-b97f-09218d3fce01",
+        "fromSec": 80,
+        "toSec": 620
+      },
+      "ms": 0,
+      "summary": "80s–380s of #196 Pain and suffering Part 2 (Classic)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:67576c87-242c-42e5-a03d-63663cd5d2d6",
+        "fromSec": 900,
+        "toSec": 1450
+      },
+      "ms": 0,
+      "summary": "900s–1200s of Psalm 22: Lament Psalms (w/ Cameron Cole)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:5bbd952f-https-radicallychristian-com-p-7303",
+        "fromSec": 1530,
+        "toSec": 1900
+      },
+      "ms": 4,
+      "summary": "1530s–1830s of Dealing with Grief – CrossTalk S2E25"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8f69bf0a-com-59af7369-e75d-395e-85a6-34ac29b8e25e",
+        "fromSec": 140,
+        "toSec": 470
+      },
+      "ms": 0,
+      "summary": "140s–440s of Romans 8:26-39"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:8bbb1a44-cb2e-4ed4-b796-ca59c46978bf",
+        "fromSec": 180,
+        "toSec": 600
+      },
+      "ms": 0,
+      "summary": "180s–480s of 2 Samuel 1:17-2:4 (Episode 259)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:8bbb1a44-cb2e-4ed4-b796-ca59c46978bf",
+        "fromSec": 480,
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "480s–700s of 2 Samuel 1:17-2:4 (Episode 259)"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 13,
+    "tapeSec": 1720,
+    "deniedWindows": 0,
+    "promptTokens": 52981,
+    "completionTokens": 1906,
+    "reasoningTokens": 654,
+    "cachedPromptTokens": 35335,
+    "wallMs": 24409,
+    "modelLatencyMs": 24126,
+    "toolMs": 281
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003702,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T00:17:14.262Z"
+}

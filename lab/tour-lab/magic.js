@@ -1,31 +1,42 @@
 // The magic experiment: same pipeline, different manners.
 //
 // The anti-magic list, enforced here by absence: no chat transcript, no
-// streaming tokens, no spinner, no progress bar, no percentages, no
-// "regenerate", and the word "AI" appears nowhere a reader can see.
+// streaming tokens, no spinner, no progress bar toward "done", no
+// percentages, no "regenerate", and the word "AI" appears nowhere a
+// reader can see.
 
 const $ = (s) => document.querySelector(s);
 const MODEL = 'gpt-5.6-luna-medium'; // fast enough to watch, cheap enough to not think about
 
 // ----------------------------------------------------------------- scenes
+// Fade the leaving scene fully out before the arriving one fades in — a
+// page that blinks between rooms breaks the spell.
+
+let sceneToken = 0;
 
 function showScene(id) {
-  for (const sc of document.querySelectorAll('.scene')) {
-    if (sc.id === id) {
-      sc.classList.add('entering');
-      requestAnimationFrame(() => requestAnimationFrame(() => sc.classList.add('on')));
-    } else {
-      sc.classList.remove('on', 'entering');
-      sc.style.display = '';
+  const token = ++sceneToken;
+  const cur = document.querySelector('.scene.on');
+  const next = document.getElementById(id);
+  const reveal = () => {
+    if (token !== sceneToken) return;
+    for (const sc of document.querySelectorAll('.scene')) {
+      if (sc !== next) { sc.classList.remove('on', 'entering'); }
     }
+    next.classList.add('entering');
+    requestAnimationFrame(() => requestAnimationFrame(() => {
+      if (token === sceneToken) next.classList.add('on');
+    }));
+  };
+  if (cur && cur !== next) {
+    cur.classList.remove('on');
+    setTimeout(reveal, 460);
+  } else {
+    reveal();
   }
 }
 
 // ------------------------------------------------------------- the making
-// One quiet line at a time. The lines are honest — each is the pipeline's
-// actual current act, phrased the way a person would say it — but they are
-// paced for reading, not for the machine: a new act may not interrupt a
-// line that just appeared.
 
 const lineEl = () => $('#making-line');
 let lineQueue = [];
@@ -33,7 +44,6 @@ let lineBusy = false;
 let lastLineAt = 0;
 
 function sayLine(text) {
-  // Collapse bursts: keep only the freshest pending line.
   lineQueue = [text];
   drainLines();
 }
@@ -64,6 +74,8 @@ function addMark() {
   requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add('on')));
 }
 
+const trim = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
+
 function actLine(name, args, summary) {
   const title = (summary && /of (.+)$/.exec(summary))?.[1];
   if (name === 'search_corpus') return 'asking who has taught this…';
@@ -74,8 +86,6 @@ function actLine(name, args, summary) {
   if (name === 'list_sources') return 'looking along the shelf…';
   return null;
 }
-
-const trim = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
 
 // --------------------------------------------------------------- the ask
 
@@ -91,7 +101,7 @@ $('#again').addEventListener('click', () => {
   $('#steps').innerHTML = '';
   $('#making-marks').innerHTML = '';
   showScene('ask');
-  $('#q').focus();
+  setTimeout(() => $('#q').focus(), 520);
 });
 
 // --------------------------------------------------------------- the run
@@ -137,7 +147,6 @@ async function begin(prompt) {
   }
 
   if (!tour) {
-    // Fail like a person: one sentence, and the door stays open.
     sayLine(sawTrouble ? 'that one is beyond me today — try asking another way.' : 'try asking another way.');
     setTimeout(() => showScene('ask'), 2600);
     return;
@@ -145,6 +154,44 @@ async function begin(prompt) {
 
   sayLine('setting it in order…');
   setTimeout(() => presentTour(tour), 1200);
+}
+
+// ------------------------------------------------------- quotes & marking
+// Everything highlighted on this page is something a teacher actually said
+// or the tour actually cites — relevance drawn from the record, never
+// decoration.
+
+function quotedPhrases(why) {
+  const out = [];
+  const re = /[“"]([^”"]{6,90})[”"]/g;
+  let m;
+  while ((m = re.exec(String(why || '')))) out.push(m[1]);
+  return out;
+}
+
+const normalize = (s) => String(s).toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim();
+
+/* Mark occurrences of any phrase (or its significant words) in plain text;
+   returns HTML. Words under five letters stay unmarked — highlighting "the"
+   helps nobody. */
+function markRelevant(text, phrases) {
+  let html = escapeHtml(text);
+  const terms = new Set();
+  for (const p of phrases) {
+    const words = normalize(p).split(' ').filter((w) => w.length >= 5);
+    if (p.length <= 60) terms.add(p);
+    for (const w of words) terms.add(w);
+  }
+  for (const term of [...terms].sort((a, b) => b.length - a.length)) {
+    const esc = escapeHtml(term).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    html = html.replace(new RegExp(`(?<![\\w>])(${esc})(?![\\w])`, 'gi'), (s) => `<em class="rel">${s}</em>`);
+  }
+  // Un-nest any accidental double marks.
+  return html.replace(/<em class="rel">(<em class="rel">)+/g, '<em class="rel">').replace(/(<\/em>)+<\/em>/g, '</em>');
+}
+
+function escapeHtml(s) {
+  return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
 
 // -------------------------------------------------------------- the tour
@@ -170,7 +217,7 @@ function presentTour(tour) {
         <span class="step-source"></span>
         <span class="step-mins">${Math.round((s.endSec - s.startSec) / 60)} min</span>
       </div>
-      <div class="step-title"></div>
+      <div class="step-title" role="button" tabindex="0" title="Why this reading"></div>
       <div class="step-row">
         <button class="play" aria-label="Play">
           <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor" aria-hidden="true">
@@ -178,23 +225,27 @@ function presentTour(tour) {
             <g class="p-pause" style="display:none"><rect x="1" y="1" width="3.5" height="12"></rect><rect x="7.5" y="1" width="3.5" height="12"></rect></g>
           </svg>
         </button>
-        <div class="whisper" title="Why this clip"></div>
+        <div class="whisper" title="Why this reading"></div>
       </div>
+      <p class="caption" aria-live="off"></p>
       <blockquote class="verses"></blockquote>
       <div class="why"></div>
+      <div class="clip-progress" aria-hidden="true"></div>
       ${s.adInsertionDrift ? '<p class="step-note">This show inserts ads, so the needle may land a little off — nudge if it does.</p>' : ''}
     `;
     li.querySelector('.step-source').textContent = s.source || s.sourceId;
     li.querySelector('.step-title').textContent = s.episodeTitle;
     li.querySelector('.why').textContent = s.why;
     li.querySelector('.play').addEventListener('click', () => toggleStep(li, s, i));
-    li.querySelector('.whisper').addEventListener('click', () => li.querySelector('.why').classList.toggle('open'));
+    const toggleWhy = () => li.querySelector('.why').classList.toggle('open');
+    li.querySelector('.whisper').addEventListener('click', toggleWhy);
+    li.querySelector('.step-title').addEventListener('click', toggleWhy);
+    li.querySelector('.step-title').addEventListener('keydown', (e) => { if (e.key === 'Enter') toggleWhy(); });
     list.appendChild(li);
     loadVerses(li, s);
   });
 
   showScene('tour');
-  // Steps lay themselves in one at a time — the gift being set on the table.
   document.querySelectorAll('.step').forEach((el, i) => {
     setTimeout(() => el.classList.add('in'), 350 + i * 240);
   });
@@ -215,56 +266,102 @@ async function fetchWhispers(tour) {
 }
 
 // ------------------------------------------------- scripture, braided in
+// Only the cited verses; a citation of one verse shows one verse. The
+// words the tour itself quotes are underscored in gold.
 
 function loadVerses(li, step) {
   const m = String(step.why || '').match(/\b([1-3]?\s?[A-Z][a-z]+)\s+(\d{1,3}):(\d{1,3})(?:\s*[–-]\s*(\d{1,3}))?/);
   if (!m) return;
-  const to = m[4] ? Number(m[4]) : Math.min(Number(m[3]) + 2, Number(m[3]) + 2);
-  fetch(`/api/passage?book=${encodeURIComponent(m[1])}&chapter=${m[2]}&from=${m[3]}&to=${to}`)
+  const from = Number(m[3]);
+  const to = m[4] ? Math.min(Number(m[4]), from + 5) : from;
+  fetch(`/api/passage?book=${encodeURIComponent(m[1])}&chapter=${m[2]}&from=${from}&to=${to}`)
     .then((r) => r.json())
     .then((p) => {
       if (p.error || !p.verses?.length) return;
+      const phrases = quotedPhrases(step.why);
       const q = li.querySelector('.verses');
-      q.innerHTML = p.verses.slice(0, 3).map((v) => `<sup>${v.verse}</sup>${escapeHtml(v.text)}`).join(' ');
+      q.innerHTML = p.verses.map((v) => `<sup>${v.verse}</sup>${markRelevant(v.text, phrases)}`).join(' ')
+        + `<span class="verses-ref">${escapeHtml(`${p.bookName} ${p.chapter}:${from}${to > from ? '–' + to : ''}`)}</span>`;
       q.classList.add('has');
     })
     .catch(() => {});
 }
 
-function escapeHtml(s) {
-  return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
-}
-
 // -------------------------------------------------------------- listening
-// One clip at a time. Sound eases in and out — nothing on this page cuts.
+// One clip at a time. Sound eases in and out; the words appear as they are
+// said, and a phrase the tour quoted turns gold in the moment it is spoken.
 
 const player = $('#player');
-let current = null; // { li, step, index, raf, fadeRaf }
+let current = null; // { li, step, index, fadeRaf, segments, phrases, capKey }
 
 function toggleStep(li, step, index) {
   if (current && current.li === li) { stopAudio(); return; }
   stopAudio();
-  if (!step.audioUrl) return;
-  current = { li, step, index };
+  if (!step.audioUrl) { honestNote(li, 'This publisher keeps its audio on its own site.'); return; }
+  current = { li, step, index, segments: null, phrases: quotedPhrases(step.why), capKey: null };
   li.classList.add('playing');
   setGlyph(li, true);
 
   player.src = step.audioUrl;
   player.currentTime = step.startSec;
   player.volume = 0;
-  player.play().then(() => fadeTo(1, 420)).catch(() => stopAudio());
+  player.play().then(() => fadeTo(1, 420)).catch(() => {
+    honestNote(li, 'This publisher asks you to listen on their own site — the tour will still be here.');
+    stopAudio();
+  });
 
   const whisperEl = li.querySelector('.whisper');
   const w = whispers[index];
   whisperEl.textContent = w || '';
   if (w) setTimeout(() => whisperEl.classList.add('show'), 600);
 
+  fetch(`/api/window?recordId=${encodeURIComponent(step.recordId)}&from=${step.startSec}&to=${step.endSec}`)
+    .then((r) => r.json())
+    .then((d) => { if (current && current.li === li && Array.isArray(d.segments)) current.segments = d.segments; })
+    .catch(() => {});
+
   player.ontimeupdate = () => {
     if (!current) return;
-    const remaining = step.endSec - player.currentTime;
-    if (remaining <= 0.9) { fadeTo(0, 800); }
+    const t = player.currentTime;
+    updateCaption(t);
+    updateProgress(li, step, t);
+    const remaining = step.endSec - t;
+    if (remaining <= 0.9 && !current.fading) { current.fading = true; fadeTo(0, 800); }
     if (remaining <= 0) stopAudio();
   };
+}
+
+/* The words as they are said: the current segment's text, crossfaded on
+   change, with any phrase the tour quoted turning gold as it is spoken. */
+function updateCaption(t) {
+  if (!current?.segments?.length) return;
+  /* The last segment that has begun. Speech has hairline gaps between every
+     segment (median 0.24s in this corpus) — a caption that hid in each one
+     flickered four times a second. It holds through gaps and yields only to
+     real silence. */
+  let seg = null;
+  for (const s of current.segments) { if (s.s <= t) seg = s; else break; }
+  const silent = !seg || t > seg.e + 1.5;
+  const key = silent ? null : seg.s;
+  if (key === current.capKey) return;
+  current.capKey = key;
+  const cap = current.li.querySelector('.caption');
+  if (silent) { cap.classList.remove('show'); return; }
+  cap.innerHTML = markRelevant(seg.t, current.phrases);
+  cap.classList.add('show');
+}
+
+function updateProgress(li, step, t) {
+  const k = Math.max(0, Math.min(1, (t - step.startSec) / (step.endSec - step.startSec)));
+  li.querySelector('.clip-progress').style.transform = `scaleX(${k})`;
+}
+
+function honestNote(li, text) {
+  if (li.querySelector('.honest')) return;
+  const p = document.createElement('p');
+  p.className = 'step-note honest';
+  p.textContent = text;
+  li.appendChild(p);
 }
 
 function setGlyph(li, playing) {
@@ -293,6 +390,9 @@ function stopAudio() {
   player.ontimeupdate = null;
   li.classList.remove('playing');
   li.querySelector('.whisper').classList.remove('show');
+  const cap = li.querySelector('.caption');
+  cap.classList.remove('show');
+  li.querySelector('.clip-progress').style.transform = 'scaleX(0)';
   setGlyph(li, false);
   current = null;
 }

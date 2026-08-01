@@ -7,7 +7,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import { buildIndex, indexExists, loadIndex, CACHE_DIR, ARTIFACTS_DIR } from './corpus.mjs';
+import { buildIndex, indexExists, loadIndex, loadTranscript, CACHE_DIR, ARTIFACTS_DIR } from './corpus.mjs';
 import { readPassage } from './scripture.mjs';
 import { MODELS, clientFor } from './model-client.mjs';
 import { runTour, listRuns, readRun, readLedger, loadPricing, CAVEATS, MAX_MODEL_CALLS, MAX_TOOL_CALLS } from './tour-agent.mjs';
@@ -145,6 +145,19 @@ const server = http.createServer(async (req, res) => {
     // corpus, same agent, same records — different manners.
 
     if (p === '/magic') return serveStatic(req, res, '/magic.html');
+
+    // Segment timestamps for one clip, so the page can say the words as
+    // they are said. Read-only, clip-sized, same cap as a submitted clip.
+    if (p === '/api/window') {
+      const tr = loadTranscript(url.searchParams.get('recordId') || '');
+      if (!tr) return sendJson(res, 200, { error: 'unknown recording' });
+      const from = Math.max(0, Number(url.searchParams.get('from')) || 0);
+      const to = Math.min(from + 900, Number(url.searchParams.get('to')) || from + 900);
+      const segments = tr.segments
+        .filter((s) => s.e >= from && s.s <= to)
+        .map((s) => ({ s: Math.round(s.s * 10) / 10, e: Math.round(s.e * 10) / 10, t: s.t }));
+      return sendJson(res, 200, { segments });
+    }
 
     if (p === '/api/passage') {
       return sendJson(res, 200, readPassage({

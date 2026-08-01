@@ -209,5 +209,6 @@ model-client.mjs  one OpenAI-compatible client, slug resolution, env loading
 pricing.json      EDIT ME rate card
 fixtures.json     the eight bench prompts
 index.html app.js styles.css    the page
+magic.html magic.js magic.css   /magic — the presentation experiment: same pipeline, different manners
 runs/             one JSON per run + ledger.json
 ```

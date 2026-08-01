@@ -1,0 +1,432 @@
+{
+  "runId": "2026-07-31T23-50-55-271-gpt-5.6-luna-medium",
+  "startedAt": "2026-07-31T23:50:55.271Z",
+  "promptId": null,
+  "prompt": "literary design and litery tools in ruth 1",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Ruth 1: Literary Design and Narrative Tools",
+    "intro": "This tour reads Ruth 1 as carefully crafted narrative rather than as a collection of isolated devotional moments. Listen for the opening hyperlinks and setting, the story’s deliberate expectations and reversals, the way dialogue reveals character, and the use of outsider perspective and a community “chorus.” The clips move from the chapter’s large frame toward its smallest repeated words and speeches.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:ruth-naomi-boaz-and-a-cosmic-redemption",
+        "startSec": 827,
+        "endSec": 1036,
+        "why": "Begin with the chapter’s opening frame. The speakers show how “the days when the judges judged” and “a famine in the land” function as hyperlinks to Judges, the Torah’s covenant curses, and earlier biblical stories. The key literary observation is that “almost every line is dripping with hyperlinks to other parts of the Hebrew Bible,” and that the narrator then “zooms in on one family.”",
+        "episodeTitle": "Redemption E4: Ruth, Naomi, Boaz, and a Cosmic Redemption",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/58d67011-2f75-4ae0-addc-00b1c62d8cb9/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=58d67011-2f75-4ae0-addc-00b1c62d8cb9",
+        "durationSec": 3880,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:73ef95e1-531b-43fd-bf76-f660e7101fe6",
+        "startSec": 699,
+        "endSec": 1026,
+        "why": "This clip develops the opening’s intertextual design by showing how Ruth 1 creates reader expectations and then frustrates them. The speaker compares Ruth’s famine-and-return setup with Abraham and Isaac, where famine leads to a return “full,” but notes that Naomi will return “exactly the opposite”—empty. He also identifies Ruth as the third Bethlehem story after two grim stories in Judges, creating a canonical contrast in which “this light of hope” begins to emerge.",
+        "episodeTitle": "Ruth 1:1-18 (Episode 220)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_min_ep_220.mp3?dest-id=245197",
+        "durationSec": 2558,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:ruth-naomi-boaz-and-a-cosmic-redemption",
+        "startSec": 1266,
+        "endSec": 1526,
+        "why": "Now listen for characterization through compressed narration, contrast, and speech. The hosts point out that the deaths are “described quickly, but you’re really supposed to sit in the tragedy,” then treat Ruth’s speech as a deliberately climactic oath: “Wherever you go, I’m gonna go… Your people are my people, and your God is my God.” The clip also highlights the reversal of insider and outsider and introduces Bethlehem’s women as a recurring “chorus in the story.”",
+        "episodeTitle": "Redemption E4: Ruth, Naomi, Boaz, and a Cosmic Redemption",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/58d67011-2f75-4ae0-addc-00b1c62d8cb9/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=58d67011-2f75-4ae0-addc-00b1c62d8cb9",
+        "durationSec": 3880,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:73ef95e1-531b-43fd-bf76-f660e7101fe6",
+        "startSec": 1539,
+        "endSec": 1790,
+        "why": "Close by focusing on dialogue as a literary tool. Naomi repeats “Return, my daughters,” pushes the hypothetical situation to an absurd extreme, and interprets her experience through the image that “the hand of the Lord has gone forth against me.” The speaker explains how this scene gives Naomi’s bitterness a concrete dramatic shape: she believes she has “zero to offer,” while the repeated commands, weeping, kiss, and Ruth’s clinging stage the separation and decision.",
+        "episodeTitle": "Ruth 1:1-18 (Episode 220)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_min_ep_220.mp3?dest-id=245197",
+        "durationSec": 2558,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "As you listen, keep Ruth 1’s movement in view: the narrator places a small family inside Israel’s larger story, then lets repeated words, reversals, speeches, and public responses reshape what you thought the chapter was doing. The chapter’s design does not rush past Naomi’s emptiness; it makes you feel it while quietly positioning Ruth’s loyalty as the unexpected answer to it.",
+    "totalSeconds": 1047
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 5050,
+      "promptTokens": 1600,
+      "completionTokens": 242,
+      "reasoningTokens": 50,
+      "cachedPromptTokens": 1574,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00016411500000000002
+    },
+    {
+      "i": 1,
+      "latencyMs": 3701,
+      "promptTokens": 9556,
+      "completionTokens": 320,
+      "reasoningTokens": 62,
+      "cachedPromptTokens": 1597,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012027700000000001
+    },
+    {
+      "i": 2,
+      "latencyMs": 3941,
+      "promptTokens": 18787,
+      "completionTokens": 445,
+      "reasoningTokens": 50,
+      "cachedPromptTokens": 9553,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0015167050000000001
+    },
+    {
+      "i": 3,
+      "latencyMs": 3115,
+      "promptTokens": 26683,
+      "completionTokens": 198,
+      "reasoningTokens": 19,
+      "cachedPromptTokens": 18784,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012939400000000002
+    },
+    {
+      "i": 4,
+      "latencyMs": 10912,
+      "promptTokens": 29270,
+      "completionTokens": 940,
+      "reasoningTokens": 211,
+      "cachedPromptTokens": 26680,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001154475
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Ruth",
+        "chapter": 1,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "7 of 28 moments"
+    },
+    {
+      "at": 0,
+      "name": "read_passage",
+      "args": {
+        "book": "Ruth",
+        "chapter": 1,
+        "fromVerse": 1,
+        "toVerse": 22
+      },
+      "ms": 2,
+      "summary": "Ruth 1:1–22 (WEB)"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Ruth chapter one literary design structure narrator repetition wordplay",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 121,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Ruth 1 famine Moab return Naomi Ruth Orpah repetition",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 76,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Ruth one Hebrew words empty full bitter literary techniques",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 70,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Ruth 1 structure scene women chorus narrator beginning end empty full",
+        "sourceId": "bibleproject",
+        "limit": 10
+      },
+      "ms": 113,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Ruth 1 literary repetition return went came back names Naomi Mara",
+        "sourceId": "forty-minutes-ot",
+        "limit": 10
+      },
+      "ms": 47,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Ruth 1 women chorus Bethlehem literary story",
+        "sourceId": "bibleproject",
+        "limit": 10
+      },
+      "ms": 66,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:73ef95e1-531b-43fd-bf76-f660e7101fe6"
+      },
+      "ms": 1,
+      "summary": "Ruth 1:1-18 (Episode 220) (2558s)"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992"
+      },
+      "ms": 2,
+      "summary": "Ruth 1-2: God Fills What's Empty (3645s)"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:ruth-naomi-boaz-and-a-cosmic-redemption"
+      },
+      "ms": 0,
+      "summary": "Redemption E4: Ruth, Naomi, Boaz, and a Cosmic Redemption (3880s)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:73ef95e1-531b-43fd-bf76-f660e7101fe6",
+        "fromSec": 120,
+        "toSec": 2250
+      },
+      "ms": 0,
+      "summary": "31 skim lines, 120s–1620s of Ruth 1:1-18 (Episode 220)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+        "fromSec": 250,
+        "toSec": 1500
+      },
+      "ms": 0,
+      "summary": "26 skim lines, 250s–1500s of Ruth 1-2: God Fills What's Empty"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:ruth-naomi-boaz-and-a-cosmic-redemption",
+        "fromSec": 780,
+        "toSec": 1700
+      },
+      "ms": 0,
+      "summary": "19 skim lines, 780s–1700s of Redemption E4: Ruth, Naomi, Boaz, and a Cosmic Redemption"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:73ef95e1-531b-43fd-bf76-f660e7101fe6",
+        "fromSec": 760,
+        "toSec": 1150
+      },
+      "ms": 0,
+      "summary": "760s–1060s of Ruth 1:1-18 (Episode 220)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:73ef95e1-531b-43fd-bf76-f660e7101fe6",
+        "fromSec": 1530,
+        "toSec": 2180
+      },
+      "ms": 0,
+      "summary": "1530s–1830s of Ruth 1:1-18 (Episode 220)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+        "fromSec": 780,
+        "toSec": 1320
+      },
+      "ms": 0,
+      "summary": "780s–1080s of Ruth 1-2: God Fills What's Empty"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:ruth-naomi-boaz-and-a-cosmic-redemption",
+        "fromSec": 800,
+        "toSec": 1530
+      },
+      "ms": 0,
+      "summary": "800s–1100s of Redemption E4: Ruth, Naomi, Boaz, and a Cosmic Redemption"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:ruth-naomi-boaz-and-a-cosmic-redemption",
+        "fromSec": 1260,
+        "toSec": 1625
+      },
+      "ms": 0,
+      "summary": "1260s–1560s of Redemption E4: Ruth, Naomi, Boaz, and a Cosmic Redemption"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:73ef95e1-531b-43fd-bf76-f660e7101fe6",
+        "fromSec": 680,
+        "toSec": 780
+      },
+      "ms": 0,
+      "summary": "680s–780s of Ruth 1:1-18 (Episode 220)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+        "fromSec": 1180,
+        "toSec": 1365
+      },
+      "ms": 0,
+      "summary": "1180s–1365s of Ruth 1-2: God Fills What's Empty"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 23,
+    "tapeSec": 1785,
+    "deniedWindows": 0,
+    "promptTokens": 85896,
+    "completionTokens": 2145,
+    "reasoningTokens": 392,
+    "cachedPromptTokens": 58188,
+    "wallMs": 27224,
+    "modelLatencyMs": 26719,
+    "toolMs": 499
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.005332,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T23:51:22.495Z"
+}

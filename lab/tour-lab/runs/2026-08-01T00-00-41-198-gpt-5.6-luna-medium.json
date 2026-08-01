@@ -1,0 +1,372 @@
+{
+  "runId": "2026-08-01T00-00-41-198-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T00:00:41.198Z",
+  "promptId": null,
+  "prompt": "John 1:1",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "John 1:1 — The Word at the Beginning",
+    "intro": "This tour starts by locating John 1:1 inside the Bible’s creation story, then slows down over what John says about the Word’s identity, creative work, and arrival as light and flesh. The teachers overlap on the central claim, but each gives you a different lens for hearing the verse.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:beginning",
+        "startSec": 397,
+        "endSec": 601,
+        "why": "Begin here for the big-picture orientation. The hosts say John’s prologue blends “Hebrew Bible hyperlinks” and presents Jesus as “the reality to which” the Scriptures’ images of God’s Word, light, glory, and presence point. They then trace the opening movement from Word to life, light, darkness, and incarnation, giving you a map for the clips that follow.",
+        "episodeTitle": "In the Beginning – John 1",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/8f0c5975-65cf-4a02-baf0-786ba6649656/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=8f0c5975-65cf-4a02-baf0-786ba6649656",
+        "durationSec": 3671,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:a1cd8b7d-com-e1f728ab-5907-3251-86aa-e81b39158b47",
+        "startSec": 327,
+        "endSec": 620,
+        "why": "Now hear a close reading of the three clauses in John 1:1. The teacher explains that “the Word was God” means the Word has “everything that makes God God,” while “the Word was with God” preserves distinction. He then follows verse 3’s emphatic claim that all things came into being through the Word, concluding that the Word “himself didn’t ever come into existence.”",
+        "episodeTitle": "John 1:1-18, pt. 1",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/9q3853byvexkctm2/john_11-18_pt_16id3j.mp3",
+        "durationSec": 1215,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "startSec": 261,
+        "endSec": 599,
+        "why": "This clip reinforces the same argument through John’s echo of Genesis: “through him all things were made,” so Jesus is “uncreated by that logic.” It then expands the setting into creation language—darkness, light, life, and new creation—and connects John 1:1 to the startling claim that the Creator “becomes flesh and dwells among us.”",
+        "episodeTitle": "John 1: In the Beginning Was the Word",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG8007534722.mp3",
+        "durationSec": 3919,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:2085a44e-7918-4b45-bffa-2f67637d118c",
+        "startSec": 880,
+        "endSec": 1130,
+        "why": "Finish by hearing how John’s opening gathers together creation and wisdom traditions. The speakers describe John “wedding” Word and Wisdom together, then unpack the light shining in darkness: the Greek verb can suggest both that darkness has not “overcome” the light and has not “grasped or understood” it. That gives John 1:1 a living trajectory—from who the Word is to how the world responds when the light comes.",
+        "episodeTitle": "2022 Christmas Special",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/2022_Christmas_Spiecal.mp3?dest-id=245197",
+        "durationSec": 3350,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "John 1:1 is not an isolated slogan: in these conversations it becomes the doorway to creation, divine identity, life, light, and incarnation. Read the verse again after listening, and let its three movements remain distinct: the Word was there at the beginning, the Word was with God, and the Word was God.",
+    "totalSeconds": 1085
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 5881,
+      "promptTokens": 1594,
+      "completionTokens": 67,
+      "reasoningTokens": 51,
+      "cachedPromptTokens": 1574,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00005836500000000001
+    },
+    {
+      "i": 1,
+      "latencyMs": 3400,
+      "promptTokens": 1889,
+      "completionTokens": 192,
+      "reasoningTokens": 17,
+      "cachedPromptTokens": 1591,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00016828500000000003
+    },
+    {
+      "i": 2,
+      "latencyMs": 3004,
+      "promptTokens": 8601,
+      "completionTokens": 265,
+      "reasoningTokens": 29,
+      "cachedPromptTokens": 1886,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010171600000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 3259,
+      "promptTokens": 12476,
+      "completionTokens": 292,
+      "reasoningTokens": 63,
+      "cachedPromptTokens": 8598,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007458550000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 2090,
+      "promptTokens": 17127,
+      "completionTokens": 101,
+      "reasoningTokens": 34,
+      "cachedPromptTokens": 12473,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007670050000000001
+    },
+    {
+      "i": 5,
+      "latencyMs": 15619,
+      "promptTokens": 18322,
+      "completionTokens": 1099,
+      "reasoningTokens": 437,
+      "cachedPromptTokens": 17124,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000980315
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 1,
+        "verse": 1,
+        "limit": 25
+      },
+      "ms": 1,
+      "summary": "25 of 308 moments"
+    },
+    {
+      "at": 1,
+      "name": "read_passage",
+      "args": {
+        "book": "John",
+        "chapter": 1,
+        "fromVerse": 1,
+        "toVerse": 18
+      },
+      "ms": 2,
+      "summary": "John 1:1–18 (WEB)"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "In the beginning was the Word Word was with God Word was God",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 1,
+      "summary": "0 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "John 1:1 logos beginning with God deity Jesus",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 96,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "word became flesh light darkness John one",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 87,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:beginning",
+        "fromSec": 0,
+        "toSec": 1200
+      },
+      "ms": 0,
+      "summary": "24 skim lines, 0s–1200s of In the Beginning – John 1"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a1cd8b7d-com-e1f728ab-5907-3251-86aa-e81b39158b47",
+        "fromSec": 0,
+        "toSec": 1215
+      },
+      "ms": 0,
+      "summary": "25 skim lines, 0s–1215s of John 1:1-18, pt. 1"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "fromSec": 0,
+        "toSec": 2400
+      },
+      "ms": 0,
+      "summary": "31 skim lines, 0s–1500s of John 1: In the Beginning Was the Word"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:2085a44e-7918-4b45-bffa-2f67637d118c",
+        "fromSec": 700,
+        "toSec": 1700
+      },
+      "ms": 1,
+      "summary": "20 skim lines, 700s–1700s of 2022 Christmas Special"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a1cd8b7d-com-e1f728ab-5907-3251-86aa-e81b39158b47",
+        "fromSec": 150,
+        "toSec": 430
+      },
+      "ms": 0,
+      "summary": "150s–430s of John 1:1-18, pt. 1"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:beginning",
+        "fromSec": 330,
+        "toSec": 650
+      },
+      "ms": 0,
+      "summary": "330s–630s of In the Beginning – John 1"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "fromSec": 235,
+        "toSec": 640
+      },
+      "ms": 0,
+      "summary": "235s–535s of John 1: In the Beginning Was the Word"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:2085a44e-7918-4b45-bffa-2f67637d118c",
+        "fromSec": 880,
+        "toSec": 1130
+      },
+      "ms": 0,
+      "summary": "880s–1130s of 2022 Christmas Special"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a1cd8b7d-com-e1f728ab-5907-3251-86aa-e81b39158b47",
+        "fromSec": 707,
+        "toSec": 1060
+      },
+      "ms": 0,
+      "summary": "707s–1007s of John 1:1-18, pt. 1"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 6,
+    "toolCalls": 16,
+    "tapeSec": 1430,
+    "deniedWindows": 0,
+    "promptTokens": 60009,
+    "completionTokens": 2016,
+    "reasoningTokens": 631,
+    "cachedPromptTokens": 43246,
+    "wallMs": 33445,
+    "modelLatencyMs": 33253,
+    "toolMs": 189
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003737,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T00:01:14.643Z"
+}

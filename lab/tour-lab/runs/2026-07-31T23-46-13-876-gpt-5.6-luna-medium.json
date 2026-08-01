@@ -1,0 +1,433 @@
+{
+  "runId": "2026-07-31T23-46-13-876-gpt-5.6-luna-medium",
+  "startedAt": "2026-07-31T23:46:13.876Z",
+  "promptId": null,
+  "prompt": "is baptism necessary for salvation?",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Is Baptism Necessary for Salvation? A Listening Tour",
+    "intro": "This tour walks through the main New Testament evidence without pretending the question is simpler than it is. You’ll hear the sharpest texts—Acts 2:38 and 1 Peter 3:21—then contrasting explanations of how baptism relates to repentance, faith, forgiveness, the Spirit, and belonging to Christ’s people. The goal is not merely to label a position, but to help you see what each reading is trying to preserve.",
+    "steps": [
+      {
+        "recordId": "naked-bible:podcast:109",
+        "startSec": 42,
+        "endSec": 342,
+        "why": "Begin with Acts 2:38 itself, where Peter says, “Repent and be baptized… for the forgiveness of your sins.” The speaker identifies why this is controversial, insists that baptism cannot be detached from the prior command to repent, and argues that “repentance outweighs baptism in New Testament theology.” This gives you the central text and the first interpretive question.",
+        "episodeTitle": "Naked Bible 010: Baptism & Problem Passages: Acts 2:38",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2015/01/NakedBiblePodcast0102012BaptismActs238.mp3",
+        "durationSec": 702,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:7549915d-com-2ddb625f-a600-39ed-ad01-595b25eec681",
+        "startSec": 1320,
+        "endSec": 1547,
+        "why": "Now hear a contextual reading of 1 Peter 3:21, the passage that says baptism “now saves you.” The speaker says baptism was part of the early church’s whole experience of coming to faith, but “didn’t automatically and magically save you.” He then connects Noah, the Red Sea, and baptism as passage into “a new humanity and a new creation,” before explaining baptism as an appeal to God for a good conscience.",
+        "episodeTitle": "1 Peter 3:18-22 ... The Tricky Parts",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/7e22a8/1_peter_318-22aya23.mp3",
+        "durationSec": 1734,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:5f16ec7c-com-12ca3bb3-1272-3f0a-a501-fa2671011f85",
+        "startSec": 780,
+        "endSec": 1080,
+        "why": "This clip adds a different emphasis: N. T. Wright says the New Testament “assumes that Christians will be baptized,” while acknowledging exceptions such as the criminal beside Jesus. He rejects both treating baptism as magic and reducing it to an optional private symbol, describing it instead as the public act by which someone is “marked by the death and resurrection of Jesus.” This helps distinguish salvation’s basis from baptism’s seriousness and communal meaning.",
+        "episodeTitle": "#60 Should my girlfriend get baptised? What will we remember in heaven?",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR8132376001.mp3?updated=1751026347",
+        "durationSec": 1180,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "radically-christian:podcast:73da7597-substack-post-177067758",
+        "startSec": 820,
+        "endSec": 1081,
+        "why": "Return to Acts 2:38, but hear a more baptism-positive synthesis. The speaker argues that baptism must focus attention on Jesus and his cross, calling it “an expression of reliance upon and commitment to allegiance to King Jesus.” He also brings in Acts 22:16, 1 Peter 3:21, and Ephesians 2:8, presenting baptism as the way faith expresses itself and accesses grace rather than as a rival to grace.",
+        "episodeTitle": "Baptism, What Does the Bible Actually Teach?",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/177067758/ae7446f8-f221-4725-81a5-a0256829a7be/transcoded.mp3?post_id=177067758&relation=podcast&Expires=1785437765&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=E9sYUIGpHkAKCJwGY2hlGd3v49of5RkAkoZCGFberirOOg3mKeMpLPjc17wXDflQkrKRBj4OiDbSEP6I4VBCFUF7rjgKHHhlg-DALaNATS0SYvOTaxaFq35V14USs2zEOwuZuJ5tA4GpB0Y9eP2BJtSpQKfw9~kmU~BA~pc7J200PyWvnItYf3hWqjErpVJqWyg5U8xAR5QC1OecVOOEobMwi5Cy-WjcZFChGWo3y93EKTxd~igfxtGHtTNWaehxE~81kwW--1NoPLLdJ9gu7r6paVdBcqMcwCoLk6BHrKSXljd6F9cPYfX5wiPyQ6RmO2AZxGjQJ2sAl5zJF8oayA__",
+        "durationSec": 3710,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:244",
+        "startSec": 2200,
+        "endSec": 2492,
+        "why": "End with Cornelius in Acts 10–11, an important test case for the question. This reading says the passage involves water, the Spirit, and repentance, and observes that Cornelius received the Spirit before water baptism: “They already have new hearts.” The speaker therefore calls water baptism “a testimonial to the earlier spirit baptism,” offering the clearest reason some Christians conclude baptism is commanded and normative without making the water itself the thing that produces salvation.",
+        "episodeTitle": "Naked Bible 38: Acts 2:22-41",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2015/02/NakedBible38_Acts2_22_41.mp3",
+        "durationSec": 3112,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips give you a careful map rather than a slogan. The strongest case for necessity stresses Jesus’ command, the consistent New Testament pattern, Acts 2:38, and baptism as obedient faith. The strongest caution stresses repentance and faith, the distinction between Spirit and water, and cases such as Cornelius. Whatever conclusion you reach, the tour repeatedly brings the question back to Jesus’ death and resurrection, not to water treated as magic or to baptism dismissed as meaningless.",
+    "totalSeconds": 1380
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 1705,
+      "promptTokens": 1595,
+      "completionTokens": 34,
+      "reasoningTokens": 18,
+      "cachedPromptTokens": 1574,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000038690000000000004
+    },
+    {
+      "i": 1,
+      "latencyMs": 3488,
+      "promptTokens": 1890,
+      "completionTokens": 306,
+      "reasoningTokens": 52,
+      "cachedPromptTokens": 1592,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00023669500000000004
+    },
+    {
+      "i": 2,
+      "latencyMs": 3654,
+      "promptTokens": 15060,
+      "completionTokens": 267,
+      "reasoningTokens": 66,
+      "cachedPromptTokens": 1887,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0018256200000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 3443,
+      "promptTokens": 22159,
+      "completionTokens": 333,
+      "reasoningTokens": 73,
+      "cachedPromptTokens": 15057,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012380450000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 9841,
+      "promptTokens": 27717,
+      "completionTokens": 1078,
+      "reasoningTokens": 223,
+      "cachedPromptTokens": 22156,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0015634100000000003
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "baptism necessary for salvation",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 93,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "saved by baptism water baptism",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 37,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "baptism does not save faith alone",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 44,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Acts 2:38 baptism forgiveness sins",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 33,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Acts",
+        "chapter": 2,
+        "verse": 38,
+        "limit": 15
+      },
+      "ms": 0,
+      "summary": "15 of 252 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "1 Peter",
+        "chapter": 3,
+        "verse": 21,
+        "limit": 15
+      },
+      "ms": 0,
+      "summary": "15 of 84 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Mark",
+        "chapter": 16,
+        "verse": 16,
+        "limit": 15
+      },
+      "ms": 0,
+      "summary": "15 of 35 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 3,
+        "verse": 5,
+        "limit": 15
+      },
+      "ms": 1,
+      "summary": "15 of 160 moments"
+    },
+    {
+      "at": 2,
+      "name": "read_passage",
+      "args": {
+        "book": "Acts",
+        "chapter": 2,
+        "fromVerse": 37,
+        "toVerse": 41
+      },
+      "ms": 3,
+      "summary": "Acts 2:37–41 (WEB)"
+    },
+    {
+      "at": 2,
+      "name": "read_passage",
+      "args": {
+        "book": "1 Peter",
+        "chapter": 3,
+        "fromVerse": 18,
+        "toVerse": 22
+      },
+      "ms": 0,
+      "summary": "1 Peter 3:18–22 (WEB)"
+    },
+    {
+      "at": 2,
+      "name": "read_passage",
+      "args": {
+        "book": "John",
+        "chapter": 3,
+        "fromVerse": 1,
+        "toVerse": 8
+      },
+      "ms": 1,
+      "summary": "John 3:1–8 (WEB)"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Cornelius received Holy Spirit before baptism",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 89,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "thief on cross baptism saved paradise",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 51,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "baptism symbol outward sign faith salvation",
+        "sourceId": "ask-nt-wright",
+        "limit": 10
+      },
+      "ms": 40,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:109",
+        "fromSec": 42,
+        "toSec": 702
+      },
+      "ms": 2,
+      "summary": "42s–342s of Naked Bible 010: Baptism & Problem Passages: Acts 2:38"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7549915d-com-2ddb625f-a600-39ed-ad01-595b25eec681",
+        "fromSec": 1250,
+        "toSec": 1734
+      },
+      "ms": 3,
+      "summary": "1250s–1550s of 1 Peter 3:18-22 ... The Tricky Parts"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:73da7597-substack-post-177067758",
+        "fromSec": 820,
+        "toSec": 1250
+      },
+      "ms": 5,
+      "summary": "820s–1120s of Baptism, What Does the Bible Actually Teach?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:5f16ec7c-com-12ca3bb3-1272-3f0a-a501-fa2671011f85",
+        "fromSec": 780,
+        "toSec": 1180
+      },
+      "ms": 0,
+      "summary": "780s–1080s of #60 Should my girlfriend get baptised? What will we remember in heaven?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:244",
+        "fromSec": 2200,
+        "toSec": 2700
+      },
+      "ms": 4,
+      "summary": "2200s–2500s of Naked Bible 38: Acts 2:22-41"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 21,
+    "tapeSec": 1500,
+    "deniedWindows": 0,
+    "promptTokens": 68421,
+    "completionTokens": 2018,
+    "reasoningTokens": 432,
+    "cachedPromptTokens": 42266,
+    "wallMs": 22541,
+    "modelLatencyMs": 22131,
+    "toolMs": 408
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004902,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T23:46:36.417Z"
+}

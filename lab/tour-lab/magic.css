@@ -182,6 +182,47 @@ body {
 }
 .step.playing .verses.has { display: block; }
 .verses sup { font-size: 10px; color: var(--ink-3); margin-right: 4px; }
+.verses-ref {
+  display: block;
+  margin-top: 6px;
+  font-size: 11.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+/* Relevance, drawn from the record: a word the tour itself quotes carries a
+   thin gold underline — never a marker swipe. */
+em.rel {
+  font-style: inherit;
+  color: var(--ink);
+  border-bottom: 1px solid color-mix(in oklab, var(--gold) 65%, transparent);
+  padding-bottom: 1px;
+}
+
+/* The words as they are said. */
+.caption {
+  margin: 12px 2px 0 50px;
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-2);
+  min-height: 0;
+  opacity: 0;
+  transition: opacity 320ms var(--ease);
+}
+.caption.show { opacity: 1; }
+.caption em.rel { color: var(--gold); border-bottom-color: transparent; }
+
+/* A clip's passage through time: one gold hairline, growing quietly. */
+.step { position: relative; overflow: hidden; }
+.clip-progress {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 1.5px;
+  background: color-mix(in oklab, var(--gold) 70%, transparent);
+  transform: scaleX(0);
+  transform-origin: left;
+}
 
 .why {
   display: none;
@@ -210,3 +251,11 @@ body {
 
 /* Latecomers (drift shows) get one honest sentence, quietly. */
 .step-note { margin-top: 10px; font-size: 12.5px; color: var(--ink-3); font-style: italic; }
+
+.step-title { cursor: pointer; }
+.step-title:hover { text-decoration: underline; text-decoration-color: var(--hair); text-underline-offset: 4px; }
+
+/* Motion is a courtesy, never a requirement. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: 1ms !important; }
+}

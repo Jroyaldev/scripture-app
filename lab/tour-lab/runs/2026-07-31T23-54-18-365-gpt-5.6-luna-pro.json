@@ -1,0 +1,381 @@
+{
+  "runId": "2026-07-31T23-54-18-365-gpt-5.6-luna-pro",
+  "startedAt": "2026-07-31T23:54:18.370Z",
+  "promptId": "pastoral-doubt",
+  "prompt": "I'm losing my faith and I'm frightened of it. Is doubt a failure? I want to hear people who take doubt seriously rather than scolding it.",
+  "model": {
+    "key": "gpt-5.6-luna-pro",
+    "label": "GPT-5.6 Luna Pro",
+    "requestedSlug": "openai/gpt-5.6-luna-pro",
+    "resolvedSlug": "openai/gpt-5.6-luna-pro",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna-pro",
+      "requested": "openai/gpt-5.6-luna-pro",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna-pro",
+        "gpt-5.6-luna-pro"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "max",
+      "source": "TOUR_REASONING",
+      "envVar": "LUNA_PRO_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "When Doubt Feels Like Losing Faith",
+    "intro": "This tour is for the frightening in-between—not to force you to declare certainty, and not to label every question rebellion. It begins with the prayer “I do believe; help my unbelief,” makes room for silence and lament, then hears teachers distinguish honest questioning from rejection, consider how Jesus meets a doubter, and describe deconstruction without contempt. Take it slowly; you do not have to solve your faith while listening.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:1021fa12-com-1051a66c-213d-3b7f-9cb6-be4eaede94cb",
+        "startSec": 1116,
+        "endSec": 1304,
+        "why": "Start here because it gives your fear a prayer rather than a verdict. In Mark 9, the commentator calls “I do believe, help my unbelief” an “incredible prayer,” and points out that even Jesus’ exasperation “doesn’t lead to rejection.”",
+        "episodeTitle": "Mark 9:2-29",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/b6masi/mark_92-2996qgm.mp3",
+        "durationSec": 1547,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:aa93fe68-dfc1-11ee-8d8c-1b5a7e037e3d",
+        "startSec": 2700,
+        "endSec": 2983,
+        "why": "Stay with the experience of not feeling God before moving to answers. The hosts say that in Lamentations “the question gets the last word,” and that God’s silence can “honor” suffering rather than “sugarcoat it, undercut it, or explain it away”; they also say the people’s laments become God’s own words.",
+        "episodeTitle": "Lamentations Overview: Mercy Every Morning",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG8477051140.mp3?updated=1710173642",
+        "durationSec": 3616,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "naked-bible:podcast:1702",
+        "startSec": 3060,
+        "endSec": 3297,
+        "why": "Now hear the most direct answer to “Is doubt a failure?” The speaker distinguishes “having questions” and “wondering what God is doing” from unbelief, and pleads with Christians to “stop basing our security on our performance.” Hear this as this teacher’s argument, not as a demand to silence your questions.",
+        "episodeTitle": "Naked Bible 181: Hebrews 3",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2017/10/NakedBible181_Hebrews3.mp3",
+        "durationSec": 3898,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:0b0b5970-4d5f-11ee-955e-119eeadcb150",
+        "startSec": 1246,
+        "endSec": 1463,
+        "why": "This puts doubt in relationship with Jesus rather than treating it only as a category. Wright describes Jesus meeting Thomas where he is, says “we can’t over-rationalise” faith as though evidence were forbidden, and insists, “Faith is trusting… faith relies in God.” He also notes that even some who saw Jesus still “doubt.”",
+        "episodeTitle": "#186 Has the resurrection been debunked? (Classic)",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR9195388223.mp3?updated=1749653807",
+        "durationSec": 2045,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "startSec": 760,
+        "endSec": 999,
+        "why": "End with a possible way to understand what is happening without panic. Wright describes deconstruction as a settled faith being “pulled apart,” but says many people have “reconstructed” and come out “stronger, more mature, deeper,” while recommending a “wise pastor who won’t be afraid to face the questions.”",
+        "episodeTitle": "#131 Help! I’m on the brink of atheism... Deconstruction and suffering",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR6100001449.mp3?updated=1749725746",
+        "durationSec": 1357,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "If you are still unsure after this, that does not mean the tour failed—or that you have failed. These voices leave room for a faith that asks, laments, seeks evidence, and grows through a crisis rather than pretending. For today, you might simply borrow the father’s prayer: “I do believe; help my unbelief.”",
+    "totalSeconds": 1164
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 5335,
+      "promptTokens": 7264,
+      "completionTokens": 408,
+      "reasoningTokens": 343,
+      "cachedPromptTokens": 4695,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00054865
+    },
+    {
+      "i": 1,
+      "latencyMs": 25230,
+      "promptTokens": 9049,
+      "completionTokens": 3452,
+      "reasoningTokens": 2740,
+      "cachedPromptTokens": 5327,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0024966700000000003
+    },
+    {
+      "i": 2,
+      "latencyMs": 26014,
+      "promptTokens": 68298,
+      "completionTokens": 4513,
+      "reasoningTokens": 3483,
+      "cachedPromptTokens": 43968,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.006059805000000001
+    },
+    {
+      "i": 3,
+      "latencyMs": 128633,
+      "promptTokens": 113115,
+      "completionTokens": 20827,
+      "reasoningTokens": 19711,
+      "cachedPromptTokens": 82275,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.016402950000000003
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 5,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "doubt faith failure afraid losing faith",
+        "sourceId": "",
+        "limit": 12
+      },
+      "ms": 116,
+      "summary": "12 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "deconstruction faith crisis questions church",
+        "sourceId": "",
+        "limit": 12
+      },
+      "ms": 46,
+      "summary": "12 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "unbelief I believe help my unbelief",
+        "sourceId": "",
+        "limit": 12
+      },
+      "ms": 60,
+      "summary": "12 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Thomas doubt resurrection blessed those who have not seen",
+        "sourceId": "",
+        "limit": 12
+      },
+      "ms": 67,
+      "summary": "12 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "lament God feels absent silence doubt",
+        "sourceId": "",
+        "limit": 12
+      },
+      "ms": 68,
+      "summary": "12 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "faith certainty evidence trust questions",
+        "sourceId": "",
+        "limit": 12
+      },
+      "ms": 69,
+      "summary": "12 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Elijah depression despair God",
+        "sourceId": "",
+        "limit": 12
+      },
+      "ms": 60,
+      "summary": "12 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Psalm 73 doubt faith nearly slipped",
+        "sourceId": "",
+        "limit": 12
+      },
+      "ms": 57,
+      "summary": "12 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:1702",
+        "fromSec": 3060,
+        "toSec": 3360
+      },
+      "ms": 6,
+      "summary": "3060s–3360s of Naked Bible 181: Hebrews 3"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:1021fa12-com-1051a66c-213d-3b7f-9cb6-be4eaede94cb",
+        "fromSec": 1080,
+        "toSec": 1380
+      },
+      "ms": 3,
+      "summary": "1080s–1380s of Mark 9:2-29"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:264f9f9f-r-faith-796f79acf9257233e62f80f5f6ee5daf",
+        "fromSec": 1360,
+        "toSec": 1660
+      },
+      "ms": 4,
+      "summary": "1360s–1660s of #25 When Christians lose their faith"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:8930c29f-com-ec2b55cb-7030-346f-9528-bddaa65d8b46",
+        "fromSec": 760,
+        "toSec": 1060
+      },
+      "ms": 2,
+      "summary": "760s–1060s of #131 Help! I’m on the brink of atheism... Deconstruction and suffering"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:0b0b5970-4d5f-11ee-955e-119eeadcb150",
+        "fromSec": 1190,
+        "toSec": 1490
+      },
+      "ms": 0,
+      "summary": "1190s–1490s of #186 Has the resurrection been debunked? (Classic)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:aa93fe68-dfc1-11ee-8d8c-1b5a7e037e3d",
+        "fromSec": 2700,
+        "toSec": 3000
+      },
+      "ms": 3,
+      "summary": "2700s–3000s of Lamentations Overview: Mercy Every Morning"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:8a0c1342-5ec0-433b-906d-3b92183de180",
+        "fromSec": 0,
+        "toSec": 300
+      },
+      "ms": 3,
+      "summary": "0s–300s of Job 13:1-28 (Episode 398)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:2e898cbc-https-radicallychristian-com-p-9058",
+        "fromSec": 1240,
+        "toSec": 1540
+      },
+      "ms": 2,
+      "summary": "1240s–1540s of Christians Dealing with Anxiety – CrossTalk S3E17"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 4,
+    "toolCalls": 18,
+    "tapeSec": 2400,
+    "promptTokens": 197726,
+    "completionTokens": 29200,
+    "reasoningTokens": 26277,
+    "cachedPromptTokens": 136265,
+    "wallMs": 185790,
+    "modelLatencyMs": 185212,
+    "toolMs": 571
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.025508,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna-pro",
+      "inputPerMTokensUsd": 15,
+      "outputPerMTokensUsd": 120,
+      "cachedInputPerMTokensUsd": 1.5,
+      "_note": "PLACEHOLDER — a guess at a 'pro' multiple over the luna row above, itself a guess. The most expensive row in this file is the least verified one in it. OpenRouter accounts this model's spend itself, so the run record's 'provider' basis is what the ledger actually sums."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-07-31T23:57:24.160Z"
+}
