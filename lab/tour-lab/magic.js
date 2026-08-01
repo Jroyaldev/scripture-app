@@ -416,8 +416,9 @@ function beginDirection(li, index, scenes) {
 
 const TH_BOXES = ['.compare', '.chain', '.terms', '.allusions', '.footnotes', '.caveats', '.asides'];
 
-function activateScene(scene, idx) {
-  if (!current || idx <= current.sceneIdx) return;
+function activateScene(scene, idx, { force = false } = {}) {
+  if (!current || (!force && idx <= current.sceneIdx)) return;
+  if (force) current.sceneIdx = idx - 1;
   current.sceneIdx = idx;
   const th = TH();
   const body = th.querySelector('.th-body');
@@ -912,6 +913,68 @@ function toggleStep(li, step, index) {
     if (remaining <= 0) stopAudio();
   };
 }
+
+// ----------------------------------------------------------------- seeking
+// The whole performance is one resolved timeline keyed to clip time, so a
+// seek — either direction — is just "rebuild the stage for time t": the
+// scene whose window holds t, dressed with everything already due, spent
+// transients skipped, and the schedule pointer set to the next future beat.
+
+function seekTo(t) {
+  if (!current) return;
+  const { step } = current;
+  t = Math.max(step.startSec, Math.min(step.endSec - 1, t));
+  player.currentTime = t;
+  const rel = t - step.startSec;
+  current.capKey = null;
+  if (!current.timeline) return;
+  const scenes = current.scenes;
+  let k = 0;
+  for (let i = 0; i < scenes.length; i++) if ((scenes[i].at ?? 0) <= rel) k = i;
+  const scene = scenes[k];
+  const token = current.playToken;
+  activateScene(scene, k, { force: true });
+  releaseHighlight();
+  setTimeout(() => {
+    if (!current || current.playToken !== token || current.sceneIdx !== k) return;
+    for (const ev of current.timeline) {
+      if (ev.scene !== scene || ev.kind === 'scene' || ev.at > rel) continue;
+      /* A spent spotlight stays spent. */
+      if (ev.kind === 'highlight' && rel > ev.at + 11) continue;
+      renderEvent(ev);
+    }
+  }, 520);
+  current.fired = current.timeline.findIndex((ev) => ev.at > rel);
+  if (current.fired === -1) current.fired = current.timeline.length;
+}
+
+$('#th-back').addEventListener('click', () => current && seekTo(player.currentTime - 15));
+$('#th-fwd').addEventListener('click', () => current && seekTo(player.currentTime + 15));
+document.addEventListener('keydown', (e) => {
+  if (!current || e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowLeft') seekTo(player.currentTime - 15);
+  if (e.key === 'ArrowRight') seekTo(player.currentTime + 15);
+});
+(() => {
+  const bar = document.querySelector('.th-progress');
+  const toTime = (e) => {
+    const r = bar.getBoundingClientRect();
+    const frac = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
+    return current.step.startSec + frac * (current.step.endSec - current.step.startSec);
+  };
+  let dragging = false;
+  bar.addEventListener('pointerdown', (e) => { if (!current) return; dragging = true; bar.setPointerCapture(e.pointerId); });
+  bar.addEventListener('pointermove', (e) => {
+    if (!dragging || !current) return;
+    const frac = Math.max(0, Math.min(1, (e.clientX - bar.getBoundingClientRect().left) / bar.getBoundingClientRect().width));
+    bar.querySelector('i').style.width = `${frac * 100}%`;
+  });
+  bar.addEventListener('pointerup', (e) => {
+    if (!dragging || !current) return;
+    dragging = false;
+    seekTo(toTime(e));
+  });
+})();
 
 function updateCaption(t) {
   if (!current?.segments?.length) return;
