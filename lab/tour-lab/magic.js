@@ -5,15 +5,16 @@
 // percentages, no "regenerate", and the word "AI" appears nowhere a
 // reader can see.
 //
-// The visual principle, after the reader's correction: visualizations
-// never mark the page. They happen inside the STAGE — a box that opens on
-// the playing card, where the podcast becomes something you watch: the
-// words as they are said, the verse the teaching walks through, and the
-// loom drawing over that verse at the moment the teacher reaches the
-// words. The model directs; the house performs.
+// The venue, after the reader's second correction: when a reading plays,
+// the page BECOMES the stage — the theater. Controls minimize to one quiet
+// bar, the list waits behind, and the texts get the room: large type, side
+// by side texts, boxes for what the teaching is doing. Nothing visual ever
+// marks the list itself. The model directs; the house performs; all
+// geometry — lanes, collisions, layout — is the house's arithmetic alone.
 
 const $ = (s) => document.querySelector(s);
 const MODEL = 'gpt-5.6-luna-medium'; // fast enough to watch, cheap enough to not think about
+const TH = () => $('#theater');
 
 // ----------------------------------------------------------------- scenes
 
@@ -108,6 +109,8 @@ $('#again').addEventListener('click', () => {
   showScene('ask');
   setTimeout(() => $('#q').focus(), 520);
 });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') stopAudio(); });
+$('#th-stop').addEventListener('click', () => stopAudio());
 
 // --------------------------------------------------------------- the run
 
@@ -193,6 +196,20 @@ function escapeHtml(s) {
   return String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 }
 
+/* What two texts share, house arithmetic: significant words on both sides.
+   The compare box highlights sameness without a model in the loop. */
+/* Three letters and up, because "saw" and "ate" are often the whole point —
+   the stoplist carries the weight the length floor used to. */
+const STOP = new Set(['the', 'and', 'that', 'this', 'with', 'from', 'they', 'them', 'were', 'have', 'their', 'which',
+  'shall', 'unto', 'upon', 'when', 'then', 'because', 'there', 'been', 'will', 'would', 'your', 'yours', 'was', 'she',
+  'his', 'her', 'him', 'had', 'has', 'you', 'are', 'not', 'but', 'all', 'out', 'who', 'for', 'any', 'its', 'did',
+  'said', 'says', 'also', 'into', 'some', 'more', 'what', 'these', 'those']);
+function sharedWords(a, b) {
+  const words = (t) => new Set(normalize(t).split(' ').filter((w) => w.length >= 3 && !STOP.has(w)));
+  const wa = words(a);
+  return [...words(b)].filter((w) => wa.has(w));
+}
+
 // -------------------------------------------------------------- the tour
 
 let whispers = [];
@@ -224,21 +241,11 @@ function presentTour(tour, prompt) {
       <div class="step-row">
         <button class="play" aria-label="Play">
           <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor" aria-hidden="true">
-            <path class="p-play" d="M1 1 L11 7 L1 13 Z"></path>
-            <g class="p-pause" style="display:none"><rect x="1" y="1" width="3.5" height="12"></rect><rect x="7.5" y="1" width="3.5" height="12"></rect></g>
+            <path d="M1 1 L11 7 L1 13 Z"></path>
           </svg>
         </button>
-        <div class="whisper" title="Why this reading"></div>
-      </div>
-      <div class="stage">
-        <blockquote class="verses"></blockquote>
-        <div class="terms"></div>
-        <div class="allusions"></div>
-        <div class="footnotes"></div>
-        <p class="caption" aria-live="off"></p>
       </div>
       <div class="why"></div>
-      <div class="clip-progress" aria-hidden="true"></div>
       ${s.adInsertionDrift ? '<p class="step-note">This show inserts ads, so the needle may land a little off — nudge if it does.</p>' : ''}
     `;
     li.querySelector('.step-source').textContent = s.source || s.sourceId;
@@ -246,11 +253,9 @@ function presentTour(tour, prompt) {
     li.querySelector('.why').textContent = s.why;
     li.querySelector('.play').addEventListener('click', () => toggleStep(li, s, i));
     const toggleWhy = () => li.querySelector('.why').classList.toggle('open');
-    li.querySelector('.whisper').addEventListener('click', toggleWhy);
     li.querySelector('.step-title').addEventListener('click', toggleWhy);
     li.querySelector('.step-title').addEventListener('keydown', (e) => { if (e.key === 'Enter') toggleWhy(); });
     list.appendChild(li);
-    loadVersesFromWhy(li, s);
   });
 
   showScene('tour');
@@ -337,53 +342,145 @@ function applyForm(plan) {
     }
   }
 
-  /* Stage directions: the verse the teaching walks through, and the word
-     groups drawn the moment the teacher says them. Where a direction
-     names a verse, it replaces the why-detected one. */
   for (const dir of plan.stage || []) {
     stageDirections[dir.step] = { verse: dir.verse, marks: (dir.marks || []).map((m) => ({ ...m, drawn: false })) };
-    const li = items[dir.step];
-    if (li) loadVersesFromRef(li, dir.verse);
   }
 }
 
-// ------------------------------------------------- scripture, in the stage
+// -------------------------------------------------- the director's pass
 
-function loadVersesFromWhy(li, step) {
-  const m = String(step.why || '').match(/\b([1-3]?\s?[A-Z][a-z]+)\s+(\d{1,3}):(\d{1,3})(?:\s*[–-]\s*(\d{1,3}))?/);
-  if (!m) return;
-  const from = Number(m[3]);
-  const to = m[4] ? Math.min(Number(m[4]), from + 5) : from;
-  fillVerses(li, m[1], Number(m[2]), from, to, quotedPhrases(step.why));
-}
+const directorCache = {};
 
-function loadVersesFromRef(li, ref) {
-  const m = String(ref).match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3})(?::(\d{1,3})(?:\s*[–-]\s*(\d{1,3}))?)?$/);
-  if (!m) return;
-  const from = m[3] ? Number(m[3]) : 1;
-  const to = m[4] ? Math.min(Number(m[4]), from + 3) : (m[3] ? from : 4);
-  fillVerses(li, m[1], Number(m[2]), from, to, []);
-}
-
-function fillVerses(li, book, chapter, from, to, phrases) {
-  fetch(`/api/passage?book=${encodeURIComponent(book)}&chapter=${chapter}&from=${from}&to=${to}`)
+function fetchDirector(step, index) {
+  if (directorCache[index]) return Promise.resolve(directorCache[index]);
+  return fetch('/api/direct', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ recordId: step.recordId, fromSec: step.startSec, toSec: step.endSec, why: step.why }),
+  })
     .then((r) => r.json())
-    .then((p) => {
-      if (p.error || !p.verses?.length) return;
-      const q = li.querySelector('.verses');
-      q.querySelector; // noop
-      q.innerHTML = p.verses.map((v) => `<sup>${v.verse}</sup>${markRelevant(v.text, phrases)}`).join(' ')
-        + `<span class="verses-ref">${escapeHtml(`${p.bookName} ${p.chapter}:${from}${to > from ? '–' + to : ''}`)}</span>`;
-      q.classList.add('has');
-    })
-    .catch(() => {});
+    .then((d) => { directorCache[index] = d; return d; })
+    .catch(() => ({ scenes: [] }));
 }
 
-// ------------------------------------- the loom, performed on the stage
-// Word groups the model directed draw themselves the moment the teacher
-// says one of their words — underline runs gathered by one vertical and
-// one soft corner, the label along the bracket. A word the verse doesn't
-// contain is silently nothing.
+function beginDirection(li, index, scenes) {
+  if (!current || current.li !== li || !scenes?.length) return;
+  current.scenes = scenes.map((s) => ({
+    ...s,
+    groups: (s.groups || []).map((g) => ({ ...g, drawn: false })),
+    footnotes: (s.footnotes || []).map((f) => ({ ...f, drawn: false })),
+    allusions: (s.allusions || []).map((a) => ({ ...a, drawn: false })),
+    terms: (s.terms || []).map((t) => ({ ...t, drawn: false })),
+    compare: s.compare ? { ...s.compare, drawn: false } : null,
+    chain: s.chain ? { ...s.chain, drawn: false } : null,
+    caveat: s.caveat ? { ...s.caveat, drawn: false } : null,
+    highlight: s.highlight ? { ...s.highlight, drawn: false } : null,
+  }));
+  current.sceneIdx = -1;
+  activateScene(0);
+}
+
+const TH_BOXES = ['.compare', '.chain', '.terms', '.allusions', '.footnotes', '.caveats'];
+
+function activateScene(k) {
+  if (!current?.scenes || k >= current.scenes.length || k <= current.sceneIdx) return;
+  current.sceneIdx = k;
+  const scene = current.scenes[k];
+  const th = TH();
+  for (const sel of TH_BOXES) th.querySelector(sel).innerHTML = '';
+  const bq = th.querySelector('.big-quote');
+  bq.classList.remove('show');
+  const q = th.querySelector('.verses');
+  q.classList.remove('has');
+  setTimeout(() => {
+    if (!current || current.scenes?.[current.sceneIdx] !== scene) return;
+    q.innerHTML = scene.verses.map((v) => `<sup>${v.verse}</sup>${escapeHtml(v.text)}`).join(' ')
+      + `<span class="verses-ref">${escapeHtml(scene.ref)}</span>`;
+    q.classList.add('has');
+    cueArtifacts(' ');
+  }, 240);
+}
+
+/* Uncued artifacts appear with their scene; cued ones wait to be said. */
+function cueArtifacts(saidBuf, { force = false } = {}) {
+  const scene = current?.scenes?.[current.sceneIdx];
+  if (!scene) return;
+  const th = TH();
+  const ready = (a) => a && !a.drawn && (force || !a.cue || saidBuf.includes(` ${normalize(a.cue)} `));
+
+  for (const g of scene.groups) {
+    if (ready(g)) { g.drawn = true; drawMark(g); }
+  }
+  for (const t of scene.terms) {
+    if (!ready(t)) continue;
+    t.drawn = true;
+    const el = document.createElement('p');
+    el.className = 'term-chip appear';
+    el.innerHTML = `<i>${escapeHtml(t.term)}</i> — ${escapeHtml(t.gloss)}`;
+    th.querySelector('.terms').appendChild(el);
+  }
+  for (const a of scene.allusions) {
+    if (!ready(a)) continue;
+    a.drawn = true;
+    for (const prev of th.querySelectorAll('.allusion')) prev.classList.add('past');
+    const el = document.createElement('div');
+    el.className = 'allusion appear';
+    el.innerHTML = `<span class="box-ref">${escapeHtml(a.ref)}</span>${escapeHtml(a.text)}`
+      + (a.note ? `<span class="box-note">${escapeHtml(a.note)}</span>` : '');
+    th.querySelector('.allusions').appendChild(el);
+  }
+  for (const f of scene.footnotes) {
+    if (!ready(f)) continue;
+    f.drawn = true;
+    const q = th.querySelector('.verses');
+    const span = wrapWord(q, f.word);
+    if (span) span.insertAdjacentHTML('beforeend', '<sup class="fnmark">†</sup>');
+    const el = document.createElement('p');
+    el.className = 'footnote appear';
+    el.innerHTML = `<sup>†</sup> <b>${escapeHtml(f.word)}</b> — ${escapeHtml(f.note)}`;
+    th.querySelector('.footnotes').appendChild(el);
+  }
+  if (ready(scene.compare)) {
+    scene.compare.drawn = true;
+    const { a, b, note } = scene.compare;
+    const common = sharedWords(a.text, b.text);
+    const el = document.createElement('div');
+    el.className = 'compare-grid appear';
+    el.innerHTML = [a, b].map((side) =>
+      `<div class="cmp"><span class="box-ref">${escapeHtml(side.ref)}</span>${markRelevant(side.text, common)}</div>`
+    ).join('') + (note ? `<span class="box-note cmp-note">${escapeHtml(note)}</span>` : '');
+    th.querySelector('.compare').appendChild(el);
+  }
+  if (ready(scene.chain)) {
+    scene.chain.drawn = true;
+    const el = document.createElement('div');
+    el.className = 'chain-box appear';
+    el.innerHTML = scene.chain.links.map((l) =>
+      `<div class="chain-link"><span class="box-ref">${escapeHtml(l.ref)}</span>${escapeHtml(trim(l.text, 110))}</div>`
+    ).join('') + (scene.chain.note ? `<span class="box-note">${escapeHtml(scene.chain.note)}</span>` : '');
+    th.querySelector('.chain').appendChild(el);
+  }
+  if (ready(scene.caveat)) {
+    scene.caveat.drawn = true;
+    const el = document.createElement('p');
+    el.className = 'caveat appear';
+    el.innerHTML = `<span class="box-ref">what it does not say</span>${escapeHtml(scene.caveat.text)}`;
+    th.querySelector('.caveats').appendChild(el);
+  }
+  /* The highlight's own words are its cue. */
+  if (scene.highlight && !scene.highlight.drawn
+    && (force || saidBuf.includes(` ${normalize(scene.highlight.quote)} `))) {
+    scene.highlight.drawn = true;
+    const bq = TH().querySelector('.big-quote');
+    bq.textContent = `“${scene.highlight.quote}”`;
+    bq.classList.add('show');
+  }
+}
+
+// ------------------------------------- the loom, performed in the theater
+// All geometry is house arithmetic: each group is assigned the first
+// gutter lane whose occupied span it does not intersect, so brackets
+// share lanes when they can and step outward only when they must.
 
 function wrapWord(root, word) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
@@ -404,8 +501,8 @@ function wrapWord(root, word) {
   return null;
 }
 
-function drawMark(li, mark) {
-  const q = li.querySelector('.verses');
+function drawMark(mark) {
+  const q = TH().querySelector('.verses');
   if (!q?.classList.contains('has')) return;
   const spans = mark.words.map((w) => {
     const s = wrapWord(q, w);
@@ -419,27 +516,31 @@ function drawMark(li, mark) {
   if (!svg) {
     svg = document.createElementNS(NS, 'svg');
     svg.setAttribute('class', 'smarks');
+    svg._lanes = [];
     q.appendChild(svg);
   }
-  /* The current thought holds the light: earlier groups step back rather
-     than compete, and each group owns its own gutter lane — two brackets
-     sharing one lane wrote their labels over each other. */
-  const priorGroups = [...svg.querySelectorAll('g.markg')];
-  for (const g of priorGroups) g.classList.add('past');
-  const laneIndex = priorGroups.length;
-  const g = document.createElementNS(NS, 'g');
-  g.setAttribute('class', 'markg');
-  svg.appendChild(g);
+  for (const g of svg.querySelectorAll('g.markg')) g.classList.add('past');
 
   const qr = q.getBoundingClientRect();
   const runs = spans.map((sp) => {
     const r = sp.getBoundingClientRect();
     return { x1: r.left - qr.left, x2: r.right - qr.left, y: r.bottom - qr.top + 1.5 };
   }).sort((a, b) => a.y - b.y || a.x1 - b.x1);
-  const lane = -14 - laneIndex * 11;
-  const R = 8;
   const first = runs[0];
   const last = runs[runs.length - 1];
+
+  /* Lane assignment by interval overlap — never by arrival order. */
+  const span = [first.y - 14, last.y + 14];
+  const lanes = svg._lanes;
+  let laneIndex = lanes.findIndex((occupied) => occupied.every(([y1, y2]) => span[1] < y1 || span[0] > y2));
+  if (laneIndex === -1) { laneIndex = lanes.length; lanes.push([]); }
+  lanes[laneIndex].push(span);
+  const lane = -14 - laneIndex * 11;
+
+  const g = document.createElementNS(NS, 'g');
+  g.setAttribute('class', 'markg');
+  svg.appendChild(g);
+  const R = 8;
   const parts = [`M ${first.x1} ${first.y} H ${lane + R} Q ${lane} ${first.y} ${lane} ${first.y + R} V ${last.y}`];
   for (const run of runs) {
     parts.push(`M ${run.x1} ${run.y} H ${run.x2}`);
@@ -458,15 +559,34 @@ function drawMark(li, mark) {
     label.textContent = mark.label;
     g.appendChild(label);
   }
-  /* Ink arriving, not appearing. */
   const len = path.getTotalLength();
   path.style.strokeDasharray = String(len);
   path.style.strokeDashoffset = String(len);
   requestAnimationFrame(() => { path.style.strokeDashoffset = '0'; });
 }
 
-/* Fires from the caption clock: a directed word group draws the moment one
-   of its words is actually said. */
+/* The fallback layer when the director has no scenes: the plan's stage
+   direction, or the passage the why cites. */
+function fallbackVerse(step, index) {
+  const dirRef = stageDirections[index]?.verse;
+  const m = dirRef
+    ? String(dirRef).match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3})(?::(\d{1,3})(?:\s*[–-]\s*(\d{1,3}))?)?$/)
+    : String(step.why || '').match(/\b([1-3]?\s?[A-Z][a-z]+)\s+(\d{1,3}):(\d{1,3})(?:\s*[–-]\s*(\d{1,3}))?/);
+  if (!m) return;
+  const from = m[3] ? Number(m[3]) : 1;
+  const to = m[4] ? Math.min(Number(m[4]), from + 5) : (m[3] ? from : 4);
+  fetch(`/api/passage?book=${encodeURIComponent(m[1])}&chapter=${m[2]}&from=${from}&to=${to}`)
+    .then((r) => r.json())
+    .then((p) => {
+      if (p.error || !p.verses?.length || !current || current.index !== index || current.scenes) return;
+      const q = TH().querySelector('.verses');
+      q.innerHTML = p.verses.map((v) => `<sup>${v.verse}</sup>${markRelevant(v.text, current.phrases)}`).join(' ')
+        + `<span class="verses-ref">${escapeHtml(`${p.bookName} ${p.chapter}:${from}${to > from ? '–' + to : ''}`)}</span>`;
+      q.classList.add('has');
+    })
+    .catch(() => {});
+}
+
 function cueMarks(segText) {
   const dir = stageDirections[current?.index];
   if (!dir?.marks?.length) return;
@@ -475,102 +595,8 @@ function cueMarks(segText) {
     if (mark.drawn) continue;
     if (mark.words.some((w) => said.includes(` ${normalize(w)} `))) {
       mark.drawn = true;
-      drawMark(current.li, mark);
+      drawMark(mark);
     }
-  }
-}
-
-// -------------------------------------------------- the director's pass
-// One deeper call per playing step, grounded server-side in the actual
-// tape and the actual verse text. Its scenes run the stage: the verse in
-// discussion (which can change mid-clip), word groups, footnotes, allusion
-// boxes, term cards — each appearing when its verbatim cue phrase is
-// actually said, with a proportional fallback if the tape never surfaces
-// the cue. When the director has scenes, the coarse plan-stage yields.
-
-const directorCache = {};
-
-function fetchDirector(step, index) {
-  if (directorCache[index]) return Promise.resolve(directorCache[index]);
-  return fetch('/api/direct', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ recordId: step.recordId, fromSec: step.startSec, toSec: step.endSec, why: step.why }),
-  })
-    .then((r) => r.json())
-    .then((d) => { directorCache[index] = d; return d; })
-    .catch(() => ({ scenes: [] }));
-}
-
-function beginDirection(li, index, scenes) {
-  if (!current || current.li !== li || !scenes?.length) return;
-  current.scenes = scenes.map((s) => ({
-    ...s,
-    shown: false,
-    groups: (s.groups || []).map((g) => ({ ...g, drawn: false })),
-    footnotes: (s.footnotes || []).map((f) => ({ ...f, drawn: false })),
-    allusions: (s.allusions || []).map((a) => ({ ...a, drawn: false })),
-    terms: (s.terms || []).map((t) => ({ ...t, drawn: false })),
-  }));
-  current.sceneIdx = -1;
-  activateScene(0);
-}
-
-function activateScene(k) {
-  if (!current?.scenes || k >= current.scenes.length || k <= current.sceneIdx) return;
-  current.sceneIdx = k;
-  const scene = current.scenes[k];
-  scene.shown = true;
-  const li = current.li;
-  const q = li.querySelector('.verses');
-  for (const sel of ['.terms', '.allusions', '.footnotes']) li.querySelector(sel).innerHTML = '';
-  q.classList.remove('has');
-  setTimeout(() => {
-    if (!current || current.scenes?.[current.sceneIdx] !== scene) return;
-    q.innerHTML = scene.verses.map((v) => `<sup>${v.verse}</sup>${escapeHtml(v.text)}`).join(' ')
-      + `<span class="verses-ref">${escapeHtml(scene.ref)}</span>`;
-    q.classList.add('has');
-    cueArtifacts('');
-  }, 240);
-}
-
-/* Uncued artifacts appear with their scene; cued ones wait to be said. */
-function cueArtifacts(saidBuf, { force = false } = {}) {
-  const scene = current?.scenes?.[current.sceneIdx];
-  if (!scene) return;
-  const li = current.li;
-  const ready = (a) => !a.drawn && (force || !a.cue || saidBuf.includes(` ${normalize(a.cue)} `));
-  for (const g of scene.groups) {
-    if (ready(g)) { g.drawn = true; drawMark(li, g); }
-  }
-  for (const t of scene.terms) {
-    if (!ready(t)) continue;
-    t.drawn = true;
-    const el = document.createElement('p');
-    el.className = 'term-chip';
-    el.innerHTML = `<i>${escapeHtml(t.term)}</i> — ${escapeHtml(t.gloss)}`;
-    li.querySelector('.terms').appendChild(el);
-  }
-  for (const a of scene.allusions) {
-    if (!ready(a)) continue;
-    a.drawn = true;
-    for (const prev of li.querySelectorAll('.allusion')) prev.classList.add('past');
-    const el = document.createElement('div');
-    el.className = 'allusion';
-    el.innerHTML = `<span class="allusion-ref">${escapeHtml(a.ref)}</span>${escapeHtml(a.text)}`
-      + (a.note ? `<span class="allusion-note">${escapeHtml(a.note)}</span>` : '');
-    li.querySelector('.allusions').appendChild(el);
-  }
-  for (const f of scene.footnotes) {
-    if (!ready(f)) continue;
-    f.drawn = true;
-    const q = li.querySelector('.verses');
-    const span = wrapWord(q, f.word);
-    if (span) span.insertAdjacentHTML('beforeend', '<sup class="fnmark">†</sup>');
-    const el = document.createElement('p');
-    el.className = 'footnote';
-    el.innerHTML = `<sup>†</sup> <b>${escapeHtml(f.word)}</b> — ${escapeHtml(f.note)}`;
-    li.querySelector('.footnotes').appendChild(el);
   }
 }
 
@@ -607,7 +633,7 @@ function buildVoices(tour) {
 // -------------------------------------------------------------- listening
 
 const player = $('#player');
-let current = null; // { li, step, index, fadeRaf, segments, phrases, capKey, fading }
+let current = null;
 
 function toggleStep(li, step, index) {
   if (current && current.li === li) { stopAudio(); return; }
@@ -615,7 +641,19 @@ function toggleStep(li, step, index) {
   if (!step.audioUrl) { honestNote(li, 'This publisher keeps its audio on its own site.'); return; }
   current = { li, step, index, segments: null, phrases: quotedPhrases(step.why), capKey: null, saidBuf: '', scenes: null, sceneIdx: -1 };
   li.classList.add('playing');
-  setGlyph(li, true);
+
+  const th = TH();
+  th.querySelector('.th-source').textContent = step.source || step.sourceId;
+  th.querySelector('.th-title').textContent = step.episodeTitle;
+  th.querySelector('.th-whisper').textContent = '';
+  th.querySelector('.verses').classList.remove('has');
+  th.querySelector('.verses').innerHTML = '';
+  th.querySelector('.big-quote').classList.remove('show');
+  th.querySelector('.caption').classList.remove('show');
+  for (const sel of TH_BOXES) th.querySelector(sel).innerHTML = '';
+  th.querySelector('.th-progress i').style.width = '0%';
+  th.classList.add('on');
+  document.body.classList.add('in-theater');
 
   player.src = step.audioUrl;
   player.currentTime = step.startSec;
@@ -625,10 +663,11 @@ function toggleStep(li, step, index) {
     stopAudio();
   });
 
-  const whisperEl = li.querySelector('.whisper');
   const w = whispers[index];
-  whisperEl.textContent = w || '';
-  if (w) setTimeout(() => whisperEl.classList.add('show'), 600);
+  if (w) {
+    th.querySelector('.th-whisper').textContent = w;
+    setTimeout(() => th.querySelector('.th-whisper').classList.add('show'), 700);
+  }
 
   fetch(`/api/window?recordId=${encodeURIComponent(step.recordId)}&from=${step.startSec}&to=${step.endSec}`)
     .then((r) => r.json())
@@ -636,24 +675,23 @@ function toggleStep(li, step, index) {
     .catch(() => {});
 
   fetchDirector(step, index).then((d) => beginDirection(li, index, d.scenes));
+  fallbackVerse(step, index);
 
   player.ontimeupdate = () => {
     if (!current) return;
     const t = player.currentTime;
     updateCaption(t);
-    updateProgress(li, step, t);
-    /* Proportional fallbacks: cues that the tape never surfaced must not
-       strand a scene or its artifacts. */
     const frac = (t - step.startSec) / (step.endSec - step.startSec);
+    th.querySelector('.th-progress i').style.width = `${Math.max(0, Math.min(100, frac * 100))}%`;
     if (current.scenes) {
       const n = current.scenes.length;
       const due = Math.min(n - 1, Math.floor(frac * (n + 0.6)));
       if (due > current.sceneIdx) activateScene(due);
-      if (frac > 0.85) cueArtifacts('', { force: true });
+      if (frac > 0.85) cueArtifacts(' ', { force: true });
     } else if (frac > 0.7) {
       const dir = stageDirections[index];
       for (const mark of dir?.marks || []) {
-        if (!mark.drawn) { mark.drawn = true; drawMark(li, mark); }
+        if (!mark.drawn) { mark.drawn = true; drawMark(mark); }
       }
     }
     const remaining = step.endSec - t;
@@ -670,9 +708,9 @@ function updateCaption(t) {
   const key = silent ? null : seg.s;
   if (key === current.capKey) return;
   current.capKey = key;
-  const cap = current.li.querySelector('.caption');
+  const cap = TH().querySelector('.caption');
   if (silent) { cap.classList.remove('show'); return; }
-  cap.innerHTML = markRelevant(seg.t, current.phrases, { wholePhrasesOnly: true });
+  cap.textContent = seg.t;
   cap.classList.add('show');
   if (current.scenes) {
     current.saidBuf = (current.saidBuf + ' ' + normalize(seg.t)).slice(-600);
@@ -685,22 +723,12 @@ function updateCaption(t) {
   }
 }
 
-function updateProgress(li, step, t) {
-  const k = Math.max(0, Math.min(1, (t - step.startSec) / (step.endSec - step.startSec)));
-  li.querySelector('.clip-progress').style.transform = `scaleX(${k})`;
-}
-
 function honestNote(li, text) {
   if (li.querySelector('.honest')) return;
   const p = document.createElement('p');
   p.className = 'step-note honest';
   p.textContent = text;
   li.appendChild(p);
-}
-
-function setGlyph(li, playing) {
-  li.querySelector('.p-play').style.display = playing ? 'none' : '';
-  li.querySelector('.p-pause').style.display = playing ? '' : 'none';
 }
 
 function fadeTo(target, ms) {
@@ -723,10 +751,9 @@ function stopAudio() {
   player.pause();
   player.ontimeupdate = null;
   li.classList.remove('playing');
-  li.querySelector('.whisper').classList.remove('show');
-  li.querySelector('.caption').classList.remove('show');
-  li.querySelector('.clip-progress').style.transform = 'scaleX(0)';
-  setGlyph(li, false);
+  TH().classList.remove('on');
+  TH().querySelector('.th-whisper').classList.remove('show');
+  document.body.classList.remove('in-theater');
   current = null;
 }
 

@@ -44,6 +44,36 @@
   </section>
 
 </main>
+
+<!-- The theater: when a reading plays, the page becomes the stage. Controls
+     minimize to one quiet bar; the texts get the room. -->
+<section id="theater" aria-label="Now playing">
+  <header class="th-head">
+    <span class="th-source"></span>
+    <span class="th-title"></span>
+  </header>
+  <p class="th-whisper"></p>
+  <div class="th-body">
+    <blockquote class="verses"></blockquote>
+    <div class="compare"></div>
+    <div class="chain"></div>
+    <div class="terms"></div>
+    <div class="allusions"></div>
+    <div class="footnotes"></div>
+    <div class="caveats"></div>
+    <p class="big-quote"></p>
+  </div>
+  <p class="caption" aria-live="off"></p>
+  <footer class="th-controls">
+    <button id="th-stop" class="play" aria-label="Stop">
+      <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor" aria-hidden="true">
+        <g><rect x="1" y="1" width="3.5" height="12"></rect><rect x="7.5" y="1" width="3.5" height="12"></rect></g>
+      </svg>
+    </button>
+    <div class="th-progress"><i></i></div>
+  </footer>
+</section>
+
 <audio id="player" preload="none"></audio>
 <script src="magic.js"></script>
 </body>

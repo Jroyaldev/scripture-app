@@ -341,9 +341,13 @@ Direct up to 3 SCENES, in the order the clip reaches them. Each scene:
 - "footnotes": up to 2 — when the teacher gives a translation or textual note about ONE word of the verse: {"word":"...","note":"the teacher's point, max 90 chars","cue":"..."}. The word must be in the verse text.
 - "allusions": up to 2 — when the teacher says this verse echoes or draws on ANOTHER passage: {"verse":"Psalm 82:1","note":"what the teacher says it carries, max 60 chars","cue":"..."}. Only allusions the teacher actually makes.
 - "terms": up to 2 — when the teacher explains an original-language word: {"term":"hesed","gloss":"the teacher's gloss, max 48 chars","cue":"..."}.
+- "compare": at most 1 — when the teacher sets two passages side by side, for LIKENESS or for difference: {"a":"Genesis 6:2","b":"Genesis 3:6","note":"what the comparison shows, max 60 chars","cue":"..."}. The shared wording is found and shown automatically; your job is only naming the two texts.
+- "chain": at most 1 — when the teacher traces one line through scripture (a quotation quoted, a phrase carried forward): {"refs":["Isaiah 53:1","John 12:38","Romans 10:16"],"note":"max 60 chars","cue":"..."} — 2 to 4 single verses in the order the chain runs.
+- "caveat": at most 1 — when the teacher says what the passage does NOT say or claim: {"text":"the teacher's caution, max 90 chars","cue":"..."}.
+- "highlight": at most 1, USED SPARINGLY — one sentence of the clip worth keeping, copied VERBATIM from the transcript (12-140 chars): {"quote":"..."}. It appears large at the moment it is spoken. Most clips have none.
 
 Every artifact is optional and every cue is a verbatim transcript phrase; an artifact without a cue appears when its scene does. Fewer, truer artifacts beat coverage. A clip that discusses no specific verse gets {"scenes":[]}.
-Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{"words":["saw","took"],"label":"Eden echo","cue":"..."}],"footnotes":[],"allusions":[],"terms":[]}]}`,
+Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{"words":["saw","took"],"label":"Eden echo","cue":"..."}],"footnotes":[],"allusions":[],"terms":[],"compare":null,"chain":null,"caveat":null,"highlight":null}]}`,
           }],
         });
         const m = String(reply.message.content || '').match(/\{[\s\S]*\}/);
@@ -392,6 +396,38 @@ Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{
               && typeof t.gloss === 'string' && t.gloss.trim().length >= 3)
             .slice(0, 2)
             .map((t) => ({ term: t.term.trim(), gloss: t.gloss.trim().slice(0, 48), cue: cueOk(t.cue) ? t.cue.trim() : null }));
+          const oneVerse = (refStr) => {
+            const r = String(refStr || '').match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3}):(\d{1,3})$/);
+            if (!r) return null;
+            const pv = readPassage({ book: r[1], chapter: Number(r[2]), fromVerse: Number(r[3]), toVerse: Number(r[3]) });
+            if (pv.error || !pv.verses?.length) return null;
+            return { ref: `${pv.bookName} ${pv.chapter}:${r[3]}`, text: pv.verses[0].text };
+          };
+          let compare = null;
+          if (sc.compare && typeof sc.compare === 'object') {
+            const a = oneVerse(sc.compare.a);
+            const b = oneVerse(sc.compare.b);
+            if (a && b && a.ref !== b.ref) {
+              compare = { a, b, note: (typeof sc.compare.note === 'string' && sc.compare.note.trim()) ? sc.compare.note.trim().slice(0, 60) : null, cue: cueOk(sc.compare.cue) ? sc.compare.cue.trim() : null };
+            }
+          }
+          let chain = null;
+          if (sc.chain && Array.isArray(sc.chain.refs)) {
+            const links = sc.chain.refs.slice(0, 4).map(oneVerse).filter(Boolean);
+            if (links.length >= 2) {
+              chain = { links, note: (typeof sc.chain.note === 'string' && sc.chain.note.trim()) ? sc.chain.note.trim().slice(0, 60) : null, cue: cueOk(sc.chain.cue) ? sc.chain.cue.trim() : null };
+            }
+          }
+          const caveat = (sc.caveat && typeof sc.caveat.text === 'string' && sc.caveat.text.trim().length >= 8)
+            ? { text: sc.caveat.text.trim().slice(0, 90), cue: cueOk(sc.caveat.cue) ? sc.caveat.cue.trim() : null }
+            : null;
+          /* The highlight's own words are its cue — verbatim on tape or it
+             does not exist. */
+          const highlight = (sc.highlight && typeof sc.highlight.quote === 'string'
+            && sc.highlight.quote.trim().length >= 12 && sc.highlight.quote.length <= 140
+            && tapeNorm.includes(` ${norm(sc.highlight.quote)} `))
+            ? { quote: sc.highlight.quote.trim() }
+            : null;
           scenes.push({
             ref: `${passage.bookName} ${passage.chapter}:${fromV}${toV > fromV ? '–' + toV : ''}`,
             verses: passage.verses,
@@ -400,6 +436,10 @@ Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{
             footnotes,
             allusions,
             terms,
+            compare,
+            chain,
+            caveat,
+            highlight,
           });
         }
         return sendJson(res, 200, { scenes, usd: reply.usage?.providerCostUsd ?? null });
