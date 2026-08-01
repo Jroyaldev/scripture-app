@@ -645,13 +645,18 @@ Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.lengt
         }
 
         /* ---- the second pass: buy beats for the starved stretch ---- */
-        const beatTimes = [0, ...scenes.map((s) => s.at), ...flat.map((e) => e.at)].sort((a, b) => a - b);
+        /* A fourteen-minute commentary clip cannot be rescued by one
+           helping: the fill re-measures and goes again, twice at most. */
+        const fillRounds = dur > 480 ? 2 : 1;
+        for (let round = 0; round < fillRounds; round++) {
+        const beatTimes = [0, ...scenes.map((s) => s.at), ...scenes.flatMap(artifactsOf).map((e) => e.at)].sort((a, b) => a - b);
         let gap = { len: 0, start: 0 };
         for (let i = 1; i < beatTimes.length; i++) {
           if (beatTimes[i] - beatTimes[i - 1] > gap.len) gap = { len: beatTimes[i] - beatTimes[i - 1], start: beatTimes[i - 1] };
         }
         const tail = dur - (beatTimes.at(-1) ?? 0);
         if (tail > gap.len) gap = { len: tail, start: beatTimes.at(-1) ?? 0 };
+        if (!(scenes.length && gap.len > 45)) break;
         if (scenes.length && gap.len > 45) {
           const host = [...scenes].reverse().find((s) => s.at <= gap.start + 1) || scenes[0];
           const stretchSegs = segs.filter((s) => s.e - from >= gap.start + 2 && s.s - from <= gap.start + gap.len);
@@ -688,6 +693,7 @@ An "aside" is often the right direction for a stretch like this — one line nam
           }
         }
 
+        }
         for (const sc of scenes) delete sc.verseNorm;
         return sendJson(res, 200, { scenes, usd: spent.reduce((a, b) => a + b, 0) || null, passes: spent.length });
       } catch (err) {

@@ -1,0 +1,510 @@
+{
+  "runId": "2026-08-01T18-02-20-590-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T18:02:20.590Z",
+  "promptId": null,
+  "prompt": "Walk me through genesis allusions in the NT",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Genesis Echoes: From Creation to New Creation in the New Testament",
+    "intro": "This tour follows a few of the New Testament’s clearest ways of reusing Genesis: Matthew frames Jesus as the beginning of a new creation, John presents him as the Word who brings light and new humanity, Paul contrasts Adam with Christ, and Revelation brings the garden story to its promised end. As you listen, notice that these are not isolated quotations but recurring story-patterns: creation, fall, seed, death, life, and restoration.",
+    "steps": [
+      {
+        "recordId": "spoken-gospel:podcast:b14bd164-69c4-11ed-a4dd-1f31b8686732",
+        "startSec": 385,
+        "endSec": 654,
+        "why": "Start here for an orientation to Matthew’s Genesis-shaped architecture. The speakers point out that Matthew begins with “Biblos Genesios,” the words associated with Genesis and with the account of Adam’s family, and argue that Jesus’ genealogy presents “the new creation.” They also note that Matthew moves from “the beginning” toward “the end of the age,” giving you a way to hear Genesis allusion as a whole-book frame, not merely a proof-text.",
+        "episodeTitle": "The Bible According to Matthew",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG1370347319.mp3?updated=1670293329",
+        "durationSec": 2428,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "startSec": 2291,
+        "endSec": 2560,
+        "why": "Now hear John’s more concentrated creation echo. The discussion connects believers receiving Jesus with a Genesis 1 moment: “the word comes to them and says, Let there be light.” It describes those who receive him as “new Edens” and “a new humanity,” then explains why John the Baptist appears inside the prologue—as the messenger announcing the long-awaited new-creation visitation. This shows Genesis language being used to interpret Jesus’ arrival and the formation of his people.",
+        "episodeTitle": "John 1: In the Beginning Was the Word",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG8007534722.mp3",
+        "durationSec": 3919,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:84c9464f-com-e0241bf1-e9d6-38d9-934b-6c2f0e1eb031",
+        "startSec": 900,
+        "endSec": 1194,
+        "why": "Paul’s Adam-Christ comparison is the central apostolic rereading of Genesis 3. The commentator says Adam’s sin “opened the door for death to enter into the world,” but emphasizes that Jesus’ work “completely undoes everything Adam did and replaces death with life.” Listen for the deliberate asymmetry: one transgression brings condemnation, while Christ’s gift responds to many transgressions and brings justification—an allusion that becomes an argument about the scope and superiority of Jesus’ saving work.",
+        "episodeTitle": "Romans 5:12-21",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/e44jht/romans_512-216altv.mp3",
+        "durationSec": 1896,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:51965261-com-285350f9-2de3-3aab-a117-edc558750bae",
+        "startSec": 1080,
+        "endSec": 1168,
+        "why": "This shorter clip isolates a direct verbal echo of Genesis 3:15. On “the God of peace will soon crush Satan under your feet,” the commentator explicitly says Paul is echoing Genesis’ promise that “the seed of the woman will crush the head of the serpent,” and adds that Paul presents this victory as happening “in and through you as well.” It is a useful example of an allusion that turns an ancient promise into a present pastoral exhortation.",
+        "episodeTitle": "Romans 16:1-27",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/k5f459/romans_161-3389b9z.mp3",
+        "durationSec": 1590,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:back-to-the-tree-of-life",
+        "startSec": 2700,
+        "endSec": 2960,
+        "why": "Finish at the far end of the biblical story, where Revelation’s tree-of-life imagery is read against Genesis 2–3. The speakers connect the tree’s fruit and healing leaves with Abraham’s blessing “for all the nations,” then explain that the Messiah’s blood opens access to the tree of life: the one who “went into exile and death” makes a way back and “overcome[s] the serpent.” This landing lets the earlier allusions resolve into a Genesis-to-Revelation arc: exile, seed, death, atonement, restored garden, and healing for the nations.",
+        "episodeTitle": "Back to the Tree of Life",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/0b7290bf-a0c7-4e5d-82fd-7ccd232e4385/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=0b7290bf-a0c7-4e5d-82fd-7ccd232e4385",
+        "durationSec": 3141,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips suggest that New Testament writers evoke Genesis in several complementary ways: Jesus is presented as the beginning of renewed creation, the true human who answers Adam, the promised offspring who defeats the serpent, and the one through whom the garden’s life and blessing return to the nations. The point is not that every New Testament passage is quoting Genesis directly, but that Genesis supplies a story-world the New Testament repeatedly expects you to recognize.",
+    "totalSeconds": 1180
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3159,
+      "promptTokens": 1598,
+      "completionTokens": 75,
+      "reasoningTokens": 59,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000244675
+    },
+    {
+      "i": 1,
+      "latencyMs": 3259,
+      "promptTokens": 1893,
+      "completionTokens": 328,
+      "reasoningTokens": 54,
+      "cachedPromptTokens": 1595,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000249925
+    },
+    {
+      "i": 2,
+      "latencyMs": 3174,
+      "promptTokens": 17721,
+      "completionTokens": 334,
+      "reasoningTokens": 54,
+      "cachedPromptTokens": 1890,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0021981
+    },
+    {
+      "i": 3,
+      "latencyMs": 3427,
+      "promptTokens": 30175,
+      "completionTokens": 400,
+      "reasoningTokens": 46,
+      "cachedPromptTokens": 17718,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0019742300000000004
+    },
+    {
+      "i": 4,
+      "latencyMs": 4863,
+      "promptTokens": 37099,
+      "completionTokens": 353,
+      "reasoningTokens": 167,
+      "cachedPromptTokens": 30172,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00137932
+    },
+    {
+      "i": 5,
+      "latencyMs": 11694,
+      "promptTokens": 39375,
+      "completionTokens": 1205,
+      "reasoningTokens": 253,
+      "cachedPromptTokens": 37096,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0013787600000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Genesis New Testament allusion Adam creation serpent seed",
+        "sourceId": "bibleproject",
+        "limit": 10
+      },
+      "ms": 124,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Genesis echoes alludes quotes New Testament",
+        "sourceId": "listeners-commentary",
+        "limit": 10
+      },
+      "ms": 32,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Adam Christ creation new creation Genesis",
+        "sourceId": "ask-nt-wright",
+        "limit": 10
+      },
+      "ms": 40,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Eve serpent seed Abraham Genesis New Testament",
+        "sourceId": "spoken-gospel",
+        "limit": 10
+      },
+      "ms": 125,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 1,
+        "verse": 0,
+        "limit": 25
+      },
+      "ms": 64,
+      "summary": "25 of 922 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 3,
+        "verse": 0,
+        "limit": 25
+      },
+      "ms": 0,
+      "summary": "25 of 808 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 12,
+        "verse": 0,
+        "limit": 25
+      },
+      "ms": 1,
+      "summary": "25 of 310 moments"
+    },
+    {
+      "at": 1,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 22,
+        "verse": 0,
+        "limit": 25
+      },
+      "ms": 0,
+      "summary": "25 of 164 moments"
+    },
+    {
+      "at": 2,
+      "name": "read_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 1,
+        "fromVerse": 1,
+        "toVerse": 31
+      },
+      "ms": 1,
+      "summary": "Genesis 1:1–31 (WEB)"
+    },
+    {
+      "at": 2,
+      "name": "read_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 3,
+        "fromVerse": 1,
+        "toVerse": 24
+      },
+      "ms": 1,
+      "summary": "Genesis 3:1–24 (WEB)"
+    },
+    {
+      "at": 2,
+      "name": "read_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 12,
+        "fromVerse": 1,
+        "toVerse": 3
+      },
+      "ms": 0,
+      "summary": "Genesis 12:1–3 (WEB)"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans five Adam one man trespass death life",
+        "sourceId": "listeners-commentary",
+        "limit": 10
+      },
+      "ms": 57,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "first Adam last Adam heavenly man resurrection",
+        "sourceId": "listeners-commentary",
+        "limit": 10
+      },
+      "ms": 37,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "John one in the beginning Word creation Genesis",
+        "sourceId": "spoken-gospel",
+        "limit": 10
+      },
+      "ms": 118,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "crush Satan under your feet Genesis 3 15 Romans 16",
+        "sourceId": "listeners-commentary",
+        "limit": 10
+      },
+      "ms": 35,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "new creation garden tree of life Revelation Genesis",
+        "sourceId": "bibleproject",
+        "limit": 10
+      },
+      "ms": 101,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:4613377c-3e5d-11f1-b7fb-27eb7613d571",
+        "fromSec": 2260,
+        "toSec": 2560
+      },
+      "ms": 8,
+      "summary": "2260s–2560s of John 1: In the Beginning Was the Word"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:84c9464f-com-e0241bf1-e9d6-38d9-934b-6c2f0e1eb031",
+        "fromSec": 620,
+        "toSec": 1120
+      },
+      "ms": 3,
+      "summary": "620s–920s of Romans 5:12-21"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 1160,
+        "toSec": 1450
+      },
+      "ms": 2,
+      "summary": "1160s–1450s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:51965261-com-285350f9-2de3-3aab-a117-edc558750bae",
+        "fromSec": 1080,
+        "toSec": 1260
+      },
+      "ms": 0,
+      "summary": "1080s–1260s of Romans 16:1-27"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:back-to-the-tree-of-life",
+        "fromSec": 2700,
+        "toSec": 3140
+      },
+      "ms": 0,
+      "summary": "2700s–3000s of Back to the Tree of Life"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:b14bd164-69c4-11ed-a4dd-1f31b8686732",
+        "fromSec": 380,
+        "toSec": 700
+      },
+      "ms": 3,
+      "summary": "380s–680s of The Bible According to Matthew"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:84c9464f-com-e0241bf1-e9d6-38d9-934b-6c2f0e1eb031",
+        "fromSec": 900,
+        "toSec": 1200
+      },
+      "ms": 0,
+      "summary": "900s–1200s of Romans 5:12-21"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:8380ffa3-com-b72975ac-389f-3ffa-84fb-478fb64f2873",
+        "fromSec": 1450,
+        "toSec": 1600
+      },
+      "ms": 0,
+      "summary": "1450s–1600s of 1 Corinthians 15:29-58"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:back-to-the-tree-of-life",
+        "fromSec": 2990,
+        "toSec": 3141
+      },
+      "ms": 0,
+      "summary": "2990s–3141s of Back to the Tree of Life"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 6,
+    "toolCalls": 27,
+    "tapeSec": 2271,
+    "deniedWindows": 0,
+    "promptTokens": 127861,
+    "completionTokens": 2695,
+    "reasoningTokens": 633,
+    "cachedPromptTokens": 88471,
+    "wallMs": 30337,
+    "modelLatencyMs": 29576,
+    "toolMs": 754
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.007425,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T18:02:50.927Z"
+}

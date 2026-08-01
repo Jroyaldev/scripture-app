@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-08-01T17:03:19.733Z",
+  "updatedAt": "2026-08-01T18:02:50.930Z",
   "models": {
     "deepseek-v4-flash": {
       "requestedSlug": "deepseek/deepseek-v4-flash-0731",
@@ -151,22 +151,22 @@
     "gpt-5.6-luna-medium": {
       "requestedSlug": "openai/gpt-5.6-luna",
       "resolvedSlug": "openai/gpt-5.6-luna",
-      "runs": 36,
-      "ok": 36,
+      "runs": 37,
+      "ok": 37,
       "failed": 0,
-      "promptTokens": 2435393,
-      "completionTokens": 72550,
-      "modelCalls": 183,
-      "toolCalls": 678,
-      "totalUsd": 0.157276,
+      "promptTokens": 2563254,
+      "completionTokens": 75245,
+      "modelCalls": 189,
+      "toolCalls": 705,
+      "totalUsd": 0.164701,
       "costSources": {
-        "provider": 36
+        "provider": 37
       },
       "efforts": {
-        "medium": 36
+        "medium": 37
       }
     }
   },
-  "totalUsd": 2.520148,
-  "runs": 153
+  "totalUsd": 2.527573,
+  "runs": 154
 }
