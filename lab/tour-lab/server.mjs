@@ -367,21 +367,42 @@ Include only the keys the chosen form needs; stage directions are optional and m
         'it', 'its', 'not', 'but', 'all', 'any', 'who', 'you', 'your', 'their', 'there', 'when', 'then', 'will', 'shall']);
       const validateArtifacts = (sc, verseNorm, cueNorm) => {
         const cueOk = (c) => typeof c === 'string' && c.trim().length >= 8 && c.length <= 80 && cueNorm.includes(` ${norm(c)} `);
+        /* A word the displayed translation phrases differently is not
+           rejected — it is held for the repair exchange, where the model
+           maps the teaching's wording onto the displayed text's wording
+           (meaning for meaning, never a dictionary), and the mapped phrase
+           must still exist verbatim in the verse. */
         const groups = (Array.isArray(sc.groups) ? sc.groups : [])
           .filter((g) => g && Array.isArray(g.words) && g.words.length >= 2 && g.words.length <= 4)
-          .map((g) => ({
-            words: g.words.map((w) => String(w).trim()).filter((w) => w && !/\s/.test(w) && !STOPWORDS.has(norm(w)) && verseNorm.includes(` ${norm(w)} `)),
-            label: (typeof g.label === 'string' && g.label.trim() && g.label.trim().length <= 18) ? g.label.trim() : null,
-            cue: cueOk(g.cue) ? g.cue.trim() : null,
-          }))
-          .filter((g) => g.words.length >= 2)
+          .map((g) => {
+            const words = [];
+            const dropped = [];
+            for (const raw of g.words) {
+              const w = String(raw).trim();
+              if (!w || w.length > 28 || w.split(/\s+/).length > 3) continue;
+              const isPhrase = /\s/.test(w);
+              if ((isPhrase || !STOPWORDS.has(norm(w))) && verseNorm.includes(` ${norm(w)} `)) words.push(w);
+              else dropped.push(w);
+            }
+            return {
+              words,
+              dropped,
+              label: (typeof g.label === 'string' && g.label.trim() && g.label.trim().length <= 18) ? g.label.trim() : null,
+              cue: cueOk(g.cue) ? g.cue.trim() : null,
+            };
+          })
+          .filter((g) => g.words.length + g.dropped.length >= 2)
           .slice(0, 2);
         const footnotes = (Array.isArray(sc.footnotes) ? sc.footnotes : [])
-          .filter((f) => f && typeof f.word === 'string' && !/\s/.test(f.word.trim())
-            && verseNorm.includes(` ${norm(f.word)} `)
+          .filter((f) => f && typeof f.word === 'string' && f.word.trim() && f.word.trim().split(/\s+/).length <= 3
             && typeof f.note === 'string' && f.note.trim().length >= 4)
           .slice(0, 2)
-          .map((f) => ({ word: f.word.trim(), note: f.note.trim().slice(0, 90), cue: cueOk(f.cue) ? f.cue.trim() : null }));
+          .map((f) => ({
+            word: f.word.trim(),
+            note: f.note.trim().slice(0, 90),
+            cue: cueOk(f.cue) ? f.cue.trim() : null,
+            missing: !verseNorm.includes(` ${norm(f.word.trim())} `),
+          }));
         const allusions = [];
         for (const a of (Array.isArray(sc.allusions) ? sc.allusions : []).slice(0, 2)) {
           const ar = String(a?.verse || '').match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3})(?::(\d{1,3}))?$/);
@@ -466,6 +487,7 @@ Direct up to 4 SCENES — as many as the teaching has MOVEMENTS, no more. ONE sc
 - "highlight": at most 1, USED SPARINGLY — one sentence worth keeping, copied VERBATIM from the transcript (12-140 chars): {"quote":"..."}. Most clips have none.
 - "asides": up to 2 — for a stretch where the teacher is talking but no verse language is in play (context, story, setup): one line naming what they are doing: {"text":"setting the letter's context","cue":"..."} — max 70 chars, present tense, no hype.
 
+The stage displays the World English Bible; the teacher may read another translation. Direct with the words the TEACHING turns on even if the displayed translation phrases them differently ("none" against "no one", "sons of God" against "God's sons") — mismatches are mapped onto the displayed text afterward, meaning for meaning. A word may be a short phrase of up to 3 words.
 Spread your directions across the WHOLE clip — the stage draws each artifact at the moment its cue is spoken, and long empty stretches are dead air. Every cue is verbatim from the transcript. Fewer, truer artifacts beat coverage. A clip that discusses no specific verse gets {"scenes":[]}.
 Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{"words":["saw","took"],"label":"Eden echo","cue":"..."}],"footnotes":[],"allusions":[],"terms":[],"compare":null,"chain":null,"caveat":null,"highlight":null,"asides":[]}]}`);
 
@@ -485,6 +507,41 @@ Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{
             cue: (typeof sc.cue === 'string' && sc.cue.trim().length >= 8) ? sc.cue.trim() : null,
             ...validateArtifacts(sc, verseNorm, tapeNorm),
           });
+        }
+
+        /* ---- the repair exchange: meaning for meaning ----
+           Words the displayed translation phrases differently were held,
+           not rejected. One small call maps each onto the displayed text's
+           own wording — and the mapping only stands if the mapped phrase
+           exists verbatim in the verse. The model does the semantics; the
+           house still does the checking. */
+        const repairs = [];
+        for (const sc of scenes) {
+          for (const g of sc.groups) for (const w of g.dropped) repairs.push({ sc, apply: (t) => g.words.push(t), spoken: w });
+          for (const f of sc.footnotes) if (f.missing) repairs.push({ sc, apply: (t) => { f.word = t; f.missing = false; }, spoken: f.word });
+        }
+        if (repairs.length) {
+          try {
+            const mapRaw = await callModel(`A visual stage displays Bible verses in one translation while a teacher, possibly reading another translation, is heard. For each numbered pair below, name the word or short phrase (at most 3 words) FROM THE DISPLAYED TEXT that carries the same meaning as the teaching's word — or null if the displayed text truly has no counterpart.
+
+${repairs.map((r, i) => `${i}. displayed text: "${r.sc.verses.map((v) => v.text).join(' ').slice(0, 400)}"
+   the teaching's word: "${r.spoken}"`).join('\n')}
+
+Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.length} entries, in order.`, 4000);
+            const mapped = Array.isArray(mapRaw?.map) ? mapRaw.map : [];
+            repairs.forEach((r, i) => {
+              const t = mapped[i];
+              if (typeof t === 'string' && t.trim() && t.trim().length <= 28
+                && t.trim().split(/\s+/).length <= 3
+                && r.sc.verseNorm.includes(` ${norm(t.trim())} `)) {
+                r.apply(t.trim());
+              }
+            });
+          } catch { /* unrepaired words simply stay absent */ }
+        }
+        for (const sc of scenes) {
+          sc.groups = sc.groups.filter((g) => { delete g.dropped; return g.words.length >= 2; });
+          sc.footnotes = sc.footnotes.filter((f) => { const keep = !f.missing; delete f.missing; return keep; });
         }
 
         /* ---- the timeline, resolved by the house ---- */
