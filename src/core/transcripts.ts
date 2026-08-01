@@ -78,6 +78,8 @@ export const TRANSCRIPT_SOURCES: Readonly<Record<string, TranscriptBasis>> = {
   "forty-minutes-ot": "carried",
   "listeners-commentary": "carried",
   "radically-christian": "carried",
+  "thirty-minutes-nt": "carried",
+  "bema": "carried",
 };
 
 /** Every source whose transcripts may be read. */

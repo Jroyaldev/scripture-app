@@ -116,6 +116,28 @@ export const SHOWS: readonly Show[] = [
     deliveryHosts: ["*.podbean.com"],
   },
   {
+    id: "thirty-minutes-nt",
+    name: "30 Minutes in the New Testament",
+    homepageUrl: "https://30minnt.libsyn.com/",
+    /* The slug feed — feeds.libsyn.com/88659/rss serves the show's HTML page,
+       measured 2026-08-01; only the slug form returns XML. */
+    feed: "https://feeds.libsyn.com/88659/30minnt",
+    pageHosts: ["30minnt.libsyn.com"],
+    mediaHost: "adbarker.com",
+    deliveryHosts: ["traffic.libsyn.com", "content.libsyn.com"],
+  },
+  {
+    id: "bema",
+    name: "The BEMA Podcast",
+    homepageUrl: "https://www.bemadiscipleship.com/",
+    feed: "https://www.bemadiscipleship.com/rss",
+    pageHosts: ["www.bemadiscipleship.com"],
+    mediaHost: "aphid.fireside.fm",
+    /* media24 in the two sampled episodes; numbered shards, the podbean
+       situation again — the policy takes the domain. */
+    deliveryHosts: ["*.fireside.fm"],
+  },
+  {
     id: "radically-christian",
     name: "Radically Christian",
     homepageUrl: "https://www.radicallychristian.com/",

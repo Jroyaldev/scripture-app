@@ -623,6 +623,15 @@ source is granted and others are pending, whether transcripts should become a
 declared manifest capability — the way `mediaHosts` made audio one — is worth
 revisiting rather than left settled by default.
 
+**30 Minutes in the New Testament (`thirty-minutes-nt`) and The BEMA Podcast
+(`bema`) added 2026-08-01**, both on the carried basis the 2026-07-31
+flattening established: public feeds published for clients to read, approvals
+sought before any public listing, takedowns honoured on request. 30 Minutes is
+the New Testament sibling of 40 Minutes in the Old Testament (same hosts, same
+libsyn/adbarker delivery); BEMA's 514 sessions are topical, so its manifest
+will be thin and its passage coverage comes from transcript extraction, which
+is the pipeline's job rather than the title's.
+
 ## Importing
 
 Four importers build manifests from publishers' public WordPress REST
