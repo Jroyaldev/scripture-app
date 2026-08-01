@@ -1,0 +1,348 @@
+{
+  "runId": "2026-08-01T17-03-00-744-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T17:03:00.745Z",
+  "promptId": null,
+  "prompt": "repeated words and allusions and intertexts",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Reading the Bible’s Repeated Words, Echoes, and Intertexts",
+    "intro": "This tour moves from a practical reading skill to the larger web of biblical cross-reference. You’ll begin by learning to notice repeated words and word-groups, then hear why biblical authors invite comparison across stories, and finally watch two teachers work through intertextuality and allusion in Isaiah and 1 Samuel.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:four-steps-to-argument-tracing",
+        "startSec": 3023,
+        "endSec": 3253,
+        "why": "Start here for the basic practice: the speakers distinguish identical repetition from “a group of words or related words,” call this a biblical “lead word,” and demonstrate how Romans 8 moves from “spirit and flesh” to family language and finally “the love of God.” It gives you a concrete way to trace repeated vocabulary before making larger interpretive claims.",
+        "episodeTitle": "4 Steps to Argument Tracing",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/7489317f-9b84-4ee8-8ab9-f4e2c15bc60f/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=7489317f-9b84-4ee8-8ab9-f4e2c15bc60f",
+        "durationSec": 4123,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:how-read-bible-part-5-why-isnt-there-more-detail-bible-stories",
+        "startSec": 2337,
+        "endSec": 2585,
+        "why": "This widens the lens from words inside a paragraph to connections among stories. The speakers describe “key repeated words or key images” and stories that function like “hyperlinks,” while also warning against turning the practice into a “Bible code” or merely projecting mystical imagination onto the text.",
+        "episodeTitle": "Why isn't there more detail in Bible stories?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/9460a9c7-19b9-456c-9c34-795f8923e26d/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=9460a9c7-19b9-456c-9c34-795f8923e26d",
+        "durationSec": 2666,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:2c0df596-7e9e-44e4-8fa4-901a59c75471",
+        "startSec": 1668,
+        "endSec": 1800,
+        "why": "Now hear the term applied to an actual passage. The teacher explains that Isaiah is drawing on Genesis 6–9, explicitly calls this “intertextuality,” and shows how Isaiah’s promise becomes “even better than the days of Noah,” with steadfast love and covenant peace made more secure than mountains and hills.",
+        "episodeTitle": "Isaiah 54:1-17 (Episode 496)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_496.mp3?dest-id=245197",
+        "durationSec": 2490,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:4037",
+        "startSec": 1040,
+        "endSec": 1193,
+        "why": "End with a close-up example of allusion through wordplay and narrative echoes. The speaker connects “Engedi” with “Garden of Eden,” then argues that David’s test is set “on analogy” with Adam and Eve’s test through “verbal links and echoes and allusions.” This lets you hear how a repeated sound or place-name can cue readers to compare whole stories.",
+        "episodeTitle": "Naked Bible 473: 1 Samuel 24",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2023/07/NakedBible473_1Samuel24.mp3",
+        "durationSec": 3670,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips offer a disciplined sequence: mark the repeated words, follow the images and story links, identify the earlier text being activated, and then ask what the comparison contributes. The speakers also leave you with an important restraint: the connection should arise from the text’s words, patterns, and narrative—not from free association.",
+    "totalSeconds": 763
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2420,
+      "promptTokens": 1598,
+      "completionTokens": 38,
+      "reasoningTokens": 22,
+      "cachedPromptTokens": 1574,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000041465000000000004
+    },
+    {
+      "i": 1,
+      "latencyMs": 3434,
+      "promptTokens": 1893,
+      "completionTokens": 225,
+      "reasoningTokens": 35,
+      "cachedPromptTokens": 1595,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00018812500000000003
+    },
+    {
+      "i": 2,
+      "latencyMs": 2870,
+      "promptTokens": 9830,
+      "completionTokens": 283,
+      "reasoningTokens": 64,
+      "cachedPromptTokens": 1890,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001181125
+    },
+    {
+      "i": 3,
+      "latencyMs": 2288,
+      "promptTokens": 12149,
+      "completionTokens": 214,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 9827,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000516845
+    },
+    {
+      "i": 4,
+      "latencyMs": 7604,
+      "promptTokens": 16382,
+      "completionTokens": 726,
+      "reasoningTokens": 124,
+      "cachedPromptTokens": 12146,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001086485
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "repeated words key words literary design Bible",
+        "sourceId": "bibleproject",
+        "limit": 8
+      },
+      "ms": 123,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "allusions echoes quotations New Testament Old Testament",
+        "sourceId": "naked-bible",
+        "limit": 8
+      },
+      "ms": 73,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "intertextuality Scripture Scripture interprets Scripture",
+        "sourceId": "forty-minutes-ot",
+        "limit": 8
+      },
+      "ms": 48,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "themes repeated words patterns echoes Bible",
+        "sourceId": "listeners-commentary",
+        "limit": 8
+      },
+      "ms": 29,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "biblical authors quote allude earlier stories",
+        "sourceId": "spoken-gospel",
+        "limit": 8
+      },
+      "ms": 76,
+      "summary": "8 hits"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:four-steps-to-argument-tracing",
+        "fromSec": 2700,
+        "toSec": 3450
+      },
+      "ms": 8,
+      "summary": "15 skim lines, 2700s–3450s of 4 Steps to Argument Tracing"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:how-read-bible-part-5-why-isnt-there-more-detail-bible-stories",
+        "fromSec": 2200,
+        "toSec": 2666
+      },
+      "ms": 4,
+      "summary": "9 skim lines, 2200s–2666s of Why isn't there more detail in Bible stories?"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:2c0df596-7e9e-44e4-8fa4-901a59c75471",
+        "fromSec": 1500,
+        "toSec": 2200
+      },
+      "ms": 0,
+      "summary": "15 skim lines, 1500s–2200s of Isaiah 54:1-17 (Episode 496)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:4037",
+        "fromSec": 850,
+        "toSec": 1450
+      },
+      "ms": 5,
+      "summary": "13 skim lines, 850s–1450s of Naked Bible 473: 1 Samuel 24"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:four-steps-to-argument-tracing",
+        "fromSec": 2970,
+        "toSec": 3380
+      },
+      "ms": 0,
+      "summary": "2970s–3270s of 4 Steps to Argument Tracing"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:how-read-bible-part-5-why-isnt-there-more-detail-bible-stories",
+        "fromSec": 2325,
+        "toSec": 2630
+      },
+      "ms": 1,
+      "summary": "2325s–2625s of Why isn't there more detail in Bible stories?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:2c0df596-7e9e-44e4-8fa4-901a59c75471",
+        "fromSec": 1660,
+        "toSec": 1840
+      },
+      "ms": 0,
+      "summary": "1660s–1840s of Isaiah 54:1-17 (Episode 496)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:4037",
+        "fromSec": 1040,
+        "toSec": 1370
+      },
+      "ms": 0,
+      "summary": "1040s–1340s of Naked Bible 473: 1 Samuel 24"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 15,
+    "tapeSec": 1080,
+    "deniedWindows": 0,
+    "promptTokens": 41852,
+    "completionTokens": 1486,
+    "reasoningTokens": 245,
+    "cachedPromptTokens": 27032,
+    "wallMs": 18987,
+    "modelLatencyMs": 18616,
+    "toolMs": 368
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003014,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T17:03:19.732Z"
+}

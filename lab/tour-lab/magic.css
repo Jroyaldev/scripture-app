@@ -394,7 +394,8 @@ body.in-theater { overflow: hidden; }
 }
 .th-whisper.show { opacity: 1; }
 
-.th-body { margin-top: 4vh; }
+.th-body { margin-top: 4vh; transition: opacity 400ms var(--ease); }
+.th-body.turning { opacity: 0; }
 #theater .verses {
   position: relative;
   color: var(--ink);
@@ -473,7 +474,8 @@ body.in-theater { overflow: hidden; }
   transition: opacity 900ms var(--ease);
   display: none;
 }
-.big-quote.show { display: block; opacity: 1; }
+.big-quote.mounted { display: block; }
+.big-quote.show { opacity: 1; }
 
 /* The transcript, present but unworried: one small line low on the stage. */
 #theater .caption {

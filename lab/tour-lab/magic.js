@@ -420,16 +420,22 @@ function activateScene(scene, idx) {
   if (!current || idx <= current.sceneIdx) return;
   current.sceneIdx = idx;
   const th = TH();
-  for (const sel of TH_BOXES) th.querySelector(sel).innerHTML = '';
+  const body = th.querySelector('.th-body');
+  /* Exits are choreographed like entrances: the page breathes out, turns,
+     and breathes back in — nothing is ever simply gone. */
+  const firstScene = idx === 0 && !body.classList.contains('turning');
+  body.classList.add('turning');
   releaseHighlight();
-  const q = th.querySelector('.verses');
-  q.classList.remove('has');
+  const token = current.playToken;
   setTimeout(() => {
-    if (!current || current.scenes?.[current.sceneIdx] !== scene) return;
+    if (current?.playToken !== token || current.scenes?.[current.sceneIdx] !== scene) return;
+    for (const sel of TH_BOXES) th.querySelector(sel).innerHTML = '';
+    const q = th.querySelector('.verses');
     q.innerHTML = scene.verses.map((v) => `<sup>${v.verse}</sup>${escapeHtml(v.text)}`).join(' ')
       + `<span class="verses-ref">${escapeHtml(scene.ref)}</span>`;
     q.classList.add('has');
-  }, 240);
+    body.classList.remove('turning');
+  }, firstScene ? 40 : 420);
 }
 
 /* One event from the schedule lands on the stage. Anything that needs the
@@ -439,7 +445,10 @@ function renderEvent(ev) {
   const th = TH();
   const verseReady = th.querySelector('.verses').classList.contains('has');
   if (!verseReady && ['word', 'group', 'footnote'].includes(ev.kind)) {
-    setTimeout(() => renderEvent(ev), 380);
+    /* Deferred renders carry their play's token: a retry from one clip can
+       never land on the next clip's stage. */
+    const token = current.playToken;
+    setTimeout(() => { if (current?.playToken === token) renderEvent(ev); }, 380);
     return;
   }
   switch (ev.kind) {
@@ -513,9 +522,10 @@ function renderEvent(ev) {
       const el = document.createElement('div');
       el.className = 'chain-box appear';
       th.querySelector('.chain').appendChild(el);
+      const chainToken = current.playToken;
       ev.a.links.forEach((l, i) => {
         setTimeout(() => {
-          if (!current || !el.isConnected) return;
+          if (current?.playToken !== chainToken || !el.isConnected) return;
           const link = document.createElement('div');
           link.className = 'chain-link appear';
           link.innerHTML = `<span class="box-ref">${escapeHtml(l.ref)}</span>${wrapBoxWords(trim(l.text, 110))}`;
@@ -539,7 +549,8 @@ function renderEvent(ev) {
          step while the sentence holds, then the room comes back. */
       const bq = th.querySelector('.big-quote');
       bq.textContent = `“${ev.a.quote}”`;
-      bq.classList.add('show');
+      bq.classList.add('mounted');
+      requestAnimationFrame(() => bq.classList.add('show'));
       th.querySelector('.verses').classList.add('dimmed');
       clearTimeout(current.hlTimer);
       current.hlTimer = setTimeout(releaseHighlight, 11000);
@@ -570,7 +581,9 @@ function lightBoxWords(segText) {
 
 function releaseHighlight() {
   const th = TH();
-  th.querySelector('.big-quote').classList.remove('show');
+  const bq = th.querySelector('.big-quote');
+  bq.classList.remove('show');
+  setTimeout(() => { if (!bq.classList.contains('show')) bq.classList.remove('mounted'); }, 950);
   th.querySelector('.verses').classList.remove('dimmed');
   if (current) clearTimeout(current.hlTimer);
 }
@@ -639,20 +652,6 @@ function drawMark(mark) {
   lanes[laneIndex].push(span);
   const lane = -14 - laneIndex * 11;
 
-  /* Labels get slots the same way: one shared column, and a label whose
-     natural height is taken steps outward until it is not — two groups on
-     the same lines were writing their names over each other. */
-  svg._labelSlots = svg._labelSlots || [];
-  const slotFor = (wantY) => {
-    let y = wantY;
-    let step = 0;
-    while (svg._labelSlots.some((s) => Math.abs(s - y) < 13)) {
-      step += 1;
-      y = wantY + (step % 2 ? 1 : -1) * Math.ceil(step / 2) * 15;
-    }
-    svg._labelSlots.push(y);
-    return y;
-  };
 
   const g = document.createElementNS(NS, 'g');
   g.setAttribute('class', 'markg');
@@ -664,6 +663,23 @@ function drawMark(mark) {
      short tick at each other run — nothing ever runs beneath the text. */
   const R = 8;
   const leader = 10;
+  /* The label's slot is settled BEFORE the geometry is drawn, and the
+     geometry attaches to it — a dash at one group's line was striking
+     through another group's slotted label because the two systems never
+     spoke. */
+  svg._labelSlots = svg._labelSlots || [];
+  const slotForY = (wantY) => {
+    let y = wantY;
+    let step = 0;
+    while (svg._labelSlots.some((v) => Math.abs(v - y) < 13)) {
+      step += 1;
+      y = wantY + (step % 2 ? 1 : -1) * Math.ceil(step / 2) * 15;
+    }
+    svg._labelSlots.push(y);
+    return y;
+  };
+  const midY = (first.y + last.y) / 2;
+  const labelY = mark.label ? slotForY(midY + 3) : null;
   const parts = [];
   for (const run of runs) parts.push(`M ${run.x1} ${run.y} H ${run.x2}`);
   if (last.y - first.y > R + 2) {
@@ -671,11 +687,18 @@ function drawMark(mark) {
     for (const run of runs) {
       if (run !== first) parts.push(`M ${lane} ${run.y} H ${lane + leader}`);
     }
+    /* A label slotted beyond the bracket extends the lane to reach it. */
+    if (labelY != null && labelY > last.y + 4) parts.push(`M ${lane} ${last.y} V ${labelY}`);
+    if (labelY != null && labelY < first.y - 4) parts.push(`M ${lane} ${first.y} V ${labelY}`);
   } else {
-    /* Every word on one line: there is nothing to gather vertically, and a
-       corner would curl back onto itself — the reader's zoom caught exactly
-       that. A flat reach into the margin carries the label instead. */
-    parts.push(`M ${lane} ${first.y} H ${lane + R + leader}`);
+    /* One line: a tick at the words' line, the dash at the label's own
+       slot, and a stub joining them when they differ. */
+    const dashY = labelY ?? first.y;
+    parts.push(`M ${lane} ${dashY} H ${lane + R + leader}`);
+    if (Math.abs(dashY - first.y) > 4) {
+      parts.push(`M ${lane} ${first.y} H ${lane + leader}`);
+      parts.push(`M ${lane} ${Math.min(dashY, first.y)} V ${Math.max(dashY, first.y)}`);
+    }
   }
   const path = document.createElementNS(NS, 'path');
   path.setAttribute('d', parts.join(' '));
@@ -685,11 +708,10 @@ function drawMark(mark) {
        the only sideways text anywhere and the hardest to read exactly when
        it mattered. Rotation survives only as the narrow-viewport fallback,
        where the left margin cannot hold a word. */
-    const midY = (first.y + last.y) / 2;
     const label = document.createElementNS(NS, 'text');
     if (window.innerWidth >= 900) {
       label.setAttribute('x', lane - 8);
-      label.setAttribute('y', slotFor(midY + 3));
+      label.setAttribute('y', labelY);
       label.setAttribute('text-anchor', 'end');
     } else {
       label.setAttribute('x', lane - 5);
@@ -775,6 +797,7 @@ function buildVoices(tour) {
 
 const player = $('#player');
 let current = null;
+let playCounter = 0;
 
 let pendingPlay = null;
 
@@ -797,7 +820,7 @@ function toggleStep(li, step, index) {
     });
     return;
   }
-  current = { li, step, index, segments: null, phrases: quotedPhrases(step.why), capKey: null, scenes: null, timeline: null, fired: 0, sceneIdx: -1 };
+  current = { li, step, index, segments: null, phrases: quotedPhrases(step.why), capKey: null, scenes: null, timeline: null, fired: 0, sceneIdx: -1, playToken: ++playCounter };
   li.classList.add('playing');
 
   const th = TH();
@@ -922,8 +945,15 @@ function stopAudio() {
   player.ontimeupdate = null;
   li.classList.remove('playing');
   releaseHighlight();
-  TH().classList.remove('on');
-  TH().querySelector('.th-whisper').classList.remove('show');
+  const th = TH();
+  th.classList.remove('on');
+  th.querySelector('.th-whisper').classList.remove('show');
+  /* The theater empties when it closes — nothing from one clip may ever
+     greet the next. */
+  th.querySelector('.verses').classList.remove('has');
+  th.querySelector('.verses').innerHTML = '';
+  th.querySelector('.caption').classList.remove('show');
+  for (const sel of TH_BOXES) th.querySelector(sel).innerHTML = '';
   document.body.classList.remove('in-theater');
   current = null;
 }
