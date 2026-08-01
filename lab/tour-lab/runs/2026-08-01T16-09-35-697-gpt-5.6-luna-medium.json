@@ -1,0 +1,522 @@
+{
+  "runId": "2026-08-01T16-09-35-697-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T16:09:35.697Z",
+  "promptId": null,
+  "prompt": "explain the sermon on the mount",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "The Sermon on the Mount: Jesus’ Vision for Kingdom Life",
+    "intro": "This tour will help you hear Matthew 5–7 as one connected teaching rather than a collection of famous sayings. It begins with the sermon’s shape and Jesus’ surprising welcome, moves through his deeper vision of righteousness, then follows his teaching about hidden devotion, money, judgment, and the difficult path of discipleship.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:sermon-mounts-place-gospel-matthew",
+        "startSec": 1050,
+        "endSec": 1250,
+        "why": "Start here for the overall map. The speakers describe the sermon as having “three main parts: an introduction, a main body, and a conclusion”: the surprising identity of Jesus’ followers, the “greater righteousness” he invites them into, and the choice he puts before them.",
+        "episodeTitle": "Sermon on the Mount E3: The Sermon on the Mount's Place in the Gospel of Matthew",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/8148f2bd-54e6-4274-8b5a-e42cf5e72b14/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=8148f2bd-54e6-4274-8b5a-e42cf5e72b14",
+        "durationSec": 2433,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:b2e9117f-com-80139bf7-a6b8-3a62-9e34-1e1ea3c365a7",
+        "startSec": 0,
+        "endSec": 300,
+        "why": "This grounds the map in Matthew’s narrative. The teacher explains that Jesus is presenting “his vision for life in the kingdom of God,” and then warns that the Beatitudes are “blessings to be experienced, not virtues to be pursued”—a key to hearing “blessed are the poor in spirit” and “blessed are those who mourn.”",
+        "episodeTitle": "Matthew 5:1-12",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/5kwme7/matthew_51-12bfz7r.mp3",
+        "durationSec": 1769,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:a177096b-com-031a9a8f-b6d4-3d76-9298-8567c7cc25e8",
+        "startSec": 560,
+        "endSec": 850,
+        "why": "This shows what the sermon’s “greater righteousness” looks like in practice. The teacher reads Jesus’ examples about retaliation, generosity, and enemy-love, explaining “don’t fight back” not as passivity or a rigid literal rule, but as refusing to retaliate and becoming “actively helpful” and “genuinely generous.”",
+        "episodeTitle": "Matthew 5:33-48",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/pjz625/matthew_533-487hs3r.mp3",
+        "durationSec": 1285,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:5a2ce263-com-7a35c6df-64d9-3177-bf51-00d44a8c0f8a",
+        "startSec": 300,
+        "endSec": 560,
+        "why": "Now the tour turns inward, to the motive beneath religious practice. The teacher explains Jesus’ warning against doing righteousness “to be noticed by people,” while still affirming giving to the poor, and captures the alternative as acting in secret because “your father who sees in secret” is the audience that matters.",
+        "episodeTitle": "Matthew 6:1-18",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/9xusry/matthew_61-186i21r.mp3",
+        "durationSec": 1460,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:58ee6e01-com-ad67067f-ea41-3b1e-abb5-fc54d0623f5d",
+        "startSec": 0,
+        "endSec": 300,
+        "why": "This extends the inner transformation into possessions and anxiety. The teacher frames Matthew 6:19–34 as a choice between “God’s kingdom versus the world around us and material treasures,” then explains that earthly wealth cannot secure life because it is vulnerable to “destruction and loss.”",
+        "episodeTitle": "Matthew 6:19-34",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/kfd78i/matthew_619-348z2gk.mp3",
+        "durationSec": 1553,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:81eac6a5-com-a75cd669-7848-3c22-a97c-75411ac2e7f1",
+        "startSec": 400,
+        "endSec": 700,
+        "why": "This clarifies “do not judge” without turning it into indifference. The teacher says Jesus is not forbidding helping others, but insists, “first take the log out of your own eye,” so humility and self-examination come before trying to remove a speck from someone else’s eye.",
+        "episodeTitle": "Matthew 7:1-12",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/bd35q7/matthew_71-12a8ksd.mp3",
+        "durationSec": 1182,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:5d99255a-com-16bbf4a5-7fb9-39d3-81ed-c751f3d58428",
+        "startSec": 240,
+        "endSec": 540,
+        "why": "End with Jesus’ sober call to decision. The teacher contrasts the broad road with the “narrow and difficult” way that leads to life, then explains the warning about false prophets: “You will know them by their fruits,” meaning both their character and what their teaching produces in other people.",
+        "episodeTitle": "Matthew 7:13-29",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/56fs4j/matthew_713-299zfdk.mp3",
+        "durationSec": 1847,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips present the Sermon on the Mount as Jesus’ picture of life under God’s reign: welcomed people learning a deeper righteousness, practicing mercy without performance, trusting God rather than possessions, examining themselves before others, and choosing the demanding way that faithfully puts Jesus’ words into practice.",
+    "totalSeconds": 1950
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3629,
+      "promptTokens": 1596,
+      "completionTokens": 344,
+      "reasoningTokens": 47,
+      "cachedPromptTokens": 0,
+      "toolCalls": 10,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00040582500000000007
+    },
+    {
+      "i": 1,
+      "latencyMs": 4093,
+      "promptTokens": 14161,
+      "completionTokens": 422,
+      "reasoningTokens": 76,
+      "cachedPromptTokens": 1593,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0018400550000000004
+    },
+    {
+      "i": 2,
+      "latencyMs": 4347,
+      "promptTokens": 25156,
+      "completionTokens": 434,
+      "reasoningTokens": 54,
+      "cachedPromptTokens": 14158,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0017766550000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 5651,
+      "promptTokens": 31543,
+      "completionTokens": 418,
+      "reasoningTokens": 349,
+      "cachedPromptTokens": 25153,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0013010050000000003
+    },
+    {
+      "i": 4,
+      "latencyMs": 4249,
+      "promptTokens": 32682,
+      "completionTokens": 320,
+      "reasoningTokens": 248,
+      "cachedPromptTokens": 31540,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0006500750000000001
+    },
+    {
+      "i": 5,
+      "latencyMs": 9593,
+      "promptTokens": 33719,
+      "completionTokens": 1239,
+      "reasoningTokens": 274,
+      "cachedPromptTokens": 32679,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001200115
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 3,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Matthew",
+        "chapter": 5,
+        "verse": 0,
+        "limit": 25
+      },
+      "ms": 82,
+      "summary": "25 of 398 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Matthew",
+        "chapter": 6,
+        "verse": 0,
+        "limit": 25
+      },
+      "ms": 0,
+      "summary": "19 of 239 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Matthew",
+        "chapter": 7,
+        "verse": 0,
+        "limit": 25
+      },
+      "ms": 0,
+      "summary": "15 of 138 moments"
+    },
+    {
+      "at": 0,
+      "name": "read_passage",
+      "args": {
+        "book": "Matthew",
+        "chapter": 5,
+        "fromVerse": 1,
+        "toVerse": 12
+      },
+      "ms": 2,
+      "summary": "Matthew 5:1–12 (WEB)"
+    },
+    {
+      "at": 0,
+      "name": "read_passage",
+      "args": {
+        "book": "Matthew",
+        "chapter": 6,
+        "fromVerse": 19,
+        "toVerse": 34
+      },
+      "ms": 1,
+      "summary": "Matthew 6:19–34 (WEB)"
+    },
+    {
+      "at": 0,
+      "name": "read_passage",
+      "args": {
+        "book": "Matthew",
+        "chapter": 7,
+        "fromVerse": 13,
+        "toVerse": 29
+      },
+      "ms": 0,
+      "summary": "Matthew 7:13–29 (WEB)"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Sermon on the Mount Beatitudes Matthew five",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 81,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "turn the other cheek love your enemies",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 63,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Lord's Prayer treasures anxiety narrow gate",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 66,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:367e2eee-com-1780ba8e-d926-37a1-b95a-f140f3706a40",
+        "fromSec": 500,
+        "toSec": 1064
+      },
+      "ms": 4,
+      "summary": "12 skim lines, 500s–1064s of Introduction to the Sermon on the Mount"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:b2e9117f-com-80139bf7-a6b8-3a62-9e34-1e1ea3c365a7",
+        "fromSec": 0,
+        "toSec": 330
+      },
+      "ms": 3,
+      "summary": "0s–300s of Matthew 5:1-12"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:a177096b-com-031a9a8f-b6d4-3d76-9298-8567c7cc25e8",
+        "fromSec": 560,
+        "toSec": 850
+      },
+      "ms": 0,
+      "summary": "560s–850s of Matthew 5:33-48"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "give to the needy pray in secret fasting hypocrites Lord prayer",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 83,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "treasure heaven God Mammon birds lilies seek first kingdom",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 69,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "judge not speck log ask seek knock house rock do words",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 63,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "righteousness greater than scribes law fulfilled Sermon Mount",
+        "sourceId": "bibleproject",
+        "limit": 10
+      },
+      "ms": 74,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:367e2eee-com-1780ba8e-d926-37a1-b95a-f140f3706a40",
+        "fromSec": 850,
+        "toSec": 1000
+      },
+      "ms": 2,
+      "summary": "850s–1000s of Introduction to the Sermon on the Mount"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:58ee6e01-com-ad67067f-ea41-3b1e-abb5-fc54d0623f5d",
+        "fromSec": 0,
+        "toSec": 300
+      },
+      "ms": 2,
+      "summary": "0s–300s of Matthew 6:19-34"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5a2ce263-com-7a35c6df-64d9-3177-bf51-00d44a8c0f8a",
+        "fromSec": 500,
+        "toSec": 800
+      },
+      "ms": 2,
+      "summary": "500s–800s of Matthew 6:1-18"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:81eac6a5-com-a75cd669-7848-3c22-a97c-75411ac2e7f1",
+        "fromSec": 400,
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "400s–700s of Matthew 7:1-12"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5d99255a-com-16bbf4a5-7fb9-39d3-81ed-c751f3d58428",
+        "fromSec": 240,
+        "toSec": 540
+      },
+      "ms": 3,
+      "summary": "240s–540s of Matthew 7:13-29"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:sermon-mounts-place-gospel-matthew",
+        "fromSec": 1050,
+        "toSec": 1250
+      },
+      "ms": 0,
+      "summary": "1050s–1250s of Sermon on the Mount E3: The Sermon on the Mount's Place in the Gospel of Matthew"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5d99255a-com-16bbf4a5-7fb9-39d3-81ed-c751f3d58428",
+        "fromSec": 540,
+        "toSec": 850
+      },
+      "ms": 0,
+      "summary": "540s–840s of Matthew 7:13-29"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5a2ce263-com-7a35c6df-64d9-3177-bf51-00d44a8c0f8a",
+        "fromSec": 300,
+        "toSec": 560
+      },
+      "ms": 0,
+      "summary": "300s–560s of Matthew 6:1-18"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 6,
+    "toolCalls": 26,
+    "tapeSec": 2700,
+    "deniedWindows": 0,
+    "promptTokens": 138857,
+    "completionTokens": 3177,
+    "reasoningTokens": 1048,
+    "cachedPromptTokens": 105123,
+    "wallMs": 32301,
+    "modelLatencyMs": 31562,
+    "toolMs": 603
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.007174,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T16:10:07.998Z"
+}

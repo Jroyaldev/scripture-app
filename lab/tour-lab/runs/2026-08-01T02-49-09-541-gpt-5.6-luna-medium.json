@@ -1,0 +1,377 @@
+{
+  "runId": "2026-08-01T02-49-09-541-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T02:49:09.542Z",
+  "promptId": null,
+  "prompt": "matthews use of the OT in MAtthew 1",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Matthew 1: How Matthew Reads Israel’s Scriptures",
+    "intro": "This tour follows Matthew 1 in the order its Old Testament echoes unfold: first the genealogy as a compressed retelling of Israel’s story, then the surprising women Matthew names, and finally Isaiah 7 and the claim that Jesus is “Immanuel.” It also pauses over a key interpretive question: does “fulfilled” mean a prediction with no earlier meaning, or a deeper completion of what God was already doing?",
+    "steps": [
+      {
+        "recordId": "ask-nt-wright:podcast:a33e9e0a-eeb3-11ef-94f0-774afe7457cd",
+        "startSec": 1320,
+        "endSec": 1510,
+        "why": "Begin here for orientation. N. T. Wright argues that biblical genealogies are not merely ancestry records but “summaries of Israel’s story,” and explains how Matthew presents Jesus as “a son of Abraham, a son of David” in the setting of exile and restoration. That gives you the larger Old Testament frame before focusing on individual names.",
+        "episodeTitle": "The Alpha and Omega: NT Wright on Jesus’ lineage and life after death",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR4377590645.mp3?updated=1749648843",
+        "durationSec": 1705,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:053ea108-6f5f-11ed-b5f9-7f993e5a2e8f",
+        "startSec": 2600,
+        "endSec": 2831,
+        "why": "This clip shows how Matthew’s genealogy uses specific Old Testament women as theological signposts. The speakers discuss Tamar, Rahab, Ruth, and Bathsheba, noting their foreign associations, morally complicated stories, and role in preserving the messianic line. They connect these women to Mary and to Matthew’s widening claim that Jesus is “the king for every people, tribe, and tongue.”",
+        "episodeTitle": "Matthew 1: Why Genealogies Are Awesome",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG1138699828.mp3?updated=1670293216",
+        "durationSec": 3392,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "listeners-commentary:podcast:3a1fbdae-com-deda9822-160a-355c-81ed-8732381caf6e",
+        "startSec": 602,
+        "endSec": 867,
+        "why": "Now hear Matthew 1:22–23 set beside Isaiah 7:10–17 itself. The commentator emphasizes that Isaiah’s original setting involved Judah’s crisis under threat from Israel and Syria, and that the promise had an initial meaning in Isaiah’s day. The clip then explains Matthew’s claim that the promise is also fulfilled “in a deeper sense” in Jesus, while noting the difference between the Hebrew term’s flexibility and Matthew’s more specific wording.",
+        "episodeTitle": "Matthew 1:18-25",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/hhh7e4/matthew_118-259k6pa.mp3",
+        "durationSec": 1289,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:6b279146-74af-11ed-9bb0-5378cac9e704",
+        "startSec": 1205,
+        "endSec": 1351,
+        "why": "End with the theological payoff Matthew draws from the genealogy and virgin conception. The speakers describe Jesus as “God’s new era of salvation apart from human effort,” while also linking “God with us” to the Old Testament hope that God would dwell with humanity. This helps you hear Matthew 1 not as disconnected proof-texting, but as a claim that Jesus embodies and completes the Bible’s creation, Israel, Davidic, and presence-of-God themes.",
+        "episodeTitle": "Matthew 1: Why a Virgin Birth?",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG3850654556.mp3?updated=1670293563",
+        "durationSec": 3272,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "Taken together, these clips present Matthew 1 as a densely designed opening: Jesus is the Davidic king and Abrahamic offspring, Israel’s story brought to its intended destination, and the one in whom God’s presence becomes personal. The Isaiah quotation still has an earlier historical setting, but Matthew reads that earlier promise as reaching its fullest expression in Jesus—while the unusual genealogy prepares you for precisely this kind of surprising, layered fulfillment.",
+    "totalSeconds": 832
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3146,
+      "promptTokens": 1602,
+      "completionTokens": 243,
+      "reasoningTokens": 35,
+      "cachedPromptTokens": 0,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00034597500000000005
+    },
+    {
+      "i": 1,
+      "latencyMs": 5234,
+      "promptTokens": 12689,
+      "completionTokens": 402,
+      "reasoningTokens": 52,
+      "cachedPromptTokens": 1599,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0016433650000000004
+    },
+    {
+      "i": 2,
+      "latencyMs": 7007,
+      "promptTokens": 18856,
+      "completionTokens": 373,
+      "reasoningTokens": 203,
+      "cachedPromptTokens": 12686,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001121835
+    },
+    {
+      "i": 3,
+      "latencyMs": 4437,
+      "promptTokens": 21366,
+      "completionTokens": 182,
+      "reasoningTokens": 118,
+      "cachedPromptTokens": 18853,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00061178
+    },
+    {
+      "i": 4,
+      "latencyMs": 14256,
+      "promptTokens": 22419,
+      "completionTokens": 1048,
+      "reasoningTokens": 311,
+      "cachedPromptTokens": 21363,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009743550000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Matthew",
+        "chapter": 1,
+        "verse": 0,
+        "limit": 40
+      },
+      "ms": 96,
+      "summary": "23 of 114 moments"
+    },
+    {
+      "at": 0,
+      "name": "read_passage",
+      "args": {
+        "book": "Matthew",
+        "chapter": 1,
+        "fromVerse": 1,
+        "toVerse": 25
+      },
+      "ms": 1,
+      "summary": "Matthew 1:1–25 (WEB)"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Matthew 1 genealogy Abraham David Jesus fulfilled scripture",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 94,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Matthew chapter one Old Testament quotation Isaiah Immanuel",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 60,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Matthew 1:22 23 Isaiah 7:14 fulfillment",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 45,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Matthew genealogy women Tamar Rahab Ruth Bathsheba Old Testament",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 65,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:053ea108-6f5f-11ed-b5f9-7f993e5a2e8f",
+        "fromSec": 2320,
+        "toSec": 2850
+      },
+      "ms": 0,
+      "summary": "2320s–2620s of Matthew 1: Why Genealogies Are Awesome"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:82774f6d-com-83810409-2c77-3da8-8c20-8cd134b764f6",
+        "fromSec": 300,
+        "toSec": 850
+      },
+      "ms": 1,
+      "summary": "error: unknown recordId \"listeners-commentary:podcast:82774f6d-com-83810409-2c77-3da8-8c20-8cd134b764f6\""
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:3a1fbdae-com-deda9822-160a-355c-81ed-8732381caf6e",
+        "fromSec": 500,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "500s–800s of Matthew 1:18-25"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:6b279146-74af-11ed-9bb0-5378cac9e704",
+        "fromSec": 1080,
+        "toSec": 1450
+      },
+      "ms": 0,
+      "summary": "1080s–1380s of Matthew 1: Why a Virgin Birth?"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:b14bd164-69c4-11ed-a4dd-1f31b8686732",
+        "fromSec": 700,
+        "toSec": 1100
+      },
+      "ms": 0,
+      "summary": "700s–1000s of The Bible According to Matthew"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:jesus-and-gentiles",
+        "fromSec": 650,
+        "toSec": 1020
+      },
+      "ms": 0,
+      "summary": "650s–950s of Jesus and the Gentiles"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:053ea108-6f5f-11ed-b5f9-7f993e5a2e8f",
+        "fromSec": 2595,
+        "toSec": 2895
+      },
+      "ms": 1,
+      "summary": "2595s–2895s of Matthew 1: Why Genealogies Are Awesome"
+    },
+    {
+      "at": 2,
+      "name": "read_passage",
+      "args": {
+        "book": "Isaiah",
+        "chapter": 7,
+        "fromVerse": 10,
+        "toVerse": 17
+      },
+      "ms": 1,
+      "summary": "Isaiah 7:10–17 (WEB)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:a33e9e0a-eeb3-11ef-94f0-774afe7457cd",
+        "fromSec": 1320,
+        "toSec": 1510
+      },
+      "ms": 0,
+      "summary": "1320s–1510s of The Alpha and Omega: NT Wright on Jesus’ lineage and life after death"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:3a1fbdae-com-deda9822-160a-355c-81ed-8732381caf6e",
+        "fromSec": 590,
+        "toSec": 950
+      },
+      "ms": 0,
+      "summary": "590s–890s of Matthew 1:18-25"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 17,
+    "tapeSec": 2290,
+    "deniedWindows": 0,
+    "promptTokens": 76932,
+    "completionTokens": 2248,
+    "reasoningTokens": 719,
+    "cachedPromptTokens": 54501,
+    "wallMs": 34447,
+    "modelLatencyMs": 34080,
+    "toolMs": 364
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004697,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T02:49:43.989Z"
+}

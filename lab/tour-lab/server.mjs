@@ -307,53 +307,165 @@ Include only the keys the chosen form needs; stage directions are optional and m
     }
 
     // The director's pass: one deeper call per playing step, grounded in
-    // the ACTUAL tape and the ACTUAL verse text. The planning call works
-    // from summaries; this one reads the clip's transcript, names the
-    // scenes (verse + word groups + verbatim cue phrases), and every claim
-    // is checked here against the real texts before the page sees it — a
-    // word not in the verse or a cue not on the tape is silently dropped.
+    // the ACTUAL tape and the ACTUAL verse text, returning a RESOLVED
+    // TIMELINE — every scene and artifact carries `at` seconds into the
+    // clip, located on the tape here, so the page is a scheduler and never
+    // a guesser. When the resolved timeline leaves a dead stretch longer
+    // than 45s, a second cheap call reads exactly that stretch and buys
+    // more beats for it. Every claim from either pass is checked against
+    // the real texts before the page sees it.
     if (p === '/api/direct' && req.method === 'POST') {
       const body = await readBody(req);
       const tr = loadTranscript(String(body.recordId || ''));
       if (!tr) return sendJson(res, 200, { scenes: [] });
       const from = Math.max(0, Number(body.fromSec) || 0);
       const to = Math.min(from + 900, Number(body.toSec) || from + 900);
-      const tape = tr.segments.filter((s) => s.e >= from && s.s <= to).map((s) => s.t).join(' ').slice(0, 11000);
+      const dur = to - from;
+      const segs = tr.segments.filter((s) => s.e >= from && s.s <= to);
+      const tape = segs.map((s) => s.t).join(' ').slice(0, 11000);
       if (tape.length < 200) return sendJson(res, 200, { scenes: [] });
       const norm = (s) => String(s).toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim();
       const tapeNorm = ` ${norm(tape)} `;
+
+      /* Locators — the house's clock. A phrase resolves to the second its
+         segment ends; a word resolves to its first utterance after a time. */
+      const locatePhrase = (phrase) => {
+        if (!phrase) return null;
+        const nc = ` ${norm(phrase)} `;
+        let acc = '';
+        for (const s of segs) {
+          acc += ' ' + norm(s.t);
+          if ((` ${acc} `).includes(nc)) return Math.max(0, Math.round(s.e - from));
+          acc = acc.slice(-500);
+        }
+        return null;
+      };
+      const locateWordAfter = (word, afterRel) => {
+        const nw = ` ${norm(word)} `;
+        for (const s of segs) {
+          const rel = s.e - from;
+          if (rel < afterRel) continue;
+          if ((` ${norm(s.t)} `).includes(nw)) return Math.round(rel);
+        }
+        return null;
+      };
+
+      const oneVerse = (refStr) => {
+        const r = String(refStr || '').match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3}):(\d{1,3})$/);
+        if (!r) return null;
+        const pv = readPassage({ book: r[1], chapter: Number(r[2]), fromVerse: Number(r[3]), toVerse: Number(r[3]) });
+        if (pv.error || !pv.verses?.length) return null;
+        return { ref: `${pv.bookName} ${pv.chapter}:${r[3]}`, text: pv.verses[0].text };
+      };
+
+      /* One validator for both passes: everything checked against the scene's
+         real verse text and the pass's own stretch of tape. */
+      /* Function words never carry a bracket: lighting "of" and "the" as
+         they are said is noise wearing the loom's clothes. */
+      const STOPWORDS = new Set(['the', 'and', 'of', 'to', 'a', 'an', 'in', 'on', 'for', 'that', 'this', 'with', 'from',
+        'they', 'them', 'were', 'was', 'is', 'are', 'be', 'been', 'have', 'has', 'had', 'his', 'her', 'him', 'she', 'he',
+        'it', 'its', 'not', 'but', 'all', 'any', 'who', 'you', 'your', 'their', 'there', 'when', 'then', 'will', 'shall']);
+      const validateArtifacts = (sc, verseNorm, cueNorm) => {
+        const cueOk = (c) => typeof c === 'string' && c.trim().length >= 8 && c.length <= 80 && cueNorm.includes(` ${norm(c)} `);
+        const groups = (Array.isArray(sc.groups) ? sc.groups : [])
+          .filter((g) => g && Array.isArray(g.words) && g.words.length >= 2 && g.words.length <= 4)
+          .map((g) => ({
+            words: g.words.map((w) => String(w).trim()).filter((w) => w && !/\s/.test(w) && !STOPWORDS.has(norm(w)) && verseNorm.includes(` ${norm(w)} `)),
+            label: (typeof g.label === 'string' && g.label.trim() && g.label.trim().length <= 18) ? g.label.trim() : null,
+            cue: cueOk(g.cue) ? g.cue.trim() : null,
+          }))
+          .filter((g) => g.words.length >= 2)
+          .slice(0, 2);
+        const footnotes = (Array.isArray(sc.footnotes) ? sc.footnotes : [])
+          .filter((f) => f && typeof f.word === 'string' && !/\s/.test(f.word.trim())
+            && verseNorm.includes(` ${norm(f.word)} `)
+            && typeof f.note === 'string' && f.note.trim().length >= 4)
+          .slice(0, 2)
+          .map((f) => ({ word: f.word.trim(), note: f.note.trim().slice(0, 90), cue: cueOk(f.cue) ? f.cue.trim() : null }));
+        const allusions = [];
+        for (const a of (Array.isArray(sc.allusions) ? sc.allusions : []).slice(0, 2)) {
+          const ar = String(a?.verse || '').match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3})(?::(\d{1,3}))?$/);
+          if (!ar) continue;
+          const av = ar[3] ? Number(ar[3]) : 1;
+          const ap = readPassage({ book: ar[1], chapter: Number(ar[2]), fromVerse: av, toVerse: av });
+          if (ap.error || !ap.verses?.length) continue;
+          allusions.push({
+            ref: `${ap.bookName} ${ap.chapter}:${av}`,
+            text: ap.verses[0].text.slice(0, 170),
+            note: (typeof a.note === 'string' && a.note.trim()) ? a.note.trim().slice(0, 60) : null,
+            cue: cueOk(a.cue) ? a.cue.trim() : null,
+          });
+        }
+        const terms = (Array.isArray(sc.terms) ? sc.terms : [])
+          .filter((t) => t && typeof t.term === 'string' && t.term.trim().length >= 2 && t.term.trim().length <= 24
+            && typeof t.gloss === 'string' && t.gloss.trim().length >= 3)
+          .slice(0, 2)
+          .map((t) => ({ term: t.term.trim(), gloss: t.gloss.trim().slice(0, 48), cue: cueOk(t.cue) ? t.cue.trim() : null }));
+        let compare = null;
+        if (sc.compare && typeof sc.compare === 'object') {
+          const a = oneVerse(sc.compare.a);
+          const b = oneVerse(sc.compare.b);
+          if (a && b && a.ref !== b.ref) {
+            const AXES = new Set(['likeness', 'difference']);
+            compare = {
+              a, b,
+              axis: AXES.has(sc.compare.axis) ? sc.compare.axis : 'likeness',
+              note: (typeof sc.compare.note === 'string' && sc.compare.note.trim()) ? sc.compare.note.trim().slice(0, 60) : null,
+              cue: cueOk(sc.compare.cue) ? sc.compare.cue.trim() : null,
+            };
+          }
+        }
+        let chain = null;
+        if (sc.chain && Array.isArray(sc.chain.refs)) {
+          const links = sc.chain.refs.slice(0, 4).map(oneVerse).filter(Boolean);
+          if (links.length >= 2) {
+            chain = { links, note: (typeof sc.chain.note === 'string' && sc.chain.note.trim()) ? sc.chain.note.trim().slice(0, 60) : null, cue: cueOk(sc.chain.cue) ? sc.chain.cue.trim() : null };
+          }
+        }
+        const caveat = (sc.caveat && typeof sc.caveat.text === 'string' && sc.caveat.text.trim().length >= 8)
+          ? { text: sc.caveat.text.trim().slice(0, 90), cue: cueOk(sc.caveat.cue) ? sc.caveat.cue.trim() : null }
+          : null;
+        const highlight = (sc.highlight && typeof sc.highlight.quote === 'string'
+          && sc.highlight.quote.trim().length >= 12 && sc.highlight.quote.length <= 140
+          && cueNorm.includes(` ${norm(sc.highlight.quote)} `))
+          ? { quote: sc.highlight.quote.trim() }
+          : null;
+        return { groups, footnotes, allusions, terms, compare, chain, caveat, highlight };
+      };
+
       try {
         const client = clientFor('gpt-5.6-luna-medium');
-        const reply = await client.chat({
-          maxTokens: 8000,
-          messages: [{
-            role: 'user',
-            content: `You are directing a small visual stage a listener watches while a podcast clip plays. Here is the clip's full transcript:
+        const spent = [];
+        const callModel = async (content, maxTokens = 8000) => {
+          const reply = await client.chat({ maxTokens, messages: [{ role: 'user', content }] });
+          if (reply.usage?.providerCostUsd != null) spent.push(reply.usage.providerCostUsd);
+          const m = String(reply.message.content || '').match(/\{[\s\S]*\}/);
+          return m ? JSON.parse(m[0]) : null;
+        };
+
+        const raw = await callModel(`You are directing a small visual stage a listener watches while a podcast clip plays. Here is the clip's full transcript:
 
 ${tape}
 
 The clip's purpose in its tour: ${String(body.why || '').slice(0, 400)}
 
-Direct up to 3 SCENES, in the order the clip reaches them. Each scene:
+Direct up to 4 SCENES — as many as the teaching has MOVEMENTS, no more. ONE scene is common; use several only when the teacher genuinely moves between passages. Each scene:
 - "verse": the passage being discussed at that point — "Book chapter:verse" or a range of at most 3 verses. Only passages genuinely walked through, not passing mentions.
 - "cue": a distinctive phrase of 3-8 words COPIED VERBATIM from the transcript at the moment this scene should appear.
 - "groups": up to 2 word-groups inside that verse the teaching turns on — 2-4 single words each that appear in the verse text, a label (max 18 characters), and optionally that group's own verbatim cue phrase.
 - "footnotes": up to 2 — when the teacher gives a translation or textual note about ONE word of the verse: {"word":"...","note":"the teacher's point, max 90 chars","cue":"..."}. The word must be in the verse text.
 - "allusions": up to 2 — when the teacher says this verse echoes or draws on ANOTHER passage: {"verse":"Psalm 82:1","note":"what the teacher says it carries, max 60 chars","cue":"..."}. Only allusions the teacher actually makes.
 - "terms": up to 2 — when the teacher explains an original-language word: {"term":"hesed","gloss":"the teacher's gloss, max 48 chars","cue":"..."}.
-- "compare": at most 1 — when the teacher sets two passages side by side, for LIKENESS or for difference: {"a":"Genesis 6:2","b":"Genesis 3:6","note":"what the comparison shows, max 60 chars","cue":"..."}. The shared wording is found and shown automatically; your job is only naming the two texts.
-- "chain": at most 1 — when the teacher traces one line through scripture (a quotation quoted, a phrase carried forward): {"refs":["Isaiah 53:1","John 12:38","Romans 10:16"],"note":"max 60 chars","cue":"..."} — 2 to 4 single verses in the order the chain runs.
-- "caveat": at most 1 — when the teacher says what the passage does NOT say or claim: {"text":"the teacher's caution, max 90 chars","cue":"..."}.
-- "highlight": at most 1, USED SPARINGLY — one sentence of the clip worth keeping, copied VERBATIM from the transcript (12-140 chars): {"quote":"..."}. It appears large at the moment it is spoken. Most clips have none.
+- "compare": at most 1 — when the teacher sets two passages side by side: {"a":"Genesis 6:2","b":"Genesis 3:6","axis":"likeness" or "difference","note":"max 60 chars","cue":"..."}. The shared or contrasting wording is found automatically; your job is naming the two texts and which way the comparison cuts.
+- "chain": at most 1 — when the teacher traces one line through scripture: {"refs":["Isaiah 53:1","John 12:38","Romans 10:16"],"note":"max 60 chars","cue":"..."} — 2 to 4 single verses in the order the chain runs.
+- "caveat": at most 1 — when the teacher says what the passage does NOT say: {"text":"max 90 chars","cue":"..."}.
+- "highlight": at most 1, USED SPARINGLY — one sentence worth keeping, copied VERBATIM from the transcript (12-140 chars): {"quote":"..."}. Most clips have none.
 
-Every artifact is optional and every cue is a verbatim transcript phrase; an artifact without a cue appears when its scene does. Fewer, truer artifacts beat coverage. A clip that discusses no specific verse gets {"scenes":[]}.
-Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{"words":["saw","took"],"label":"Eden echo","cue":"..."}],"footnotes":[],"allusions":[],"terms":[],"compare":null,"chain":null,"caveat":null,"highlight":null}]}`,
-          }],
-        });
-        const m = String(reply.message.content || '').match(/\{[\s\S]*\}/);
-        const raw = m ? JSON.parse(m[0]) : null;
+Spread your directions across the WHOLE clip — the stage draws each artifact at the moment its cue is spoken, and long empty stretches are dead air. Every cue is verbatim from the transcript. Fewer, truer artifacts beat coverage. A clip that discusses no specific verse gets {"scenes":[]}.
+Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{"words":["saw","took"],"label":"Eden echo","cue":"..."}],"footnotes":[],"allusions":[],"terms":[],"compare":null,"chain":null,"caveat":null,"highlight":null}]}`);
+
         const scenes = [];
-        for (const sc of (Array.isArray(raw?.scenes) ? raw.scenes : []).slice(0, 3)) {
+        for (const sc of (Array.isArray(raw?.scenes) ? raw.scenes : []).slice(0, 4)) {
           const ref = String(sc?.verse || '').match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3}):(\d{1,3})(?:\s*[–-]\s*(\d{1,3}))?$/);
           if (!ref) continue;
           const fromV = Number(ref[3]);
@@ -361,88 +473,90 @@ Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{
           const passage = readPassage({ book: ref[1], chapter: Number(ref[2]), fromVerse: fromV, toVerse: toV });
           if (passage.error || !passage.verses?.length) continue;
           const verseNorm = ` ${norm(passage.verses.map((v) => v.text).join(' '))} `;
-          const cueOk = (c) => typeof c === 'string' && c.trim().length >= 8 && c.length <= 80 && tapeNorm.includes(` ${norm(c)} `);
-          const groups = (Array.isArray(sc.groups) ? sc.groups : [])
-            .filter((g) => g && Array.isArray(g.words) && g.words.length >= 2 && g.words.length <= 4)
-            .map((g) => ({
-              words: g.words.map((w) => String(w).trim()).filter((w) => w && !/\s/.test(w) && verseNorm.includes(` ${norm(w)} `)),
-              label: (typeof g.label === 'string' && g.label.trim() && g.label.trim().length <= 18) ? g.label.trim() : null,
-              cue: cueOk(g.cue) ? g.cue.trim() : null,
-            }))
-            .filter((g) => g.words.length >= 2)
-            .slice(0, 2);
-          const footnotes = (Array.isArray(sc.footnotes) ? sc.footnotes : [])
-            .filter((f) => f && typeof f.word === 'string' && !/\s/.test(f.word.trim())
-              && verseNorm.includes(` ${norm(f.word)} `)
-              && typeof f.note === 'string' && f.note.trim().length >= 4)
-            .slice(0, 2)
-            .map((f) => ({ word: f.word.trim(), note: f.note.trim().slice(0, 90), cue: cueOk(f.cue) ? f.cue.trim() : null }));
-          const allusions = [];
-          for (const a of (Array.isArray(sc.allusions) ? sc.allusions : []).slice(0, 2)) {
-            const ar = String(a?.verse || '').match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3})(?::(\d{1,3}))?$/);
-            if (!ar) continue;
-            const av = ar[3] ? Number(ar[3]) : 1;
-            const ap = readPassage({ book: ar[1], chapter: Number(ar[2]), fromVerse: av, toVerse: av });
-            if (ap.error || !ap.verses?.length) continue;
-            allusions.push({
-              ref: `${ap.bookName} ${ap.chapter}:${av}`,
-              text: ap.verses[0].text.slice(0, 170),
-              note: (typeof a.note === 'string' && a.note.trim()) ? a.note.trim().slice(0, 60) : null,
-              cue: cueOk(a.cue) ? a.cue.trim() : null,
-            });
-          }
-          const terms = (Array.isArray(sc.terms) ? sc.terms : [])
-            .filter((t) => t && typeof t.term === 'string' && t.term.trim().length >= 2 && t.term.trim().length <= 24
-              && typeof t.gloss === 'string' && t.gloss.trim().length >= 3)
-            .slice(0, 2)
-            .map((t) => ({ term: t.term.trim(), gloss: t.gloss.trim().slice(0, 48), cue: cueOk(t.cue) ? t.cue.trim() : null }));
-          const oneVerse = (refStr) => {
-            const r = String(refStr || '').match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3}):(\d{1,3})$/);
-            if (!r) return null;
-            const pv = readPassage({ book: r[1], chapter: Number(r[2]), fromVerse: Number(r[3]), toVerse: Number(r[3]) });
-            if (pv.error || !pv.verses?.length) return null;
-            return { ref: `${pv.bookName} ${pv.chapter}:${r[3]}`, text: pv.verses[0].text };
-          };
-          let compare = null;
-          if (sc.compare && typeof sc.compare === 'object') {
-            const a = oneVerse(sc.compare.a);
-            const b = oneVerse(sc.compare.b);
-            if (a && b && a.ref !== b.ref) {
-              compare = { a, b, note: (typeof sc.compare.note === 'string' && sc.compare.note.trim()) ? sc.compare.note.trim().slice(0, 60) : null, cue: cueOk(sc.compare.cue) ? sc.compare.cue.trim() : null };
-            }
-          }
-          let chain = null;
-          if (sc.chain && Array.isArray(sc.chain.refs)) {
-            const links = sc.chain.refs.slice(0, 4).map(oneVerse).filter(Boolean);
-            if (links.length >= 2) {
-              chain = { links, note: (typeof sc.chain.note === 'string' && sc.chain.note.trim()) ? sc.chain.note.trim().slice(0, 60) : null, cue: cueOk(sc.chain.cue) ? sc.chain.cue.trim() : null };
-            }
-          }
-          const caveat = (sc.caveat && typeof sc.caveat.text === 'string' && sc.caveat.text.trim().length >= 8)
-            ? { text: sc.caveat.text.trim().slice(0, 90), cue: cueOk(sc.caveat.cue) ? sc.caveat.cue.trim() : null }
-            : null;
-          /* The highlight's own words are its cue — verbatim on tape or it
-             does not exist. */
-          const highlight = (sc.highlight && typeof sc.highlight.quote === 'string'
-            && sc.highlight.quote.trim().length >= 12 && sc.highlight.quote.length <= 140
-            && tapeNorm.includes(` ${norm(sc.highlight.quote)} `))
-            ? { quote: sc.highlight.quote.trim() }
-            : null;
           scenes.push({
             ref: `${passage.bookName} ${passage.chapter}:${fromV}${toV > fromV ? '–' + toV : ''}`,
             verses: passage.verses,
-            cue: cueOk(sc.cue) ? sc.cue.trim() : null,
-            groups,
-            footnotes,
-            allusions,
-            terms,
-            compare,
-            chain,
-            caveat,
-            highlight,
+            verseNorm,
+            cue: (typeof sc.cue === 'string' && sc.cue.trim().length >= 8) ? sc.cue.trim() : null,
+            ...validateArtifacts(sc, verseNorm, tapeNorm),
           });
         }
-        return sendJson(res, 200, { scenes, usd: reply.usage?.providerCostUsd ?? null });
+
+        /* ---- the timeline, resolved by the house ---- */
+        scenes.forEach((sc, i) => { sc.at = i === 0 ? 0 : locatePhrase(sc.cue); });
+        scenes.forEach((sc, i) => { if (sc.at == null) sc.at = Math.round((dur * i) / Math.max(1, scenes.length)); });
+        scenes.sort((a, b) => a.at - b.at);
+        scenes.forEach((sc, i) => { if (i && sc.at < scenes[i - 1].at + 12) sc.at = scenes[i - 1].at + 12; });
+
+        const artifactsOf = (sc) => [
+          ...sc.groups, ...sc.footnotes, ...sc.terms, ...sc.allusions,
+          ...[sc.compare, sc.chain, sc.caveat, sc.highlight].filter(Boolean),
+        ];
+        scenes.forEach((sc, i) => {
+          const winStart = sc.at;
+          const winEnd = i + 1 < scenes.length ? scenes[i + 1].at : dur;
+          const span = Math.max(10, winEnd - winStart);
+          for (const g of sc.groups) {
+            g.wordTimes = g.words.map((w) => ({ word: w, at: locateWordAfter(w, winStart) }));
+            const lastWord = Math.max(...g.wordTimes.map((w) => w.at ?? -1));
+            g.at = locatePhrase(g.cue) ?? (lastWord >= 0 ? lastWord : null);
+          }
+          for (const a of [...sc.footnotes, ...sc.terms, ...sc.allusions]) a.at = locatePhrase(a.cue);
+          for (const a of [sc.compare, sc.chain, sc.caveat].filter(Boolean)) a.at = locatePhrase(a.cue);
+          if (sc.highlight) sc.highlight.at = locatePhrase(sc.highlight.quote);
+          const missing = artifactsOf(sc).filter((a) => a.at == null || a.at < winStart - 2 || a.at > winEnd + 5);
+          missing.forEach((a, k) => { a.at = Math.round(winStart + ((k + 1) * span) / (missing.length + 1)); });
+        });
+        /* Beats never stack: minimum 2.5s between arrivals. */
+        const flat = scenes.flatMap(artifactsOf).sort((a, b) => a.at - b.at);
+        for (let i = 1; i < flat.length; i++) {
+          if (flat[i].at < flat[i - 1].at + 2.5) flat[i].at = Math.round((flat[i - 1].at + 2.5) * 10) / 10;
+        }
+
+        /* ---- the second pass: buy beats for the starved stretch ---- */
+        const beatTimes = [0, ...scenes.map((s) => s.at), ...flat.map((e) => e.at)].sort((a, b) => a - b);
+        let gap = { len: 0, start: 0 };
+        for (let i = 1; i < beatTimes.length; i++) {
+          if (beatTimes[i] - beatTimes[i - 1] > gap.len) gap = { len: beatTimes[i] - beatTimes[i - 1], start: beatTimes[i - 1] };
+        }
+        const tail = dur - (beatTimes.at(-1) ?? 0);
+        if (tail > gap.len) gap = { len: tail, start: beatTimes.at(-1) ?? 0 };
+        if (scenes.length && gap.len > 45) {
+          const host = [...scenes].reverse().find((s) => s.at <= gap.start + 1) || scenes[0];
+          const stretchSegs = segs.filter((s) => s.e - from >= gap.start + 2 && s.s - from <= gap.start + gap.len);
+          const stretch = stretchSegs.map((s) => s.t).join(' ').slice(0, 6000);
+          if (stretch.length > 300) {
+            const extraRaw = await callModel(`A visual stage is showing ${host.ref} while a podcast clip plays, and nothing new appears for ${Math.round(gap.len)} seconds. Here is the transcript of exactly that quiet stretch:
+
+${stretch}
+
+Direct 1-3 additional artifacts drawn FROM THIS STRETCH ONLY, for that same verse (its text: ${host.verses.map((v) => v.text).join(' ').slice(0, 600)}). Same rules as before — group words must appear in the verse text, every cue is a phrase copied verbatim from THIS stretch, fewer and truer beats coverage.
+Answer ONLY with JSON: {"groups":[{"words":["...","..."],"label":"...","cue":"..."}],"footnotes":[],"terms":[],"allusions":[],"caveat":null,"highlight":null}`, 6000);
+            if (extraRaw) {
+              const stretchNorm = ` ${norm(stretch)} `;
+              const extra = validateArtifacts(extraRaw, host.verseNorm, stretchNorm);
+              const clampIn = (a) => {
+                a.at = locatePhrase(a.cue || a.quote);
+                if (a.at == null || a.at < gap.start || a.at > gap.start + gap.len + 5) {
+                  a.at = Math.round(gap.start + gap.len / 2);
+                }
+                return a;
+              };
+              for (const g of extra.groups.slice(0, 2)) {
+                g.wordTimes = g.words.map((w) => ({ word: w, at: locateWordAfter(w, gap.start) }));
+                host.groups.push(clampIn(g));
+              }
+              for (const f of extra.footnotes.slice(0, 1)) host.footnotes.push(clampIn(f));
+              for (const t of extra.terms.slice(0, 1)) host.terms.push(clampIn(t));
+              for (const a of extra.allusions.slice(0, 1)) host.allusions.push(clampIn(a));
+              if (extra.caveat && !host.caveat) host.caveat = clampIn(extra.caveat);
+              if (extra.highlight && !host.highlight) host.highlight = clampIn(extra.highlight);
+            }
+          }
+        }
+
+        for (const sc of scenes) delete sc.verseNorm;
+        return sendJson(res, 200, { scenes, usd: spent.reduce((a, b) => a + b, 0) || null, passes: spent.length });
       } catch (err) {
         return sendJson(res, 200, { scenes: [], note: err?.message || String(err) });
       }

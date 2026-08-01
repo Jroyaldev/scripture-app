@@ -266,6 +266,16 @@ function presentTour(tour, prompt) {
   buildVoices(tour);
   fetchWhispers(tour);
   fetchForm(tour, prompt);
+
+  /* Prefetch every step's stage directions now, one at a time, so the
+     first press of any play button finds them already waiting — the
+     11-25s director latency happens while the reader is still reading
+     the intro, not while they are listening. */
+  (async () => {
+    for (let i = 0; i < tour.steps.length; i++) {
+      try { await fetchDirector(tour.steps[i], i); } catch { /* next */ }
+    }
+  })();
 }
 
 async function fetchWhispers(tour) {
@@ -363,33 +373,54 @@ function fetchDirector(step, index) {
     .catch(() => ({ scenes: [] }));
 }
 
+/* The server resolved every cue to seconds; here that becomes one flat
+   schedule. The page fires whatever is due — order-proof, replay-proof,
+   and immune to a model that numbered its scenes wrong. */
 function beginDirection(li, index, scenes) {
   if (!current || current.li !== li || !scenes?.length) return;
-  current.scenes = scenes.map((s) => ({
-    ...s,
-    groups: (s.groups || []).map((g) => ({ ...g, drawn: false })),
-    footnotes: (s.footnotes || []).map((f) => ({ ...f, drawn: false })),
-    allusions: (s.allusions || []).map((a) => ({ ...a, drawn: false })),
-    terms: (s.terms || []).map((t) => ({ ...t, drawn: false })),
-    compare: s.compare ? { ...s.compare, drawn: false } : null,
-    chain: s.chain ? { ...s.chain, drawn: false } : null,
-    caveat: s.caveat ? { ...s.caveat, drawn: false } : null,
-    highlight: s.highlight ? { ...s.highlight, drawn: false } : null,
-  }));
+  const timeline = [];
+  const copy = scenes.map((s, i) => {
+    const sc = {
+      ...s,
+      groups: (s.groups || []).map((g) => ({ ...g })),
+      footnotes: (s.footnotes || []).map((f) => ({ ...f })),
+      allusions: (s.allusions || []).map((a) => ({ ...a })),
+      terms: (s.terms || []).map((t) => ({ ...t })),
+      compare: s.compare ? { ...s.compare } : null,
+      chain: s.chain ? { ...s.chain } : null,
+      caveat: s.caveat ? { ...s.caveat } : null,
+      highlight: s.highlight ? { ...s.highlight } : null,
+    };
+    timeline.push({ at: sc.at ?? 0, kind: 'scene', scene: sc, idx: i });
+    for (const g of sc.groups) {
+      for (const wt of g.wordTimes || []) {
+        if (wt.at != null && wt.at < (g.at ?? Infinity)) timeline.push({ at: wt.at, kind: 'word', scene: sc, word: wt.word });
+      }
+      timeline.push({ at: g.at ?? sc.at ?? 0, kind: 'group', scene: sc, a: g });
+    }
+    for (const [kind, list] of [['footnote', sc.footnotes], ['term', sc.terms], ['allusion', sc.allusions]]) {
+      for (const a of list) timeline.push({ at: a.at ?? sc.at ?? 0, kind, scene: sc, a });
+    }
+    for (const [kind, a] of [['compare', sc.compare], ['chain', sc.chain], ['caveat', sc.caveat], ['highlight', sc.highlight]]) {
+      if (a) timeline.push({ at: a.at ?? sc.at ?? 0, kind, scene: sc, a });
+    }
+    return sc;
+  });
+  timeline.sort((x, y) => x.at - y.at);
+  current.scenes = copy;
+  current.timeline = timeline;
+  current.fired = 0;
   current.sceneIdx = -1;
-  activateScene(0);
 }
 
 const TH_BOXES = ['.compare', '.chain', '.terms', '.allusions', '.footnotes', '.caveats'];
 
-function activateScene(k) {
-  if (!current?.scenes || k >= current.scenes.length || k <= current.sceneIdx) return;
-  current.sceneIdx = k;
-  const scene = current.scenes[k];
+function activateScene(scene, idx) {
+  if (!current || idx <= current.sceneIdx) return;
+  current.sceneIdx = idx;
   const th = TH();
   for (const sel of TH_BOXES) th.querySelector(sel).innerHTML = '';
-  const bq = th.querySelector('.big-quote');
-  bq.classList.remove('show');
+  releaseHighlight();
   const q = th.querySelector('.verses');
   q.classList.remove('has');
   setTimeout(() => {
@@ -397,84 +428,131 @@ function activateScene(k) {
     q.innerHTML = scene.verses.map((v) => `<sup>${v.verse}</sup>${escapeHtml(v.text)}`).join(' ')
       + `<span class="verses-ref">${escapeHtml(scene.ref)}</span>`;
     q.classList.add('has');
-    cueArtifacts(' ');
   }, 240);
 }
 
-/* Uncued artifacts appear with their scene; cued ones wait to be said. */
-function cueArtifacts(saidBuf, { force = false } = {}) {
-  const scene = current?.scenes?.[current.sceneIdx];
-  if (!scene) return;
+/* One event from the schedule lands on the stage. Anything that needs the
+   verse's laid-out geometry retries once, a beat after the scene's fade. */
+function renderEvent(ev) {
+  if (!current) return;
   const th = TH();
-  const ready = (a) => a && !a.drawn && (force || !a.cue || saidBuf.includes(` ${normalize(a.cue)} `));
+  const verseReady = th.querySelector('.verses').classList.contains('has');
+  if (!verseReady && ['word', 'group', 'footnote'].includes(ev.kind)) {
+    setTimeout(() => renderEvent(ev), 380);
+    return;
+  }
+  switch (ev.kind) {
+    case 'scene':
+      activateScene(ev.scene, ev.idx);
+      break;
+    case 'word': {
+      /* A word lights the moment it is said; its bracket completes when
+         the group does. */
+      if (current.scenes?.[current.sceneIdx] !== ev.scene) break;
+      const span = getOrWrap(th.querySelector('.verses'), ev.word);
+      span?.classList.add('lit');
+      break;
+    }
+    case 'group':
+      if (current.scenes?.[current.sceneIdx] === ev.scene) drawMark(ev.a);
+      break;
+    case 'term': {
+      const el = document.createElement('p');
+      el.className = 'term-chip appear';
+      el.innerHTML = `<i>${escapeHtml(ev.a.term)}</i> — ${escapeHtml(ev.a.gloss)}`;
+      th.querySelector('.terms').appendChild(el);
+      break;
+    }
+    case 'allusion': {
+      for (const prev of th.querySelectorAll('.allusion')) prev.classList.add('past');
+      const el = document.createElement('div');
+      el.className = 'allusion appear';
+      el.innerHTML = `<span class="box-ref">${escapeHtml(ev.a.ref)}</span>${escapeHtml(ev.a.text)}`
+        + (ev.a.note ? `<span class="box-note">${escapeHtml(ev.a.note)}</span>` : '');
+      th.querySelector('.allusions').appendChild(el);
+      break;
+    }
+    case 'footnote': {
+      const q = th.querySelector('.verses');
+      const span = getOrWrap(q, ev.a.word);
+      if (span && !span.querySelector('.fnmark')) span.insertAdjacentHTML('beforeend', '<sup class="fnmark">†</sup>');
+      const el = document.createElement('p');
+      el.className = 'footnote appear';
+      el.innerHTML = `<sup>†</sup> <b>${escapeHtml(ev.a.word)}</b> — ${escapeHtml(ev.a.note)}`;
+      th.querySelector('.footnotes').appendChild(el);
+      break;
+    }
+    case 'compare': {
+      const { a, b, note, axis } = ev.a;
+      /* likeness underlines what binds the two texts; difference underlines
+         each side's own pivots — the same box, cutting the other way. */
+      const common = sharedWords(a.text, b.text);
+      const marksFor = (own, other) => axis === 'difference'
+        ? sharedWords(own, own).filter((w) => !sharedWords(other, other).includes(w)).slice(0, 5)
+        : common;
+      const el = document.createElement('div');
+      el.className = 'compare-grid appear';
+      el.innerHTML = [[a, b.text], [b, a.text]].map(([side, otherText]) =>
+        `<div class="cmp"><span class="box-ref">${escapeHtml(side.ref)}</span>${markRelevant(side.text, marksFor(side.text, otherText))}</div>`
+      ).join('') + (note ? `<span class="box-note cmp-note">${escapeHtml(note)}</span>` : '');
+      th.querySelector('.compare').appendChild(el);
+      current.compareEl = el;
+      current.compareWords = new Set(common.map(normalize));
+      break;
+    }
+    case 'chain': {
+      /* Links assemble one at a time — a chain that appears is a list. */
+      const el = document.createElement('div');
+      el.className = 'chain-box appear';
+      th.querySelector('.chain').appendChild(el);
+      ev.a.links.forEach((l, i) => {
+        setTimeout(() => {
+          if (!current || !el.isConnected) return;
+          const link = document.createElement('div');
+          link.className = 'chain-link appear';
+          link.innerHTML = `<span class="box-ref">${escapeHtml(l.ref)}</span>${escapeHtml(trim(l.text, 110))}`;
+          el.appendChild(link);
+          if (i === ev.a.links.length - 1 && ev.a.note) {
+            el.insertAdjacentHTML('beforeend', `<span class="box-note">${escapeHtml(ev.a.note)}</span>`);
+          }
+        }, i * 900);
+      });
+      break;
+    }
+    case 'caveat': {
+      const el = document.createElement('p');
+      el.className = 'caveat appear';
+      el.innerHTML = `<span class="box-ref">what it does not say</span>${escapeHtml(ev.a.text)}`;
+      th.querySelector('.caveats').appendChild(el);
+      break;
+    }
+    case 'highlight': {
+      /* A spotlight that doesn't lower the room isn't one: the verse dims a
+         step while the sentence holds, then the room comes back. */
+      const bq = th.querySelector('.big-quote');
+      bq.textContent = `“${ev.a.quote}”`;
+      bq.classList.add('show');
+      th.querySelector('.verses').classList.add('dimmed');
+      clearTimeout(current.hlTimer);
+      current.hlTimer = setTimeout(releaseHighlight, 11000);
+      break;
+    }
+  }
+}
 
-  for (const g of scene.groups) {
-    if (ready(g)) { g.drawn = true; drawMark(g); }
-  }
-  for (const t of scene.terms) {
-    if (!ready(t)) continue;
-    t.drawn = true;
-    const el = document.createElement('p');
-    el.className = 'term-chip appear';
-    el.innerHTML = `<i>${escapeHtml(t.term)}</i> — ${escapeHtml(t.gloss)}`;
-    th.querySelector('.terms').appendChild(el);
-  }
-  for (const a of scene.allusions) {
-    if (!ready(a)) continue;
-    a.drawn = true;
-    for (const prev of th.querySelectorAll('.allusion')) prev.classList.add('past');
-    const el = document.createElement('div');
-    el.className = 'allusion appear';
-    el.innerHTML = `<span class="box-ref">${escapeHtml(a.ref)}</span>${escapeHtml(a.text)}`
-      + (a.note ? `<span class="box-note">${escapeHtml(a.note)}</span>` : '');
-    th.querySelector('.allusions').appendChild(el);
-  }
-  for (const f of scene.footnotes) {
-    if (!ready(f)) continue;
-    f.drawn = true;
-    const q = th.querySelector('.verses');
-    const span = wrapWord(q, f.word);
-    if (span) span.insertAdjacentHTML('beforeend', '<sup class="fnmark">†</sup>');
-    const el = document.createElement('p');
-    el.className = 'footnote appear';
-    el.innerHTML = `<sup>†</sup> <b>${escapeHtml(f.word)}</b> — ${escapeHtml(f.note)}`;
-    th.querySelector('.footnotes').appendChild(el);
-  }
-  if (ready(scene.compare)) {
-    scene.compare.drawn = true;
-    const { a, b, note } = scene.compare;
-    const common = sharedWords(a.text, b.text);
-    const el = document.createElement('div');
-    el.className = 'compare-grid appear';
-    el.innerHTML = [a, b].map((side) =>
-      `<div class="cmp"><span class="box-ref">${escapeHtml(side.ref)}</span>${markRelevant(side.text, common)}</div>`
-    ).join('') + (note ? `<span class="box-note cmp-note">${escapeHtml(note)}</span>` : '');
-    th.querySelector('.compare').appendChild(el);
-  }
-  if (ready(scene.chain)) {
-    scene.chain.drawn = true;
-    const el = document.createElement('div');
-    el.className = 'chain-box appear';
-    el.innerHTML = scene.chain.links.map((l) =>
-      `<div class="chain-link"><span class="box-ref">${escapeHtml(l.ref)}</span>${escapeHtml(trim(l.text, 110))}</div>`
-    ).join('') + (scene.chain.note ? `<span class="box-note">${escapeHtml(scene.chain.note)}</span>` : '');
-    th.querySelector('.chain').appendChild(el);
-  }
-  if (ready(scene.caveat)) {
-    scene.caveat.drawn = true;
-    const el = document.createElement('p');
-    el.className = 'caveat appear';
-    el.innerHTML = `<span class="box-ref">what it does not say</span>${escapeHtml(scene.caveat.text)}`;
-    th.querySelector('.caveats').appendChild(el);
-  }
-  /* The highlight's own words are its cue. */
-  if (scene.highlight && !scene.highlight.drawn
-    && (force || saidBuf.includes(` ${normalize(scene.highlight.quote)} `))) {
-    scene.highlight.drawn = true;
-    const bq = TH().querySelector('.big-quote');
-    bq.textContent = `“${scene.highlight.quote}”`;
-    bq.classList.add('show');
-  }
+function releaseHighlight() {
+  const th = TH();
+  th.querySelector('.big-quote').classList.remove('show');
+  th.querySelector('.verses').classList.remove('dimmed');
+  if (current) clearTimeout(current.hlTimer);
+}
+
+function getOrWrap(root, word) {
+  const existing = root.querySelector(`.sword[data-w="${CSS.escape(word)}"]`);
+  if (existing) return existing;
+  const span = wrapWord(root, word);
+  if (span) span.dataset.w = word;
+  return span;
 }
 
 // ------------------------------------- the loom, performed in the theater
@@ -504,11 +582,7 @@ function wrapWord(root, word) {
 function drawMark(mark) {
   const q = TH().querySelector('.verses');
   if (!q?.classList.contains('has')) return;
-  const spans = mark.words.map((w) => {
-    const s = wrapWord(q, w);
-    if (s) s.dataset.w = w;
-    return s;
-  }).filter(Boolean);
+  const spans = mark.words.map((w) => getOrWrap(q, w)).filter(Boolean);
   if (spans.length < 2) return;
 
   const NS = 'http://www.w3.org/2000/svg';
@@ -550,12 +624,22 @@ function drawMark(mark) {
   path.setAttribute('d', parts.join(' '));
   g.appendChild(path);
   if (mark.label) {
+    /* Horizontal, right-aligned against the lane — the rotated label was
+       the only sideways text anywhere and the hardest to read exactly when
+       it mattered. Rotation survives only as the narrow-viewport fallback,
+       where the left margin cannot hold a word. */
     const midY = (first.y + last.y) / 2;
     const label = document.createElementNS(NS, 'text');
-    label.setAttribute('x', lane - 5);
-    label.setAttribute('y', midY);
-    label.setAttribute('text-anchor', 'middle');
-    label.setAttribute('transform', `rotate(-90 ${lane - 5} ${midY})`);
+    if (window.innerWidth >= 900) {
+      label.setAttribute('x', lane - 8);
+      label.setAttribute('y', midY + 3);
+      label.setAttribute('text-anchor', 'end');
+    } else {
+      label.setAttribute('x', lane - 5);
+      label.setAttribute('y', midY);
+      label.setAttribute('text-anchor', 'middle');
+      label.setAttribute('transform', `rotate(-90 ${lane - 5} ${midY})`);
+    }
     label.textContent = mark.label;
     g.appendChild(label);
   }
@@ -639,7 +723,7 @@ function toggleStep(li, step, index) {
   if (current && current.li === li) { stopAudio(); return; }
   stopAudio();
   if (!step.audioUrl) { honestNote(li, 'This publisher keeps its audio on its own site.'); return; }
-  current = { li, step, index, segments: null, phrases: quotedPhrases(step.why), capKey: null, saidBuf: '', scenes: null, sceneIdx: -1 };
+  current = { li, step, index, segments: null, phrases: quotedPhrases(step.why), capKey: null, scenes: null, timeline: null, fired: 0, sceneIdx: -1 };
   li.classList.add('playing');
 
   const th = TH();
@@ -683,11 +767,14 @@ function toggleStep(li, step, index) {
     updateCaption(t);
     const frac = (t - step.startSec) / (step.endSec - step.startSec);
     th.querySelector('.th-progress i').style.width = `${Math.max(0, Math.min(100, frac * 100))}%`;
-    if (current.scenes) {
-      const n = current.scenes.length;
-      const due = Math.min(n - 1, Math.floor(frac * (n + 0.6)));
-      if (due > current.sceneIdx) activateScene(due);
-      if (frac > 0.85) cueArtifacts(' ', { force: true });
+    if (current.timeline) {
+      /* The schedule, resolved server-side, simply plays out. */
+      const rel = t - step.startSec;
+      while (current.fired < current.timeline.length && current.timeline[current.fired].at <= rel) {
+        renderEvent(current.timeline[current.fired]);
+        current.fired += 1;
+        if (!current) return;
+      }
     } else if (frac > 0.7) {
       const dir = stageDirections[index];
       for (const mark of dir?.marks || []) {
@@ -712,12 +799,19 @@ function updateCaption(t) {
   if (silent) { cap.classList.remove('show'); return; }
   cap.textContent = seg.t;
   cap.classList.add('show');
-  if (current.scenes) {
-    current.saidBuf = (current.saidBuf + ' ' + normalize(seg.t)).slice(-600);
-    const buf = ` ${current.saidBuf} `;
-    const next = current.scenes[current.sceneIdx + 1];
-    if (next?.cue && buf.includes(` ${normalize(next.cue)} `)) activateScene(current.sceneIdx + 1);
-    cueArtifacts(buf);
+  if (current.timeline) {
+    /* The compare box breathes with the tape: when the teacher says one of
+       the words that binds the two texts, it pulses once. */
+    if (current.compareEl?.isConnected && current.compareWords) {
+      const said = new Set(normalize(seg.t).split(' '));
+      if ([...current.compareWords].some((w) => said.has(w))) {
+        for (const em of current.compareEl.querySelectorAll('em.rel')) {
+          em.classList.remove('pulse');
+          void em.offsetWidth;
+          em.classList.add('pulse');
+        }
+      }
+    }
   } else {
     cueMarks(seg.t);
   }
@@ -746,11 +840,13 @@ function fadeTo(target, ms) {
 
 function stopAudio() {
   if (!current) return;
-  const { li, fadeRaf } = current;
+  const { li, fadeRaf, hlTimer } = current;
   cancelAnimationFrame(fadeRaf);
+  clearTimeout(hlTimer);
   player.pause();
   player.ontimeupdate = null;
   li.classList.remove('playing');
+  releaseHighlight();
   TH().classList.remove('on');
   TH().querySelector('.th-whisper').classList.remove('show');
   document.body.classList.remove('in-theater');

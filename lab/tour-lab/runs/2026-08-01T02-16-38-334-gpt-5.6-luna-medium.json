@@ -1,0 +1,383 @@
+{
+  "runId": "2026-08-01T02-16-38-334-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T02:16:38.334Z",
+  "promptId": null,
+  "prompt": "What does hesed actually mean?",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Hesed: More Than “Kindness”",
+    "intro": "This tour starts with the translation problem, then gives you a working definition, anchors hesed in God’s covenant self-description, and finally shows what it looks like in a human relationship through Ruth. As you listen, hold the English glosses lightly: the point is not to find one magic substitute, but to see the whole pattern the word carries.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "startSec": 168,
+        "endSec": 380,
+        "why": "This is the best orientation to the word itself. The hosts introduce Hebrew hesed, explain that it appears predominantly in descriptions of God but also describes human action, and acknowledge why translations vary. It gives you the essential starting point: “strong arguments can be made for other translations,” even though they favor “loyal love.”",
+        "episodeTitle": "The Loyal Love of God",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e530ba3f-428a-4ef5-828c-34800da4963f/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e530ba3f-428a-4ef5-828c-34800da4963f",
+        "durationSec": 4105,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "startSec": 732,
+        "endSec": 930,
+        "why": "Here the discussion moves from labels to meaning. The speaker says hesed is love “when they're keeping a promise,” which motivates someone to “go above and beyond and be super generous,” usually within “an enduring relationship.” The elderly husband caring concretely for his sick wife makes the distinction memorable: hesed combines affection, commitment, and generous action—not merely a feeling or a duty.",
+        "episodeTitle": "The Loyal Love of God",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e530ba3f-428a-4ef5-828c-34800da4963f/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e530ba3f-428a-4ef5-828c-34800da4963f",
+        "durationSec": 4105,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:2693",
+        "startSec": 2010,
+        "endSec": 2255,
+        "why": "This clip places hesed in Exodus 34, where God reveals himself after the golden-calf failure and before renewing the covenant. The discussion describes hesed alongside faithfulness as “God's absolute and eternal dependability,” and then paraphrases it as God being willing and able “to not leave the covenant relationship” and “to be loyal to it.” It also keeps mercy from becoming sentimental by noting that forgiveness does not erase consequences.",
+        "episodeTitle": "Naked Bible 310: Exodus 33-34",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2020/02/NakedBible310_Exodus33_34.mp3",
+        "durationSec": 4477,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+        "startSec": 917,
+        "endSec": 1075,
+        "why": "Ruth supplies the lived example that the definition needs. The hosts explain Naomi’s “deal kindly” as hesed—“covenant faithfulness,” “longstanding loyalty,” or “steadfast love”—and connect Ruth’s decision to remain with Naomi, saying “Your people shall be my people,” with loyalty expressed through costly action. This shows that hesed is not only something God shows; it is a way people keep faith within a relationship.",
+        "episodeTitle": "Ruth 1-2: God Fills What's Empty",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG9761838334.mp3?updated=1664486106",
+        "durationSec": 3645,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "So, in short, hesed is best heard as faithful, committed love that acts generously within an enduring relationship—especially covenant loyalty. “Loving kindness,” “steadfast love,” “mercy,” and “loyal love” each catch part of it, but none captures every shade in every passage. Let the surrounding story tell you which aspect is most visible: promise-keeping, generosity, affection, dependability, or mercy.",
+    "totalSeconds": 813
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2120,
+      "promptTokens": 1596,
+      "completionTokens": 35,
+      "reasoningTokens": 19,
+      "cachedPromptTokens": 1593,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00003723
+    },
+    {
+      "i": 1,
+      "latencyMs": 2040,
+      "promptTokens": 1891,
+      "completionTokens": 163,
+      "reasoningTokens": 24,
+      "cachedPromptTokens": 1888,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00011698000000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 3394,
+      "promptTokens": 9995,
+      "completionTokens": 386,
+      "reasoningTokens": 113,
+      "cachedPromptTokens": 1888,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012637800000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 2788,
+      "promptTokens": 14231,
+      "completionTokens": 238,
+      "reasoningTokens": 51,
+      "cachedPromptTokens": 9992,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007725200000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 3029,
+      "promptTokens": 18068,
+      "completionTokens": 96,
+      "reasoningTokens": 32,
+      "cachedPromptTokens": 14228,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0006798050000000001
+    },
+    {
+      "i": 5,
+      "latencyMs": 6499,
+      "promptTokens": 18734,
+      "completionTokens": 736,
+      "reasoningTokens": 86,
+      "cachedPromptTokens": 18065,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0007058000000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "hesed meaning steadfast love lovingkindness covenant loyalty",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 81,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Hebrew word hesed what does it mean",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 56,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "mercy kindness faithfulness Psalm hesed",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 49,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "chesed loyal love covenant relationship",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 67,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 0,
+        "toSec": 4105
+      },
+      "ms": 0,
+      "summary": "31 skim lines, 0s–1500s of The Loyal Love of God"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:2693",
+        "fromSec": 1800,
+        "toSec": 2700
+      },
+      "ms": 0,
+      "summary": "18 skim lines, 1800s–2700s of Naked Bible 310: Exodus 33-34"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+        "fromSec": 700,
+        "toSec": 1250
+      },
+      "ms": 0,
+      "summary": "12 skim lines, 700s–1250s of Ruth 1-2: God Fills What's Empty"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:1d21cf2a-2bf5-11f0-ac8d-9ff65478304a",
+        "fromSec": 0,
+        "toSec": 800
+      },
+      "ms": 0,
+      "summary": "17 skim lines, 0s–800s of Will God resurrect my cremated body?"
+    },
+    {
+      "at": 2,
+      "name": "read_passage",
+      "args": {
+        "book": "Exodus",
+        "chapter": 34,
+        "fromVerse": 1,
+        "toVerse": 9
+      },
+      "ms": 1,
+      "summary": "Exodus 34:1–9 (WEB)"
+    },
+    {
+      "at": 2,
+      "name": "read_passage",
+      "args": {
+        "book": "Ruth",
+        "chapter": 1,
+        "fromVerse": 6,
+        "toVerse": 18
+      },
+      "ms": 1,
+      "summary": "Ruth 1:6–18 (WEB)"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 150,
+        "toSec": 380
+      },
+      "ms": 0,
+      "summary": "150s–380s of The Loyal Love of God"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 700,
+        "toSec": 930
+      },
+      "ms": 0,
+      "summary": "700s–930s of The Loyal Love of God"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+        "fromSec": 880,
+        "toSec": 1120
+      },
+      "ms": 0,
+      "summary": "880s–1120s of Ruth 1-2: God Fills What's Empty"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2693",
+        "fromSec": 2010,
+        "toSec": 2255
+      },
+      "ms": 0,
+      "summary": "2010s–2255s of Naked Bible 310: Exodus 33-34"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:1d21cf2a-2bf5-11f0-ac8d-9ff65478304a",
+        "fromSec": 250,
+        "toSec": 380
+      },
+      "ms": 0,
+      "summary": "250s–380s of Will God resurrect my cremated body?"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 6,
+    "toolCalls": 17,
+    "tapeSec": 1075,
+    "deniedWindows": 0,
+    "promptTokens": 64515,
+    "completionTokens": 1654,
+    "reasoningTokens": 325,
+    "cachedPromptTokens": 47654,
+    "wallMs": 20130,
+    "modelLatencyMs": 19870,
+    "toolMs": 257
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003576,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T02:16:58.464Z"
+}

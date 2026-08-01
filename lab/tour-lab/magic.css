@@ -306,6 +306,21 @@ svg.smarks g.markg { transition: opacity 700ms var(--ease); }
 svg.smarks g.markg.past { opacity: 0.3; }
 .sword { color: var(--ink); }
 
+/* A word lights the moment it is said; its bracket completes later. */
+.sword.lit { border-bottom: 1px solid color-mix(in oklab, var(--gold) 75%, transparent); padding-bottom: 1px; transition: border-color 400ms var(--ease); }
+
+/* The spotlight lowers the room. */
+#theater .verses { transition: opacity 700ms var(--ease); }
+#theater .verses.dimmed { opacity: 0.35; }
+
+/* The compare box breathes when its binding words are spoken. */
+em.rel.pulse { animation: pulse-word 1200ms var(--ease); }
+@keyframes pulse-word {
+  0% { color: inherit; }
+  25% { color: var(--gold); }
+  100% { color: inherit; }
+}
+
 /* the voices — arithmetic on the tour, drawn as one quiet strip. */
 .voices { margin-top: 28px; }
 .voices-bar { display: flex; gap: 2px; height: 3px; }

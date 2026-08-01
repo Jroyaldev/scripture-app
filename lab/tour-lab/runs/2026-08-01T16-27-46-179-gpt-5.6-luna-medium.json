@@ -1,0 +1,480 @@
+{
+  "runId": "2026-08-01T16-27-46-179-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T16:27:46.179Z",
+  "promptId": null,
+  "prompt": "from garden to garden",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "From Garden to Garden",
+    "intro": "This tour follows the Bible’s garden-shaped story: life with God in Eden, exile from that life, Jesus’ testing and victory in a garden, and the risen Christ mistaken for a gardener. It ends not with a return to a lost past, but with the Bible’s vision of creation renewed as a garden-city where God dwells with humanity.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:back-to-the-tree-of-life",
+        "startSec": 154,
+        "endSec": 384,
+        "why": "Begin with the garden as sacred presence, not merely scenery. The speakers connect “the tree of life” with God’s presence in the temple and explain that humanity’s exile creates the longing to “get back to the tree of life,” while the promised seed will open the way through sacrifice.",
+        "episodeTitle": "Back to the Tree of Life",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/0b7290bf-a0c7-4e5d-82fd-7ccd232e4385/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=0b7290bf-a0c7-4e5d-82fd-7ccd232e4385",
+        "durationSec": 3141,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:why-is-there-wilderness-imagery-in-the-lords-prayer",
+        "startSec": 2823,
+        "endSec": 3070,
+        "why": "This places Jesus in Gethsemane—the garden at the far end of the story’s crisis. The speakers call it “the opposite of the wilderness” and trace Jesus’ repeated prayer, “not what I desire, but what you desire,” back through the wilderness testing and the garden’s language of desire.",
+        "episodeTitle": "The Wilderness Q+R: Why Is There Wilderness Imagery in the Lord’s Prayer?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/9acb1e83-f4bd-4e34-ad96-82ae159bf943/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=9acb1e83-f4bd-4e34-ad96-82ae159bf943",
+        "durationSec": 3755,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:trees-ancients",
+        "startSec": 699,
+        "endSec": 927,
+        "why": "Now hear the resurrection as the fulfillment of the human vocation left unfinished in Eden. The speakers say the second Adam, “Jesus, crucified and risen,” secures what the first Adam did not attain: access to God’s eternal life and “a humanity fully in tune with God,” transformed in resurrection.",
+        "episodeTitle": "Trees of the Ancients",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/57b34286-d0c1-4537-ad4b-ab151e0ac280/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=57b34286-d0c1-4537-ad4b-ab151e0ac280",
+        "durationSec": 3488,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "startSec": 583,
+        "endSec": 690,
+        "why": "This is the intimate hinge of the tour: in John 20, Mary sees the risen Jesus but thinks “he was the gardener.” The commentator follows her grief, her recognition when Jesus says “Mary,” and her commission to announce, “I have seen the Lord.”",
+        "episodeTitle": "John 20:1-31",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/z8yyjpv9fmtit6hd/john_201-3185o5y.mp3",
+        "durationSec": 1726,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:heavenly-city",
+        "startSec": 3190,
+        "endSec": 3325,
+        "why": "Finish with the destination: not simply Eden restored, but garden, city, temple, and new creation gathered together. The speakers describe “the tent of God” dwelling among humans, open gates, a river and trees, and the tree of life flowing from God’s throne—“an infinite source of abundance and life.”",
+        "episodeTitle": "The City E13: The Heavenly City",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/fc7f7a97-7350-4315-8216-76eb3af655a5/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=fc7f7a97-7350-4315-8216-76eb3af655a5",
+        "durationSec": 3918,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips move from guarded access to the tree of life, through Jesus’ faithful surrender in the garden and his resurrection appearance, toward a future where the garden is no longer closed. The final image is God’s presence filling the whole renewed world: life flowing outward, and humanity finally at home with God.",
+    "totalSeconds": 947
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2981,
+      "promptTokens": 1593,
+      "completionTokens": 269,
+      "reasoningTokens": 75,
+      "cachedPromptTokens": 1574,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00017944000000000003
+    },
+    {
+      "i": 1,
+      "latencyMs": 3400,
+      "promptTokens": 10431,
+      "completionTokens": 274,
+      "reasoningTokens": 75,
+      "cachedPromptTokens": 1590,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012853500000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 2698,
+      "promptTokens": 17691,
+      "completionTokens": 354,
+      "reasoningTokens": 50,
+      "cachedPromptTokens": 10428,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012244800000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 2923,
+      "promptTokens": 20971,
+      "completionTokens": 295,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 17688,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00076418
+    },
+    {
+      "i": 4,
+      "latencyMs": 6771,
+      "promptTokens": 26374,
+      "completionTokens": 787,
+      "reasoningTokens": 139,
+      "cachedPromptTokens": 20968,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001357555
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "garden to garden Eden Gethsemane",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 114,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "garden of Eden garden tomb resurrection",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 111,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Adam Jesus garden death resurrection",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 67,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 2,
+        "verse": 0,
+        "limit": 20
+      },
+      "ms": 63,
+      "summary": "20 of 591 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 18,
+        "verse": 0,
+        "limit": 20
+      },
+      "ms": 0,
+      "summary": "5 of 76 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "John",
+        "chapter": 20,
+        "verse": 0,
+        "limit": 20
+      },
+      "ms": 0,
+      "summary": "10 of 102 moments"
+    },
+    {
+      "at": 1,
+      "name": "read_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 2,
+        "fromVerse": 8,
+        "toVerse": 17
+      },
+      "ms": 2,
+      "summary": "Genesis 2:8–17 (WEB)"
+    },
+    {
+      "at": 1,
+      "name": "read_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 3,
+        "fromVerse": 22,
+        "toVerse": 24
+      },
+      "ms": 1,
+      "summary": "Genesis 3:22–24 (WEB)"
+    },
+    {
+      "at": 1,
+      "name": "read_passage",
+      "args": {
+        "book": "John",
+        "chapter": 20,
+        "fromVerse": 1,
+        "toVerse": 18
+      },
+      "ms": 0,
+      "summary": "John 20:1–18 (WEB)"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Mary mistook him for the gardener garden resurrection",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 101,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "new creation garden temple presence of God Revelation 21 22",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 63,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "first Adam second Adam garden Jesus",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 81,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:why-is-there-wilderness-imagery-in-the-lords-prayer",
+        "fromSec": 2600,
+        "toSec": 3500
+      },
+      "ms": 1,
+      "summary": "19 skim lines, 2600s–3500s of The Wilderness Q+R: Why Is There Wilderness Imagery in the Lord’s Prayer?"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:c383141e-bde8-11ed-acd3-679be11d90c3",
+        "fromSec": 650,
+        "toSec": 1100
+      },
+      "ms": 3,
+      "summary": "10 skim lines, 650s–1100s of Holy Week Special: Resurrection Sunday"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "fromSec": 500,
+        "toSec": 850
+      },
+      "ms": 3,
+      "summary": "8 skim lines, 500s–850s of John 20:1-31"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:trees-ancients",
+        "fromSec": 500,
+        "toSec": 1000
+      },
+      "ms": 5,
+      "summary": "10 skim lines, 500s–1000s of Trees of the Ancients"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:back-to-the-tree-of-life",
+        "fromSec": 100,
+        "toSec": 800
+      },
+      "ms": 0,
+      "summary": "15 skim lines, 100s–800s of Back to the Tree of Life"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:heavenly-city",
+        "fromSec": 3100,
+        "toSec": 3700
+      },
+      "ms": 0,
+      "summary": "13 skim lines, 3100s–3700s of The City E13: The Heavenly City"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:why-is-there-wilderness-imagery-in-the-lords-prayer",
+        "fromSec": 2790,
+        "toSec": 3495
+      },
+      "ms": 0,
+      "summary": "2790s–3090s of The Wilderness Q+R: Why Is There Wilderness Imagery in the Lord’s Prayer?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:back-to-the-tree-of-life",
+        "fromSec": 145,
+        "toSec": 410
+      },
+      "ms": 1,
+      "summary": "145s–410s of Back to the Tree of Life"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:trees-ancients",
+        "fromSec": 665,
+        "toSec": 950
+      },
+      "ms": 0,
+      "summary": "665s–950s of Trees of the Ancients"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d2454984-com-96e88155-08af-3240-94ab-4e13ecb0d2e9",
+        "fromSec": 548,
+        "toSec": 725
+      },
+      "ms": 0,
+      "summary": "548s–725s of John 20:1-31"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heavenly-city",
+        "fromSec": 3150,
+        "toSec": 3335
+      },
+      "ms": 0,
+      "summary": "3150s–3335s of The City E13: The Heavenly City"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:c383141e-bde8-11ed-acd3-679be11d90c3",
+        "fromSec": 920,
+        "toSec": 1060
+      },
+      "ms": 0,
+      "summary": "920s–1060s of Holy Week Special: Resurrection Sunday"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 25,
+    "tapeSec": 1352,
+    "deniedWindows": 0,
+    "promptTokens": 77060,
+    "completionTokens": 1979,
+    "reasoningTokens": 339,
+    "cachedPromptTokens": 52248,
+    "wallMs": 19395,
+    "modelLatencyMs": 18773,
+    "toolMs": 616
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004811,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T16:28:05.574Z"
+}
