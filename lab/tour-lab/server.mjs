@@ -459,9 +459,11 @@ Include only the keys the chosen form needs; stage directions are optional and m
           && cueNorm.includes(` ${norm(sc.highlight.quote)} `))
           ? { quote: sc.highlight.quote.trim() }
           : null;
+        /* A verse scene earns one aside — the movement, not the play-by-play.
+           Only the verse-less scene, whose asides ARE the stage, keeps two. */
         const asides = (Array.isArray(sc.asides) ? sc.asides : [])
           .filter((a) => a && typeof a.text === 'string' && a.text.trim().length >= 8)
-          .slice(0, 2)
+          .slice(0, verseNorm.trim() ? 1 : 2)
           .map((a) => {
             const t = a.text.trim();
             return { text: t.length > 70 ? t.slice(0, 70).replace(/\s+\S*$/, '') + '…' : t, cue: cueOk(a.cue) ? a.cue.trim() : null };
@@ -493,7 +495,7 @@ The clip's purpose in its tour: ${String(body.why || '').slice(0, 400)}
 Direct up to 4 SCENES — as many as the teaching has MOVEMENTS, no more. ONE scene is common; use several only when the teacher genuinely moves between passages. Each scene:
 - "verse": the passage being discussed at that point — "Book chapter:verse" or a range of at most 3 verses. Only passages genuinely walked through, not passing mentions.
 - "cue": a distinctive phrase of 3-8 words COPIED VERBATIM from the transcript at the moment this scene should appear.
-- "groups": up to 2 word-groups inside that verse the teaching turns on — 2-4 single words each that appear in the verse text, a label (max 18 characters), and optionally that group's own verbatim cue phrase.
+- "groups": up to 2 word-groups inside that verse the teaching turns on — 2-4 single words each that appear in the verse text, a label (max 18 characters), and optionally that group's own verbatim cue phrase. The best groups catch a pattern in the verse's own wording — a parallelism, an echoed pair, the words the argument physically turns on ("eyes, see, ears, hear" when the teacher dwells on refused senses) — not just topic words.
 - "footnotes": up to 2 — when the teacher gives a translation or textual note about ONE word of the verse: {"word":"...","note":"the teacher's point, max 90 chars","cue":"..."}. The word must be in the verse text.
 - "allusions": up to 2 — when the teacher says this verse echoes or draws on ANOTHER passage: {"verse":"Psalm 82:1","note":"what the teacher says it carries, max 60 chars","cue":"..."}. Only allusions the teacher actually makes.
 - "terms": up to 2 — when the teacher explains an original-language word: {"term":"hesed","gloss":"the teacher's gloss, max 48 chars","cue":"..."}. Any transliterated Hebrew or Greek word the teacher dwells on (elohim, hesed, hilasterion, shalom) deserves its card.
@@ -501,7 +503,7 @@ Direct up to 4 SCENES — as many as the teaching has MOVEMENTS, no more. ONE sc
 - "chain": at most 1 — when the teacher traces one line through scripture: {"refs":["Isaiah 53:1","John 12:38","Romans 10:16"],"note":"max 60 chars","cue":"..."} — 2 to 4 single verses in the order the chain runs. The classic case: an Old Testament line quoted in the New — when the teacher makes that move, the chain is the right box, not two separate scenes.
 - "caveat": at most 1 — when the teacher says what the passage does NOT say: {"text":"max 90 chars","cue":"..."}.
 - "highlight": at most 1, USED SPARINGLY — one sentence worth keeping ABOUT THE TEXT OR ITS MEANING, copied VERBATIM from the transcript (12-140 chars): {"quote":"..."}. Never a sentence about method, markers, the episode, or the speakers themselves. Most clips have none.
-- "asides": up to 2 — for a stretch where the teacher is talking but no verse language is in play (context, story, setup): one line naming what they are doing: {"text":"setting the letter's context","cue":"..."} — max 70 chars, present tense, no hype.
+- "asides": at most 1 per scene — for a stretch where the teacher is talking but no verse language is in play (context, story, setup): one line naming the MOVEMENT they are making, never the play-by-play: {"text":"outlining the sign act and its explanation","cue":"..."} — max 70 chars, present tense, no hype. "Setting the letter's context" is an aside; "explains the daytime gathering" is narration and belongs to nobody.
 
 The stage displays the World English Bible; the teacher may read another translation. Direct with the words the TEACHING turns on even if the displayed translation phrases them differently ("none" against "no one", "sons of God" against "God's sons") — mismatches are mapped onto the displayed text afterward, meaning for meaning. A word may be a short phrase of up to 3 words.
 Spread your directions across the WHOLE clip — the stage draws each artifact at the moment its cue is spoken, and long empty stretches are dead air. Every cue is verbatim from the transcript. Fewer, truer artifacts beat coverage. A clip that discusses no specific verse gets {"scenes":[]}.
@@ -672,7 +674,7 @@ Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.lengt
 ${stretch}
 
 Direct 1-3 additional artifacts drawn FROM THIS STRETCH ONLY, for that same verse (its text: ${host.verses.map((v) => v.text).join(' ').slice(0, 600)}). Same rules as before — group words must appear in the verse text, every cue is a phrase copied verbatim from THIS stretch, fewer and truer beats coverage.
-An "aside" is often the right direction for a stretch like this — one line naming what the teacher is doing: {"asides":[{"text":"setting the letter's context","cue":"..."}]} (max 70 chars, present tense).\nAnswer ONLY with JSON: {"groups":[...],"footnotes":[],"terms":[],"allusions":[],"asides":[],"caveat":null,"highlight":null}`, 6000);
+An "aside" is often the right direction for a stretch like this — one line naming the MOVEMENT the teacher is making, never the play-by-play: {"asides":[{"text":"setting the letter's context","cue":"..."}]} (max 70 chars, present tense). At most one aside; "explains the daytime gathering" is narration, not an aside.\nAnswer ONLY with JSON: {"groups":[...],"footnotes":[],"terms":[],"allusions":[],"asides":[],"caveat":null,"highlight":null}`, 6000);
             if (extraRaw) {
               const stretchNorm = ` ${norm(stretch)} `;
               const extra = validateArtifacts(extraRaw, host.verseNorm, stretchNorm);
@@ -691,7 +693,7 @@ An "aside" is often the right direction for a stretch like this — one line nam
               for (const t of extra.terms.slice(0, 1)) host.terms.push(clampIn(t));
               for (const a of extra.allusions.slice(0, 1)) host.allusions.push(clampIn(a));
               host.asides = host.asides || [];
-              for (const a of (extra.asides || []).slice(0, 2)) host.asides.push(clampIn(a));
+              for (const a of (extra.asides || []).slice(0, 1)) host.asides.push(clampIn(a));
               if (extra.caveat && !host.caveat) host.caveat = clampIn(extra.caveat);
               if (extra.highlight && !host.highlight) host.highlight = clampIn(extra.highlight);
             }
