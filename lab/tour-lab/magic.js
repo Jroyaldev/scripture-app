@@ -207,6 +207,8 @@ let whispers = [];
 function presentTour(tour, prompt) {
   delete $('#tour').dataset.form;
   document.querySelector('.lexicon')?.remove();
+  currentThreads = null;
+  $('#steps').classList.remove('has-threads');
   $('#tour-title').textContent = tour.title;
   $('#tour-intro').textContent = tour.intro;
   $('#tour-closing').textContent = tour.closing;
@@ -258,6 +260,7 @@ function presentTour(tour, prompt) {
     setTimeout(() => el.classList.add('in'), 350 + i * 240);
   });
 
+  buildVoices(tour);
   fetchWhispers(tour);
   fetchForm(tour, prompt);
 }
@@ -302,29 +305,31 @@ function applyForm(plan) {
   if (plan.form === 'lexicon') {
     const lex = document.createElement('div');
     lex.className = 'lexicon';
-    const term = document.createElement('p');
-    term.className = 'lexicon-term';
-    term.textContent = plan.term;
-    lex.appendChild(term);
-    const row = document.createElement('div');
-    row.className = 'lexicon-renderings';
-    for (const r of plan.renderings) {
-      const b = document.createElement('button');
-      b.className = 'rendering';
-      b.textContent = r.label;
-      b.addEventListener('click', () => items[r.steps[0]]?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
-      row.appendChild(b);
-      for (const idx of r.steps) {
-        const li = items[idx];
-        if (li && !li.querySelector('.rendering-tag')) {
-          const t = document.createElement('p');
-          t.className = 'rendering-tag';
-          t.textContent = r.label;
-          li.insertBefore(t, li.firstChild);
+    for (const block of plan.terms) {
+      const term = document.createElement('p');
+      term.className = 'lexicon-term';
+      term.textContent = block.term;
+      lex.appendChild(term);
+      const row = document.createElement('div');
+      row.className = 'lexicon-renderings';
+      for (const r of block.renderings) {
+        const b = document.createElement('button');
+        b.className = 'rendering';
+        b.textContent = r.label;
+        b.addEventListener('click', () => items[r.steps[0]]?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+        row.appendChild(b);
+        for (const idx of r.steps) {
+          const li = items[idx];
+          if (li && !li.querySelector('.rendering-tag')) {
+            const t = document.createElement('p');
+            t.className = 'rendering-tag';
+            t.textContent = r.label;
+            li.insertBefore(t, li.firstChild);
+          }
         }
       }
+      lex.appendChild(row);
     }
-    lex.appendChild(row);
     $('#tour-intro').after(lex);
   }
 
@@ -338,6 +343,191 @@ function applyForm(plan) {
       li.insertBefore(t, li.firstChild);
     }
   }
+
+  if (plan.threads?.length) {
+    currentThreads = plan.threads;
+    // Draw once the stagger has finished laying the cards down.
+    setTimeout(drawThreads, 500 + items.length * 240 + 500);
+  }
+
+  scriptureMarks = {};
+  for (const m of plan.marks || []) scriptureMarks[m.step] = m;
+}
+
+// ------------------------------------- the loom, over the scripture itself
+// While a clip plays, the model's named words in the cited verse carry the
+// connection grammar: an underline run under each word, one vertical
+// gathering them in the margin, one soft corner, the label in words. The
+// model picked the words; every coordinate is the house's; a word the
+// verse doesn't contain is silently nothing.
+
+let scriptureMarks = {};
+
+function wrapWord(root, word) {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const re = new RegExp(`(?<![A-Za-z])${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z])`, 'i');
+  let node;
+  while ((node = walker.nextNode())) {
+    if (node.parentElement.closest('.sword, sup, .verses-ref')) continue;
+    const m = re.exec(node.textContent);
+    if (!m) continue;
+    const hit = node.splitText(m.index);
+    hit.splitText(m[0].length);
+    const span = document.createElement('span');
+    span.className = 'sword';
+    hit.parentNode.insertBefore(span, hit);
+    span.appendChild(hit);
+    return span;
+  }
+  return null;
+}
+
+function annotateScripture(li, mark) {
+  const q = li.querySelector('.verses');
+  if (!q?.classList.contains('has') || !mark) return;
+  q.querySelector('svg.smarks')?.remove();
+  const spans = mark.words.map((w) => q.querySelector(`.sword[data-w="${CSS.escape(w)}"]`) || (() => {
+    const s = wrapWord(q, w);
+    if (s) s.dataset.w = w;
+    return s;
+  })()).filter(Boolean);
+  if (spans.length < 2) return;
+
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('class', 'smarks');
+  const qr = q.getBoundingClientRect();
+  const runs = spans.map((sp) => {
+    const r = sp.getBoundingClientRect();
+    return { x1: r.left - qr.left, x2: r.right - qr.left, y: r.bottom - qr.top + 1.5 };
+  }).sort((a, b) => a.y - b.y || a.x1 - b.x1);
+  const lane = -14;
+  const R = 8;
+  const parts = [];
+  /* One vertical gathers every run; its top turns one soft corner into the
+     first run's underline — the bracket grammar, nothing else. */
+  const first = runs[0];
+  const last = runs[runs.length - 1];
+  parts.push(`M ${first.x1} ${first.y} H ${lane + R} Q ${lane} ${first.y} ${lane} ${first.y + R} V ${last.y}`);
+  for (const run of runs) {
+    parts.push(`M ${run.x1} ${run.y} H ${run.x2}`);
+    if (run !== first) parts.push(`M ${lane} ${run.y} H ${run.x1}`);
+  }
+  const path = document.createElementNS(NS, 'path');
+  path.setAttribute('d', parts.join(' '));
+  svg.appendChild(path);
+  if (mark.label) {
+    /* Along the gathering vertical, book-margin style, matching the
+       threads — a dense verse block has no empty line to rest a
+       horizontal label on. */
+    const midY = (first.y + last.y) / 2;
+    const label = document.createElementNS(NS, 'text');
+    label.setAttribute('x', lane - 5);
+    label.setAttribute('y', midY);
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('transform', `rotate(-90 ${lane - 5} ${midY})`);
+    label.textContent = mark.label;
+    svg.appendChild(label);
+  }
+  q.appendChild(svg);
+  /* The loom draws itself in — ink arriving, not appearing. */
+  const len = path.getTotalLength();
+  path.style.strokeDasharray = String(len);
+  path.style.strokeDashoffset = String(len);
+  requestAnimationFrame(() => { path.style.strokeDashoffset = '0'; });
+}
+
+// -------------------------------------------------- threads, house-drawn
+// The loom principle, pointed at audio: the model named which steps speak
+// to each other and in which of three house words; every coordinate below
+// is ours. Lines run down the left gutter — an exit, one soft corner, a
+// vertical, one soft corner, an entrance — and redraw whenever the layout
+// breathes (a card opening its verses shifts everything under it).
+
+let currentThreads = null;
+
+function drawThreads() {
+  const list = $('#steps');
+  list.querySelector('svg.threads')?.remove();
+  if (!currentThreads?.length) { list.classList.remove('has-threads'); return; }
+  list.classList.add('has-threads');
+  const items = [...list.children].filter((el) => el.classList?.contains('step'));
+  const NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('class', 'threads');
+  const lr = list.getBoundingClientRect();
+  const R = 8; // the app's corner radius canon
+  currentThreads.forEach((t, i) => {
+    const A = items[Math.min(t.a, t.b)];
+    const B = items[Math.max(t.a, t.b)];
+    if (!A || !B) return;
+    const ra = A.getBoundingClientRect();
+    const rb = B.getBoundingClientRect();
+    const x0 = ra.left - lr.left;                 // the cards' shared left edge
+    const ya = ra.top - lr.top + 30;
+    const yb = rb.top - lr.top + 30;
+    const gx = 14 + i * 12;                       // this thread's own gutter lane
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('d',
+      `M ${x0} ${ya} H ${gx + R} Q ${gx} ${ya} ${gx} ${ya + R} V ${yb - R} Q ${gx} ${yb} ${gx + R} ${yb} H ${x0}`);
+    svg.appendChild(path);
+    /* The kind runs along its own line, book-margin style — horizontal
+       labels at the card tops collided with the forms' own tags. */
+    const midY = (ya + yb) / 2;
+    const label = document.createElementNS(NS, 'text');
+    label.setAttribute('x', gx - 4);
+    label.setAttribute('y', midY);
+    label.setAttribute('text-anchor', 'middle');
+    label.setAttribute('transform', `rotate(-90 ${gx - 4} ${midY})`);
+    label.textContent = t.kind;
+    svg.appendChild(label);
+  });
+  list.appendChild(svg);
+}
+
+/* Layout breathes when a card plays (verses unfold) or the window resizes;
+   the threads follow. */
+const rethread = (() => {
+  let raf = null;
+  return () => {
+    if (!currentThreads) return;
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(drawThreads);
+  };
+})();
+window.addEventListener('resize', rethread);
+new ResizeObserver(rethread).observe($('#steps'));
+
+// ------------------------------------------- the voices, measured honestly
+// Not model output: the strip is arithmetic on the tour itself — each
+// publisher's share of the listening, in order of first appearance.
+
+function buildVoices(tour) {
+  document.querySelector('.voices')?.remove();
+  const shares = new Map();
+  for (const s of tour.steps) {
+    const key = s.source || s.sourceId;
+    shares.set(key, (shares.get(key) || 0) + (s.endSec - s.startSec));
+  }
+  if (shares.size < 2) return;
+  const total = [...shares.values()].reduce((a, b) => a + b, 0);
+  const wrap = document.createElement('div');
+  wrap.className = 'voices';
+  const bar = document.createElement('div');
+  bar.className = 'voices-bar';
+  const legend = document.createElement('p');
+  legend.className = 'voices-legend';
+  const names = [];
+  for (const [name, sec] of shares) {
+    const span = document.createElement('span');
+    span.style.flexGrow = String(sec / total);
+    span.title = `${name} · ${Math.round(sec / 60)} min`;
+    bar.appendChild(span);
+    names.push(`${name} ${Math.round(sec / 60)}`);
+  }
+  legend.textContent = names.join('  ·  ');
+  wrap.append(bar, legend);
+  $('#tour-intro').after(wrap);
 }
 
 async function fetchWhispers(tour) {
@@ -401,6 +591,10 @@ function toggleStep(li, step, index) {
   const w = whispers[index];
   whisperEl.textContent = w || '';
   if (w) setTimeout(() => whisperEl.classList.add('show'), 600);
+
+  // The verses become visible with the playing state; the loom needs their
+  // laid-out geometry, so it draws a beat later.
+  setTimeout(() => { if (current?.li === li) annotateScripture(li, scriptureMarks[index]); }, 700);
 
   fetch(`/api/window?recordId=${encodeURIComponent(step.recordId)}&from=${step.startSec}&to=${step.endSec}`)
     .then((r) => r.json())

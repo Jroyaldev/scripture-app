@@ -55,39 +55,84 @@ function validateFormPlan(plan, nSteps) {
   if (!plan || typeof plan !== 'object') return std;
   const idxOk = (i) => Number.isInteger(i) && i >= 0 && i < nSteps;
   const short = (s, n) => typeof s === 'string' && s.trim().length > 0 && s.trim().length <= n;
+
+  /* Threads ride any form. The model picks the anchors and the kind; the
+     page draws the line — and a thread between steps that don't exist, or
+     from a step to itself, or with a kind outside the house's three words,
+     simply isn't drawn. */
+  const KINDS = new Set(['echoes', 'challenges', 'same text']);
+  const threadSeen = new Set();
+  const threads = (Array.isArray(plan.threads) ? plan.threads : [])
+    .filter((t) => t && idxOk(t.a) && idxOk(t.b) && t.a !== t.b && KINDS.has(t.kind))
+    .filter((t) => {
+      const key = [Math.min(t.a, t.b), Math.max(t.a, t.b)].join('-');
+      if (threadSeen.has(key)) return false;
+      threadSeen.add(key);
+      return true;
+    })
+    .slice(0, 3)
+    .map((t) => ({ a: t.a, b: t.b, kind: t.kind }));
+  /* Scripture marks: the model names words inside a cited verse and what
+     binds them; the page draws the loom over the text — and only over
+     words it actually finds there, so a wrong pick is silently nothing. */
+  const marks = (Array.isArray(plan.marks) ? plan.marks : [])
+    .filter((m) => m && idxOk(m.step)
+      && Array.isArray(m.words) && m.words.length >= 2 && m.words.length <= 4
+      && m.words.every((w) => short(w, 20) && !/\s/.test(w.trim())))
+    .slice(0, 2)
+    .map((m) => ({
+      step: m.step,
+      words: m.words.map((w) => w.trim()),
+      label: short(m.label, 18) ? m.label.trim() : null,
+    }));
+
+  const withThreads = (p) => {
+    const out = { ...p };
+    if (threads.length) out.threads = threads;
+    if (marks.length) out.marks = marks;
+    return out;
+  };
+
   switch (plan.form) {
     case 'quiet':
-      return { form: 'quiet' };
+      return withThreads({ form: 'quiet' });
     case 'debate': {
       const SIDES = new Set(['yes', 'no', 'map', 'synthesis']);
       const stances = (Array.isArray(plan.stances) ? plan.stances : [])
         .filter((s) => s && idxOk(s.step) && SIDES.has(s.side));
       const seen = new Set(stances.map((s) => s.step));
       const sides = new Set(stances.map((s) => s.side));
-      if (seen.size !== stances.length || !sides.has('yes') || !sides.has('no')) return std;
-      return { form: 'debate', stances: stances.map((s) => ({ step: s.step, side: s.side })) };
+      if (seen.size !== stances.length || !sides.has('yes') || !sides.has('no')) return withThreads(std);
+      return withThreads({ form: 'debate', stances: stances.map((s) => ({ step: s.step, side: s.side })) });
     }
     case 'lexicon': {
-      if (!short(plan.term, 24)) return std;
-      const renderings = (Array.isArray(plan.renderings) ? plan.renderings : [])
-        .filter((r) => r && short(r.label, 22) && Array.isArray(r.steps) && r.steps.every(idxOk) && r.steps.length)
-        .slice(0, 6);
-      if (renderings.length < 2) return std;
-      return {
-        form: 'lexicon',
-        term: plan.term.trim(),
-        renderings: renderings.map((r) => ({ label: r.label.trim(), steps: [...new Set(r.steps)] })),
-      };
+      /* One term or several — the old single-term shape still validates. */
+      const raw = Array.isArray(plan.terms)
+        ? plan.terms
+        : (plan.term ? [{ term: plan.term, renderings: plan.renderings }] : []);
+      const terms = raw
+        .filter((t) => t && short(t.term, 24))
+        .map((t) => ({
+          term: t.term.trim(),
+          renderings: (Array.isArray(t.renderings) ? t.renderings : [])
+            .filter((r) => r && short(r.label, 22) && Array.isArray(r.steps) && r.steps.every(idxOk) && r.steps.length)
+            .slice(0, 6)
+            .map((r) => ({ label: r.label.trim(), steps: [...new Set(r.steps)] })),
+        }))
+        .filter((t) => t.renderings.length >= 2)
+        .slice(0, 3);
+      if (!terms.length) return withThreads(std);
+      return withThreads({ form: 'lexicon', terms });
     }
     case 'path': {
       const waypoints = (Array.isArray(plan.waypoints) ? plan.waypoints : [])
         .filter((w) => w && idxOk(w.step) && short(w.marker, 18));
       const seen = new Set(waypoints.map((w) => w.step));
-      if (seen.size < Math.ceil(nSteps / 2)) return std;
-      return { form: 'path', waypoints: waypoints.map((w) => ({ step: w.step, marker: w.marker.trim() })) };
+      if (seen.size < Math.ceil(nSteps / 2)) return withThreads(std);
+      return withThreads({ form: 'path', waypoints: waypoints.map((w) => ({ step: w.step, marker: w.marker.trim() })) });
     }
     default:
-      return std;
+      return withThreads(std);
   }
 }
 
@@ -266,13 +311,17 @@ ${steps.map((s, i) => `${i}. [${s.source}] ${s.episodeTitle}\n   ${String(s.why 
 Choose the FORM this tour should be set in, from exactly these:
 - "quiet"    — for grief, doubt, lament: the room lowers its voice. No parameters.
 - "debate"   — ONLY when steps genuinely take opposing positions. Assign each step a side: "yes" (affirms the asked position), "no" (challenges it), "map" (lays out the territory), "synthesis" (refuses the either-or). Use it only if at least one "yes" AND one "no" exist.
-- "lexicon"  — ONLY for a word study where the whys name distinct English renderings of one term. Give the term and 2-6 renderings, each naming which step(s) argue for it.
+- "lexicon"  — ONLY for a word study where the whys name distinct English renderings. Give 1-3 terms, each with 2-6 renderings naming which step(s) argue for it.
 - "path"     — for a walk through a book or story: give each step a short waypoint marker (a passage or scene name, max 18 characters).
 - "standard" — when none of the above is clearly right. Choosing standard is a good answer, not a failure.
 
+Separately, whatever the form: if two steps genuinely treat the SAME passage, or one step answers or challenges another, you may add up to 3 threads connecting them. Most tours need none — a thread is a claim, and a wrong one is worse than no thread.
+
+Also whatever the form: for up to 2 steps whose reason cites a specific verse, you may mark 2-4 KEY WORDS inside that verse that the teaching turns on, with a short label for what binds them (max 18 characters). Only single words that actually appear in the cited verse text; only when the teaching genuinely turns on them.
+
 Answer ONLY with JSON:
-{"form":"...", "stances":[{"step":0,"side":"yes"}], "term":"...", "renderings":[{"label":"...","steps":[0]}], "waypoints":[{"step":0,"marker":"..."}]}
-Include only the keys the chosen form needs.`,
+{"form":"...", "stances":[{"step":0,"side":"yes"}], "terms":[{"term":"...","renderings":[{"label":"...","steps":[0]}]}], "waypoints":[{"step":0,"marker":"..."}], "threads":[{"a":0,"b":3,"kind":"challenges"}], "marks":[{"step":2,"words":["saw","good","took"],"label":"echoes Eden"}]}
+kind is exactly one of: "echoes", "challenges", "same text". Include only the keys the chosen form needs; threads and marks are optional for every form.`,
           }],
         });
         const m = String(reply.message.content || '').match(/\{[\s\S]*\}/);

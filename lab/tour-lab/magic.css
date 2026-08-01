@@ -305,6 +305,67 @@ em.rel {
   margin-bottom: 10px;
 }
 
+/* threads — the loom, pointed at audio. Model-named anchors, house-drawn
+   lines: one lane per thread down the left gutter, corners at the canon
+   radius, the kind carried by a word and by nothing else. */
+.steps.has-threads { position: relative; padding-left: 52px; }
+svg.threads {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+svg.threads path {
+  fill: none;
+  stroke: color-mix(in oklab, var(--gold) 45%, transparent);
+  stroke-width: 1;
+}
+svg.threads text {
+  fill: var(--gold);
+  font-size: 9.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+/* the loom over scripture — model-named words, house-drawn grammar. */
+.verses { position: relative; }
+svg.smarks {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  pointer-events: none;
+}
+svg.smarks path {
+  fill: none;
+  stroke: var(--gold);
+  stroke-width: 1.2;
+  transition: stroke-dashoffset 900ms var(--ease);
+}
+svg.smarks text {
+  fill: var(--gold);
+  font-size: 9.5px;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+.sword { color: var(--ink); }
+
+/* the voices — arithmetic on the tour, drawn as one quiet strip. */
+.voices { margin-top: 28px; }
+.voices-bar { display: flex; gap: 2px; height: 3px; }
+.voices-bar span { background: var(--ink-3); border-radius: 1px; opacity: 0.55; }
+.voices-bar span:nth-child(odd) { opacity: 0.85; }
+.voices-legend {
+  margin-top: 8px;
+  font-size: 10.5px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
 /* path — stations down a line. */
 #tour[data-form="path"] .steps { position: relative; padding-left: 22px; }
 #tour[data-form="path"] .steps::before {

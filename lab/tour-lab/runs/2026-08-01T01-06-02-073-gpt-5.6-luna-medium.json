@@ -1,0 +1,393 @@
+{
+  "runId": "2026-08-01T01-06-02-073-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T01:06:02.073Z",
+  "promptId": null,
+  "prompt": "agape",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Agape: Love as a Chosen, Concrete Way of Life",
+    "intro": "This tour starts by clarifying what agape means, then follows that meaning into everyday action, covenant loyalty, enemy-love, and practical care for a community. The emphasis is not on love as a vague feeling, but on the kind of love that seeks another person’s good and takes shape in what we do.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:bab14dce-com-e682f172-58ea-311d-9645-2a1767c03cec",
+        "startSec": 576,
+        "endSec": 688,
+        "why": "Begin here for a direct definition of the Greek term. The speaker calls agape “a distinctly Christ-like kind of love” and describes it as “a self-giving commitment to the good of another person,” then begins showing how that love acts through patience and kindness.",
+        "episodeTitle": "1 Corinthians 13:1-13",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/3wz8xz/1_corinthians_131-13b6p96.mp3",
+        "durationSec": 1954,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:love-not-black-hole",
+        "startSec": 680,
+        "endSec": 831,
+        "why": "This clip broadens the definition beyond a word study. It contrasts “I love pizza” with lifelong commitment and argues that biblical love is “not primarily…a feeling,” but “a settled purpose to behave and choose to act in this way”—even when you do not feel like it.",
+        "episodeTitle": "Love Is Not A Black Hole",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/e5d85dd4-a616-4860-846c-fc4d57e11252/episodes/95bd3bb5-4c39-4a39-9604-258b0d6c37eb/audio/128/default.mp3?awCollectionId=e5d85dd4-a616-4860-846c-fc4d57e11252&awEpisodeId=95bd3bb5-4c39-4a39-9604-258b0d6c37eb",
+        "durationSec": 3542,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:why-does-jesus-want-us-love-our-enemies",
+        "startSec": 698,
+        "endSec": 779,
+        "why": "Now the tour moves to agape’s most demanding expression. Jesus’ words are read plainly: “love your enemies, and pray for those who persecute you.” The discussion then connects this to loving beyond one’s own circle, rather than merely returning love to people who already love you.",
+        "episodeTitle": "Sermon on the Mount E16: Why Does Jesus Want Us to Love Our Enemies?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/cb7392db-6308-431b-b3d1-dfc48389d5f9/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=cb7392db-6308-431b-b3d1-dfc48389d5f9",
+        "durationSec": 3097,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "startSec": 757,
+        "endSec": 870,
+        "why": "This clip adds the dimension of durable, promise-shaped love. The speakers describe chesed as love demonstrated while “keeping a promise,” combining “generosity, commitment, and affection,” and illustrate it through an elderly husband’s concrete care for his sick wife.",
+        "episodeTitle": "The Loyal Love of God",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e530ba3f-428a-4ef5-828c-34800da4963f/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e530ba3f-428a-4ef5-828c-34800da4963f",
+        "durationSec": 4105,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:c3561685-com-bf8d1d58-5a67-3a92-ba16-9b0d101571d9",
+        "startSec": 2403,
+        "endSec": 2581,
+        "why": "Finish with agape embodied in a shared life. NT Wright says the early church shared possessions so “there were no poor people among them,” and insists that agape involves “hard cash” because care requires “effort, money, will, and practical organization.”",
+        "episodeTitle": "#101 Sacrificial Love - NT Wright at London Bible Week",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR4443780652.mp3?updated=1749817989",
+        "durationSec": 3408,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "Taken together, these clips present agape as Christ-shaped love that chooses another’s good, remains loyal, crosses the boundary of hostility, and becomes visible in patient behavior and costly care. You can return to the final clip especially as a test of whether love has moved from an ideal into a way of living.",
+    "totalSeconds": 635
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3285,
+      "promptTokens": 1591,
+      "completionTokens": 49,
+      "reasoningTokens": 33,
+      "cachedPromptTokens": 1574,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00004719000000000001
+    },
+    {
+      "i": 1,
+      "latencyMs": 3830,
+      "promptTokens": 1886,
+      "completionTokens": 229,
+      "reasoningTokens": 39,
+      "cachedPromptTokens": 1588,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00019045500000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 3090,
+      "promptTokens": 11542,
+      "completionTokens": 337,
+      "reasoningTokens": 64,
+      "cachedPromptTokens": 1883,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014283300000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 3059,
+      "promptTokens": 14779,
+      "completionTokens": 263,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 11539,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0006781150000000001
+    },
+    {
+      "i": 4,
+      "latencyMs": 11541,
+      "promptTokens": 18940,
+      "completionTokens": 1092,
+      "reasoningTokens": 447,
+      "cachedPromptTokens": 14776,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0013233850000000003
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "agape Greek word love",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 84,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "love one another greatest commandment",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 58,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "1 Corinthians 13 love patient kind",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 104,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "love your enemies sacrificial love",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 85,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Bible love covenant steadfast loyal love",
+        "sourceId": "bibleproject",
+        "limit": 8
+      },
+      "ms": 66,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "agape",
+        "sourceId": "ask-nt-wright",
+        "limit": 8
+      },
+      "ms": 6,
+      "summary": "1 hits"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:bab14dce-com-e682f172-58ea-311d-9645-2a1767c03cec",
+        "fromSec": 400,
+        "toSec": 900
+      },
+      "ms": 5,
+      "summary": "11 skim lines, 400s–900s of 1 Corinthians 13:1-13"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:love-not-black-hole",
+        "fromSec": 0,
+        "toSec": 1300
+      },
+      "ms": 6,
+      "summary": "27 skim lines, 0s–1300s of Love Is Not A Black Hole"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 600,
+        "toSec": 1150
+      },
+      "ms": 0,
+      "summary": "12 skim lines, 600s–1150s of The Loyal Love of God"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:c3561685-com-bf8d1d58-5a67-3a92-ba16-9b0d101571d9",
+        "fromSec": 2150,
+        "toSec": 2900
+      },
+      "ms": 0,
+      "summary": "16 skim lines, 2150s–2900s of #101 Sacrificial Love - NT Wright at London Bible Week"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:why-does-jesus-want-us-love-our-enemies",
+        "fromSec": 650,
+        "toSec": 1250
+      },
+      "ms": 4,
+      "summary": "13 skim lines, 650s–1250s of Sermon on the Mount E16: Why Does Jesus Want Us to Love Our Enemies?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:bab14dce-com-e682f172-58ea-311d-9645-2a1767c03cec",
+        "fromSec": 540,
+        "toSec": 735
+      },
+      "ms": 0,
+      "summary": "540s–735s of 1 Corinthians 13:1-13"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:love-not-black-hole",
+        "fromSec": 660,
+        "toSec": 880
+      },
+      "ms": 0,
+      "summary": "660s–880s of Love Is Not A Black Hole"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:loyal-love-god",
+        "fromSec": 720,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "720s–900s of The Loyal Love of God"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:c3561685-com-bf8d1d58-5a67-3a92-ba16-9b0d101571d9",
+        "fromSec": 2380,
+        "toSec": 2635
+      },
+      "ms": 0,
+      "summary": "2380s–2635s of #101 Sacrificial Love - NT Wright at London Bible Week"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:why-does-jesus-want-us-love-our-enemies",
+        "fromSec": 680,
+        "toSec": 805
+      },
+      "ms": 0,
+      "summary": "680s–805s of Sermon on the Mount E16: Why Does Jesus Want Us to Love Our Enemies?"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 18,
+    "tapeSec": 975,
+    "deniedWindows": 0,
+    "promptTokens": 48738,
+    "completionTokens": 1970,
+    "reasoningTokens": 583,
+    "cachedPromptTokens": 31360,
+    "wallMs": 25229,
+    "modelLatencyMs": 24805,
+    "toolMs": 420
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003667,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T01:06:27.302Z"
+}

@@ -1,0 +1,326 @@
+{
+  "runId": "2026-08-01T01-04-46-390-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T01:04:46.390Z",
+  "promptId": null,
+  "prompt": "lukes emphasis",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Luke’s Emphasis: Outsiders, the Spirit, and the Kingdom Table",
+    "intro": "This tour gives you a compact way into Luke’s distinctive portrait of Jesus. It starts with an overview, then follows Luke’s concern for people on the margins, clarifies what Luke means by “the poor,” and finally lets one of Luke’s own stories show how Jesus responds to the lost.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:9c031039-com-933a175f-1a85-3737-95fe-9b5332cb2bda",
+        "startSec": 500,
+        "endSec": 756,
+        "why": "Begin here for a clear map of Luke’s two major emphases. The teacher says Luke highlights “the marginalized and the lower classes and people on the fringes of society,” then connects that concern with Luke’s unusually strong emphasis on the Holy Spirit continuing from Jesus into Acts.",
+        "episodeTitle": "Luke 1:1-4 and Introduction to Luke",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/s9hexc/intro_to_luke8y20h.mp3",
+        "durationSec": 1508,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:luke-part-2",
+        "startSec": 219,
+        "endSec": 420,
+        "why": "This gives the larger theological frame: Luke presents Jesus announcing God’s kingdom and highlights “the social implications of these kingdom communities.” The clip also points to Luke’s inaugural use of Isaiah and his focus on “the poor, the outcast, the marginalized,” including the distinctive place of women in the Jesus movement.",
+        "episodeTitle": "An Overview of Luke",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/45e29491-90d3-490a-a2c2-777bed140cb7/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=45e29491-90d3-490a-a2c2-777bed140cb7",
+        "durationSec": 1722,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:luke-part-3",
+        "startSec": 1803,
+        "endSec": 2100,
+        "why": "Stay with the question of the poor long enough to hear Luke’s category explained carefully. The speakers distinguish economic poverty from dishonor, sickness, and social exclusion, and describe Jesus’ mission as reaching those “relegated to positions outside the boundaries of God’s people.”",
+        "episodeTitle": "Good News for the Poor",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/86a129f7-0855-4f8a-bf60-eeefdc3914ce/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=86a129f7-0855-4f8a-bf60-eeefdc3914ce",
+        "durationSec": 3360,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:d67f661d-com-e839f2f9-d126-3db2-86bf-499f0e5e740a",
+        "startSec": 319,
+        "endSec": 550,
+        "why": "End with Luke 15 as a lived example rather than another abstract theme. The teacher explains why the complaint “This man receives sinners and eats with them” matters: table fellowship showed “who counted” and “who was in and who was out,” setting up Jesus’ stories of the lost sheep and the lost coin.",
+        "episodeTitle": "Luke 15:1-10",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/84niyh/luke_151-10a7v8c.mp3",
+        "durationSec": 1116,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips present Luke’s emphasis as more than a list of favorite characters or themes. Luke shows Jesus bringing God’s kingdom to people pushed outside—while the Spirit drives that mission forward—and makes welcome, recovery, and shared fellowship visible signs of what that kingdom looks like.",
+    "totalSeconds": 985
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3367,
+      "promptTokens": 1592,
+      "completionTokens": 66,
+      "reasoningTokens": 50,
+      "cachedPromptTokens": 1574,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00005751500000000001
+    },
+    {
+      "i": 1,
+      "latencyMs": 3222,
+      "promptTokens": 1887,
+      "completionTokens": 245,
+      "reasoningTokens": 34,
+      "cachedPromptTokens": 1589,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00020006500000000003
+    },
+    {
+      "i": 2,
+      "latencyMs": 4254,
+      "promptTokens": 12921,
+      "completionTokens": 347,
+      "reasoningTokens": 42,
+      "cachedPromptTokens": 1884,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0016065900000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 9832,
+      "promptTokens": 19880,
+      "completionTokens": 841,
+      "reasoningTokens": 282,
+      "cachedPromptTokens": 12918,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0015039550000000002
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 2,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Luke emphasis poor outsiders women sinners table fellowship Holy Spirit prayer",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 97,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Gospel of Luke major themes reversal kingdom riches poor",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 62,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Luke Jesus meals social outcasts Samaritans Gentiles",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 103,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Luke Acts purpose orderly account salvation all nations",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 67,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Luke Gospel Holy Spirit prayer joy compassion",
+        "sourceId": "bibleproject",
+        "limit": 8
+      },
+      "ms": 63,
+      "summary": "8 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Luke Gospel poor rich women outsiders",
+        "sourceId": "ask-nt-wright",
+        "limit": 8
+      },
+      "ms": 37,
+      "summary": "8 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:9c031039-com-933a175f-1a85-3737-95fe-9b5332cb2bda",
+        "fromSec": 500,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "500s–800s of Luke 1:1-4 and Introduction to Luke"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:luke-part-2",
+        "fromSec": 120,
+        "toSec": 700
+      },
+      "ms": 5,
+      "summary": "120s–420s of An Overview of Luke"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:luke-part-3",
+        "fromSec": 1800,
+        "toSec": 2700
+      },
+      "ms": 6,
+      "summary": "1800s–2100s of Good News for the Poor"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:luke-part-4",
+        "fromSec": 0,
+        "toSec": 500
+      },
+      "ms": 6,
+      "summary": "0s–300s of Jesus, Rebels, & Resurrection in Luke 9-24"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:42e3ae00-https-radicallychristian-com-p-11150",
+        "fromSec": 180,
+        "toSec": 650
+      },
+      "ms": 4,
+      "summary": "180s–480s of Who is Welcome at the Lord’s Table? with Boo Scott"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d67f661d-com-e839f2f9-d126-3db2-86bf-499f0e5e740a",
+        "fromSec": 250,
+        "toSec": 650
+      },
+      "ms": 1,
+      "summary": "250s–550s of Luke 15:1-10"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 4,
+    "toolCalls": 14,
+    "tapeSec": 1800,
+    "deniedWindows": 0,
+    "promptTokens": 36280,
+    "completionTokens": 1499,
+    "reasoningTokens": 408,
+    "cachedPromptTokens": 17965,
+    "wallMs": 21133,
+    "modelLatencyMs": 20675,
+    "toolMs": 453
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003368,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T01:05:07.523Z"
+}

@@ -1,0 +1,392 @@
+{
+  "runId": "2026-08-01T01-19-52-011-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T01:19:52.011Z",
+  "promptId": null,
+  "prompt": "Walk me through Genesis 6:1-4 — the sons of God, the daughters of men, and what the exact wording is doing",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Genesis 6:1–4: Reading the Strange Wording Carefully",
+    "intro": "This tour starts with the passage’s immediate setting and its three major interpretive options, then slows down over the grammar and sequencing of verse 4. You’ll hear how different teachers handle “sons of God,” “daughters of men,” the Nephilim, and the 120 years—while keeping a clear line between what Genesis says, what later traditions develop, and what remains disputed.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "startSec": 1126,
+        "endSec": 1390,
+        "why": "Begin here for a clean orientation to the wording and the interpretive landscape. The speaker lays out three views—spiritual beings, human rulers, and godly people—and then emphasizes that the scene functions in the narrative as “a further portrayal of the decay and depravity of the human race.” Most importantly for your question about exact wording, the speaker argues that the Nephilim are not explicitly the offspring: “they are not the offspring of the sons of God and the daughters of men,” but are present in the same period.",
+        "episodeTitle": "Genesis 4:1-6:8",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/ba4rg9y6b4ksgv6v/genesis_41-6889j29.mp3",
+        "durationSec": 1767,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:a3cf54d8ac6db89ab2eedd131d56e107",
+        "startSec": 1200,
+        "endSec": 1500,
+        "why": "Now hear a contrasting reading in detail. After reading the familiar sequence—humanity multiplies, “the sons of God saw” that the daughters were beautiful, and “they took wives for themselves, whomever they chose”—the speaker rejects the angelic interpretation and identifies the two groups as God’s people and those outside the true church. This clip also gives his distinctive reading of verse 3: the 120 years is “not setting the age limit for people,” but a period for repentance before the flood.",
+        "episodeTitle": "40 Minutes In The Old Testament: Episode 11",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_MIN_EP_11_Final.mp3?dest-id=245197",
+        "durationSec": 2412,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r",
+        "startSec": 2004,
+        "endSec": 2290,
+        "why": "This clip helps you see why the phrase “sons of God” attracts the divine-being interpretation, while carefully separating Genesis from later expansion. The hosts connect the phrase with “the same phrase” in Job, describe the spiritual-beings/divine-council view, and then point out that Genesis itself does not call the Nephilim half-breeds: “All it says is in the same time period.” They also explain how the later Book of Enoch “fills out the story” with angels, sex, and giants.",
+        "episodeTitle": "Genesis 1-11 Question & Response",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e1d03584-54ec-43f1-a199-59f940b9f1b5/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e1d03584-54ec-43f1-a199-59f940b9f1b5",
+        "durationSec": 2761,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:168c311c-5d5c-11f0-8252-7f9ec715a664",
+        "startSec": 1135,
+        "endSec": 1435,
+        "why": "End with a measured ancient-contextual perspective rather than a forced resolution. The speakers call Genesis 6 “a very tricky text” and compare its “sons of God” language with Job’s heavenly court, while stressing that the Bible gives “these few verses” and not the elaborate angelology found in surrounding Jewish literature. The closing observation—that Western readers may assume spiritual beings cannot be physical, whereas the passage may be reminding us that “heaven and earth…overlap and interlock”—opens the conceptual question without pretending the text says more than it does.",
+        "episodeTitle": "Who were \"the sons of God\" in Genesis 6?",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR8906685313.mp3?updated=1752131684",
+        "durationSec": 2194,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "Taken together, these clips should leave you with two habits for reading Genesis 6:1–4. Track the passage’s own sequence and claims—especially the difference between being present “in those days” and being identified as someone’s offspring—and distinguish that sparse wording from later interpretations involving angels, giants, or the Book of Enoch. The disagreement is real, but the text’s literary movement is clear: human expansion, seeing and taking, divine restraint, and the widening corruption that leads into the flood.",
+    "totalSeconds": 1150
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2812,
+      "promptTokens": 1617,
+      "completionTokens": 264,
+      "reasoningTokens": 42,
+      "cachedPromptTokens": 1574,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00017944000000000003
+    },
+    {
+      "i": 1,
+      "latencyMs": 4394,
+      "promptTokens": 15040,
+      "completionTokens": 483,
+      "reasoningTokens": 62,
+      "cachedPromptTokens": 1614,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0019841150000000003
+    },
+    {
+      "i": 2,
+      "latencyMs": 4010,
+      "promptTokens": 21357,
+      "completionTokens": 298,
+      "reasoningTokens": 54,
+      "cachedPromptTokens": 15037,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001119095
+    },
+    {
+      "i": 3,
+      "latencyMs": 9848,
+      "promptTokens": 25902,
+      "completionTokens": 1052,
+      "reasoningTokens": 208,
+      "cachedPromptTokens": 21354,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014131650000000003
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 6,
+        "verse": 1,
+        "limit": 25
+      },
+      "ms": 80,
+      "summary": "25 of 281 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 6,
+        "verse": 2,
+        "limit": 25
+      },
+      "ms": 0,
+      "summary": "25 of 281 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 6,
+        "verse": 4,
+        "limit": 25
+      },
+      "ms": 0,
+      "summary": "25 of 281 moments"
+    },
+    {
+      "at": 0,
+      "name": "read_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 6,
+        "fromVerse": 1,
+        "toVerse": 4
+      },
+      "ms": 3,
+      "summary": "Genesis 6:1–4 (WEB)"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "sons of God daughters of men",
+        "sourceId": "",
+        "limit": 12
+      },
+      "ms": 92,
+      "summary": "12 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Nephilim Genesis six",
+        "sourceId": "",
+        "limit": 12
+      },
+      "ms": 122,
+      "summary": "12 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "two interpretations Genesis 6 angels Seth",
+        "sourceId": "",
+        "limit": 12
+      },
+      "ms": 120,
+      "summary": "12 hits"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a3cf54d8ac6db89ab2eedd131d56e107"
+      },
+      "ms": 8,
+      "summary": "40 Minutes In The Old Testament: Episode 11 (2412s)"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a3cf54d8ac6db89ab2eedd131d56e107",
+        "fromSec": 1050,
+        "toSec": 1550
+      },
+      "ms": 0,
+      "summary": "10 skim lines, 1050s–1550s of 40 Minutes In The Old Testament: Episode 11"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r"
+      },
+      "ms": 1,
+      "summary": "Genesis 1-11 Question & Response (2761s)"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r",
+        "fromSec": 1900,
+        "toSec": 2500
+      },
+      "ms": 0,
+      "summary": "12 skim lines, 1900s–2500s of Genesis 1-11 Question & Response"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f"
+      },
+      "ms": 1,
+      "summary": "Genesis 4:1-6:8 (1767s)"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "fromSec": 1050,
+        "toSec": 1600
+      },
+      "ms": 0,
+      "summary": "11 skim lines, 1050s–1600s of Genesis 4:1-6:8"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:168c311c-5d5c-11f0-8252-7f9ec715a664"
+      },
+      "ms": 6,
+      "summary": "Who were \"the sons of God\" in Genesis 6? (2194s)"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:168c311c-5d5c-11f0-8252-7f9ec715a664",
+        "fromSec": 950,
+        "toSec": 1450
+      },
+      "ms": 0,
+      "summary": "10 skim lines, 950s–1450s of Who were \"the sons of God\" in Genesis 6?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a3cf54d8ac6db89ab2eedd131d56e107",
+        "fromSec": 1200,
+        "toSec": 1535
+      },
+      "ms": 0,
+      "summary": "1200s–1500s of 40 Minutes In The Old Testament: Episode 11"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r",
+        "fromSec": 1990,
+        "toSec": 2510
+      },
+      "ms": 0,
+      "summary": "1990s–2290s of Genesis 1-11 Question & Response"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "fromSec": 1090,
+        "toSec": 1405
+      },
+      "ms": 0,
+      "summary": "1090s–1390s of Genesis 4:1-6:8"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:168c311c-5d5c-11f0-8252-7f9ec715a664",
+        "fromSec": 1135,
+        "toSec": 1650
+      },
+      "ms": 0,
+      "summary": "1135s–1435s of Who were \"the sons of God\" in Genesis 6?"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 4,
+    "toolCalls": 20,
+    "tapeSec": 1200,
+    "deniedWindows": 0,
+    "promptTokens": 63916,
+    "completionTokens": 2097,
+    "reasoningTokens": 366,
+    "cachedPromptTokens": 39579,
+    "wallMs": 21603,
+    "modelLatencyMs": 21064,
+    "toolMs": 433
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004696,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T01:20:13.614Z"
+}
