@@ -667,29 +667,39 @@ const OWNERSHIP = `((sources) => {
 })(${JSON.stringify(SOURCES)})`;
 
 /**
- * The card's ground, swept the way the accent is · 2026-07-30.
+ * The card's band, swept the way the accent is · RESTATED 2026-08-01.
  *
- * The resources room's cards wear a muted homage to the publisher's hue —
- * hue kept, chroma clamped, lightness replaced by the atmosphere's own figure
- * (see --ground-fit-* in styles.css). Eleven publishers × four atmospheres is
- * forty-four grounds, and the whole of the reader's ask — "important they look
- * good" — rests on two numbers nobody could otherwise check:
+ * The tinted-ground sweep stood here — forty-four derived grounds, an ink
+ * floor on each. The maintainer moved the publisher's colour into a full-bleed
+ * head band at full chroma (docs/discovery-2026-07-30/player/
+ * library-cards-decision.md) and the card's words came home to paper, so the
+ * per-publisher ink matrix lost its subject: the extent now sits on the app's
+ * own paper, whose ink ranks are asserted where the tokens are declared.
  *
- *   1. It is a HOMAGE, not a reproduction. The ground must not be the brand's
- *      own colour, and must not have collapsed back onto the app's paper.
- *   2. The ink on it holds. The app's tertiary is drawn to clear 4.5 against
- *      paper by a hair and does NOT clear it on a tinted card — 4.07:1 at the
- *      worst — which is exactly why the card steps its quietest rank up to
- *      secondary. This asserts the rank that is actually used, resting and
- *      under the pointer, so the step cannot be undone without failing here.
+ * What is worth sweeping in the running engine is what can now silently break
+ * per publisher:
+ *
+ *   1. THE BAND IS THE BRAND. Its ground must be --resource-source itself —
+ *      full chroma is the decision's word — not a derivation, not paper.
+ *   2. THE MARK ACTUALLY DRAWS. Eight of the eleven marks are SVGs with no
+ *      intrinsic size; a slot regression that stops stating width or height
+ *      ships an empty band (the decision doc records the collapse), and only
+ *      a layout engine can catch it.
+ *   3. ONE HEIGHT. The band's whole normalization claim is a declared 30px
+ *      whatever mark is inside it.
  *
  * Colours are normalised through a canvas for the same reason the accent sweep
  * does it: a computed `oklch()` serialises as `oklch(...)` and a token as
  * `rgb(...)`, and one string parser for two formats is two chances to be wrong.
  */
-const GROUND = `((sources) => {
+const BAND = `((sources) => {
   const card = document.querySelector(".resource-card");
-  if (!card) return null;
+  const band = card && card.querySelector(".resource-card-band");
+  if (!band) return null;
+  /* A token question, not a layout one: computed colour resolves on a card in
+     a hidden panel, which is all this sweep needs — the per-source GEOMETRY
+     (one height, a drawn mark) is measured where the room is actually open,
+     because a hidden card's contents have no geometry at any scroll position. */
   const was = card.getAttribute("data-source");
   const ink = document.createElement("canvas").getContext("2d");
   const bytes = (value) => {
@@ -699,12 +709,6 @@ const GROUND = `((sources) => {
     ink.fillRect(0, 0, 1, 1);
     return [...ink.getImageData(0, 0, 1, 1).data].slice(0, 3).map((c) => c / 255);
   };
-  const channel = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
-  const luminance = ([r, g, b]) => 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
-  const contrast = (a, b) => {
-    const [x, y] = [luminance(a), luminance(b)];
-    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
-  };
   const probe = document.createElement("span");
   probe.style.cssText = "position:absolute;pointer-events:none";
   card.append(probe);
@@ -712,40 +716,25 @@ const GROUND = `((sources) => {
     probe.style.backgroundColor = "color-mix(in srgb, " + value + " 100%, transparent)";
     return bytes(getComputedStyle(probe).backgroundColor);
   };
-  const shell = getComputedStyle(document.querySelector(".app-shell"));
-  const paper = bytes(shell.getPropertyValue("--bg-reading").trim());
-  /* The rank the card actually draws its quietest type in. Read off the
-     element rather than off the token, so the step is what is asserted. */
-  const quietest = bytes(getComputedStyle(card.querySelector(".resource-card-extent")).color);
   const rows = [];
   for (const source of sources) {
     card.setAttribute("data-source", source);
-    const ground = paint("var(--resource-ground)");
-    const lift = paint("var(--resource-ground-lift)");
+    band.setAttribute("data-source", source);
+    const painted = bytes(getComputedStyle(band).backgroundColor);
     const brand = paint("var(--resource-source)");
-    /* Is the publisher's own surface ALREADY inside the band the derivation
-       aims at — a pale, nearly-neutral tint rather than a saturated colour?
-       Luminance and channel spread answer that without carrying an oklch
-       implementation into the page, and the answer decides whether an equal
-       ground is a reproduction or simply the derivation's own output. */
-    const spread = Math.max(...brand) - Math.min(...brand);
     rows.push({
       source,
-      brandAlreadyMuted: luminance(brand) > 0.75 && spread < 0.12,
-      groundIsBrand: ground.every((c, at) => Math.abs(c - brand[at]) < 0.004),
-      groundIsPaper: ground.every((c, at) => Math.abs(c - paper[at]) < 0.004),
-      quietOnGround: Number(contrast(quietest, ground).toFixed(2)),
-      quietOnHover: Number(contrast(quietest, lift).toFixed(2)),
+      bandIsBrand: painted.every((c, at) => Math.abs(c - brand[at]) < 0.004),
     });
   }
   probe.remove();
   if (was === null) card.removeAttribute("data-source"); else card.setAttribute("data-source", was);
+  band.setAttribute("data-source", was === null ? "" : was);
   return rows;
-/* The unregistered sentinel is excluded below, and its exclusion is the point:
-   a source with no palette has no hue to pay homage to, so the derivation is
-   invalid at computed-value time and the card's ground falls back to the app's
-   own paper. That is the correct behaviour and it is not a ground this sweep
-   has anything to measure. */
+/* The unregistered sentinel is excluded below for the same reason it always
+   was: a source with no palette declares no --resource-source and no
+   --resource-symbol, so there is neither a brand to equal nor a mark to
+   measure. */
 })(${JSON.stringify(SOURCES.filter((source) => source !== "qa-unregistered-source"))})`;
 
 await cdp.send("Network.enable");
@@ -868,7 +857,7 @@ const room = await evaluate(`(() => {
     grammar: cards.every((card) => card.querySelector(".resource-card-title")
       && card.querySelector(".resource-card-ref")
       && card.querySelector(".resource-card-extent")
-      && (card.querySelector(".resource-card-plate") || card.querySelector(".resource-card-out"))),
+      && card.querySelector(".resource-card-band")),
     stray: cards.some((card) => /worked through|brought in alongside|mentioned|alluded to/
       .test(card.textContent ?? "")),
     // One control per card, and it is the card: the face IS the button, and
@@ -1032,7 +1021,7 @@ await screenshot("paper-resources", ".living-margin");
 const family = await evaluate(`(() => {
   const lens = document.querySelector("#margin-resources-panel:not([hidden])");
   const card = [...lens.querySelectorAll(".resource-card-face")]
-    .find((candidate) => candidate.querySelector('.resource-card-plate[data-source="naked-bible"]'));
+    .find((candidate) => candidate.querySelector('.resource-card-band[data-source="naked-bible"]'));
   const mark = card?.querySelector(".resource-card-play");
   const style = mark ? getComputedStyle(mark) : null;
   return {
@@ -1062,6 +1051,56 @@ assert.notEqual(family.filled, "rgba(0, 0, 0, 0)", "the family is filled, on eve
 assert.equal(family.stops, 0, "the card is the control; a second button inside it is a second tab stop");
 console.log("transport family", family);
 
+/* ── The band's geometry, on a card that is actually laid out ──────────────
+   The colour half of the band's contract is swept per theme above, on
+   whatever card the document holds — colour is a token and resolves hidden.
+   These two claims are LAYOUT and need a visible card, which this one is
+   (the family gate above found it in the open lens): one declared height for
+   all eleven, and a mark that actually drew — eight of the eleven marks are
+   SVGs with no intrinsic size, and a slot regression that stops stating
+   width or height ships an empty band (library-cards-decision.md records
+   the collapse). Only a layout engine can catch either. */
+const bandGeometry = await evaluate(`(async (sources) => {
+  const lens = document.querySelector("#margin-resources-panel:not([hidden])");
+  const card = lens && lens.querySelector(".resource-card");
+  const band = card && card.querySelector(".resource-card-band");
+  if (!band) return null;
+  card.scrollIntoView({ block: "center" });
+  await new Promise((frame) => requestAnimationFrame(() => requestAnimationFrame(frame)));
+  const mark = band.querySelector(".taught-here-mark");
+  const was = card.getAttribute("data-source");
+  const rows = [];
+  for (const source of sources) {
+    card.setAttribute("data-source", source);
+    band.setAttribute("data-source", source);
+    const slot = mark.getBoundingClientRect();
+    rows.push({
+      source,
+      bandH: band.getBoundingClientRect().height,
+      markW: Number(slot.width.toFixed(1)),
+      markH: Number(slot.height.toFixed(1)),
+      /* The box alone is foolable — the publisher's NAME is the element's
+         text, and text gives an artless span a perfectly plausible rect.
+         The first live launch passed the box check with every band empty.
+         What cannot be faked is the computed image. */
+      markDrawn: getComputedStyle(mark).backgroundImage !== "none",
+    });
+  }
+  if (was === null) card.removeAttribute("data-source"); else card.setAttribute("data-source", was);
+  band.setAttribute("data-source", was === null ? "" : was);
+  return rows;
+})(${JSON.stringify(SOURCES.filter((source) => source !== "qa-unregistered-source"))})`);
+assert.ok(bandGeometry, "no visible card to measure the band on");
+for (const row of bandGeometry) {
+  assert.equal(row.bandH, 30,
+    `${row.source}: the band is ${row.bandH}px; one declared height is the whole normalization claim`);
+  assert.ok(row.markW >= 8 && row.markH >= 8,
+    `${row.source}: the mark drew at ${row.markW}×${row.markH}px — a dimensionless SVG collapsed, and the band shipped empty`);
+  assert.equal(row.markDrawn, true,
+    `${row.source}: the mark's slot has a box and no artwork — the band shipped empty wearing the name's own rect`);
+}
+console.log(`band geometry: ${bandGeometry.length} publishers, one 30px band, every mark drawn`);
+
 /* Cold, and only for the press. Chromium's disk cache turns the second run of
    this tour into a local read, which removes the only window in which the dock
    is genuinely REACHING for anything — the state becomes uncatchable and its
@@ -1082,7 +1121,7 @@ await cdp.send("Network.setCacheDisabled", { cacheDisabled: true });
 await evaluate(`(() => {
   const lens = document.querySelector("#margin-resources-panel:not([hidden])");
   const cards = [...lens.querySelectorAll('.resource-card-face')]
-    .filter((card) => card.querySelector('.resource-card-plate[data-source="naked-bible"]'))
+    .filter((card) => card.querySelector('.resource-card-band[data-source="naked-bible"]'))
     .filter((card) => /worked through/.test(card.getAttribute("aria-label") ?? ""));
   cards[0]?.setAttribute("data-qa-target", "press");
   return cards.length;
@@ -1249,33 +1288,16 @@ for (const theme of ATMOSPHERES) {
   const worst = rows.reduce((low, row) => Math.min(low, row.accentOnPaper), Infinity);
   console.log(`ownership ${theme}: ${rows.length} sources, worst accent ${worst}:1`);
 
-  /* And the room's cards, on the same sweep and in the same engine. */
-  const grounds = await evaluate(GROUND);
-  assert.ok(grounds, "the ground probe found no card");
-  for (const row of grounds) {
-    /* RESTATED 2026-07-30, after the shelf lane handed this back failing. It
-       read `assert.equal(row.groundIsBrand, false)` — "an homage, not a
-       reproduction" — and The Listener's Bible Commentary broke it honestly:
-       their published surface is #E9F3FF, a pale near-neutral that already
-       sits inside the chroma band and at the lightness the derivation aims
-       for, so deriving from it returns it. That is the derivation working,
-       not a card wearing a raw brand colour, and the old assertion could only
-       have been satisfied by moving a publisher AWAY from their own colour
-       for the sake of a difference nobody asked for.
-       What the rule actually forbids is a SATURATED reproduction, so that is
-       what is asserted now: a ground may equal the brand only where the brand
-       was already muted. */
-    assert.ok(!row.groundIsBrand || row.brandAlreadyMuted,
-      `${theme}/${row.source}: the card's ground is a saturated brand colour — an homage, not a reproduction`);
-    assert.equal(row.groundIsPaper, false,
-      `${theme}/${row.source}: the card's ground collapsed back onto the app's paper; the homage is gone`);
-    assert.ok(row.quietOnGround >= ACCENT_FLOOR,
-      `${theme}/${row.source}: the card's quietest ink is ${row.quietOnGround}:1 on its own ground`);
-    assert.ok(row.quietOnHover >= ACCENT_FLOOR,
-      `${theme}/${row.source}: the card's quietest ink is ${row.quietOnHover}:1 under the pointer`);
+  /* And the room's cards, on the same sweep and in the same engine. The
+     tinted-ground matrix retired with the tint (2026-08-01, the band) — the
+     probe's own note says what replaced it and why. */
+  const bands = await evaluate(BAND);
+  assert.ok(bands, "the band probe found no card");
+  for (const row of bands) {
+    assert.equal(row.bandIsBrand, true,
+      `${theme}/${row.source}: the band is not the publisher's own colour`);
   }
-  const quietest = grounds.reduce((low, row) => Math.min(low, row.quietOnGround, row.quietOnHover), Infinity);
-  console.log(`grounds ${theme}: ${grounds.length} publishers, quietest ink ${quietest}:1`);
+  console.log(`bands ${theme}: ${bands.length} publishers wear their own colour`);
 }
 await setTheme("light");
 
@@ -2799,17 +2821,17 @@ await waitFor(`document.querySelector(".podcast-dock")?.getAttribute("data-expan
 await parkPointer();
 const forcedRoom = await evaluate(`(() => {
   const face = document.querySelector(".resource-card-face");
-  const plate = document.querySelector(".resource-card-plate");
+  const band = document.querySelector(".resource-card-band");
   return {
     faceBorder: face ? getComputedStyle(face).borderTopColor : null,
     faceGround: face ? getComputedStyle(face).backgroundColor : null,
-    plateOptOut: plate ? getComputedStyle(plate).forcedColorAdjust : null,
+    bandOptOut: band ? getComputedStyle(band).forcedColorAdjust : null,
   };
 })()`);
 assert.notEqual(forcedRoom.faceBorder, forcedRoom.faceGround,
   "a card's own edge disappears in the reader's colours");
-assert.equal(forcedRoom.plateOptOut, "none",
-  "the plate must keep the publisher's own pair — the marks are approved reverses");
+assert.equal(forcedRoom.bandOptOut, "none",
+  "the band must keep the publisher's own pair — the marks are approved reverses");
 console.log("forced colors, the room", forcedRoom);
 console.log("forced colors", forced);
 await cdp.send("Emulation.setEmulatedMedia", { features: [] });
@@ -2847,11 +2869,10 @@ console.log("narrow", narrow);
    MEASURED AND NOT PHOTOGRAPHED, and the reason is the section this sits in:
    at compact width the study column is FOLDED for the open player, so a
    picture of the room here is a picture of the fold. What can be checked is
-   the geometry, and it is the only thing at stake — the card was two-up until
-   this build, and a single column is the same column at every width, so the
-   one thing a much wider measure could break is a head line whose plate,
-   passage and extent stop needing to share a rule and drift apart. They are
-   still one row at 868px, and an entry is still one row of 48.
+   the geometry, and it is the only thing at stake — a single column is the
+   same column at every width, so the one thing a much wider measure could
+   break is the FOOT line, whose passage and tail could drift apart or wrap.
+   They are still one row at 868px, and an entry is still one row of 48.
 
    The pictures of both forms live where the room is actually open: the four
    atmospheres above, and the dense chapter. */
@@ -2861,18 +2882,19 @@ for (const form of ["cards", "list"]) {
   narrowForms[form] = await evaluate(`(() => {
     const lens = document.querySelector("#margin-resources-panel:not([hidden])");
     const first = lens.querySelector(".resource-card, .resource-entry");
-    const head = lens.querySelector(".resource-card-head");
+    const foot = lens.querySelector(".resource-card-foot");
     return first
       ? {
         box: Math.round(first.getBoundingClientRect().width) + "x" + Math.round(first.getBoundingClientRect().height),
-        /* ONE ROW, STILL: the head's three parts on one line at any measure.
-           Measured as the head's own height against its tallest child, NOT as
-           the number of distinct child top edges — the parts are 28, 17 and 14
-           pixels tall and centred, so three different tops is what a single
+        /* ONE ROW, STILL: the foot's two parts on one line at any measure.
+           Measured as the foot's own height against its tallest child, NOT as
+           the number of distinct child top edges — the parts are different
+           heights and centred, so different tops is what a single
            correctly-aligned row looks like. */
-        headOneRow: head
-          ? Math.round(head.getBoundingClientRect().height)
-            <= Math.max(...[...head.children].map((part) => Math.round(part.getBoundingClientRect().height))) + 2
+        footOneRow: foot
+          ? Math.round(foot.getBoundingClientRect().height)
+            <= Math.max(...[...foot.children].map((part) => Math.round(part.getBoundingClientRect().height)))
+              + parseFloat(getComputedStyle(foot).paddingBottom) + 2
           : null,
         overflowX: document.documentElement.scrollWidth > document.documentElement.clientWidth,
       }
@@ -2880,8 +2902,8 @@ for (const form of ["cards", "list"]) {
   })()`);
 }
 await setResourceView("cards");
-assert.equal(narrowForms.cards?.headOneRow ?? true, true,
-  "the card's head line broke into two rows at compact width");
+assert.equal(narrowForms.cards?.footOneRow ?? true, true,
+  "the card's foot line broke into two rows at compact width");
 assert.equal(narrowForms.cards?.overflowX ?? false, false, "the listings pushed the frame sideways");
 console.log("narrow forms", narrowForms);
 

@@ -568,49 +568,16 @@
   --accent-fit-floor: 0;      /* @kind other */
   --accent-fit-ceiling: 0.52; /* @kind other */
 
-  /* ── Fitting a publisher's HUE to the app's own paper ────────────────────
-     Added 2026-07-30 with the resources room's card ground. The sibling of the
-     accent fit above and the same idea turned ninety degrees: the accent keeps
-     the brand's chroma and clamps its LIGHTNESS, because it has to hold as a
-     mark; a card GROUND keeps the brand's hue and drops almost all of its
-     chroma, because it has to hold as paper.
-
-     The reader asked for this and named it: "maybe an homage toward the brands
-     hue down to aesthetic muted alternatives! important they look good." So the
-     card wears neither the raw brand colour nor plain app paper. Hue is the
-     publisher's, untouched. Chroma is clamped into a narrow band. Lightness is
-     REPLACED — not clamped — by the atmosphere's own figure, because a ground
-     that inherited the brand's lightness would put Naked Bible's charcoal and
-     Enter the Bible's yellow on two different planes of the same shelf.
-
-     Three numbers, eleven publishers, four atmospheres, no hand-picked hexes:
-
-       --ground-fit-l · where the ground sits. One step off paper and no more.
-         The binding constraint is measured rather than chosen: at the light
-         figure below, the app's SECONDARY ink holds 5.00:1 over the worst of
-         the eleven and its TERTIARY holds only 4.07:1 — so a tinted card steps
-         its quietest ink up one rank, which is stated where the card sets it.
-
-       --ground-fit-c-min / -max · the chroma band. The ceiling is the largest
-         value that stays inside sRGB for all eleven hues at this lightness
-         (0.024 clips the blues); the floor is what stops a brand that is
-         already near-neutral — Naked Bible's charcoal is C 0.009 — from
-         arriving as the one plain card on a shelf of tinted ones. A clamp
-         rather than a cap, so every publisher gets a ground of the same
-         family and only the hue moves.
-
-       --ground-fit-step · how far the card's own edge and its hover sit from
-         its ground, signed by the atmosphere's polarity so one expression
-         serves both: on light paper a card darkens to show its edge, on dark
-         paper it lifts.
-
-     scripts/qa-podcast-player.mjs sweeps all eleven grounds against all four
-     atmospheres in the running engine and asserts the ink floor, so these
-     numbers cannot drift away from the claim. */
-  --ground-fit-l: 0.96;        /* @kind other */
-  --ground-fit-c-min: 0.011;   /* @kind other */
-  --ground-fit-c-max: 0.022;   /* @kind other */
-  --ground-fit-step: -0.055;   /* @kind other */
+  /* ── The ground fit, retired into the band · 2026-08-01 ─────────────────
+     "Fitting a publisher's HUE to the app's own paper" stood here: four
+     tokens (--ground-fit-l / -c-min / -c-max / -step) deriving the resources
+     card's tinted ground — the brand's hue, clamped chroma, the atmosphere's
+     lightness. The maintainer judged three card faces at both densities
+     (docs/discovery-2026-07-30/player/library-cards-decision.md) and moved
+     the publisher's colour into a full-chroma head band painted straight from
+     --resource-source, so the derivation lost its one consumer and the four
+     tokens are deleted rather than parked. The accent fit above and the ink
+     fit below are untouched — they fit marks and type, not grounds. */
 
   /* ── Setting TYPE in a publisher's colour · 2026-07-31 ───────────────────
      The third of the three fits, and the one the Resources list view needed.
@@ -620,11 +587,12 @@
        --accent-fit-*  keeps hue AND chroma, clamps LIGHTNESS. It has to hold
          as a MARK on our paper, and the hard clamp is what makes the
          counter-ink a single line with no branch.
-       --ground-fit-*  keeps HUE, clamps chroma, REPLACES lightness. It has to
-         hold as PAPER, and every card must sit on one plane.
        --ink-fit-*     keeps hue and most of the chroma, clamps LIGHTNESS
          HARDER than the accent does. It has to hold as TYPE on our paper, and
          type is held to 4.5:1 where a mark is held to 3.
+
+     There were three; the middle one — --ground-fit-*, which held a brand as
+     PAPER — retired with the tinted card on 2026-08-01 (see the note above).
 
      WHY IT CANNOT BE --accent-fit-*, which is the obvious thing to reach for.
      That ceiling is 0.52, chosen so the app's PAPER reads on the accent — the
@@ -931,14 +899,8 @@
      Porcelain is a light atmosphere and keeps :root's pair. */
   --accent-fit-floor: 0.74;
   --accent-fit-ceiling: 1;
-  /* The dark polarity of the ground fit — see the :root note. Only the two
-     numbers that have a polarity turn over: the ground sinks to just above the
-     paper it sits on, and the step that draws its edge points the other way.
-     The chroma band is the same band, because chroma has no polarity.
-     Measured here, and it is the looser of the two: the app's secondary ink
-     holds 5.88:1 over the worst of the eleven dark grounds. */
-  --ground-fit-l: 0.262;
-  --ground-fit-step: 0.055;
+  /* The ground fit's dark polarity stood here; retired with the fit itself
+     on 2026-08-01 — see the note at the light declaration. */
   /* The dark polarity of the INK fit — see the :root note for the arithmetic.
      Only the two numbers that have a polarity turn over; the chroma ceiling is
      about type vibrating at 9px, which has no polarity either. */
@@ -20873,14 +20835,14 @@ button.lang-phrase-diagram-node:focus-visible,
    card has been through: the title wrapped after three words, the passage
    ellipsed mid-word, a publisher's name came out as "40 MINUTES IN THE OLD
    TE…", and the plate had to be argued down to fit beside them. A card cannot
-   be composed out of that; it can only be triaged. See `.resource-card-head`
-   below for what the recovered measure is spent on.
+   be composed out of that; it can only be triaged. See the band-and-foot note
+   at `.resource-card-band` below for what the recovered measure is spent on.
 
-   THE GUTTER STAYS 10. It was raised to 10 when the ground arrived — "two
-   planes 8px apart read as one plane with a seam" — and a column of tinted
-   planes needs that separation more than a grid did, not less: two cards of
-   the same publisher now sit directly above one another with nothing but the
-   gutter between two nearly identical hues. */
+   THE GUTTER STAYS 10. It was raised to 10 when the tinted ground arrived —
+   "two planes 8px apart read as one plane with a seam" — and the band keeps
+   the number for its own reason: two cards of the same publisher stack their
+   bands directly above one another, and 8px between two strips of one colour
+   reads as one thick band with a crack in it. */
 .resource-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -20907,53 +20869,45 @@ button.lang-phrase-diagram-node:focus-visible,
   contain-intrinsic-size: auto 84px;
 }
 
-/* ── THE CARD'S GROUND · 2026-07-30 ────────────────────────────────────────
-   A muted homage to the publisher's hue, derived rather than picked.
+/* ── THE CARD'S GROUND, REVERSED INTO THE BAND · 2026-08-01 ────────────────
+   The derived homage stood here — the publisher's hue at the app's lightness
+   with the chroma clamped (--ground-fit-*), computed onto the whole card so
+   eleven cards read as a family of related papers. It ran one build.
 
-   The reader asked the question and answered it: "maybe an homage toward the
-   brands hue down to aesthetic muted alternatives! important they look good."
-   Before this the card was plain app paper and the publisher survived only as
-   a 16px plate, which is why a shelf of them read as a list with badges on it
-   rather than as a set of publishers.
+   The maintainer judged three faces drawn with the real eleven at both
+   densities (docs/discovery-2026-07-30/player/library-cards-decision.md) and
+   moved the colour rather than muting it: the publisher's ground now lives in
+   a HEAD BAND at full chroma — the same `--resource-source` the shelf's
+   plates are painted from, full-bleed across the card's head at one fixed
+   height — and the words come home to the app's own paper below it. The
+   homage solved "a grid of eleven saturated tiles is a colour chart" by
+   quieting the colour everywhere; the band solves it by CONTAINING the colour
+   somewhere, which is what lets it stay at the publisher's own strength. A
+   mixed column reads as striped rows of colour over one constant paper.
 
-   HOMAGE, NOT REPRODUCTION. The ground is neither the raw brand colour — a
-   grid of eleven saturated tiles is the colour chart every note in this file
-   is trying to avoid — nor the app's paper. It is the brand's HUE at the
-   app's own lightness with almost all of the chroma taken out, so the eleven
-   cards read as a family of related papers and the shelf reads as a set. See
-   --ground-fit-* at :root for the three numbers and what binds them.
+   The derivation, its three fit tokens and their two polarities are deleted
+   rather than disabled, with one consequence stated where it bites: the
+   tinted-ground ink rule (three inks, not four) retires with the tint, and
+   the extent returns to the tertiary it was drawn in against paper.
 
-   ONE DERIVATION. Eleven publishers, four atmospheres, zero hand-picked
-   hexes: the input is the same `--resource-source` the plate is painted from,
-   so a publisher whose palette changes upstream gets a new ground for free and
-   cannot drift away from their own plate. This is the sibling of the accent
-   fit that Build 2 wrote for `--player-accent`, turned ninety degrees —
-   that one keeps chroma and clamps lightness because it must hold as a mark;
-   this one keeps hue and clamps chroma because it must hold as paper.
-
-   Lightness is REPLACED rather than clamped, and that is the whole reason the
-   set works: clamping would have left Naked Bible's charcoal and Enter the
-   Bible's yellow on two different planes of one shelf. Every card sits on the
-   same plane; only the hue moves.
-
-   Declared on the CARD, not the face. The face below re-declares
-   `--resource-source` as the app's gold so its transport mark stays the app's
-   voice — see the note beside that declaration — and the ground has already
-   been computed by then. Two scopes, and the division is the point. */
+   ONE INSTRUMENT OF THE GROUND'S SURVIVES, because the trap it disarmed is
+   still set: the face re-declares `--resource-source` as the app's gold so
+   its transport mark stays the app's voice, and the band sits INSIDE the
+   face — read the token there and every band is gold. So the publisher's
+   colour is captured HERE, on the card and under its own name, before the
+   face's override exists; a custom property resolves where it is declared,
+   which is the same two-scope division the ground's note called the point.
+   The player QA tour caught this in the running engine when the band first
+   drew — the static contracts cannot see inheritance. */
 .resource-card[data-source] {
-  --resource-ground: oklch(from var(--resource-source)
-    var(--ground-fit-l)
-    clamp(var(--ground-fit-c-min), c, var(--ground-fit-c-max))
-    h);
-  /* The card's own edge, in its own hue. A warm grey hairline around a cyan
-     card is the app's border token showing through the homage; one step off
-     the ground in the atmosphere's own direction is the card's own edge. */
-  --resource-ground-edge: oklch(from var(--resource-ground)
-    calc(l + var(--ground-fit-step)) c h);
-  /* Hover is the same step at 42%, so the pointer moves the card toward its
-     own edge rather than toward the app's grey. */
-  --resource-ground-lift: oklch(from var(--resource-ground)
-    calc(l + var(--ground-fit-step) * 0.42) c h);
+  --band-source: var(--resource-source);
+  /* The face's reset covers the artwork tokens too — --resource-symbol and
+     its ratio go to none/1 there so a card's transport face cannot grow a
+     publisher's device. The band needs all three, so all three are captured;
+     the first live launch shipped bands in the right colour with NOTHING
+     inside them, which is the empty plate back by the widest road yet. */
+  --band-symbol: var(--resource-symbol);
+  --band-symbol-ratio: var(--resource-symbol-ratio);
 }
 
 /* ── THE SECOND SIZE · RESTATED 2026-07-31 ─────────────────────────────────
@@ -20972,38 +20926,33 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .resource-card-face {
   display: grid;
-  /* ── HEAD, THEN TITLE · 2026-07-31 ──────────────────────────────────────
-     This was three rows — `auto minmax(0, 1fr) auto` — with a note that is
-     worth keeping because it names the defect the third row existed to fix:
-     "two cards side by side with a one-line and a two-line title put their
-     passage and their extent on two different lines, and a grid of them had no
-     horizontal rhythm at all."
+  /* ── BAND, TITLE, FOOT · 2026-08-01 ─────────────────────────────────────
+     Two rows ("head, then title") became three when the band took the head.
+     The head line's argument — the plate, the passage and the extent closing
+     up into one rule — dissolved with the plate itself: the band carries only
+     the mark, so the filing returns to a FOOT under the title. The title
+     keeps the card's whole measure; the two lines around it are each one
+     fixed fact-height, so the card grows by a foot line and nothing else.
 
-     THERE IS NO SIDE BY SIDE. One card per row means the passage and the
-     extent have nothing to align WITH across a row, so pinning them to the
-     card's floor bought nothing and cost a whole row of height — and it left
-     the head line, which is now 288px wide, holding a 56px plate and 232px of
-     nothing.
-
-     So the filing moves UP into that emptiness and the title takes the floor:
-     two rows, the head at its natural height, the title below it. A card is a
-     row shorter and its title has four times the measure. */
-  grid-template-rows: auto minmax(0, auto);
+     PADDING MOVES OFF THE FACE AND ONTO THE ROWS. The band is FULL-BLEED —
+     that is the decision's word — and a padded face would frame it in paper
+     on three sides, which is the plate again at a larger size. The face
+     clips its own radius instead, and each row states its inset. */
+  grid-template-rows: auto minmax(0, auto) auto;
   align-content: start;
-  gap: 8px;
   width: 100%;
   height: 100%;
-  /* 8 → 10 with the taste pass, 10 → 11 with the ground: on a tinted plane the
-     padding is the card's own margin, and a margin narrower than the gaps
-     inside the block is what makes a card look printed on its own edge. */
-  padding: 11px;
-  border: 1px solid var(--resource-ground-edge, var(--border-subtle));
+  padding: 0;
+  overflow: hidden;
+  border: 1px solid var(--border-subtle);
   /* Canon: 0.22 × the shorter dimension, rounded even, capped at 8. The card
      is 78px tall and 332 wide now rather than ~112 square, so 0.22 × 78 is 17
      and the cap takes it to 8 — the same number the law gave the tile, which
      is why the corner did not move when the shape did. */
   border-radius: var(--radius-md);
-  background: var(--resource-ground, none);
+  /* The words' ground is the app's paper — the room's own background shows
+     through, and the band above it is the only colour the card owns. */
+  background: none;
   color: inherit;
   text-align: left;
   cursor: pointer;
@@ -21011,8 +20960,8 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 .resource-card-face:hover {
-  border-color: var(--resource-ground-edge, var(--border-medium));
-  background: var(--resource-ground-lift, var(--surface-hover));
+  border-color: var(--border-medium);
+  background: var(--surface-hover);
 }
 
 .resource-card-face:focus-visible {
@@ -21022,68 +20971,64 @@ button.lang-phrase-diagram-node:focus-visible,
 
 /* The one in the dock is named on the card that started it, so a reader
    scanning the room can see where the voice came from. The mark is the app's
-   own seal edge, not a second fill — and on a tinted ground it is now the only
-   thing that distinguishes the playing card, which is why it holds a full
-   3px against a plane that is no longer white. */
+   own seal edge, not a second fill. It held 3px against the tinted plane; on
+   paper the hover already separates the card, but the seal stays 3px — a
+   playing card should be findable from across the room, not only under the
+   pointer. */
 .resource-card-face[data-running="true"] {
-  border-color: var(--resource-ground-edge, var(--border-medium));
-  background: var(--resource-ground-lift, var(--surface-hover));
+  border-color: var(--border-medium);
+  background: var(--surface-hover);
   box-shadow: inset 3px 0 0 var(--player-accent);
 }
 
-/* ── The ink on a tinted ground ────────────────────────────────────────────
-   MEASURED, not adjusted by eye. The app's tertiary ink is drawn to clear 4.5
-   against PAPER and clears it by a hair — 4.60:1 on Paper, 4.63 on Porcelain,
-   4.61 on Ink, 4.64 on Onyx — so the moment the card stops being paper it
-   stops clearing. Swept over all eleven grounds × four atmospheres the worst
-   tertiary lands at 4.07:1 and the worst SECONDARY at 5.00:1.
+/* The tinted-ground ink rule stood here — "on this ground the app has three
+   inks, not four", measured over eleven grounds × four atmospheres. It
+   retires with the tint (2026-08-01, the band): the words are back on paper,
+   the tertiary clears 4.5 against paper by the hair it always did, and the
+   extent below returns to the rank it was drawn in. */
 
-   So the card's quietest rank steps up one, and it is stated here rather than
-   fixed per element: on this ground the app has three inks, not four. The
-   ranks below it keep their distance because the type sizes and the faces
-   still differ — 11px reading serif against 10px mono is a hierarchy without
-   a fourth grey in it.
+/* ── THE BAND, AND THE FOOT IT GIVES BACK · 2026-08-01 ─────────────────────
+   `.resource-card-head` stood here — the plate, the passage and the extent
+   closing up into one rule, with the title on the floor. The band dissolves
+   that line's argument: it carries only the publisher, full-bleed, so the
+   filing returns to a foot and the card reads top to bottom as
+   whose · what · where-and-how-long:
 
-   Both consumers are on the two elements below; qa-podcast-player sweeps the
-   whole matrix in the running engine so this claim cannot drift. */
-.resource-card[data-source] .resource-card-extent,
-.resource-card[data-source] .resource-card-plate .taught-here-mark {
-  color: var(--text-secondary);
+     ████ SPOKEN GOSPEL ██████████████████████████
+     Who were "the sons of God" in Genesis 6?
+     Genesis 6:1–4 ······················· ▸ 9 min
+
+   ONE HEIGHT FOR ALL ELEVEN — that is the decision's whole normalization
+   claim, and it is a declared number rather than a consequence of content:
+   30px, the plate's 28 plus the hairline it no longer needs, held whether the
+   mark inside is Working Preacher's stack or Spoken Gospel's seven-wide
+   lockup. The mark sits START-ALIGNED in one optical slot (the formula is on
+   the mark rule, with the plate's own measurements) so a column of bands
+   reads as a rhythm of same-weight marks at one x.
+
+   FULL CHROMA, and why that stopped being the colour chart: the tinted card
+   put eleven hues under the words; the band puts them above the words, in a
+   strip the height of a head line, over one constant paper. Contained colour
+   can afford to be the publisher's own — it is the same `--resource-source`
+   the shelf's plates and the dock's mast are painted from, so the three
+   surfaces cannot drift apart. */
+.resource-card-band[data-source] {
+  display: flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 11px;
+  /* --band-source, not --resource-source: the face between this band and the
+     card re-declares the latter as the app's gold. The capture is beside the
+     ground's retirement note above. */
+  background: var(--band-source);
 }
 
-/* ── THE HEAD LINE, AND WHAT FULL WIDTH IS FOR · 2026-07-31 ────────────────
-   `.resource-card-foot` stood here — the passage on the left, the transport
-   and the extent on the right, pinned to the card's floor under the title.
-   It is `.resource-card-head` now and it is the card's FIRST line, holding
-   all three of the small facts:
-
-     [PLATE] ······················· Genesis 6:1–4  ▸ 9 min
-     Who were "the sons of God" in Genesis 6?
-
-   THE PROPORTIONS, and every one of them is a consequence of the measure
-   rather than a preference. At the reference width the card's inner measure is
-   ~288px. The plate is 56 and fixed; the tail — a 14px transport mark, 5px,
-   and an extent that is at most "129 min" in the numeral face — is ~62 and
-   fixed. That leaves ~160 for the passage against a longest real label of
-   about 120 ("1 Corinthians 15:20–28"), so the ref never truncates and never
-   has to be given a lane it does not use: `margin-inline-start: auto` binds it
-   to the tail, and the two of them close the line as one right-hand cluster
-   against the plate on the left.
-
-   WHY IDENTITY LEFT AND FILING RIGHT. The plate is the only thing on this line
-   that identifies a PUBLISHER, and it is the thing a reader's eye returns to
-   when scanning a column; the passage and the extent are what they check once
-   they have stopped. Left is the returning edge, right is the stopping edge.
-   That order also puts the transport mark against the extent it acts on — "▸ 9
-   min" is one object, which is why the pair moved up together and the mark did
-   not go back into the head beside the plate, where two marks argued.
-
-   AND THE TITLE GETS THE FLOOR — the whole 288, four times what it had. */
-.resource-card-head {
+.resource-card-foot {
   display: flex;
   align-items: center;
   gap: 8px;
   min-width: 0;
+  padding: 0 11px 10px;
 }
 
 .resource-card-tail {
@@ -21091,6 +21036,9 @@ button.lang-phrase-diagram-node:focus-visible,
   flex: none;
   align-items: center;
   gap: 5px;
+  /* The tail closes the foot's line — see the ref's note for why the auto
+     margin lives here now. */
+  margin-inline-start: auto;
 }
 
 /* The transport's own face, at the room's scale. The card's press IS the
@@ -21217,6 +21165,9 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-card-title {
   display: -webkit-box;
   overflow: hidden;
+  /* The face's padding moved onto the rows with the band (see the face's own
+     note); the title states its inset and the breath under the band here. */
+  padding: 9px 11px 6px;
   color: var(--text-primary);
   font: var(--fw-medium) 0.75rem/1.4 var(--font-reading);
   letter-spacing: -0.004em;
@@ -21231,18 +21182,18 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 /* The passage, in the reading face: it is the answer rather than the filing.
-   A reader on Romans 8:1 who sees 8:1–4 knows it is theirs without a band
-   heading saying so — which is the whole of what the bands were for.
+   A reader on Romans 8:1 who sees 8:1–4 knows it is theirs without a drawer
+   heading saying so — which is the whole of what the drawers were for.
 
-   BOUND TO THE TAIL rather than given a lane of its own · 2026-07-31. The two
-   of them are one right-hand cluster closing the head line, and a lane would
-   pin the passage to a fixed x that the extent's own width then argues with.
-   The min-width is what keeps the ellipsis reachable in the pathological case
-   — a flex item's floor is its content, so without it a long label would push
-   the tail off the card rather than clip itself. */
+   BACK ON THE LEFT · 2026-08-01. On the head line the passage was bound to
+   the tail as one right-hand cluster against the plate; on the foot there is
+   no plate to answer, so the passage anchors the left — it is the fact a
+   reader checks first — and the auto margin moves to the tail, which closes
+   the line. The min-width is what keeps the ellipsis reachable in the
+   pathological case — a flex item's floor is its content, so without it a
+   long label would push the tail off the card rather than clip itself. */
 .resource-card-ref {
   min-width: 0;
-  margin-inline-start: auto;
   overflow: hidden;
   color: var(--text-secondary);
   font: var(--fw-medium) 0.6875rem/1.5 var(--font-reading);
@@ -21723,10 +21674,10 @@ button.lang-phrase-diagram-node:focus-visible,
   .resources-colophon { border-top-color: GrayText; }
   .resources .taught-here-walk { border-color: CanvasText; }
   .resources .taught-here-walk:hover { background: Highlight; color: HighlightText; }
-  /* The plate keeps the publisher's colour for the same reason the dock's
-     does — the marks are approved reverses and the artwork may not be
+  /* The band keeps the publisher's colour for the same reason the dock's
+     mast does — the marks are approved reverses and the artwork may not be
      recoloured — and it is the only opt-out in this room. */
-  .resource-card-plate { forced-color-adjust: none; }
+  .resource-card-band { forced-color-adjust: none; }
 
   /* ── The list, in the reader's own two colours · 2026-07-31 ─────────────
      THIS IS THE FORM THAT NEEDS THE BLOCK MOST, because a forced palette takes
@@ -22600,57 +22551,23 @@ button.lang-phrase-diagram-node:focus-visible,
        `data-sizing` and `data-tracks` are both gone from the markup with it;
        see the retirement note at the head of components/Resources. */
 
-/* ── THE CARD'S PLATE · ONE OBJECT FOR ALL ELEVEN · 2026-07-31 ─────────────
-   The shelf, at card scale, and it is deliberately the same object rather than
-   a smaller cousin: a fixed box, the publisher's ground, one symbol centred in
-   it, no name.
+/* ── THE PLATE BECAME THE BAND · 2026-08-01 ────────────────────────────────
+   "THE CARD'S PLATE · ONE OBJECT FOR ALL ELEVEN" stood here: a 56×28 fixed
+   box, the publisher's ground, one symbol centred in it, no name. Everything
+   that rule existed to kill stays dead — no empty plate, no name cut
+   mid-word, no three kinds of plate in one grid, no enumeration of
+   publishers — because the band inherits its whole constitution: one rule
+   keying on `[data-source]`, painting whatever --resource-symbol the palette
+   declares, at one declared size.
 
-   WHAT IT REPLACES, and every one of these was visible in a single screenshot
-   of Genesis 6:
+   What changed is only the box: the maintainer judged three faces at both
+   densities (library-cards-decision.md) and stretched the plate to the card's
+   full width. The band's own geometry — height, full bleed, the paper below —
+   is declared with the card's rows; here lives what was always the plate's:
+   THE ARTWORK'S OPTICAL SCALE.
 
-     · AN EMPTY PLATE. The Listener's cards and Ask N.T. Wright's drew a
-       rounded outline with nothing in it — see the note beside the mark rule
-       above for the two enumerations that disagreed.
-     · A NAME CUT MID-WORD. "40 MINUTES IN THE OLD TE…". Five publishers set
-       their name in 9px small caps inside a plate on a 160px tile, and three
-       of those names are over twenty characters. Nothing here is set in type,
-       so nothing here can be ellipsed.
-     · THREE KINDS OF PLATE IN ONE GRID. Artwork for six, a device beside a
-       name for three, a bare name for two, an empty box for two — which is the
-       shelf's own two-species problem one scale down, and the reader named it:
-       "plates differ in kind across cards".
-
-   ONE ENUMERATION IS GONE AND NONE REPLACES IT. This rule names no publisher.
-   It keys on `[data-source]`, which every card carries, and paints whatever
-   --resource-symbol the palette declares — so a card can no longer be missed
-   off a list, which is exactly how the empty plates happened.
-
-   56 × 28. The canon is radius = 0.22 × the shorter dimension rounded even,
-   so 6 — --radius-sm, the same number the plate had at 26px, which is why the
-   corner is unchanged while the box doubled. */
-.resource-card .resource-card-plate[data-source] {
-  display: grid;
-  /* A COLOPHON TAKES ITS OWN WIDTH: `justify-self: start` rather than the
-     grid's default stretch. Measured on the build that introduced the card's
-     head line, and it is still the loudest thing that can go wrong with this
-     plate — stretched, every wordmark arrives as a full-width banner in the
-     publisher's colour, which is the colour chart with a title under it that
-     this whole room is against. */
-  justify-self: start;
-  place-items: center;
-  width: 56px;
-  height: 28px;
-  padding: 4px 6px;
-  border-radius: var(--radius-sm);
-  background: var(--resource-source);
-  color: var(--resource-ink);
-  /* The keyline, and what it is for, is written where the card's head is. */
-  box-shadow: 0 0 0 1px var(--resource-ground-edge, var(--border-subtle));
-}
-
-/* The artwork inside it, on the shelf's own optical scale at the card's K.
    14.6 rather than the shelf's 33, which is the ratio of the two boxes: one
-   rule, two sizes, and the family holds at both. Measured, drawn height:
+   formula, two sizes, and the family holds at both. Measured, drawn height:
 
      Spoken Gospel 16 · BibleProject 14.7 · Enter the Bible 14.6 · Ligonier
      14.6 · Radically Christian 14.6 · The Listener's 14.5 · 40 Minutes 14.3 ·
@@ -22660,13 +22577,21 @@ button.lang-phrase-diagram-node:focus-visible,
    Working Preacher is the one publisher this does not enlarge — their card
    mark was 11px before it and is 9.7px after — and that is the honest cost of
    a brand with no separable symbol, paid by the only publisher who has one.
-   Every other card's mark goes up, four of them by half again. */
-.resource-card .resource-card-plate .taught-here-mark {
-  --card-art-h: clamp(8px, calc(14.6px / pow(var(--resource-symbol-ratio), 0.34)), 17px);
+
+   WIDTH AND HEIGHT ARE BOTH STATED because eight of the eleven are SVGs with
+   no intrinsic size — the decision doc records the collapse: in a slot that
+   only bounds them (`max-width`/`max-height`), a dimensionless SVG resolves
+   to zero width and the band ships empty, which is the empty plate again by a
+   newer road. */
+.resource-card .resource-card-band .taught-here-mark {
+  --card-art-h: clamp(8px, calc(14.6px / pow(var(--band-symbol-ratio), 0.34)), 17px);
   display: block;
-  width: min(100%, calc(var(--card-art-h) * var(--resource-symbol-ratio)));
+  flex: none;
+  width: min(100%, calc(var(--card-art-h) * var(--band-symbol-ratio)));
   height: var(--card-art-h);
-  background: var(--resource-symbol) center / contain no-repeat;
+  /* --band-*, not --resource-*: the face between this mark and the card
+     resets the artwork tokens — see the capture beside --band-source. */
+  background: var(--band-symbol) center / contain no-repeat;
   /* The publisher's name is still the element's text, and the card's own
      `aria-label` says it in a sentence — see `spoken` in components/Resources.
      The indent moves the glyphs, not the text. */

@@ -120,7 +120,7 @@ test("every card obeys one face, and the face refuses a fifth thing", () => {
 
   for (const part of [
     "resource-card-play",     // the transport's own face, at the room's scale
-    "resource-card-plate",    // the publisher, in the one form permitted off their surface
+    "resource-card-band",     // the publisher — the plate stretched to the card's head, 2026-08-01
     "resource-card-title",    // what the thing is called
     "resource-card-ref",      // which passage
     "resource-card-extent",   // how long, which is what a reader chooses on
@@ -440,71 +440,91 @@ test("every card carries its publisher's mark", () => {
     "the reduced plate's selectors are still standing");
   /* The redundancy the run rule was solving is real, and it moved into the
      four currencies a mark can be quiet in without being absent. The one that
-     can be asserted from a file is the ground: it is what lets the plate stop
+     can be asserted from a file changed with the band (2026-08-01): it was the
+     derived ground under the whole card; it is now the band itself, painted
+     straight from the publisher's own colour, which is what lets the mark stop
      being the whole of the identity. */
-  assert.match(styles, /--resource-ground: oklch\(from var\(--resource-source\)/,
-    "the card's ground is no longer derived from the publisher's own colour");
+  assert.match(styles, /\.resource-card-band\[data-source\] \{[^}]*background: var\(--band-source\);/s,
+    "the band is no longer the publisher's own colour");
   assert.doesNotMatch(room, /APPROVED_MARKS|MARKED_SOURCES/,
     "the mark list is being duplicated out of the stylesheet into the component");
 
-  /* ── ONE PLATE, ALL ELEVEN · added 2026-07-31 ────────────────────────────
-     RESTATES the sentence that stood here: "The five unmarked sources have no
-     artwork and keep their name in type — that is
-     docs/trusted-resource-permissions' own generic treatment, and a permission
-     decision rather than a design one."
+  /* ── ONE BAND, ALL ELEVEN · restated 2026-08-01 ──────────────────────────
+     "ONE PLATE, ALL ELEVEN" stood here, holding the 56×28 fixed box. The
+     maintainer judged three faces at both densities
+     (docs/discovery-2026-07-30/player/library-cards-decision.md) and
+     stretched the plate to the card's full head — but the plate's whole
+     constitution transfers, and this test still guards the same three
+     defects it always did: a size that follows content (the ragged head), a
+     card drawing something other than the symbol (the empty plate), and an
+     enumeration of publishers (how two of them ended up with that empty box).
 
-     Neither half of that is true any more. There is no unmarked source — every
-     publisher in the app declares --resource-symbol — and the footing that
-     made it a permission question was flattened by the maintainer on
-     2026-07-31 (see TRANSCRIPT_SOURCES). What the reader saw while both halves
-     were still assumed was three kinds of plate in one grid and two kinds of
-     nothing: an empty box for The Listener's and for Ask N.T. Wright, and "40
-     MINUTES IN THE OLD TE…" for the sources that set a name.
-
-     So the card's plate is ONE FIXED BOX painted from ONE RULE THAT NAMES
-     NOBODY, and these three assertions are what hold that: a size, a token,
-     and the absence of an enumeration. */
-  const cardPlateAt = styles.indexOf(".resource-card .resource-card-plate[data-source] {");
-  const cardPlate = styles.slice(
-    cardPlateAt,
-    styles.indexOf("\n}", styles.indexOf(".resource-card .resource-card-plate .taught-here-mark {", cardPlateAt)),
-  );
-  assert.match(cardPlate, /width: 56px;\s*\n\s*height: 28px;/,
-    "the card's plate is not one box any more; a plate whose size follows its content is the ragged head the reader rejected");
-  assert.match(cardPlate, /background: var\(--resource-symbol\) center \/ contain no-repeat/,
-    "the card is drawing something other than the publisher's symbol");
-  assert.doesNotMatch(cardPlate, /\[data-source="/,
-    "the card's plate is enumerating publishers again; that is how two of them ended up with an empty box");
+     ONE DECLARED HEIGHT is the band's normalization claim — every publisher's
+     band is the same strip whether the mark inside is a stack or a
+     seven-wide lockup — and the mark inside sits in one optical slot whose
+     width AND height are both stated, because eight of the eleven marks are
+     SVGs with no intrinsic size and a slot that only bounds them ships an
+     empty band (the decision doc records the collapse). */
+  const bandAt = styles.indexOf(".resource-card-band[data-source] {");
+  const band = styles.slice(bandAt, styles.indexOf("\n}", bandAt));
+  assert.match(band, /height: 30px;/,
+    "the band is not one height any more; a band whose height follows its content is the ragged head the reader rejected");
+  assert.match(band, /background: var\(--band-source\);/,
+    "the band's ground is not the captured publisher colour");
+  assert.match(styles, /\.resource-card\[data-source\] \{\s*\n\s*--band-source: var\(--resource-source\);/,
+    "the capture is gone: the face re-declares --resource-source as the app's gold, and a band reading it directly draws every publisher in gold");
+  const bandMarkAt = styles.indexOf(".resource-card .resource-card-band .taught-here-mark {");
+  const bandMark = styles.slice(bandMarkAt, styles.indexOf("\n}", bandMarkAt));
+  assert.match(bandMark, /background: var\(--band-symbol\) center \/ contain no-repeat/,
+    "the card is drawing something other than the captured publisher symbol");
+  assert.match(styles, /--band-symbol: var\(--resource-symbol\);/,
+    "the symbol capture is gone: the face resets the artwork tokens, and a mark reading them directly ships every band empty");
+  assert.match(bandMark, /width: min\(/,
+    "the mark's slot lost its stated width; a dimensionless SVG in a bounds-only slot collapses to an empty band");
+  assert.match(bandMark, /height: var\(--card-art-h\)/,
+    "the mark's slot lost its stated height");
+  for (const slice of [band, bandMark]) {
+    assert.doesNotMatch(slice, /\[data-source="/,
+      "the band is enumerating publishers again; that is how two plates ended up empty");
+  }
 });
 
-test("the card's ground is derived, not picked", () => {
-  /* THE HOMAGE, AS A DERIVATION. The reader asked for "an homage toward the
-     brands hue down to aesthetic muted alternatives", and the one way that
-     stays true across eleven publishers and four atmospheres is to compute it:
-     hue from the publisher, chroma clamped into a narrow band, lightness
-     replaced by the atmosphere's own figure. A hand-picked hex per publisher
-     per atmosphere is forty-four numbers nobody can check. */
+test("the colour lives in the band, and the words live on paper", () => {
+  /* CONTRACT REVERSED · 2026-08-01. "The card's ground is derived, not
+     picked" stood here, holding the --ground-fit-* derivation that tinted the
+     whole card. The maintainer judged three faces drawn with the real eleven
+     at both densities (docs/discovery-2026-07-30/player/
+     library-cards-decision.md) and moved the colour instead of muting it:
+     full chroma, contained in a head band; the title and the footing on the
+     app's own paper. What this test holds is the CONTAINMENT — the one thing
+     that lets the colour be the publisher's own without the grid becoming
+     the colour chart the derivation existed to avoid. */
   const styles = read("src/renderer/styles.css");
-  const ground = styles.slice(styles.indexOf(".resource-card[data-source] {"));
-  assert.match(ground, /var\(--ground-fit-l\)/, "the ground picks its own lightness");
-  assert.match(ground, /clamp\(var\(--ground-fit-c-min\), c, var\(--ground-fit-c-max\)\)/,
-    "the chroma is capped without a floor, or floored without a cap");
-  /* Hue is the publisher's, untouched — the whole of what makes it an homage
-     rather than a wash. */
-  assert.match(ground, /var\(--ground-fit-c-max\)\)\s*\n\s*h\);/,
-    "the ground is moving the publisher's hue");
-  /* Both polarities declare the two numbers that have one. */
-  assert.equal((styles.match(/--ground-fit-l:/g) ?? []).length, 2,
-    "the ground fit has a light polarity and a dark one, and no more");
-  assert.equal((styles.match(/--ground-fit-step:/g) ?? []).length, 2,
-    "the edge step has a light polarity and a dark one, and no more");
-  /* MEASURED, not adjusted by eye: the app's tertiary ink clears 4.5 against
-     paper by a hair and does not clear it against a tinted card, so the card's
-     quietest rank steps up one. qa-podcast-player sweeps the whole matrix in
-     the running engine. */
-  assert.match(styles,
-    /\.resource-card\[data-source\] \.resource-card-extent,\s*\n\s*\.resource-card\[data-source\] \.resource-card-plate \.taught-here-mark \{\s*\n\s*color: var\(--text-secondary\);/,
-    "the card's quietest ink is the tertiary again, which does not clear 4.5 on a tinted ground");
+  /* The band is the only colour the card owns. The face itself is paper —
+     background none over the room's own ground — so a mixed column reads as
+     striped rows of colour over one constant surface. */
+  const faceAt = styles.indexOf(".resource-card-face {");
+  const face = styles.slice(faceAt, styles.indexOf("\n}", faceAt));
+  assert.match(face, /background: none;/,
+    "the card's body is tinted again; the decision put the words on paper");
+  assert.match(face, /overflow: hidden;/,
+    "the face no longer clips its radius, so the full-bleed band ships square corners");
+  assert.match(face, /padding: 0;/,
+    "the face grew padding back; a padded face frames the band in paper on three sides, which is the plate at a larger size");
+  /* The derivation is deleted, not parked: a tinted ground returning quietly
+     under the band would put the colour in two places at two strengths. The
+     patterns require the declaring colon, because the retirement notes are
+     allowed to say the tokens' names while the tokens themselves are not
+     allowed to exist. */
+  assert.doesNotMatch(styles, /--resource-ground[a-z-]*:/,
+    "the tinted ground's tokens are back");
+  assert.doesNotMatch(styles, /--ground-fit-[a-z-]+:/,
+    "the ground fit's numbers are still declared with no consumer");
+  /* On paper the ink ranks are the app's own again — the tinted-ground
+     step-up rule (three inks, not four) retired with the tint. */
+  assert.doesNotMatch(styles,
+    /\.resource-card\[data-source\] \.resource-card-extent/,
+    "the tinted-ground ink override is still standing over a card that is paper again");
 });
 
 test("the list is the recovered masthead: runs, spines, and no artwork at all", () => {

@@ -1098,9 +1098,16 @@
 
 /* Which conversation this publisher's transcripts rest on. The register is
    the "auto" mark's, not a licence agreement's — see
-   docs/trusted-resource-permissions, "The distinction must stay visible". */
+   docs/trusted-resource-permissions, "The distinction must stay visible".
+
+   AT THE SHEET'S FOOT since 2026-08-01 (R8): it is a colophon, and it draws
+   like one — a hairline above it says the material has ended and the
+   apparatus is speaking, and the top margin is the sheet's own gap scale
+   rather than the episode block's. */
 .podcast-episode-footing {
-  margin: var(--sp-xs) 0 0;
+  margin: var(--sp-md) 0 0;
+  padding-top: var(--sp-xs);
+  border-top: 1px solid var(--border-subtle);
   color: var(--text-tertiary);
   font: 0.625rem/1.5 var(--font-ui);
   text-wrap: pretty;

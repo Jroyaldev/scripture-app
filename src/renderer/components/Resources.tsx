@@ -474,9 +474,13 @@ function spokenFor(entry: ResourceEntry, running: boolean): string {
  * than taller — three rows became two, so a screen holds about the same number
  * of entries it did two-up while each of them is finally legible.
  *
- * WHAT DID NOT CHANGE, and neither may: the ground is still the derived homage
- * to the publisher's hue (--ground-fit-*), and the mark is still on every card.
- * Both are the reader's own standing rulings and this build touches neither.
+ * WHAT DID NOT CHANGE, and neither may: the mark is still on every card — the
+ * reader's own standing ruling. The other half of the sentence that stood here
+ * ("the ground is still the derived homage") was REVERSED on 2026-08-01: the
+ * maintainer judged three faces at both densities and moved the publisher's
+ * colour out of the card's ground and into a head band at full chroma — see
+ * the band note inside the face below, and library-cards-decision.md for the
+ * renders that decided it.
  */
 function ResourceCard({
   entry,
@@ -512,26 +516,32 @@ function ResourceCard({
         onClick={() => onOpen(entry)}
         type="button"
       >
-        {/* ── THE HEAD LINE IS THE WHOLE FILING · 2026-07-31 ────────────────
-            The card was a three-row STACK — plate, then title, then a foot of
-            passage and extent — and it had to be, because at 146px the plate
-            and the extent could not share a line. At full width they can, and
-            so the three small facts (whose it is, where it is, how long it
-            runs) close up into ONE rule across the top and the title takes
-            everything below it.
+        {/* ── THE BAND · 2026-08-01 ─────────────────────────────────────────
+            The head line carried the plate, the passage and the extent on one
+            rule, and the whole card sat on a tinted homage to the publisher's
+            hue. The maintainer judged three faces drawn with the real eleven
+            at both densities (docs/discovery-2026-07-30/player/
+            library-cards-decision.md) and chose this one: the publisher's
+            colour is a FULL-BLEED HEAD BAND at one fixed height, the mark in
+            one optical slot inside it, and the words come home to the app's
+            paper below.
 
-            What that buys is measured rather than claimed: the title's measure
-            goes from ~124px to ~288, about 20 characters a line to 48, and the
-            card gets SHORTER — one row came out of it. See `.resource-card-head`
-            in styles.css for the proportions. */}
-        <span className="resource-card-head">
-          <span className="taught-here-plate resource-card-plate" data-source={entry.sourceId}>
-            <span className="taught-here-mark">{entry.sourceName}</span>
-          </span>
+            The band is the plate stretched to honesty — it is where the
+            colour was always allowed, and at full bleed it stops being a
+            badge on a line and becomes the card's own head. The filing
+            (passage, transport, extent) returns to a FOOT under the title:
+            with the band holding the head there is no rule for the three
+            small facts to share, and a mixed grid reads as striped rows of
+            colour over one constant paper. */}
+        <span className="resource-card-band" data-source={entry.sourceId}>
+          <span className="taught-here-mark">{entry.sourceName}</span>
+        </span>
+        <span className="resource-card-title">{entry.episode}</span>
+        <span className="resource-card-foot">
           <span className="resource-card-ref">{entry.label}</span>
           {/* The transport mark stays against the extent it acts on — "▸ 12
-              min" is one object, which is why the pair moved up together
-              rather than the extent moving alone. */}
+              min" is one object, which is why the pair travels together
+              wherever the filing lives. */}
           <span className="resource-card-tail">
             {entry.link ? (
               <span aria-hidden="true" className="resource-card-out">
@@ -545,7 +555,6 @@ function ResourceCard({
             </span>
           </span>
         </span>
-        <span className="resource-card-title">{entry.episode}</span>
       </button>
     </li>
   );

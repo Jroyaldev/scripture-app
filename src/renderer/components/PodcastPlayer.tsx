@@ -2593,29 +2593,13 @@ export function PodcastPlayer({
                 >
                   {`Open at ${episode.sourceName}`}
                 </button>
-                {/* Which footing this publisher is on, said once and quietly,
-                    in the same register as the transcript's "auto" mark.
-
-                    docs/trusted-resource-permissions.md records that the
-                    distinction "must stay visible", and until this build the
-                    only places it was visible were a TypeScript literal and a
-                    test — while 48% of everything these surfaces show comes
-                    from publishers nobody has asked. It is one sentence at the
-                    foot of the episode's own block rather than a badge on
-                    every row, because it is a fact about the publisher and not
-                    about this episode, and because a legal notice repeated
-                    twenty-five times is chrome. */}
-                {/* RESTATED 2026-07-30 in the reader's language. The
-                    public-feed form used to end "We have not asked them yet"
-                    — a fact about our outreach backlog, printed on a reading
-                    surface. The reader is owed the DISTINCTION, which is what
-                    the permissions doc requires and what this still carries:
-                    one form names a permission, the other names a public feed,
-                    and a reader can tell which of the two they are looking at
-                    without being told what is on our to-do list. */}
-                <p className="podcast-episode-footing" data-basis={footing ?? undefined}>
-                  {`Transcript machine-read from ${episode.sourceName}'s published audio.`}
-                </p>
+                {/* The permission sentence lived here, at the FOOT OF THIS
+                    BLOCK — which is the head of the sheet. R8 named the cost:
+                    legal register in the reading position, redrawn on every
+                    open, never changing, and the search box at 44% of the
+                    sheet against 35% before it. It is a colophon, not a
+                    header; moved to the sheet's own foot on 2026-08-01, where
+                    its note travelled with it. */}
               </div>
 
               {/* ── The moment that started this ────────────────────────────
@@ -2955,6 +2939,32 @@ export function PodcastPlayer({
                   </p>
                 )
               )}
+
+              {/* ── The colophon · moved here 2026-08-01, R8's smallest fix ──
+                  Which footing this publisher is on, said once and quietly, in
+                  the same register as the transcript's "auto" mark.
+
+                  docs/trusted-resource-permissions.md records that the
+                  distinction "must stay visible", and it stays visible HERE —
+                  the sheet's last line, where a colophon belongs — rather than
+                  in the episode block at the sheet's head, where R8 measured
+                  the cost of it: legal register in the reading position,
+                  redrawn on every open, never changing, and the search box
+                  pushed from 35% of the sheet to 44%. A colophon is read by
+                  the reader who scrolls to the end wanting to know; a header
+                  is paid by every reader on every open.
+
+                  RESTATED 2026-07-30 in the reader's language, and the
+                  restatement survives the move: the public-feed form used to
+                  end "We have not asked them yet" — a fact about our outreach
+                  backlog, printed on a reading surface. The reader is owed
+                  the DISTINCTION: one form names a permission, the other
+                  names a public feed, and a reader can tell which of the two
+                  they are looking at without being told what is on our to-do
+                  list. */}
+              <p className="podcast-episode-footing" data-basis={footing ?? undefined}>
+                {`Transcript machine-read from ${episode.sourceName}'s published audio.`}
+              </p>
             </div>
           </div>
 
