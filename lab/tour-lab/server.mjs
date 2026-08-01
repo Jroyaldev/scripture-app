@@ -45,6 +45,52 @@ async function readBody(req) {
   }
 }
 
+/* The strong heuristics behind on-the-fly forms: every parameter the model
+   supplies is checked against what the tour actually contains, and any
+   shortfall lands on 'standard'. A debate needs a real yes AND a real no; a
+   lexicon needs a term and renderings that point at real steps; a path
+   needs waypoints for most of the walk. The model proposes; this disposes. */
+function validateFormPlan(plan, nSteps) {
+  const std = { form: 'standard' };
+  if (!plan || typeof plan !== 'object') return std;
+  const idxOk = (i) => Number.isInteger(i) && i >= 0 && i < nSteps;
+  const short = (s, n) => typeof s === 'string' && s.trim().length > 0 && s.trim().length <= n;
+  switch (plan.form) {
+    case 'quiet':
+      return { form: 'quiet' };
+    case 'debate': {
+      const SIDES = new Set(['yes', 'no', 'map', 'synthesis']);
+      const stances = (Array.isArray(plan.stances) ? plan.stances : [])
+        .filter((s) => s && idxOk(s.step) && SIDES.has(s.side));
+      const seen = new Set(stances.map((s) => s.step));
+      const sides = new Set(stances.map((s) => s.side));
+      if (seen.size !== stances.length || !sides.has('yes') || !sides.has('no')) return std;
+      return { form: 'debate', stances: stances.map((s) => ({ step: s.step, side: s.side })) };
+    }
+    case 'lexicon': {
+      if (!short(plan.term, 24)) return std;
+      const renderings = (Array.isArray(plan.renderings) ? plan.renderings : [])
+        .filter((r) => r && short(r.label, 22) && Array.isArray(r.steps) && r.steps.every(idxOk) && r.steps.length)
+        .slice(0, 6);
+      if (renderings.length < 2) return std;
+      return {
+        form: 'lexicon',
+        term: plan.term.trim(),
+        renderings: renderings.map((r) => ({ label: r.label.trim(), steps: [...new Set(r.steps)] })),
+      };
+    }
+    case 'path': {
+      const waypoints = (Array.isArray(plan.waypoints) ? plan.waypoints : [])
+        .filter((w) => w && idxOk(w.step) && short(w.marker, 18));
+      const seen = new Set(waypoints.map((w) => w.step));
+      if (seen.size < Math.ceil(nSteps / 2)) return std;
+      return { form: 'path', waypoints: waypoints.map((w) => ({ step: w.step, marker: w.marker.trim() })) };
+    }
+    default:
+      return std;
+  }
+}
+
 function serveStatic(req, res, urlPath) {
   const rel = urlPath === '/' ? 'index.html' : urlPath.replace(/^\/+/, '');
   const file = path.join(LAB_DIR, rel);
@@ -193,6 +239,47 @@ const server = http.createServer(async (req, res) => {
       } catch (err) {
         // The page degrades to no whisper, never to an error in the reader's face.
         return sendJson(res, 200, { whispers: [], note: err?.message || String(err) });
+      }
+    }
+
+    // The tour chooses its form. The model composes, the house draws: one
+    // cheap call returns a typed plan naming a form from the house
+    // vocabulary and its parameters. Validation is strict and the failure
+    // mode is always 'standard' — a bad plan degrades to the default form,
+    // never to broken furniture.
+    if (p === '/api/form' && req.method === 'POST') {
+      const body = await readBody(req);
+      const steps = Array.isArray(body.tour?.steps) ? body.tour.steps.slice(0, 8) : [];
+      const ask = String(body.prompt || '').slice(0, 400);
+      if (!steps.length) return sendJson(res, 400, { error: 'tour required' });
+      try {
+        const client = clientFor('gpt-5.6-luna-medium');
+        const reply = await client.chat({
+          maxTokens: 4000,
+          messages: [{
+            role: 'user',
+            content: `A listening tour was built for this request: "${ask}"
+
+Steps:
+${steps.map((s, i) => `${i}. [${s.source}] ${s.episodeTitle}\n   ${String(s.why || '').slice(0, 300)}`).join('\n')}
+
+Choose the FORM this tour should be set in, from exactly these:
+- "quiet"    — for grief, doubt, lament: the room lowers its voice. No parameters.
+- "debate"   — ONLY when steps genuinely take opposing positions. Assign each step a side: "yes" (affirms the asked position), "no" (challenges it), "map" (lays out the territory), "synthesis" (refuses the either-or). Use it only if at least one "yes" AND one "no" exist.
+- "lexicon"  — ONLY for a word study where the whys name distinct English renderings of one term. Give the term and 2-6 renderings, each naming which step(s) argue for it.
+- "path"     — for a walk through a book or story: give each step a short waypoint marker (a passage or scene name, max 18 characters).
+- "standard" — when none of the above is clearly right. Choosing standard is a good answer, not a failure.
+
+Answer ONLY with JSON:
+{"form":"...", "stances":[{"step":0,"side":"yes"}], "term":"...", "renderings":[{"label":"...","steps":[0]}], "waypoints":[{"step":0,"marker":"..."}]}
+Include only the keys the chosen form needs.`,
+          }],
+        });
+        const m = String(reply.message.content || '').match(/\{[\s\S]*\}/);
+        const plan = validateFormPlan(m ? JSON.parse(m[0]) : null, steps.length);
+        return sendJson(res, 200, plan);
+      } catch (err) {
+        return sendJson(res, 200, { form: 'standard', note: err?.message || String(err) });
       }
     }
 

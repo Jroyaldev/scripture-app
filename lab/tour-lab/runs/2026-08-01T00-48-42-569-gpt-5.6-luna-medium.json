@@ -1,0 +1,406 @@
+{
+  "runId": "2026-08-01T00-48-42-569-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T00:48:42.569Z",
+  "promptId": null,
+  "prompt": "heaven",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Heaven: God’s Space, Our Hope, and the World Made New",
+    "intro": "“Heaven” can mean several different things in Christian speech: God’s transcendent presence, the place believers are with Christ after death, or the final hope of resurrection and new creation. This tour moves carefully through those meanings, beginning with the Bible’s imagery and ending with the promise that God’s dwelling comes to humanity—not that humanity simply escapes the earth.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:heaven-earth-part-1",
+        "startSec": 575,
+        "endSec": 713,
+        "why": "Begin by clarifying the Bible’s basic imagery. The speakers explain that “God’s space or his presence is placed in the sky,” and connect heaven with God’s throne, rule, status, and transcendence rather than treating every “up” image as a literal map of the cosmos.",
+        "episodeTitle": "What is the Old Testament referring to as \"Heaven\"?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/7a2a37d8-d85b-4dc3-a51c-0c437bb00a53/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=7a2a37d8-d85b-4dc3-a51c-0c437bb00a53",
+        "durationSec": 2453,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:heaven-earth-part-2",
+        "startSec": 1461,
+        "endSec": 1705,
+        "why": "This clip widens the frame from heaven as a location to the Bible’s story of reunion. It says that “heaven and earth were unified in the Garden of Eden,” that resurrection is “bound up with…new creation,” and that Jesus embodies God’s presence while announcing that “the kingdom of God…has arrived.”",
+        "episodeTitle": "When Heaven Meets Earth",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/6e13ef8a-244f-41e8-bf58-dfd0c94e1798/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=6e13ef8a-244f-41e8-bf58-dfd0c94e1798",
+        "durationSec": 2213,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:heaven-earth-q-r",
+        "startSec": 641,
+        "endSec": 814,
+        "why": "Now pause over the question of what happens between death and resurrection. The speakers discuss Jesus’ promise, “Today you’ll be with me in paradise,” Paul’s language of being “with Jesus,” and the honest limit that “the Bible just doesn’t talk about” most details of the intermediate state.",
+        "episodeTitle": "Heaven & Earth Question & Response",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e377fa21-f15c-4ec8-b498-507f52e60c14/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e377fa21-f15c-4ec8-b498-507f52e60c14",
+        "durationSec": 2671,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:901a0482-com-79e0bee1-9b9a-365b-8796-2f8d34debedf",
+        "startSec": 903,
+        "endSec": 1145,
+        "why": "This gives a complementary perspective on the word itself. N.T. Wright says the in-between state may be called “paradise,” a place to be “rested and refreshed,” but cautions that “heaven’s not the end of the world”; the conversation also pictures believers as conscious of the unfinished world and longing for justice.",
+        "episodeTitle": "#145 Should I use the word ’heaven’? Will we know everything in the new creation?",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR4942893507.mp3?updated=1749722680",
+        "durationSec": 1514,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "radically-christian:podcast:9e7dc54f-https-radicallychristian-com-p-10783",
+        "startSec": 773,
+        "endSec": 939,
+        "why": "End with the destination Scripture’s larger storyline points toward. The speaker describes the “city of God and earth” being reunited, with evil, pain, and suffering gone, and calls the garden-city picture at the beginning and end of the Bible “the very best picture” of the hope Christians can expect.",
+        "episodeTitle": "What is Heaven Like?",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682126/4e272d8d-5c1b-4e59-9dae-556c2af50d54/transcoded.mp3?post_id=148682126&relation=podcast&Expires=1785437765&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=CB~Mrrk9eeMkE4ipBz~rK1KfES1FawtJ0u2Qks-AOxgJPzJDjDG0~~mt5Nefm7ATUWRFycvCbZJQhkWGd-2uXoasMv6A01qLNyj6T73kJYUF2HBNo6H5dOMD1daht4J4npCgXdEbeiqmCSUG8KLmGJpeDoRCmENItDQIVyOSm7V~OY2F3MOuU7cH3HEPcjdxIdyRSLOLsnqXHc7EfEpKavS0rAS93UOkE0L2je2Ce0fHwJunqFyrE9izFw3wSE-NiZDgotbgb9rjOSD4PO-6wAyWLPMi01oOxsmk~yRehlw6jmSV9ID~54Nd2wWoAegbhkqd-uQQXYdA7QxyGu42cw__",
+        "durationSec": 3894,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips ask you to hold two truths without confusing them: believers may be with Christ after death, yet the Bible’s fullest hope is bodily resurrection and a renewed creation. Heaven is not less than God’s presence; it is more than the popular image of floating away—it is the story moving toward God dwelling with his people and making all things new.",
+    "totalSeconds": 963
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 7535,
+      "promptTokens": 1591,
+      "completionTokens": 49,
+      "reasoningTokens": 33,
+      "cachedPromptTokens": 1574,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00004719000000000001
+    },
+    {
+      "i": 1,
+      "latencyMs": 5354,
+      "promptTokens": 1886,
+      "completionTokens": 182,
+      "reasoningTokens": 19,
+      "cachedPromptTokens": 1588,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000162255
+    },
+    {
+      "i": 2,
+      "latencyMs": 4550,
+      "promptTokens": 11764,
+      "completionTokens": 324,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 1883,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014482800000000001
+    },
+    {
+      "i": 3,
+      "latencyMs": 5329,
+      "promptTokens": 17835,
+      "completionTokens": 316,
+      "reasoningTokens": 61,
+      "cachedPromptTokens": 11761,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0010663850000000002
+    },
+    {
+      "i": 4,
+      "latencyMs": 10186,
+      "promptTokens": 22511,
+      "completionTokens": 875,
+      "reasoningTokens": 181,
+      "cachedPromptTokens": 17832,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012881200000000002
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 4,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "heaven new heavens new earth resurrection",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 89,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "what happens when we die heaven",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 51,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "kingdom of heaven earth presence of God",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 78,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "paradise intermediate state after death",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 45,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Revelation 21 heaven comes down",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 117,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Revelation",
+        "chapter": 21,
+        "verse": 0,
+        "limit": 15
+      },
+      "ms": 1,
+      "summary": "15 of 328 moments"
+    },
+    {
+      "at": 2,
+      "name": "read_passage",
+      "args": {
+        "book": "Revelation",
+        "chapter": 21,
+        "fromVerse": 1,
+        "toVerse": 5
+      },
+      "ms": 2,
+      "summary": "Revelation 21:1–5 (WEB)"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-part-1",
+        "fromSec": 0,
+        "toSec": 1500
+      },
+      "ms": 5,
+      "summary": "31 skim lines, 0s–1500s of What is the Old Testament referring to as \"Heaven\"?"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-part-2",
+        "fromSec": 1200,
+        "toSec": 2213
+      },
+      "ms": 4,
+      "summary": "20 skim lines, 1200s–2213s of When Heaven Meets Earth"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-q-r",
+        "fromSec": 0,
+        "toSec": 2671
+      },
+      "ms": 0,
+      "summary": "30 skim lines, 0s–1500s of Heaven & Earth Question & Response"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:901a0482-com-79e0bee1-9b9a-365b-8796-2f8d34debedf",
+        "fromSec": 600,
+        "toSec": 1514
+      },
+      "ms": 0,
+      "summary": "19 skim lines, 600s–1514s of #145 Should I use the word ’heaven’? Will we know everything in the new creation?"
+    },
+    {
+      "at": 2,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "radically-christian:podcast:9e7dc54f-https-radicallychristian-com-p-10783",
+        "fromSec": 500,
+        "toSec": 1500
+      },
+      "ms": 6,
+      "summary": "20 skim lines, 500s–1500s of What is Heaven Like?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-part-1",
+        "fromSec": 575,
+        "toSec": 735
+      },
+      "ms": 1,
+      "summary": "575s–735s of What is the Old Testament referring to as \"Heaven\"?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-part-2",
+        "fromSec": 1410,
+        "toSec": 1775
+      },
+      "ms": 0,
+      "summary": "1410s–1710s of When Heaven Meets Earth"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:heaven-earth-q-r",
+        "fromSec": 635,
+        "toSec": 860
+      },
+      "ms": 0,
+      "summary": "635s–860s of Heaven & Earth Question & Response"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:901a0482-com-79e0bee1-9b9a-365b-8796-2f8d34debedf",
+        "fromSec": 845,
+        "toSec": 1145
+      },
+      "ms": 0,
+      "summary": "845s–1145s of #145 Should I use the word ’heaven’? Will we know everything in the new creation?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:9e7dc54f-https-radicallychristian-com-p-10783",
+        "fromSec": 760,
+        "toSec": 970
+      },
+      "ms": 0,
+      "summary": "760s–970s of What is Heaven Like?"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 19,
+    "tapeSec": 1195,
+    "deniedWindows": 0,
+    "promptTokens": 55587,
+    "completionTokens": 1746,
+    "reasoningTokens": 294,
+    "cachedPromptTokens": 34638,
+    "wallMs": 33505,
+    "modelLatencyMs": 32954,
+    "toolMs": 403
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004012,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T00:49:16.074Z"
+}

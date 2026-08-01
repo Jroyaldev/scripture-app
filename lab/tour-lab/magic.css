@@ -255,6 +255,73 @@ em.rel {
 .step-title { cursor: pointer; }
 .step-title:hover { text-decoration: underline; text-decoration-color: var(--hair); text-underline-offset: 4px; }
 
+/* ------------------------------------------- the tour's own form
+   The house vocabulary the model typesets with. Every rule here is ours;
+   the model only ever chose and parameterized. */
+
+/* quiet — the room lowers its voice. */
+#tour[data-form="quiet"] .prose { font-size: 18px; line-height: 1.7; }
+#tour[data-form="quiet"] .steps { gap: 24px; }
+#tour[data-form="quiet"] .step { padding: 26px 26px 22px; }
+#tour[data-form="quiet"] .step-mins { display: none; }
+#tour[data-form="quiet"] .whisper { font-size: 16.5px; }
+
+/* debate — positions set facing each other. */
+.stance {
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  font-size: 10.5px;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+#tour[data-form="debate"] .step { transition-property: opacity, transform, border-color, background, margin; }
+#tour[data-form="debate"] .step[data-side="yes"] { margin-right: 48px; }
+#tour[data-form="debate"] .step[data-side="no"] { margin-left: 48px; }
+#tour[data-form="debate"] .step[data-side="synthesis"] { border-color: color-mix(in oklab, var(--gold) 40%, var(--hair)); }
+
+/* lexicon — the word and its range. */
+.lexicon { margin: 36px 0 -6px; text-align: center; }
+.lexicon-term { font-size: 25px; font-style: italic; }
+.lexicon-renderings { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+.rendering {
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  background: transparent;
+  color: var(--ink-2);
+  font: inherit;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 7px 13px;
+  cursor: pointer;
+  transition: border-color 200ms var(--ease), color 200ms var(--ease);
+}
+.rendering:hover { border-color: var(--gold); color: var(--ink); }
+.rendering-tag {
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  font-size: 10.5px;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+
+/* path — stations down a line. */
+#tour[data-form="path"] .steps { position: relative; padding-left: 22px; }
+#tour[data-form="path"] .steps::before {
+  content: '';
+  position: absolute;
+  left: 4px; top: 14px; bottom: 14px;
+  width: 1px;
+  background: var(--hair);
+}
+.step-marker {
+  text-transform: uppercase;
+  letter-spacing: 0.13em;
+  font-size: 10.5px;
+  color: var(--gold);
+  margin-bottom: 10px;
+}
+
 /* Motion is a courtesy, never a requirement. */
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 1ms !important; }

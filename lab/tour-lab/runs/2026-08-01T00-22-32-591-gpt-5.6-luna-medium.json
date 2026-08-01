@@ -1,0 +1,390 @@
+{
+  "runId": "2026-08-01T00-22-32-591-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T00:22:32.592Z",
+  "promptId": null,
+  "prompt": "Walk me through Genesis 6:1–4",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Genesis 6:1–4: Sons of God, Nephilim, and the Flood",
+    "intro": "This tour walks slowly through the passage itself, then lets several teachers address its strangest phrases without pretending the interpretation is simple. You’ll hear both a spiritual-beings reading and a human-community reading, while keeping sight of what the paragraph is doing in the larger story: showing creation’s disorder deepening before the flood.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "startSec": 1126,
+        "endSec": 1400,
+        "why": "Begin with a close reading of the paragraph and its immediate context. The teacher lays out “three main views” of the sons of God—spiritual beings, human rulers, or the godly line—and then carefully notes that the Nephilim are “not the offspring” of the union according to this reading, but are described as “mighty men of old” and “men of renown.”",
+        "episodeTitle": "Genesis 4:1-6:8",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/ba4rg9y6b4ksgv6v/genesis_41-6889j29.mp3",
+        "durationSec": 1767,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "startSec": 666,
+        "endSec": 913,
+        "why": "This clip shows how the wording echoes Genesis 3. The hosts connect “saw” and “took” with the earlier fall narrative and argue that Genesis 6 is an inverted fall story: “spiritual beings who see that women are good” take them, so the passage portrays the sons of Elohim negatively rather than treating the event as morally neutral.",
+        "episodeTitle": "God’s Spirit in the Flood Narrative",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/6fed2ba8-01ae-4fdb-8afe-9c7ab3232f32/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=6fed2ba8-01ae-4fdb-8afe-9c7ab3232f32",
+        "durationSec": 3585,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:a3cf54d8ac6db89ab2eedd131d56e107",
+        "startSec": 1274,
+        "endSec": 1495,
+        "why": "Hear a contrasting interpretation rather than flattening the debate. This teacher rejects the angelic reading because Scripture does not elsewhere present angel-human intercourse as a possibility, and instead understands the sons of God and daughters of men as opposing human communities—“the true church and the false church”—with the 120 years interpreted as the countdown to the flood rather than a lifespan limit.",
+        "episodeTitle": "40 Minutes In The Old Testament: Episode 11",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_MIN_EP_11_Final.mp3?dest-id=245197",
+        "durationSec": 2412,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:edf9e365-6859-4f4d-947e-9cfc491ea29b",
+        "startSec": 430,
+        "endSec": 590,
+        "why": "End with the passage’s narrative function. The hosts say the point is not to solve “what occurred” biologically, but to show that the command to be fruitful and multiply has been reversed: instead of spreading God’s image, the world is “spreading a broken image,” and “things are spiraling out of control” as the flood approaches.",
+        "episodeTitle": "Genesis 6-11: The Flood",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG5000636430.mp3?updated=1664486134",
+        "durationSec": 3274,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "As you listen, keep Genesis 6:1–4 in view as a deliberately compressed and difficult scene. The teachers disagree about who the sons of God are and what the 120 years means, but they converge on the passage’s movement: human life is multiplying, power and desire are being grasped without restraint, and the good order of creation is being twisted toward judgment.",
+    "totalSeconds": 902
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 3147,
+      "promptTokens": 1599,
+      "completionTokens": 273,
+      "reasoningTokens": 18,
+      "cachedPromptTokens": 1596,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00018006000000000003
+    },
+    {
+      "i": 1,
+      "latencyMs": 3581,
+      "promptTokens": 21595,
+      "completionTokens": 324,
+      "reasoningTokens": 39,
+      "cachedPromptTokens": 1596,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0027101600000000005
+    },
+    {
+      "i": 2,
+      "latencyMs": 2820,
+      "promptTokens": 25359,
+      "completionTokens": 278,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 21592,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008535200000000001
+    },
+    {
+      "i": 3,
+      "latencyMs": 10456,
+      "promptTokens": 30446,
+      "completionTokens": 900,
+      "reasoningTokens": 230,
+      "cachedPromptTokens": 25356,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014297350000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 6,
+        "verse": 1,
+        "limit": 40
+      },
+      "ms": 5,
+      "summary": "40 of 281 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 6,
+        "verse": 2,
+        "limit": 40
+      },
+      "ms": 1,
+      "summary": "40 of 281 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 6,
+        "verse": 3,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "40 of 281 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 6,
+        "verse": 4,
+        "limit": 40
+      },
+      "ms": 0,
+      "summary": "40 of 281 moments"
+    },
+    {
+      "at": 0,
+      "name": "read_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 6,
+        "fromVerse": 1,
+        "toVerse": 4
+      },
+      "ms": 1,
+      "summary": "Genesis 6:1–4 (WEB)"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "sons of God daughters of men Nephilim",
+        "sourceId": "",
+        "limit": 12
+      },
+      "ms": 131,
+      "summary": "12 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Genesis six flesh 120 years giants",
+        "sourceId": "",
+        "limit": 12
+      },
+      "ms": 99,
+      "summary": "12 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "fallen angels Genesis 6",
+        "sourceId": "",
+        "limit": 12
+      },
+      "ms": 70,
+      "summary": "12 hits"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "fromSec": 1050,
+        "toSec": 1600
+      },
+      "ms": 5,
+      "summary": "11 skim lines, 1050s–1600s of Genesis 4:1-6:8"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 300,
+        "toSec": 1700
+      },
+      "ms": 0,
+      "summary": "29 skim lines, 300s–1700s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r",
+        "fromSec": 1900,
+        "toSec": 2700
+      },
+      "ms": 0,
+      "summary": "17 skim lines, 1900s–2700s of Genesis 1-11 Question & Response"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a3cf54d8ac6db89ab2eedd131d56e107",
+        "fromSec": 1100,
+        "toSec": 2250
+      },
+      "ms": 0,
+      "summary": "23 skim lines, 1100s–2250s of 40 Minutes In The Old Testament: Episode 11"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:edf9e365-6859-4f4d-947e-9cfc491ea29b",
+        "fromSec": 350,
+        "toSec": 950
+      },
+      "ms": 6,
+      "summary": "12 skim lines, 350s–950s of Genesis 6-11: The Flood"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "fromSec": 1100,
+        "toSec": 1425
+      },
+      "ms": 0,
+      "summary": "1100s–1400s of Genesis 4:1-6:8"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 620,
+        "toSec": 1150
+      },
+      "ms": 0,
+      "summary": "620s–920s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r",
+        "fromSec": 2100,
+        "toSec": 2525
+      },
+      "ms": 0,
+      "summary": "2100s–2400s of Genesis 1-11 Question & Response"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:a3cf54d8ac6db89ab2eedd131d56e107",
+        "fromSec": 1260,
+        "toSec": 1495
+      },
+      "ms": 0,
+      "summary": "1260s–1495s of 40 Minutes In The Old Testament: Episode 11"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:edf9e365-6859-4f4d-947e-9cfc491ea29b",
+        "fromSec": 430,
+        "toSec": 590
+      },
+      "ms": 0,
+      "summary": "430s–590s of Genesis 6-11: The Flood"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 4,
+    "toolCalls": 19,
+    "tapeSec": 1295,
+    "deniedWindows": 0,
+    "promptTokens": 78999,
+    "completionTokens": 1775,
+    "reasoningTokens": 287,
+    "cachedPromptTokens": 50140,
+    "wallMs": 20325,
+    "modelLatencyMs": 20004,
+    "toolMs": 318
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.005173,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T00:22:52.917Z"
+}

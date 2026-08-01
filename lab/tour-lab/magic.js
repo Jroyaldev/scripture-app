@@ -152,8 +152,8 @@ async function begin(prompt) {
     return;
   }
 
-  sayLine('setting it in order…');
-  setTimeout(() => presentTour(tour), 1200);
+  sayLine('setting the type…');
+  setTimeout(() => presentTour(tour, prompt), 1200);
 }
 
 // ------------------------------------------------------- quotes & marking
@@ -204,7 +204,9 @@ function escapeHtml(s) {
 
 let whispers = [];
 
-function presentTour(tour) {
+function presentTour(tour, prompt) {
+  delete $('#tour').dataset.form;
+  document.querySelector('.lexicon')?.remove();
   $('#tour-title').textContent = tour.title;
   $('#tour-intro').textContent = tour.intro;
   $('#tour-closing').textContent = tour.closing;
@@ -257,6 +259,85 @@ function presentTour(tour) {
   });
 
   fetchWhispers(tour);
+  fetchForm(tour, prompt);
+}
+
+// -------------------------------------------------- the tour's own form
+// The model composes, the house draws: the plan arriving here has already
+// been validated against the tour's real contents, so everything below is
+// pure typesetting from the house vocabulary.
+
+async function fetchForm(tour, prompt) {
+  let plan = { form: 'standard' };
+  try {
+    const res = await fetch('/api/form', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ prompt, tour: { steps: tour.steps.map((s) => ({ source: s.source, episodeTitle: s.episodeTitle, why: s.why })) } }),
+    });
+    plan = await res.json();
+  } catch { /* standard */ }
+  applyForm(plan || { form: 'standard' });
+}
+
+const SIDE_WORDS = { yes: 'answers yes', no: 'answers no', map: 'maps the territory', synthesis: 'refuses the either-or' };
+
+function applyForm(plan) {
+  const tourEl = $('#tour');
+  const items = [...$('#steps').children];
+  tourEl.dataset.form = plan.form || 'standard';
+
+  if (plan.form === 'debate') {
+    for (const { step, side } of plan.stances) {
+      const li = items[step];
+      if (!li) continue;
+      li.dataset.side = side;
+      const tag = document.createElement('p');
+      tag.className = 'stance';
+      tag.textContent = SIDE_WORDS[side];
+      li.insertBefore(tag, li.firstChild);
+    }
+  }
+
+  if (plan.form === 'lexicon') {
+    const lex = document.createElement('div');
+    lex.className = 'lexicon';
+    const term = document.createElement('p');
+    term.className = 'lexicon-term';
+    term.textContent = plan.term;
+    lex.appendChild(term);
+    const row = document.createElement('div');
+    row.className = 'lexicon-renderings';
+    for (const r of plan.renderings) {
+      const b = document.createElement('button');
+      b.className = 'rendering';
+      b.textContent = r.label;
+      b.addEventListener('click', () => items[r.steps[0]]?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+      row.appendChild(b);
+      for (const idx of r.steps) {
+        const li = items[idx];
+        if (li && !li.querySelector('.rendering-tag')) {
+          const t = document.createElement('p');
+          t.className = 'rendering-tag';
+          t.textContent = r.label;
+          li.insertBefore(t, li.firstChild);
+        }
+      }
+    }
+    lex.appendChild(row);
+    $('#tour-intro').after(lex);
+  }
+
+  if (plan.form === 'path') {
+    for (const { step, marker } of plan.waypoints) {
+      const li = items[step];
+      if (!li || li.querySelector('.step-marker')) continue;
+      const t = document.createElement('p');
+      t.className = 'step-marker';
+      t.textContent = marker;
+      li.insertBefore(t, li.firstChild);
+    }
+  }
 }
 
 async function fetchWhispers(tour) {
