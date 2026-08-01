@@ -172,15 +172,26 @@ body {
 }
 .whisper.show { opacity: 1; }
 
+/* The stage: the box where the podcast is watched. It opens with the
+   playing state and holds everything visual — the verse, the loom, the
+   words as they are said. Nothing outside it moves. */
+.stage {
+  display: none;
+  margin-top: 14px;
+  border: 1px solid var(--hair);
+  border-radius: 8px;
+  background: color-mix(in oklab, var(--paper-2) 55%, var(--paper));
+  padding: 16px 18px 14px 34px;
+}
+.step.playing .stage { display: block; }
+
 .verses {
-  margin: 14px 2px 2px;
-  padding: 10px 16px;
-  border-left: 2px solid var(--hair);
+  margin: 0 0 4px;
   color: var(--ink-2);
   font-size: 15px;
   display: none;
 }
-.step.playing .verses.has { display: block; }
+.verses.has { display: block; }
 .verses sup { font-size: 10px; color: var(--ink-3); margin-right: 4px; }
 .verses-ref {
   display: block;
@@ -202,14 +213,15 @@ em.rel {
 
 /* The words as they are said. */
 .caption {
-  margin: 12px 2px 0 50px;
+  margin: 10px 0 0;
   font-size: 14.5px;
   line-height: 1.5;
   color: var(--ink-2);
-  min-height: 0;
+  min-height: 1.5em;
   opacity: 0;
   transition: opacity 320ms var(--ease);
 }
+.verses.has + .caption { border-top: 1px solid var(--hair); padding-top: 10px; }
 .caption.show { opacity: 1; }
 .caption em.rel { color: var(--gold); border-bottom-color: transparent; }
 
@@ -266,19 +278,6 @@ em.rel {
 #tour[data-form="quiet"] .step-mins { display: none; }
 #tour[data-form="quiet"] .whisper { font-size: 16.5px; }
 
-/* debate — positions set facing each other. */
-.stance {
-  text-transform: uppercase;
-  letter-spacing: 0.13em;
-  font-size: 10.5px;
-  color: var(--gold);
-  margin-bottom: 10px;
-}
-#tour[data-form="debate"] .step { transition-property: opacity, transform, border-color, background, margin; }
-#tour[data-form="debate"] .step[data-side="yes"] { margin-right: 48px; }
-#tour[data-form="debate"] .step[data-side="no"] { margin-left: 48px; }
-#tour[data-form="debate"] .step[data-side="synthesis"] { border-color: color-mix(in oklab, var(--gold) 40%, var(--hair)); }
-
 /* lexicon — the word and its range. */
 .lexicon { margin: 36px 0 -6px; text-align: center; }
 .lexicon-term { font-size: 25px; font-style: italic; }
@@ -303,30 +302,6 @@ em.rel {
   font-size: 10.5px;
   color: var(--gold);
   margin-bottom: 10px;
-}
-
-/* threads — the loom, pointed at audio. Model-named anchors, house-drawn
-   lines: one lane per thread down the left gutter, corners at the canon
-   radius, the kind carried by a word and by nothing else. */
-.steps.has-threads { position: relative; padding-left: 52px; }
-svg.threads {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  pointer-events: none;
-}
-svg.threads path {
-  fill: none;
-  stroke: color-mix(in oklab, var(--gold) 45%, transparent);
-  stroke-width: 1;
-}
-svg.threads text {
-  fill: var(--gold);
-  font-size: 9.5px;
-  letter-spacing: 0.13em;
-  text-transform: uppercase;
 }
 
 /* the loom over scripture — model-named words, house-drawn grammar. */

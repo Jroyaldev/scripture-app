@@ -1,0 +1,299 @@
+{
+  "runId": "2026-08-01T01-28-55-749-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-01T01:28:55.749Z",
+  "promptId": null,
+  "prompt": "Walk me through Genesis 6:1-4 and show me what the exact wording of verse 2 is doing",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0",
+        "thinkingmachines/inkling"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Genesis 6:1-4: What Verse 2 Is Doing",
+    "intro": "This tour starts with the shape of Genesis 6:1-4, then slows down over the exact sequence in verse 2: seeing, evaluating, taking, and choosing. From there it opens the phrase “sons of God,” shows how verse 2 echoes Genesis 3, and ends by weighing the main interpretations while clarifying what verses 3-4 actually say—and do not say.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "startSec": 351,
+        "endSec": 540,
+        "why": "Begin here because the hosts read the movement of Genesis 6:1-4 through the wording of verse 2 itself. They point out that “saw that they were good” is the Hebrew tov, and that the translation “beautiful” can obscure the repeated pattern of “saw” and “took.” They also distinguish “took women” from the English impression of simply “married,” giving you the verbal mechanics before the larger interpretation.",
+        "episodeTitle": "God Question & Response 1",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/09aee69c-9f2c-4eef-a8f9-71086235ceb6/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=09aee69c-9f2c-4eef-a8f9-71086235ceb6",
+        "durationSec": 4900,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "startSec": 620,
+        "endSec": 913,
+        "why": "Now listen for the literary work verse 2 is doing. The hosts explain “sons of Elohim” as a phrase for beings in the heavenly realm, contrast it with “son of man” as a human, and then connect the sequence “saw that it was good” and “took” to Genesis 3. Their conclusion is that verse 2 deliberately presents an inverted replay of the earlier fall: spiritual beings cross a boundary and seize what they want.",
+        "episodeTitle": "God’s Spirit in the Flood Narrative",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/6fed2ba8-01ae-4fdb-8afe-9c7ab3232f32/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=6fed2ba8-01ae-4fdb-8afe-9c7ab3232f32",
+        "durationSec": 3585,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "startSec": 1126,
+        "endSec": 1304,
+        "why": "This clip is here to keep the tour honest about interpretation. After reading verses 1-4, the teacher lays out three major options for “sons of God”: spiritual beings, human rulers, or a godly human line. Whatever view you take, the speaker emphasizes the narrative effect—this is another portrayal of sin’s spread—and then carefully notes that the Nephilim are described as present “in those days,” not explicitly as the children of that union.",
+        "episodeTitle": "Genesis 4:1-6:8",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/ba4rg9y6b4ksgv6v/genesis_41-6889j29.mp3",
+        "durationSec": 1767,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r",
+        "startSec": 2106,
+        "endSec": 2324,
+        "why": "Finish with this clarification of verses 3-4 and the history of how the passage was read. The hosts explain that the text calls the Nephilim “mighty warriors” and “men of renown,” but does not itself call them offspring or giants; that expanded reading comes from later literature such as 1 Enoch. This lets you return to verse 2 with both its force and its limits in view: the wording depicts a boundary-crossing act of seeing and taking, while leaving some identities and details debated.",
+        "episodeTitle": "Genesis 1-11 Question & Response",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/e1d03584-54ec-43f1-a199-59f940b9f1b5/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=e1d03584-54ec-43f1-a199-59f940b9f1b5",
+        "durationSec": 2761,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips invite you to read verse 2 less as a detached puzzle about unusual beings and more as a carefully patterned sentence. Its repeated verbs echo Genesis 3, its subjects and objects reverse the earlier arrangement, and the final phrase—“whomever they chose”—makes unchecked desire and seizure the point of the scene. The tour also leaves room for disagreement where the brief text itself does.",
+    "totalSeconds": 878
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2669,
+      "promptTokens": 1612,
+      "completionTokens": 234,
+      "reasoningTokens": 20,
+      "cachedPromptTokens": 1574,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00016081500000000002
+    },
+    {
+      "i": 1,
+      "latencyMs": 4783,
+      "promptTokens": 11582,
+      "completionTokens": 342,
+      "reasoningTokens": 84,
+      "cachedPromptTokens": 1609,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014678400000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 17928,
+      "promptTokens": 17439,
+      "completionTokens": 1196,
+      "reasoningTokens": 447,
+      "cachedPromptTokens": 11579,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0015658150000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 6,
+        "verse": 2,
+        "limit": 20
+      },
+      "ms": 68,
+      "summary": "20 of 281 moments"
+    },
+    {
+      "at": 0,
+      "name": "read_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 6,
+        "fromVerse": 1,
+        "toVerse": 4
+      },
+      "ms": 2,
+      "summary": "Genesis 6:1–4 (WEB)"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Genesis 6 sons of God daughters of men took wives",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 92,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Genesis 6:2 saw that they were beautiful took any they chose",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 78,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Nephilim giants Genesis 6 mighty men men of renown",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 77,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "what does verse two mean sons of God Genesis 6",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 70,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 240,
+        "toSec": 540
+      },
+      "ms": 1,
+      "summary": "240s–540s of God Question & Response 1"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:theme-god-e5-god-full-qr-1",
+        "fromSec": 800,
+        "toSec": 1100
+      },
+      "ms": 0,
+      "summary": "800s–1100s of God Question & Response 1"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:gods-spirit-flood-narrative",
+        "fromSec": 620,
+        "toSec": 920
+      },
+      "ms": 0,
+      "summary": "620s–920s of God’s Spirit in the Flood Narrative"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:417c1f86-com-2f63c731-32e0-3416-a86c-8ce581c0de7f",
+        "fromSec": 1080,
+        "toSec": 1400
+      },
+      "ms": 0,
+      "summary": "1080s–1380s of Genesis 4:1-6:8"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:genesis-1-11-q-r",
+        "fromSec": 2050,
+        "toSec": 2350
+      },
+      "ms": 0,
+      "summary": "2050s–2350s of Genesis 1-11 Question & Response"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 3,
+    "toolCalls": 12,
+    "tapeSec": 1500,
+    "deniedWindows": 0,
+    "promptTokens": 30633,
+    "completionTokens": 1772,
+    "reasoningTokens": 551,
+    "cachedPromptTokens": 14762,
+    "wallMs": 25868,
+    "modelLatencyMs": 25380,
+    "toolMs": 388
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.003194,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-01T01:29:21.617Z"
+}

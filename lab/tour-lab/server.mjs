@@ -47,64 +47,40 @@ async function readBody(req) {
 
 /* The strong heuristics behind on-the-fly forms: every parameter the model
    supplies is checked against what the tour actually contains, and any
-   shortfall lands on 'standard'. A debate needs a real yes AND a real no; a
-   lexicon needs a term and renderings that point at real steps; a path
-   needs waypoints for most of the walk. The model proposes; this disposes. */
+   shortfall lands on 'standard'. A lexicon needs renderings that point at
+   real steps; a path needs waypoints for most of the walk; a stage
+   direction needs a verse that parses and words that fit. The model
+   proposes; this disposes. */
 function validateFormPlan(plan, nSteps) {
   const std = { form: 'standard' };
   if (!plan || typeof plan !== 'object') return std;
   const idxOk = (i) => Number.isInteger(i) && i >= 0 && i < nSteps;
   const short = (s, n) => typeof s === 'string' && s.trim().length > 0 && s.trim().length <= n;
 
-  /* Threads ride any form. The model picks the anchors and the kind; the
-     page draws the line — and a thread between steps that don't exist, or
-     from a step to itself, or with a kind outside the house's three words,
-     simply isn't drawn. */
-  const KINDS = new Set(['echoes', 'challenges', 'same text']);
-  const threadSeen = new Set();
-  const threads = (Array.isArray(plan.threads) ? plan.threads : [])
-    .filter((t) => t && idxOk(t.a) && idxOk(t.b) && t.a !== t.b && KINDS.has(t.kind))
-    .filter((t) => {
-      const key = [Math.min(t.a, t.b), Math.max(t.a, t.b)].join('-');
-      if (threadSeen.has(key)) return false;
-      threadSeen.add(key);
-      return true;
-    })
-    .slice(0, 3)
-    .map((t) => ({ a: t.a, b: t.b, kind: t.kind }));
-  /* Scripture marks: the model names words inside a cited verse and what
-     binds them; the page draws the loom over the text — and only over
-     words it actually finds there, so a wrong pick is silently nothing. */
-  const marks = (Array.isArray(plan.marks) ? plan.marks : [])
-    .filter((m) => m && idxOk(m.step)
-      && Array.isArray(m.words) && m.words.length >= 2 && m.words.length <= 4
-      && m.words.every((w) => short(w, 20) && !/\s/.test(w.trim())))
-    .slice(0, 2)
-    .map((m) => ({
-      step: m.step,
-      words: m.words.map((w) => w.trim()),
-      label: short(m.label, 18) ? m.label.trim() : null,
+  /* Stage directions ride any form. The model names a verse and the word
+     groups the teaching turns on; the page shows the verse while the clip
+     plays and draws each group the moment the teacher says one of its
+     words. A verse that doesn't parse, or a group whose words the verse
+     doesn't contain, is silently nothing — checked again at draw time. */
+  const stageSeen = new Set();
+  const stage = (Array.isArray(plan.stage) ? plan.stage : [])
+    .filter((s) => s && idxOk(s.step) && !stageSeen.has(s.step) && short(s.verse, 40) && /\d/.test(s.verse))
+    .filter((s) => { stageSeen.add(s.step); return true; })
+    .slice(0, 4)
+    .map((s) => ({
+      step: s.step,
+      verse: s.verse.trim(),
+      marks: (Array.isArray(s.marks) ? s.marks : [])
+        .filter((m) => m && Array.isArray(m.words) && m.words.length >= 2 && m.words.length <= 4
+          && m.words.every((w) => short(w, 20) && !/\s/.test(w.trim())))
+        .slice(0, 2)
+        .map((m) => ({ words: m.words.map((w) => w.trim()), label: short(m.label, 18) ? m.label.trim() : null })),
     }));
-
-  const withThreads = (p) => {
-    const out = { ...p };
-    if (threads.length) out.threads = threads;
-    if (marks.length) out.marks = marks;
-    return out;
-  };
+  const withStage = (p) => (stage.length ? { ...p, stage } : p);
 
   switch (plan.form) {
     case 'quiet':
-      return withThreads({ form: 'quiet' });
-    case 'debate': {
-      const SIDES = new Set(['yes', 'no', 'map', 'synthesis']);
-      const stances = (Array.isArray(plan.stances) ? plan.stances : [])
-        .filter((s) => s && idxOk(s.step) && SIDES.has(s.side));
-      const seen = new Set(stances.map((s) => s.step));
-      const sides = new Set(stances.map((s) => s.side));
-      if (seen.size !== stances.length || !sides.has('yes') || !sides.has('no')) return withThreads(std);
-      return withThreads({ form: 'debate', stances: stances.map((s) => ({ step: s.step, side: s.side })) });
-    }
+      return withStage({ form: 'quiet' });
     case 'lexicon': {
       /* One term or several — the old single-term shape still validates. */
       const raw = Array.isArray(plan.terms)
@@ -121,18 +97,18 @@ function validateFormPlan(plan, nSteps) {
         }))
         .filter((t) => t.renderings.length >= 2)
         .slice(0, 3);
-      if (!terms.length) return withThreads(std);
-      return withThreads({ form: 'lexicon', terms });
+      if (!terms.length) return withStage(std);
+      return withStage({ form: 'lexicon', terms });
     }
     case 'path': {
       const waypoints = (Array.isArray(plan.waypoints) ? plan.waypoints : [])
         .filter((w) => w && idxOk(w.step) && short(w.marker, 18));
       const seen = new Set(waypoints.map((w) => w.step));
-      if (seen.size < Math.ceil(nSteps / 2)) return withThreads(std);
-      return withThreads({ form: 'path', waypoints: waypoints.map((w) => ({ step: w.step, marker: w.marker.trim() })) });
+      if (seen.size < Math.ceil(nSteps / 2)) return withStage(std);
+      return withStage({ form: 'path', waypoints: waypoints.map((w) => ({ step: w.step, marker: w.marker.trim() })) });
     }
     default:
-      return withThreads(std);
+      return withStage(std);
   }
 }
 
@@ -310,18 +286,15 @@ ${steps.map((s, i) => `${i}. [${s.source}] ${s.episodeTitle}\n   ${String(s.why 
 
 Choose the FORM this tour should be set in, from exactly these:
 - "quiet"    — for grief, doubt, lament: the room lowers its voice. No parameters.
-- "debate"   — ONLY when steps genuinely take opposing positions. Assign each step a side: "yes" (affirms the asked position), "no" (challenges it), "map" (lays out the territory), "synthesis" (refuses the either-or). Use it only if at least one "yes" AND one "no" exist.
 - "lexicon"  — ONLY for a word study where the whys name distinct English renderings. Give 1-3 terms, each with 2-6 renderings naming which step(s) argue for it.
 - "path"     — for a walk through a book or story: give each step a short waypoint marker (a passage or scene name, max 18 characters).
 - "standard" — when none of the above is clearly right. Choosing standard is a good answer, not a failure.
 
-Separately, whatever the form: if two steps genuinely treat the SAME passage, or one step answers or challenges another, you may add up to 3 threads connecting them. Most tours need none — a thread is a claim, and a wrong one is worse than no thread.
-
-Also whatever the form: for up to 2 steps whose reason cites a specific verse, you may mark 2-4 KEY WORDS inside that verse that the teaching turns on, with a short label for what binds them (max 18 characters). Only single words that actually appear in the cited verse text; only when the teaching genuinely turns on them.
+Separately: STAGE DIRECTIONS. While a clip plays, its card opens a small stage where the listener WATCHES the teaching. For up to 4 steps you may direct that stage: name the verse the teaching walks through (book chapter:from-to, at most 4 verses), and up to 2 word-groups inside that verse that the teaching turns on — 2-4 single words each, with a short label for what binds them (max 18 characters). The stage shows the verse while the clip plays and draws each word-group AT THE MOMENT the teacher says one of its words, so direct only words the teacher genuinely dwells on and that appear in the verse text.
 
 Answer ONLY with JSON:
-{"form":"...", "stances":[{"step":0,"side":"yes"}], "terms":[{"term":"...","renderings":[{"label":"...","steps":[0]}]}], "waypoints":[{"step":0,"marker":"..."}], "threads":[{"a":0,"b":3,"kind":"challenges"}], "marks":[{"step":2,"words":["saw","good","took"],"label":"echoes Eden"}]}
-kind is exactly one of: "echoes", "challenges", "same text". Include only the keys the chosen form needs; threads and marks are optional for every form.`,
+{"form":"...", "terms":[{"term":"...","renderings":[{"label":"...","steps":[0]}]}], "waypoints":[{"step":0,"marker":"..."}], "stage":[{"step":2,"verse":"Genesis 6:1-2","marks":[{"words":["saw","took"],"label":"echoes Eden"}]}]}
+Include only the keys the chosen form needs; stage directions are optional and most steps need none.`,
           }],
         });
         const m = String(reply.message.content || '').match(/\{[\s\S]*\}/);
