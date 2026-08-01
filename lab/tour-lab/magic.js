@@ -174,20 +174,26 @@ const normalize = (s) => String(s).toLowerCase().replace(/[’']/g, "'").replace
 /* Mark occurrences of any phrase (or its significant words) in plain text;
    returns HTML. Words under five letters stay unmarked — highlighting "the"
    helps nobody. */
-function markRelevant(text, phrases) {
+function markRelevant(text, phrases, { wholePhrasesOnly = false } = {}) {
   let html = escapeHtml(text);
   const terms = new Set();
   for (const p of phrases) {
-    const words = normalize(p).split(' ').filter((w) => w.length >= 5);
     if (p.length <= 60) terms.add(p);
-    for (const w of words) terms.add(w);
+    /* Verses mark single significant words too; the live caption marks only
+       whole quoted phrases — exploding a long quote into words turned half
+       the caption gold, which stops meaning anything. */
+    if (wholePhrasesOnly) continue;
+    for (const w of normalize(p).split(' ').filter((x) => x.length >= 5)) terms.add(w);
   }
-  for (const term of [...terms].sort((a, b) => b.length - a.length)) {
-    const esc = escapeHtml(term).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    html = html.replace(new RegExp(`(?<![\\w>])(${esc})(?![\\w])`, 'gi'), (s) => `<em class="rel">${s}</em>`);
-  }
-  // Un-nest any accidental double marks.
-  return html.replace(/<em class="rel">(<em class="rel">)+/g, '<em class="rel">').replace(/(<\/em>)+<\/em>/g, '</em>');
+  if (!terms.size) return html;
+  /* One combined pass, longest alternative first, so a word can never
+     re-match inside a phrase already marked — sequential replacement
+     nested tags ("goodness in <em>action</em>" inside an <em>). */
+  const alternation = [...terms]
+    .sort((a, b) => b.length - a.length)
+    .map((t) => escapeHtml(t).replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('|');
+  return html.replace(new RegExp(`(?<![\\w>])(${alternation})(?![\\w])`, 'gi'), (s) => `<em class="rel">${s}</em>`);
 }
 
 function escapeHtml(s) {
@@ -347,7 +353,7 @@ function updateCaption(t) {
   current.capKey = key;
   const cap = current.li.querySelector('.caption');
   if (silent) { cap.classList.remove('show'); return; }
-  cap.innerHTML = markRelevant(seg.t, current.phrases);
+  cap.innerHTML = markRelevant(seg.t, current.phrases, { wholePhrasesOnly: true });
   cap.classList.add('show');
 }
 
