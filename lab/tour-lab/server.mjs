@@ -472,8 +472,12 @@ Include only the keys the chosen form needs; stage directions are optional and m
       try {
         const client = clientFor('gpt-5.6-luna-medium');
         const spent = [];
+        const toks = { in: 0, out: 0, reasoning: 0 };
         const callModel = async (content, maxTokens = 8000) => {
           const reply = await client.chat({ maxTokens, messages: [{ role: 'user', content }] });
+          toks.in += reply.usage?.promptTokens || 0;
+          toks.out += reply.usage?.completionTokens || 0;
+          toks.reasoning += reply.usage?.reasoningTokens || 0;
           if (reply.usage?.providerCostUsd != null) spent.push(reply.usage.providerCostUsd);
           const m = String(reply.message.content || '').match(/\{[\s\S]*\}/);
           return m ? JSON.parse(m[0]) : null;
@@ -695,7 +699,7 @@ An "aside" is often the right direction for a stretch like this — one line nam
 
         }
         for (const sc of scenes) delete sc.verseNorm;
-        return sendJson(res, 200, { scenes, usd: spent.reduce((a, b) => a + b, 0) || null, passes: spent.length });
+        return sendJson(res, 200, { scenes, usd: spent.reduce((a, b) => a + b, 0) || null, passes: spent.length, tokens: toks });
       } catch (err) {
         return sendJson(res, 200, { scenes: [], note: err?.message || String(err) });
       }
