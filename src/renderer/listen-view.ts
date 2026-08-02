@@ -37,9 +37,10 @@ import { safeCall } from "./utils/safeCall.js";
 export type SeriesOrder = "newest" | "oldest";
 
 interface RoomState {
-  /** Exactly one of these is set, or neither — the shelf. */
+  /** Exactly one of these is set, or none of them — the shelf. */
   openAlbum: string | null;
   openSeries: string | null;
+  openPlaylist: string | null;
   /** Where the SHELF was left, so going back does not lose it. */
   shelfScroll: number;
   /** What is typed into the filter on the open record. Cleared on leaving it. */
@@ -62,7 +63,8 @@ interface RoomState {
 }
 
 let room: RoomState = {
-  openAlbum: null, openSeries: null, shelfScroll: 0, query: "", orderNonce: 0,
+  openAlbum: null, openSeries: null, openPlaylist: null,
+  shelfScroll: 0, query: "", orderNonce: 0,
 };
 let order: Record<string, "oldest"> = {};
 let asked = false;
@@ -103,16 +105,26 @@ export function subscribeListenRoom(watcher: () => void): () => void {
   return () => { watchers.delete(watcher); };
 }
 
-/** Open a record, or pass null for both to return to the shelf. */
-export function openListenRecord(next: { album?: string | null; series?: string | null }): void {
+/** Open a record, or pass nothing to return to the shelf. */
+export function openListenRecord(next: {
+  album?: string | null; series?: string | null; playlist?: string | null;
+}): void {
   const openAlbum = next.album ?? null;
   const openSeries = next.series ?? null;
-  if (room.openAlbum === openAlbum && room.openSeries === openSeries) return;
+  const openPlaylist = next.playlist ?? null;
+  if (room.openAlbum === openAlbum
+    && room.openSeries === openSeries
+    && room.openPlaylist === openPlaylist) return;
   /* The filter belongs to the record it was typed on. Carrying "psalm 40" into
      the next record would hide almost all of it, with the reason four hundred
      pixels above the fold. */
-  room = { ...room, openAlbum, openSeries, query: "" };
+  room = { ...room, openAlbum, openSeries, openPlaylist, query: "" };
   announce();
+}
+
+/** Open one of the reader's own lists. */
+export function openListenPlaylist(id: string | null): void {
+  openListenRecord({ playlist: id });
 }
 
 /** Remember where the shelf was, so returning to it is returning. */

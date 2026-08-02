@@ -80,6 +80,9 @@ import {
 } from "./PodcastPlayer";
 import type { ResourceLibraryCatalogue } from "./ResourceLibraryMatrix";
 import { sameEpisode, type AudioCatalogueEpisode } from "../../core/resources/audio-catalogue";
+import type { BackboneData, BookNameData } from "../api.js";
+import { parsePassage } from "../utils/parsePassage.js";
+import { safeCall } from "../utils/safeCall.js";
 /* The shapes and the shaping both live beside this now rather than in it, so
    the boot-time rebuild of a resumed record produces byte-identical ids. Two
    shapers drifting by one character would mean a resumed album playing while
@@ -88,11 +91,29 @@ import {
   MUSIC,
   SERIES_ART,
   asEpisode,
+  resolveEntry,
   seriesEpisode,
   trackId,
+  trackPassage,
   type MusicAlbum,
   type MusicTrack,
 } from "./listen-episodes";
+import { AddToPlaylist, usePlaylistAsk, type PlaylistAsk } from "./AddToPlaylist";
+import {
+  addToPlaylist,
+  createPlaylist,
+  deletePlaylist,
+  movePlaylistEntry,
+  playlistIndex,
+  readPlaylists,
+  removeFromPlaylist,
+  renamePlaylist,
+  restorePlaylist,
+  subscribePlaylists,
+  type PlaylistEntry,
+} from "../playlists.js";
+import { openListenPlaylist } from "../listen-view.js";
+import { useToast } from "./Toast.js";
 
 /** For separating two records released in the same year. Matched, not parsed —
  *  `released` is the publisher's own prose and takes every shape prose takes. */
@@ -429,6 +450,136 @@ function About({ text }: { text: string }): React.JSX.Element {
 }
 
 /**
+ * A LIST FROM A PASSAGE — the one thing this app can build that Spotify cannot.
+ *
+ * A general playlist is the reader's own arrangement and needs no help. This is
+ * the scripture-native one: name a chapter and get everything in the library
+ * that sings or teaches it, on a list you can then edit like any other.
+ *
+ * BOTH HALVES ALREADY EXIST and neither is a search. The sung half is the
+ * `psalm` tag the music catalogue carries. The spoken half is the passage index
+ * the reading margin already asks — chapter-granular, ranked by how long each
+ * episode actually spends there, and mute-filtered in the main process. So this
+ * is a join, not a new pipeline, and it costs one IPC the app makes constantly.
+ *
+ * ONE AFFORDANCE, and it stays one. A whole browsing surface for this would be
+ * a second Listen room; a single control on the shelf head is a door.
+ *
+ * THE SEED IS PROVENANCE, NOT A QUERY. Once made, the list is an ordinary list:
+ * the reader adds and removes freely, and it does not re-run behind them.
+ */
+function PassageSeed({ backbone, bookNames, onMade }: {
+  backbone: BackboneData | null;
+  bookNames: BookNameData | null;
+  onMade: (id: string) => void;
+}): React.JSX.Element | null {
+  const [open, setOpen] = useState(false);
+  const [text, setText] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const field = useRef<HTMLInputElement>(null);
+  useEffect(() => { if (open) field.current?.focus(); }, [open]);
+
+  /* Without the two reference tables there is nothing to parse a reference
+     with, and a control that cannot work should not be drawn. */
+  if (!bookNames || !backbone) return null;
+
+  const build = async (): Promise<void> => {
+    const parsed = parsePassage(text, bookNames, backbone);
+    if (!parsed.ok) { setError(parsed.error); return; }
+    setBusy(true);
+    try {
+      const { book, chapter } = parsed.value;
+      /* A verse only narrows the SPOKEN half, where the index ranks by how near
+         a moment lands. The sung half ignores it: a psalm's setting is of the
+         whole psalm, and "Psalm 23:4" should still find the song. */
+      const verse = parsed.value.verse ?? null;
+      const entries: PlaylistEntry[] = [];
+
+      /* Sung first: a psalm's own setting is the most direct answer there is to
+         "what does the library have on Psalm 23". */
+      for (const album of MUSIC.albums) {
+        for (const track of album.tracks) {
+          const passage = trackPassage(track);
+          if (!passage || passage.book !== book || passage.chapter !== chapter) continue;
+          entries.push({
+            kind: "music", sourceId: MUSIC.source.id, album: album.name, title: track.title,
+          });
+        }
+      }
+
+      /* Then spoken, in the index's own ranking — which is seconds of treatment
+         and nothing else. An episode can hold several moments in one chapter,
+         so they are folded to one row each. */
+      const answer = await safeCall(() => window.api.passages.moments(book, chapter, verse));
+      if (answer.ok) {
+        const seen = new Set<string>();
+        for (const moment of answer.value.moments) {
+          if (seen.has(moment.id) || entries.length >= SEEDED_MAX) continue;
+          seen.add(moment.id);
+          entries.push({
+            kind: "podcast",
+            sourceId: moment.sourceId,
+            recordId: moment.id,
+            title: moment.episode,
+          });
+        }
+      }
+
+      if (entries.length === 0) {
+        setError("Nothing in your library on that passage yet");
+        return;
+      }
+      /* `bookNames` maps a code to the names that book answers to, fullest
+         first — so the first entry is the one to print. */
+      const label = `${bookNames[book]?.[0] ?? book} ${chapter}`;
+      const id = createPlaylist(label, { book, chapter, verse });
+      for (const entry of entries) addToPlaylist(id, entry);
+      setOpen(false);
+      setText("");
+      setError(null);
+      onMade(id);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  if (!open) {
+    return (
+      <button className="listen-seed-open" onClick={() => setOpen(true)} type="button">
+        New from a passage…
+      </button>
+    );
+  }
+  return (
+    <div className="listen-seed">
+      <input
+        aria-label="A passage to build a playlist from"
+        className="listen-sift-input"
+        onChange={(event) => { setText(event.target.value); setError(null); }}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") { event.preventDefault(); void build(); }
+          if (event.key === "Escape") { event.preventDefault(); setOpen(false); setError(null); }
+        }}
+        placeholder="Psalm 23, Romans 8…"
+        ref={field}
+        value={text}
+      />
+      <button
+        className="listen-sift-order"
+        disabled={busy || text.trim().length === 0}
+        onClick={() => void build()}
+        type="button"
+      >{busy ? "Building…" : "Build"}</button>
+      {error && <span className="listen-seed-error">{error}</span>}
+    </div>
+  );
+}
+
+/** Enough to be a list, few enough to be a list somebody reads. */
+const SEEDED_MAX = 25;
+
+/**
  * One of a record's groups, and its rows.
  *
  * Extracted when EveryPsalm gained its two chapters: the same run of rows is
@@ -436,8 +587,12 @@ function About({ text }: { text: string }): React.JSX.Element {
  * on which heading it happens to sit under is a bug waiting for somebody to
  * edit one copy.
  */
-function AlbumGroup({ album, group, onPlay, ordered, playingHere, sounding }: {
+function AlbumGroup({ album, askProps, group, onPlay, ordered, playingHere, sounding }: {
   album: MusicAlbum;
+  askProps: (entry: PlaylistEntry, label: string) => {
+    onContextMenu: (event: React.MouseEvent) => void;
+    onKeyDown: (event: React.KeyboardEvent) => void;
+  };
   group: { name: string; cover?: string; tracks: MusicTrack[] };
   onPlay: (from: number) => void;
   ordered: MusicTrack[];
@@ -465,6 +620,15 @@ function AlbumGroup({ album, group, onPlay, ordered, playingHere, sounding }: {
                 data-on={on ? "" : undefined}
                 onClick={() => onPlay(ordered.indexOf(track))}
                 type="button"
+                {...askProps(
+                  {
+                    kind: "music",
+                    sourceId: MUSIC.source.id,
+                    album: album.name,
+                    title: track.title,
+                  },
+                  track.title,
+                )}
               >
                 <span className="listen-track-mark">
                   {on && sounding
@@ -659,7 +823,12 @@ function usePassed(scroller: React.RefObject<HTMLDivElement | null>, open: strin
   return [passed, mark];
 }
 
-export function ListenPage(): React.JSX.Element {
+export function ListenPage({ backbone, bookNames }: {
+  /* Only the passage seeding needs these, and only to parse what a reader
+     types. App already holds both; passing them beats a second load. */
+  backbone?: BackboneData | null;
+  bookNames?: BookNameData | null;
+} = {}): React.JSX.Element {
   const [resourceCatalogue, setResourceCatalogue] = useState<ResourceLibraryCatalogue | null>(null);
   const [audio, setAudio] = useState<Record<string, AudioCatalogueEpisode[]> | null>(null);
   /* WHERE THE READER WAS, held outside this component because the room unmounts
@@ -667,9 +836,13 @@ export function ListenPage(): React.JSX.Element {
      With this in `useState`, glancing at the passage under discussion cost you
      four hundred rows, both catalogue IPCs, and a skeleton flash. */
   const room = useSyncExternalStore(subscribeListenRoom, readListenRoom);
-  const { openAlbum, openSeries, query } = room;
+  const { openAlbum, openSeries, openPlaylist, query } = room;
   const setOpenAlbum = (name: string | null): void => openListenRecord({ album: name });
   const setOpenSeries = (id: string | null): void => openListenRecord({ series: id });
+  const lists = useSyncExternalStore(subscribePlaylists, readPlaylists);
+  const [ask, setAsk] = useState<PlaylistAsk | null>(null);
+  const askProps = usePlaylistAsk(setAsk);
+  const { showToast } = useToast();
   const now = usePodcastNowPlaying();
   /* Read straight from the player's own store rather than threaded down as a
      prop. A six-hundred-row series would otherwise pass one number through
@@ -723,21 +896,23 @@ export function ListenPage(): React.JSX.Element {
   }), []);
   const album = albums.find((a) => a.name === openAlbum) ?? null;
 
+  /* Whatever is open — an album, a series, or one of the reader's own lists. */
+  const opened = openAlbum ?? openSeries ?? openPlaylist;
+
   /* Escape leaves whichever record is open. It used to leave only an album,
      because the handler was hung on `album` and the series page had been
      written afterwards — the kind of asymmetry nobody sees until they are in
      the other page pressing the key that worked a moment ago. */
   useEffect(() => {
-    if (!openAlbum && !openSeries) return undefined;
+    if (!opened) return undefined;
     const onKey = (event: KeyboardEvent): void => {
       if (event.key !== "Escape") return;
       event.preventDefault();
-      setOpenAlbum(null);
-      setOpenSeries(null);
+      openListenRecord({});
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [openAlbum, openSeries]);
+  }, [opened]);
 
   /* OPENING GOES TO THE TOP; GOING BACK GOES BACK.
      This was one line that fired on both, so it solved half a problem and
@@ -746,7 +921,6 @@ export function ListenPage(): React.JSX.Element {
      shelf they had scrolled through to get there. The shelf's position is kept
      as it is left and restored when it returns; a record still opens at its
      own top, which is the only place a record makes sense to open. */
-  const opened = openAlbum ?? openSeries;
   useEffect(() => {
     const box = scroller.current;
     if (!box) return;
@@ -939,6 +1113,161 @@ export function ListenPage(): React.JSX.Element {
     return found.sort((a, b) => b.heardAt - a.heardAt).slice(0, 6);
   }, [places, series]);
 
+  const list = lists.find((one) => one.id === openPlaylist) ?? null;
+  if (list) {
+    /* RESOLVED, NEVER PRINTED. Every row is looked up in the live catalogue by
+       identity, so a renamed track shows its new name, a muted publisher's
+       tracks disappear exactly as they do from a shelf, and a record that has
+       left the library draws as a row that can still say what it was. */
+    const rows = list.entries.map((entry) => ({
+      entry,
+      episode: resolveEntry(entry, audio, (id) => named.get(id) ?? titleFromId(id)),
+    }));
+    const live = rows.filter((row) => row.episode).map((row) => row.episode!);
+    const runtime = list.entries.length;
+    const here = live.some((ep) => playingHere(ep.sourceId, ep.recordId)) && sounding;
+    /* Through the QUEUE, like everything else that plays through. A playlist is
+       a way to fill it, not a second machine that advances on its own — see the
+       note beside the queue for why a third answer to "what plays next" is how
+       a listener ends up somewhere nobody chose.
+
+       No recipe: a resume rebuilds a record from the shelf it came off, and a
+       playlist is not on a shelf. It resumes as the single episode it was on,
+       which is the honest fallback the recipe path already degrades to. */
+    const play = (from: number): void => {
+      if (live.length > 0) startPodcastQueue(list.name, live, from);
+    };
+    return (
+      <div className="listen" ref={scroller}>
+        <div className="listen-inner">
+          <CompactBar
+            name={list.name}
+            onBack={() => openListenPlaylist(null)}
+            onPlay={() => play(0)}
+            playing={here}
+            shown={passed}
+          />
+          <button className="listen-back" onClick={() => openListenPlaylist(null)} type="button">
+            ← All playlists
+          </button>
+          <Hero
+            art={live[0]?.artUrl}
+            kicker={list.seed ? `Playlist · from ${list.seed.book} ${list.seed.chapter}` : "Playlist"}
+            line={[
+              `${runtime} ${runtime === 1 ? "item" : "items"}`,
+              live.length < runtime ? `${runtime - live.length} unavailable` : null,
+            ].filter(Boolean).join(" · ")}
+            name={list.name}
+            onPlay={() => play(0)}
+            innerRef={mark}
+            playing={here}
+            tint={live[0]?.tint}
+          />
+          <div className="listen-list-tools">
+            <button
+              className="listen-list-tool"
+              onClick={() => {
+                const was = window.prompt("Rename this playlist", list.name);
+                if (was != null) renamePlaylist(list.id, was);
+              }}
+              type="button"
+            >Rename</button>
+            <button
+              className="listen-list-tool"
+              onClick={() => {
+                const at = playlistIndex(list.id);
+                const gone = deletePlaylist(list.id);
+                openListenPlaylist(null);
+                /* Deleting a list a reader spent time building must be
+                   reversible in the same breath, or the menu item is a trap. */
+                if (gone) showToast(`Deleted ${gone.name}`, "Undo", () => {
+                  restorePlaylist(gone, at);
+                  openListenPlaylist(gone.id);
+                });
+              }}
+              type="button"
+            >Delete</button>
+          </div>
+          {rows.length === 0 ? (
+            <p className="listen-empty">
+              Nothing on this list yet. Right-click any track or episode to add it.
+            </p>
+          ) : (
+            <ol className="listen-tracks">
+              {rows.map((row, index) => {
+                const on = row.episode
+                  && playingHere(row.episode.sourceId, row.episode.recordId);
+                return (
+                  <li className="listen-track" key={`${row.entry.title}:${index}`}>
+                    <div className="listen-track-row" data-dead={row.episode ? undefined : ""}>
+                      <button
+                        aria-current={on ? "true" : undefined}
+                        aria-label={row.episode
+                          ? `Play ${row.episode.title}`
+                          : `${row.entry.title} — no longer in the library`}
+                        className="listen-track-face"
+                        data-on={on ? "" : undefined}
+                        disabled={!row.episode}
+                        onClick={() => play(live.findIndex((ep) => ep === row.episode))}
+                        type="button"
+                      >
+                        <span className="listen-track-mark">
+                          {on && sounding
+                            ? <BarsGlyph />
+                            : <>
+                              <span aria-hidden="true" className="listen-track-no">{index + 1}</span>
+                              <span aria-hidden="true" className="listen-track-play"><PlayGlyph /></span>
+                            </>}
+                        </span>
+                        <span className="listen-track-words">
+                          <span className="listen-track-title">
+                            {row.episode?.title ?? row.entry.title}
+                          </span>
+                          <span className="listen-track-when">
+                            {row.episode?.sourceName ?? "No longer in the library"}
+                          </span>
+                        </span>
+                        <span className="listen-track-place" />
+                        <span className="listen-track-extent" />
+                      </button>
+                      {/* The one place in the room where a row carries its own
+                          controls: a playlist row is the reader's, and ordering
+                          it is the point. Buttons beside the row rather than
+                          inside it, which is what keeps the row a button. */}
+                      <span className="listen-track-hand">
+                        <button
+                          aria-label="Move up"
+                          className="listen-track-move"
+                          disabled={index === 0}
+                          onClick={() => movePlaylistEntry(list.id, index, -1)}
+                          type="button"
+                        >↑</button>
+                        <button
+                          aria-label="Move down"
+                          className="listen-track-move"
+                          disabled={index === rows.length - 1}
+                          onClick={() => movePlaylistEntry(list.id, index, 1)}
+                          type="button"
+                        >↓</button>
+                        <button
+                          aria-label={`Remove ${row.entry.title}`}
+                          className="listen-track-move"
+                          onClick={() => removeFromPlaylist(list.id, index)}
+                          type="button"
+                        >×</button>
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+          <Colophon />
+        </div>
+      </div>
+    );
+  }
+
   if (openedSeries) {
     /* SEASONS, and they are the publisher's calendar rather than our
        invention: a podcast's own division of itself is the year it published
@@ -1033,6 +1362,15 @@ export function ListenPage(): React.JSX.Element {
                         data-on={on ? "" : undefined}
                         onClick={() => play(ordered.indexOf(ep))}
                         type="button"
+                        {...askProps(
+                          {
+                            kind: "podcast",
+                            sourceId: openedSeries.id,
+                            recordId: ep.recordId,
+                            title: ep.title,
+                          },
+                          ep.title,
+                        )}
                       >
                         <span className="listen-track-mark">
                           {on && sounding
@@ -1180,6 +1518,7 @@ export function ListenPage(): React.JSX.Element {
                   {run.map((group) => (
                     <AlbumGroup
                       album={album}
+                      askProps={askProps}
                       group={group}
                       key={group.name || "all"}
                       onPlay={play}
@@ -1193,6 +1532,7 @@ export function ListenPage(): React.JSX.Element {
           ) : shown.map((group) => (
             <AlbumGroup
               album={album}
+              askProps={askProps}
               group={group}
               key={group.name || "all"}
               onPlay={play}
@@ -1387,8 +1727,57 @@ export function ListenPage(): React.JSX.Element {
           )}
         </section>
 
+        <section aria-label="Playlists" className="listen-shelf">
+          <div className="listen-shelf-head">
+            <h2 className="listen-shelf-name">Playlists</h2>
+            <p className="listen-shelf-by">Yours</p>
+            <PassageSeed
+              backbone={backbone ?? null}
+              bookNames={bookNames ?? null}
+              onMade={(id) => openListenPlaylist(id)}
+            />
+          </div>
+          {lists.length === 0 ? (
+            <p className="listen-empty">
+              No playlists yet. Right-click any track or episode to start one — or
+              build one from a passage.
+            </p>
+          ) : (
+            <ul className="listen-grid">
+              {lists.map((one) => {
+                const first = one.entries
+                  .map((entry) => resolveEntry(entry, audio, (id) => named.get(id) ?? titleFromId(id)))
+                  .find(Boolean);
+                return (
+                  <li className="listen-card" key={one.id}>
+                    <button
+                      aria-label={`${one.name} — ${one.entries.length} items`}
+                      className="listen-card-face"
+                      onClick={() => openListenPlaylist(one.id)}
+                      style={first?.tint ? { "--record-tint": first.tint } as React.CSSProperties : undefined}
+                      type="button"
+                    >
+                      <span className="listen-card-art">
+                        <Cover alt="" src={first?.artUrl} tint={first?.tint} />
+                        <span aria-hidden="true" className="listen-card-play">
+                          <PlayGlyph size={18} />
+                        </span>
+                      </span>
+                      <span className="listen-card-name">{one.name}</span>
+                      <span className="listen-card-foot">
+                        {one.entries.length} {one.entries.length === 1 ? "item" : "items"}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+        </section>
+
         <Colophon />
       </div>
+      <AddToPlaylist ask={ask} onClose={() => setAsk(null)} />
     </div>
   );
 }

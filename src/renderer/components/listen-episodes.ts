@@ -137,3 +137,39 @@ export function seriesOrder(
 ): AudioCatalogueEpisode[] {
   return [...episodes].sort((a, b) => (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""));
 }
+
+/**
+ * A stored playlist entry, turned back into something playable — or not.
+ *
+ * NOTHING IS TRUSTED FROM THE ENTRY except the identity. The title it carries
+ * is a fallback for naming a row that no longer resolves, never a source for
+ * what gets drawn or played, so a catalogue that renamed a track shows the
+ * catalogue's name and a track that has left shows the last one we knew.
+ *
+ * Null is an ordinary answer, not a failure: the record left the library, or
+ * its publisher is muted, or the reader's library is a different one. The
+ * caller draws that row as unplayable rather than dropping it, because a list
+ * that silently shortens is a list a reader cannot trust.
+ *
+ * The album is matched by NAME OR SLUG. Name is the stored key because songs
+ * have no ids; slug is the hedge for a record retitled upstream.
+ */
+export function resolveEntry(
+  entry:
+    | { kind: "music"; sourceId: string; album: string; title: string }
+    | { kind: "podcast"; sourceId: string; recordId: string; title: string },
+  audio: Record<string, AudioCatalogueEpisode[]> | null,
+  named: (sourceId: string) => string,
+): PodcastEpisode | null {
+  if (entry.kind === "music") {
+    if (entry.sourceId !== MUSIC.source.id) return null;
+    const album = MUSIC.albums.find((one) => one.name === entry.album)
+      ?? MUSIC.albums.find((one) => one.slug === entry.album);
+    const track = album?.tracks.find((one) => one.title === entry.title);
+    return album && track ? asEpisode(album, track) : null;
+  }
+  const episodes = audio?.[entry.sourceId];
+  const found = episodes?.find((one) => one.recordId === entry.recordId);
+  if (!found) return null;
+  return seriesEpisode(entry.sourceId, named(entry.sourceId), found, SERIES_ART[entry.sourceId]);
+}

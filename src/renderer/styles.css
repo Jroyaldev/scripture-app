@@ -24760,6 +24760,204 @@ button.lang-phrase-diagram-node:focus-visible,
   font-variant-numeric: tabular-nums;
 }
 
+/* ── The reader's own lists ─────────────────────────────────────────────────── */
+.listen-seed-open,
+.listen-seed {
+  /* Pushed to the far end of the shelf head, where it does not compete with
+     the heading it belongs to. */
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.listen-seed-open {
+  padding: 5px 11px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: none;
+  color: var(--text-secondary);
+  font: 0.75rem/1.4 var(--font-ui);
+  cursor: pointer;
+}
+
+.listen-seed-open:hover { border-color: var(--border-strong); color: var(--text-primary); }
+
+.listen-seed-open:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.listen-seed-error {
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.4 var(--font-ui);
+}
+
+/* Its own class rather than the filter's order button, which carries a
+   `margin-left: auto` that flung Delete to the far side of the window and made
+   two related controls read as unrelated. */
+.listen-list-tools { display: flex; gap: 8px; margin: 4px 0 18px; }
+
+.listen-list-tool {
+  padding: 7px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-secondary);
+  font: 0.75rem/1.4 var(--font-ui);
+  cursor: pointer;
+}
+
+.listen-list-tool:hover { border-color: var(--border-strong); color: var(--text-primary); }
+
+.listen-list-tool:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* A PLAYLIST ROW CARRIES ITS OWN CONTROLS, and it is the only row in the room
+   that does. Everywhere else the row IS the button, and a control nested inside
+   one is invalid HTML that the engine unnests. Here the row is a grid holding
+   the button and a hand of controls beside it, because ordering the list is the
+   whole point of the list being the reader's. */
+.listen-track-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px;
+}
+
+.listen-track-row .listen-track-face { min-width: 0; }
+
+.listen-track-hand {
+  display: flex;
+  gap: 2px;
+  opacity: 0;
+  transition: opacity 140ms ease;
+}
+
+/* On hover, and ALWAYS once something inside has focus — a keyboard reader
+   must not have to guess that three controls exist. */
+.listen-track-row:hover .listen-track-hand,
+.listen-track-hand:focus-within { opacity: 1; }
+
+.listen-track-move {
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-tertiary);
+  font: 0.8125rem/1 var(--font-ui);
+  cursor: pointer;
+}
+
+.listen-track-move:hover:not(:disabled) {
+  background: var(--surface-hover);
+  color: var(--text-primary);
+}
+
+.listen-track-move:disabled { opacity: 0.3; cursor: default; }
+
+.listen-track-move:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* A row whose record has left the library: dimmed and unpressable, but still
+   named. A list that silently shortens is a list nobody can trust, and a row
+   that can say what it was is a row the reader can decide about. */
+.listen-track-row[data-dead] .listen-track-title { color: var(--text-tertiary); }
+.listen-track-row[data-dead] .listen-track-face { cursor: default; }
+
+/* ── The menu that puts a thing on a list ─────────────────────────────────── */
+.playlist-menu-head {
+  margin: 0 0 6px;
+  padding: 0 10px;
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.5 var(--font-ui);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.playlist-menu-none {
+  margin: 0;
+  padding: 4px 10px 8px;
+  color: var(--text-tertiary);
+  font: 0.75rem/1.5 var(--font-ui);
+}
+
+.playlist-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 7px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-primary);
+  font: 0.8125rem/1.4 var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+
+.playlist-menu-item:hover { background: var(--surface-hover); }
+
+.playlist-menu-item:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: calc(var(--focus-ring-offset) * -1);
+}
+
+.playlist-menu-item.is-new { color: var(--text-secondary); }
+
+.playlist-menu-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.playlist-menu-count {
+  color: var(--text-tertiary);
+  font: 0.6875rem/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Said before the press rather than after it, so a reader can see the list they
+   were reaching for is already holding this. */
+.playlist-menu-item[data-held] .playlist-menu-count { color: var(--accent); }
+
+.playlist-menu-new { display: flex; gap: 6px; padding: 4px 6px 2px; }
+
+.playlist-menu-input {
+  min-width: 0;
+  flex: 1;
+  padding: 6px 9px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+  font: 0.8125rem/1.4 var(--font-ui);
+}
+
+.playlist-menu-input:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  border-color: transparent;
+}
+
+.playlist-menu-make {
+  padding: 6px 11px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: var(--text-on-accent);
+  font: 0.75rem/1.4 var(--font-ui);
+  cursor: pointer;
+}
+
+.playlist-menu-make:disabled { opacity: 0.4; cursor: default; }
+
 /* ── Shuffle, and the way out to the publisher ─────────────────────────────── */
 .listen-shuffle {
   display: inline-flex;

@@ -187,6 +187,66 @@ test("the resume rebuilds its record from local data only", () => {
   assert.match(body, /if \(!episodes\.some\(/);
 });
 
+test("the reader's lists are normalised on the way in and on the way out", () => {
+  const main = code("src/electron/main.ts");
+  const reader = main.slice(main.indexOf("const readSettings = ()"));
+  assert.match(
+    reader.slice(0, reader.indexOf("ipcMain.handle(\"settings:get\"")),
+    /playlists: normalizePlaylists\(/,
+  );
+  const writer = main.slice(main.indexOf("ipcMain.handle(\"settings:set\""));
+  assert.match(
+    writer.slice(0, writer.indexOf("ipcMain.handle(\"dialog-open-directory\"")),
+    /playlists: normalizePlaylists\(/,
+  );
+});
+
+test("a playlist stores identities, never anything fetchable", () => {
+  const main = code("src/electron/main.ts");
+  const start = main.indexOf("function normalizePlaylists(");
+  assert.ok(start > 0);
+  /* Anchored on CODE, not on the comment that follows it: `code()` strips block
+     comments, so a comment used as an end marker does not exist by the time the
+     slice runs — and the slice silently ran to the end of the file, where it
+     found `officialUrl` in a normaliser three functions away. */
+  const body = main.slice(start, main.indexOf("function normalizeListenSeriesOrder(", start));
+  assert.ok(body.length > 0 && body.length < 4000, "the slice must be this function alone");
+  /* No url, no artwork, no duration. Everything drawable or playable is
+     resolved against the live catalogue when the list is opened — which is what
+     keeps a muted publisher's tracks out of a playlist, keeps a renamed track
+     showing its new name, and keeps anything on this list from ever becoming
+     an `<img src>` or a fetch. */
+  for (const forbidden of ["audioUrl", "artUrl", "officialUrl", "cover", "tint"]) {
+    assert.ok(!body.includes(forbidden), `a playlist entry must not carry ${forbidden}`);
+  }
+  // And per-entry drops, like the ledger, so one bad row costs only itself.
+  assert.ok(body.split("continue;").length - 1 >= 3);
+  assert.match(body, /PLAYLISTS_MAX/);
+});
+
+test("a playlist fills the queue and is never a machine of its own", () => {
+  const room = code("src/renderer/components/ListenPage.tsx");
+  /* There is one advancing machine for records and one for passages, and the
+     note beside them says why a third ANSWER to "what plays next" is how a
+     listener lands somewhere nobody chose. A playlist resolves to episodes and
+     hands them over; it does not advance itself. */
+  assert.match(room, /startPodcastQueue\(list\.name, live, from\)/);
+
+  const player = code("src/renderer/components/PodcastPlayer.tsx");
+  const machines = player.match(/export function startPodcast(Walk|Queue)\(/g) ?? [];
+  assert.equal(machines.length, 2, "exactly two advancing machines, still");
+
+  /* The menu is a way to FILL a list, so it must not become a fourth way to
+     start audio behind the caller-list contract's back. */
+  const menu = code("src/renderer/components/AddToPlaylist.tsx");
+  assert.ok(
+    !/startPodcastQueue\(|playPodcastEpisode\(|resumePodcast\(/.test(menu),
+    "the add-to-playlist menu adds; it never plays",
+  );
+  const store = code("src/renderer/playlists.ts");
+  assert.ok(!/startPodcastQueue\(|playPodcastEpisode\(/.test(store));
+});
+
 test("one shaper builds episode identities, not two", () => {
   /* A track's id is what every surface matches on. Two shapers drifting by a
      character means a resumed album plays while the room shows nothing

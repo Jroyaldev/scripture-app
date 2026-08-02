@@ -374,6 +374,22 @@ export interface AppSettings {
   listeningRate: number;
   /** The shows a reader reads forwards. Only deviations from newest-first. */
   listenSeriesOrder: Record<string, "oldest">;
+  /**
+   * Lists the reader made. Identities and one display field per entry —
+   * everything playable is resolved against the live catalogue on open, so a
+   * muted or departed record simply stops being playable rather than going
+   * stale. See the schema in main for the whole argument.
+   */
+  playlists: Array<{
+    id: string;
+    name: string;
+    createdAt: number;
+    seed?: { book: string; chapter: number; verse: number | null };
+    entries: Array<
+      | { kind: "music"; sourceId: string; album: string; title: string }
+      | { kind: "podcast"; sourceId: string; recordId: string; title: string }
+    >;
+  }>;
   /** Revisioned desktop workspace. Legacy settings remain Electron-only migration inputs. */
   studyWorkspace?: StudyWorkspaceStateV2 | null;
   studyWorkspaceRefusal?: "newer-version";

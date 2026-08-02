@@ -383,6 +383,44 @@ interface AppSettingsSchema {
    * leaves the library leaves one dead key rather than a stale ordering.
    */
   listenSeriesOrder: Record<string, "oldest">;
+  /**
+   * LISTS THE READER MADE, which is the one kind of record the library cannot
+   * hold on its own.
+   *
+   * Every other shelf in the Listen room is somebody else's arrangement — a
+   * publisher's album, a feed's chronology. This is the reader's: a psalm and a
+   * sermon and a hymn on the same list because they are about the same thing.
+   *
+   * ── What an entry holds, and what it deliberately does not ────────────────
+   *
+   * IDENTITIES AND ONE DISPLAY FIELD. No audio url, no artwork, no duration.
+   * Everything playable or drawable is resolved against the live catalogue when
+   * the list is opened, which means: nothing here can go stale as a name,
+   * nothing here can become an `<img src>` or a fetch, a muted publisher's
+   * tracks vanish from a playlist exactly as they vanish from a shelf, and an
+   * entry whose record has left the library can still say what it WAS. That
+   * last one is what `title` is for — a dead row that can name itself is a row
+   * a reader can decide about.
+   *
+   * MUSIC IS KEYED BY ALBUM NAME AND TITLE because the catalogue gives songs no
+   * ids of their own; the resolver also accepts the album's slug, so a record
+   * renamed upstream still resolves. Podcasts are keyed the way everything else
+   * in the app keys them, `sourceId` and `recordId`.
+   *
+   * `seed` is provenance and nothing more. A list born from a passage records
+   * which passage, so it can say so — it is not a live query, and the reader
+   * may add and remove freely afterwards.
+   */
+  playlists: Array<{
+    id: string;
+    name: string;
+    createdAt: number;
+    seed?: { book: string; chapter: number; verse: number | null };
+    entries: Array<
+      | { kind: "music"; sourceId: string; album: string; title: string }
+      | { kind: "podcast"; sourceId: string; recordId: string; title: string }
+    >;
+  }>;
   /** Raw until validated so a future-version object can remain byte-for-byte untouched. */
   studyWorkspace?: unknown;
   researchSession: {
@@ -731,6 +769,83 @@ function normalizeListeningRate(value: unknown): number {
   return typeof value === "number" && LISTENING_RATES.includes(value) ? value : 1;
 }
 
+/* Bounds, so a settings file cannot be grown without limit by a loop somewhere.
+   None of these is a number a reader will meet: two hundred lists of a thousand
+   entries is more listening than the whole library holds. */
+const PLAYLISTS_MAX = 200;
+const PLAYLIST_ENTRIES_MAX = 1000;
+const PLAYLIST_TEXT_MAX = 512;
+
+function shortText(value: unknown): string | null {
+  return typeof value === "string" && value.length > 0 && value.length <= PLAYLIST_TEXT_MAX
+    ? value
+    : null;
+}
+
+/**
+ * The reader's own lists, rebuilt field by field and dropped entry by entry.
+ *
+ * Same grain as the ledger and for the same reason: a malformed row must cost
+ * itself and not the list it is in, and a malformed list must not cost the
+ * others. A list whose own id or name will not prove out is dropped whole,
+ * because a list with no name is not something a reader can be shown.
+ */
+function normalizePlaylists(value: unknown): AppSettingsSchema["playlists"] {
+  if (!Array.isArray(value)) return [];
+  const kept: AppSettingsSchema["playlists"] = [];
+  const seen = new Set<string>();
+  for (const raw of value) {
+    if (kept.length >= PLAYLISTS_MAX) break;
+    if (!raw || typeof raw !== "object") continue;
+    const list = raw as Record<string, unknown>;
+    const id = shortText(list["id"]);
+    const name = shortText(list["name"]);
+    if (!id || !name || seen.has(id)) continue;
+    const createdAt = Number.isInteger(list["createdAt"]) && (list["createdAt"] as number) > 0
+      ? list["createdAt"] as number
+      : Date.now();
+
+    let seed: NonNullable<AppSettingsSchema["playlists"][number]["seed"]> | undefined;
+    const rawSeed = list["seed"];
+    if (rawSeed && typeof rawSeed === "object") {
+      const s = rawSeed as Record<string, unknown>;
+      const verse = s["verse"];
+      if (
+        typeof s["book"] === "string" && /^[1-3A-Z]{3}$/.test(s["book"])
+        && Number.isInteger(s["chapter"]) && (s["chapter"] as number) >= 1
+        && (verse === null || (Number.isInteger(verse) && (verse as number) >= 1))
+      ) {
+        seed = {
+          book: s["book"],
+          chapter: s["chapter"] as number,
+          verse: verse === null ? null : verse as number,
+        };
+      }
+    }
+
+    const entries: AppSettingsSchema["playlists"][number]["entries"] = [];
+    for (const rawEntry of Array.isArray(list["entries"]) ? list["entries"] : []) {
+      if (entries.length >= PLAYLIST_ENTRIES_MAX) break;
+      if (!rawEntry || typeof rawEntry !== "object") continue;
+      const entry = rawEntry as Record<string, unknown>;
+      const sourceId = shortText(entry["sourceId"]);
+      const title = shortText(entry["title"]);
+      if (!sourceId || !title) continue;
+      if (entry["kind"] === "music") {
+        const album = shortText(entry["album"]);
+        if (album) entries.push({ kind: "music", sourceId, album, title });
+      } else if (entry["kind"] === "podcast") {
+        const recordId = shortText(entry["recordId"]);
+        if (recordId) entries.push({ kind: "podcast", sourceId, recordId, title });
+      }
+    }
+
+    seen.add(id);
+    kept.push({ id, name, createdAt, ...(seed ? { seed } : {}), entries });
+  }
+  return kept;
+}
+
 /** Only "oldest" is storable; newest-first is the default and stays unwritten. */
 function normalizeListenSeriesOrder(value: unknown): AppSettingsSchema["listenSeriesOrder"] {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
@@ -893,6 +1008,7 @@ const store = new Store<AppSettingsSchema>({
     heardLedger: {},
     listeningRate: 1,
     listenSeriesOrder: {},
+    playlists: [],
     researchSession: null,
     researchWorkspace: null,
     keptContext: null,
@@ -3934,6 +4050,7 @@ function registerIpcHandlers(): void {
       heardLedger: normalizeHeardLedger(settled.heardLedger),
       listeningRate: normalizeListeningRate(settled.listeningRate),
       listenSeriesOrder: normalizeListenSeriesOrder(settled.listenSeriesOrder),
+      playlists: normalizePlaylists(settled.playlists),
       researchSession: normalizeResearchSession(settled.researchSession),
       researchWorkspace: normalizeResearchWorkspace(settled.researchWorkspace),
       keptContext: normalizeKeptContext(settled.keptContext),
@@ -3957,6 +4074,7 @@ function registerIpcHandlers(): void {
     const hasHeardLedger = Object.prototype.hasOwnProperty.call(partial, "heardLedger");
     const hasListeningRate = Object.prototype.hasOwnProperty.call(partial, "listeningRate");
     const hasListenSeriesOrder = Object.prototype.hasOwnProperty.call(partial, "listenSeriesOrder");
+    const hasPlaylists = Object.prototype.hasOwnProperty.call(partial, "playlists");
     const hasResearchSession = Object.prototype.hasOwnProperty.call(partial, "researchSession");
     const hasResearchWorkspace = Object.prototype.hasOwnProperty.call(partial, "researchWorkspace");
     const hasKeptContext = Object.prototype.hasOwnProperty.call(partial, "keptContext");
@@ -3994,6 +4112,7 @@ function registerIpcHandlers(): void {
       listenSeriesOrder: normalizeListenSeriesOrder(
         hasListenSeriesOrder ? partial.listenSeriesOrder : store.store.listenSeriesOrder,
       ),
+      playlists: normalizePlaylists(hasPlaylists ? partial.playlists : store.store.playlists),
       researchSession: normalizeResearchSession(
         hasResearchSession ? partial.researchSession : store.store.researchSession,
       ),

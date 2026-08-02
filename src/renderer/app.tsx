@@ -2557,8 +2557,11 @@ export function App(): React.JSX.Element {
                 intentNonce={workspaceIntent.nonce}
               />
             )}
+            {/* The two reference tables are for the passage seeding alone, and
+                only to parse what a reader types into it. App already holds
+                both, so passing them beats a second load in the room. */}
             {view === "listen" && (
-              <ListenPage />
+              <ListenPage backbone={backbone} bookNames={bookNames} />
             )}
             {view === "settings" && (
               <SettingsPage

@@ -771,5 +771,125 @@ gate(family.names.length === 3 && family.names.every((n) => /^Hymns /.test(n ?? 
   "and to its siblings only", family.names.join(", "));
 await shot("album-siblings");
 
+/* ── The reader's own lists ─────────────────────────────────────────────────
+   Built from a PASSAGE, which is the one kind of playlist this app can make
+   and a music app cannot: everything in the library that sings or teaches a
+   chapter, joined from the psalm tags and the passage index the reading margin
+   already asks. */
+await evaluate(`document.querySelector('.listen-back').click()`);
+await waitFor(`${SHELVES}.includes('Playlists')`, "the playlists shelf");
+const seeded = await evaluate(`(() => {
+  const open = document.querySelector('.listen-seed-open');
+  open?.click();
+  return new Promise((r) => setTimeout(() => {
+    const input = document.querySelector('.listen-seed .listen-sift-input');
+    const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    set.call(input, 'Psalm 23');
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    setTimeout(() => {
+      [...document.querySelectorAll('.listen-seed button')]
+        .find((b) => /Build/.test(b.textContent))?.click();
+      /* The spoken half is one IPC; the sung half is a scan of a bundled file. */
+      setTimeout(() => r({
+        name: document.querySelector('.listen-hero-name')?.textContent ?? null,
+        kicker: document.querySelector('.listen-hero-kicker')?.textContent ?? null,
+        line: document.querySelector('.listen-hero-line')?.textContent ?? null,
+        rows: [...document.querySelectorAll('.listen-track-title')].map((t) => t.textContent),
+        sources: [...document.querySelectorAll('.listen-track-when')].map((t) => t.textContent),
+      }), 2600);
+    }, 400);
+  }, 400));
+})()`);
+gate(seeded.name === "Psalms 23" || /^Psalm/.test(seeded.name ?? ""),
+  "a list can be built from a passage", seeded.name);
+gate(/from PSA 23/.test(seeded.kicker ?? ""), "and says where it came from", seeded.kicker);
+gate(seeded.rows.length > 0, "with something on it", `${seeded.rows.length} rows`);
+/* The point of the join: the psalm's own setting AND the teaching about it, on
+   one list. A list with only one kind would mean half the join silently failed. */
+gate(seeded.rows.some((t) => /Psalm 23/i.test(t ?? "")),
+  "including the psalm's own setting", seeded.rows.find((t) => /Psalm 23/i.test(t ?? "")));
+gate(new Set(seeded.sources.filter(Boolean)).size > 1,
+  "and more than one publisher's voice", [...new Set(seeded.sources)].slice(0, 3).join(" · "));
+await shot("playlist-from-passage");
+
+/* Reordering is the point of a list being the reader's, and it is the one row
+   in the room that carries its own controls — a row that IS a button cannot
+   hold one. */
+const ordered2 = await evaluate(`(() => {
+  const titles = () => [...document.querySelectorAll('.listen-track-title')].map((t) => t.textContent);
+  const was = titles();
+  const down = document.querySelector('.listen-track-hand [aria-label="Move down"]');
+  down?.click();
+  return new Promise((r) => setTimeout(() => r({ was, now: titles() }), 500));
+})()`);
+gate(ordered2.was[0] === ordered2.now[1] && ordered2.was[1] === ordered2.now[0],
+  "a list can be reordered", `${ordered2.was[0]} ↔ ${ordered2.was[1]}`);
+
+const removed = await evaluate(`(() => {
+  const count = () => document.querySelectorAll('.listen-track').length;
+  const was = count();
+  [...document.querySelectorAll('.listen-track-hand button')]
+    .find((b) => /^Remove/.test(b.getAttribute('aria-label') || ''))?.click();
+  return new Promise((r) => setTimeout(() => r({ was, now: count() }), 500));
+})()`);
+gate(removed.now === removed.was - 1, "and a row taken off it",
+  `${removed.was} → ${removed.now}`);
+
+/* And the whole point of the store: a list is the reader's, so it outlives the
+   room unmounting and the app reloading. */
+await evaluate(`(() => { location.reload(); return true; })()`);
+await sleep(9000);
+await cdp.send("Emulation.setFocusEmulationEnabled", { enabled: true });
+await evaluate(`(() => {
+  const b = [...document.querySelectorAll('button')].find((x) => /listen/i.test(x.textContent || ''));
+  b?.click();
+  return true;
+})()`);
+/* Waited for rather than read once: the shelf's heading is drawn from the
+   moment the room mounts, and the lists arrive on a settings round trip a beat
+   later — so reading immediately catches a shelf that is real and still empty. */
+await waitFor(
+  `[...document.querySelectorAll('.listen-shelf')]
+     .find((s) => s.querySelector('.listen-shelf-name')?.textContent === 'Playlists')
+     ?.querySelectorAll('.listen-card').length > 0`,
+  "the lists to come back",
+);
+const kept2 = await evaluate(`(() => {
+  const shelf = [...document.querySelectorAll('.listen-shelf')]
+    .find((s) => s.querySelector('.listen-shelf-name')?.textContent === 'Playlists');
+  const cards = [...(shelf?.querySelectorAll('.listen-card-name') ?? [])].map((n) => n.textContent);
+  return { cards, foot: shelf?.querySelector('.listen-card-foot')?.textContent ?? null };
+})()`);
+gate(kept2.cards.some((n) => /^Psalm/.test(n ?? "")), "a list survives a reload",
+  `${kept2.cards.join(", ")} — ${kept2.foot}`);
+
+/* THE TOUR PUTS ITS OWN LISTS AWAY. Without this every run leaves another
+   "Psalms 23" on the shelf, and by the tenth run the thing being tested is
+   buried in the evidence of testing it. Deleting is also the last affordance
+   left unexercised. */
+const cleared = await evaluate(`(() => {
+  const open = () => [...document.querySelectorAll('.listen-card-face')]
+    .find((f) => /^Psalm/.test(f.querySelector('.listen-card-name')?.textContent || ''));
+  const step = (left) => new Promise((r) => {
+    const card = open();
+    if (!card || left === 0) { r(left); return; }
+    card.click();
+    setTimeout(() => {
+      [...document.querySelectorAll('.listen-list-tool')]
+        .find((b) => b.textContent === 'Delete')?.click();
+      setTimeout(() => r(step(left - 1)), 700);
+    }, 700);
+  });
+  return step(6).then(() => document.querySelectorAll('.listen-card-name').length);
+})()`);
+void cleared;
+const empty = await evaluate(`(() => {
+  const shelf = [...document.querySelectorAll('.listen-shelf')]
+    .find((s) => s.querySelector('.listen-shelf-name')?.textContent === 'Playlists');
+  return [...(shelf?.querySelectorAll('.listen-card-name') ?? [])]
+    .filter((n) => /^Psalm/.test(n.textContent || '')).length;
+})()`);
+gate(empty === 0, "and can be deleted again", `${empty} left`);
+
 console.log(`\n${failures.length === 0 ? "PASS" : `FAIL (${failures.length})`} — captures in ${OUT_DIR}/`);
 process.exit(failures.length === 0 ? 0 : 1);
