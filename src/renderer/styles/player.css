@@ -579,6 +579,94 @@
 .transport-play[data-glyph="play"] .transport-glyph-play,
 .transport-play[data-glyph="pause"] .transport-glyph-pause { opacity: 1; }
 
+/* ── UP NEXT ───────────────────────────────────────────────────────────────
+   The record, inside the sheet, where the transcript lives for a spoken one.
+   Rows rather than cards: EveryPsalm is two hundred and twenty-two tracks and
+   a sheet of cards is a scroll nobody finishes — the same reasoning the Listen
+   room's track list carries, and deliberately the same shape, so a listener
+   who has seen one recognises the other. */
+.podcast-upnext {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  padding: 0 var(--sp-sm) var(--sp-sm);
+}
+
+.podcast-upnext-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--sp-sm);
+  margin: 0 0 6px;
+  padding: 0 4px;
+}
+
+.podcast-upnext-of {
+  overflow: hidden;
+  color: var(--text-primary);
+  font: var(--fw-medium) 0.8125rem/1.4 var(--font-reading);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.podcast-upnext-place {
+  flex: 0 0 auto;
+  color: var(--text-tertiary);
+  font: 0.625rem/1.5 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.podcast-upnext-list {
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.podcast-upnext-track {
+  display: grid;
+  grid-template-columns: 1.6rem minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 6px 6px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.podcast-upnext-track:hover { background: var(--player-hover); }
+
+/* The running track, in the record's own colour — the same accent the play
+   button wears, so the sheet and the transport agree about what is playing. */
+.podcast-upnext-track[data-on] { background: var(--player-hover); }
+.podcast-upnext-track[data-on] .podcast-upnext-title { color: var(--player-accent); }
+.podcast-upnext-track[data-on] .podcast-upnext-no { color: var(--player-accent); }
+
+.podcast-upnext-track:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.podcast-upnext-no {
+  justify-self: center;
+  color: var(--text-tertiary);
+  font: 0.625rem/1.5 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.podcast-upnext-title {
+  overflow: hidden;
+  color: var(--text-primary);
+  font: 0.8125rem/1.45 var(--font-reading);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 /* ── A record's own controls ────────────────────────────────────────────────
    Previous and next, at the skip buttons' exact size and in their exact place,
    because the transport must not resize or reflow between a spoken record and

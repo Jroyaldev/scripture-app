@@ -2,6 +2,9 @@ import type React from "react";
 import { useMemo, useState, useSyncExternalStore } from "react";
 import type { ResourceView } from "../api.js";
 import { readResourceView, setResourceView, subscribeResourceView } from "../resource-view.js";
+import { readShelfFace, setShelfFace, subscribeShelfFace } from "../shelf-face.js";
+import type { ShelfFace } from "../api.js";
+import seriesArt from "../../../data/music/series-art.json";
 import type { PassageMoment } from "../../core/passage-index.js";
 import { verseSpan } from "../../core/passage-index.js";
 import type { ReferenceRelation } from "../../core/references.js";
@@ -324,6 +327,21 @@ export function resourceEntries({
    setting, no persisted preference. `data-discovery-shape` on the document
    element, which the QA tour sets before it captures, and a default that is
    what ships. */
+/**
+ * A publisher's own cover, for the shelf's second face.
+ *
+ * The same table the Listen room draws from — one artwork per source, on the
+ * publisher's own host, never copied. A source with no entry keeps its MARK
+ * whatever the reader chose, because the alternative is a hole in a register
+ * whose whole job is to be an even column.
+ */
+const SHELF_ART = seriesArt as Record<string, { cover: string; tint: string }>;
+
+const FACES: ReadonlyArray<{ id: ShelfFace; label: string }> = [
+  { id: "mark", label: "Marks" },
+  { id: "cover", label: "Covers" },
+];
+
 const SHAPES = ["weight", "even", "spine"] as const;
 export type DiscoveryShape = (typeof SHAPES)[number];
 
@@ -842,6 +860,7 @@ export function Resources({
      differs from the two pieces of state below. See renderer/resource-view for
      why it is on a module and in settings rather than in this component. */
   const view = useSyncExternalStore(subscribeResourceView, readResourceView);
+  const face = useSyncExternalStore(subscribeShelfFace, readShelfFace);
   /* Which publisher the room is narrowed to, and whether the library panel is
      open. Both die with the passage: "just show me Naked Bible" is a glance,
      not a preference. */
@@ -1097,7 +1116,16 @@ export function Resources({
               </button>
             </div>
           </div>
-          <div className="trusted-resource-imprints resource-shelf" role="group" aria-label="Publishers on this passage">
+          {/* The shelf's geometry follows its face: marks want a wide plate to
+              lay a wordmark across, covers want the square they were drawn as.
+              Stated on the container so the grid changes with it, not just the
+              cells. */}
+          <div
+            aria-label="Publishers on this passage"
+            className="trusted-resource-imprints resource-shelf"
+            data-face={face}
+            role="group"
+          >
             {shelf.map((chip, rank) => (
               <button
                 /* WHERE THE NAME WENT · 2026-07-31. The plate draws no type
@@ -1118,6 +1146,12 @@ export function Resources({
                    nothing moved — and this is what lets `qa:player` hold that
                    claim against the engine rather than take it on trust. */
                 data-rank={rank}
+                /* WHICH FACE THIS CELL IS WEARING. Not simply the reader's
+                   choice: a publisher with no artwork keeps its mark, so the
+                   attribute states what was actually drawn rather than what
+                   was asked for — which is what the stylesheet needs and what
+                   a tour can check. */
+                data-face={face === "cover" && SHELF_ART[chip.id] ? "cover" : "mark"}
                 data-source={chip.id}
                 key={chip.id}
                 onClick={() => setOnly(only === chip.id ? null : chip.id)}
@@ -1133,6 +1167,20 @@ export function Resources({
                     artwork, and how big, is the stylesheet's: see
                     --resource-symbol and the optical scale on
                     `.resource-shelf .trusted-resource-imprint`. */}
+                {face === "cover" && SHELF_ART[chip.id] && (
+                  /* The sleeve, filling the cell the mark had. Lazy and async
+                     for the same reason the Listen room's are: a margin can
+                     hold eleven of these and none of them should hold up the
+                     passage. The tint underneath means a cover that has not
+                     landed is a coloured cell of the right shape rather than a
+                     hole, so the register never reflows as the art arrives. */
+                  <span
+                    className="trusted-resource-cover"
+                    style={{ background: SHELF_ART[chip.id]!.tint }}
+                  >
+                    <img alt="" decoding="async" loading="lazy" src={SHELF_ART[chip.id]!.cover} />
+                  </span>
+                )}
                 <span className="trusted-resource-source">{chip.name}</span>
                 {/* ALWAYS. It was `count > 1`, so a publisher with one thing
                     here showed no tally at all and the column had holes in it
@@ -1151,6 +1199,61 @@ export function Resources({
       {library && (
         <div className="trusted-resource-library">
           <p className="trusted-resource-library-lead">Your library, everywhere — not just this passage.</p>
+          {/* ── THE SHELF'S FACE ────────────────────────────────────────────
+              Here rather than on the shelf's own head, because the head is
+              332px already holding a kicker, a filter release and this panel's
+              own button — and because this is a preference about the library
+              rather than about this passage, which is exactly what the panel
+              it sits in is for.
+
+              Radio group, not a pressed plate: two states, mutually exclusive
+              and exhaustive, and the shelf below already owns `aria-pressed`
+              for filtering. The same reasoning the layout toggle records, and
+              the same keyboard: one tab stop, arrows move and choose. */}
+          <div
+            aria-label="What the publisher shelf shows"
+            className="resource-face-toggle"
+            role="radiogroup"
+          >
+            <span className="resource-face-lead">Shelf shows</span>
+            {FACES.map((option) => (
+              <button
+                aria-checked={face === option.id}
+                className="resource-face-choice"
+                key={option.id}
+                onClick={() => setShelfFace(option.id)}
+                onKeyDown={(event) => {
+                  const step = event.key === "ArrowRight" || event.key === "ArrowDown"
+                    ? 1
+                    : event.key === "ArrowLeft" || event.key === "ArrowUp"
+                      ? -1
+                      : 0;
+                  if (step === 0) return;
+                  event.preventDefault();
+                  const at = FACES.findIndex((entry) => entry.id === face);
+                  const to = (at + step + FACES.length) % FACES.length;
+                  setShelfFace(FACES[to]!.id);
+                  event.currentTarget.parentElement
+                    ?.querySelectorAll<HTMLButtonElement>(".resource-face-choice")[to]?.focus();
+                }}
+                role="radio"
+                tabIndex={face === option.id ? 0 : -1}
+                type="button"
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+          {/* Said once, plainly, where the choice is made. Covers are fetched
+              from each publisher's own server when the shelf DRAWS — so with
+              them on, opening a passage tells those publishers you opened it.
+              Marks are packaged and tell them nothing. That is the whole of
+              the trade and it belongs next to the switch, not in a document. */}
+          <p className="resource-face-note">
+            {face === "cover"
+              ? "Covers come from each publisher’s own server as the shelf draws."
+              : "Marks are packaged with the app and fetch nothing."}
+          </p>
           <ResourceLibraryMatrix
             catalogue={catalogue}
             onChanged={() => onFiltersChanged?.()}

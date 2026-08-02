@@ -531,6 +531,12 @@ function enterTrack(index: number): void {
   try { playPodcastEpisode(episode); } finally { queueing = false; }
 }
 
+/** Straight to a track in the record already running — the Up Next list's
+ *  own press, which is neither a step nor a new queue. */
+export function jumpPodcastQueue(index: number): void {
+  enterTrack(index);
+}
+
 /** Begin a record. `from` is the track pressed; the rest follow it. */
 export function startPodcastQueue(of: string, episodes: PodcastEpisode[], from = 0): void {
   if (episodes.length === 0) return;
@@ -1162,6 +1168,61 @@ function SkipButton({
       <SkipGlyph back={seconds < 0} />
       <span aria-hidden="true" className="transport-skip-count">{Math.abs(seconds)}</span>
     </button>
+  );
+}
+
+/**
+ * UP NEXT — what the sheet holds open for a song.
+ *
+ * THE DEFECT THIS REPLACES: the chevron opened the transcript machinery for a
+ * hymn. A song has no transcript, no chapters and no passage list, so every
+ * branch in there was false and the reader got the sheet's empty state — a
+ * panel that opened to say it had nothing. Meanwhile the one thing a listener
+ * opens a music player to see, the rest of the record, was reachable only by
+ * pressing next and watching the title change.
+ *
+ * So for a song the sheet is the record: every track, in order, the running
+ * one marked, any of them one press away. The walk strip above is untouched —
+ * these are different lists and both can be shown, though in practice a walk
+ * and a record never run together.
+ */
+function UpNext({ queue }: { queue: PodcastQueue }): React.JSX.Element {
+  const here = useRef<HTMLButtonElement>(null);
+  /* Opening the sheet forty tracks into EveryPsalm should not open it at track
+     one. `block: "center"` rather than "nearest" because the running track is
+     what the panel is about — it belongs in the middle of it, not clinging to
+     an edge the reader has to hunt along. */
+  useEffect(() => {
+    here.current?.scrollIntoView({ block: "center" });
+  }, [queue.at]);
+
+  return (
+    <div className="podcast-upnext" role="group" aria-label={`Playing ${queue.of}`}>
+      <p className="podcast-upnext-head">
+        <span className="podcast-upnext-of">{queue.of}</span>
+        <span className="podcast-upnext-place">{`${queue.at + 1} of ${queue.episodes.length}`}</span>
+      </p>
+      <ol className="podcast-upnext-list">
+        {queue.episodes.map((entry, index) => {
+          const on = index === queue.at;
+          return (
+            <li key={entry.id}>
+              <button
+                aria-current={on ? "true" : undefined}
+                className="podcast-upnext-track"
+                data-on={on ? "" : undefined}
+                onClick={() => jumpPodcastQueue(index)}
+                ref={on ? here : undefined}
+                type="button"
+              >
+                <span aria-hidden="true" className="podcast-upnext-no">{index + 1}</span>
+                <span className="podcast-upnext-title">{entry.title}</span>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+    </div>
   );
 }
 
@@ -2653,9 +2714,15 @@ export function PodcastPlayer({
                 this button and calls the same machine. */}
             <button
               aria-expanded={expanded}
+              /* The control names what it will actually open. For a song
+                 that is the record, not "the whole of" a three-minute track —
+                 a label describing a transcript, over a panel holding a track
+                 list, is worse than no label at all. */
               aria-label={expanded
                 ? "Fold the player — gives the column back to Study"
-                : `Show the whole of ${episode.title} — takes the study column`}
+                : isSong && queued
+                  ? `Show the rest of ${queued.of} — takes the study column`
+                  : `Show the whole of ${episode.title} — takes the study column`}
               className="podcast-mast-icon"
               onClick={toggleSheet}
               ref={toggleRef}
@@ -2806,10 +2873,23 @@ export function PodcastPlayer({
                     one form names a permission, the other names a public feed,
                     and a reader can tell which of the two they are looking at
                     without being told what is on our to-do list. */}
-                <p className="podcast-episode-footing" data-basis={footing ?? undefined}>
-                  {`Transcript machine-read from ${episode.sourceName}'s published audio.`}
-                </p>
+                {/* Not on a song. There is no transcript of a hymn here and
+                    saying there is, under a panel that plainly holds a track
+                    list, is the same small lie as calling it a podcast. */}
+                {!isSong && (
+                  <p className="podcast-episode-footing" data-basis={footing ?? undefined}>
+                    {`Transcript machine-read from ${episode.sourceName}'s published audio.`}
+                  </p>
+                )}
               </div>
+
+              {/* ── The record, when the record is what is playing ──────────
+                  A song's sheet is its record. Everything below this is the
+                  spoken-word machinery — transcript, chapters, passage list —
+                  and for a hymn every branch of it is false, which is how the
+                  chevron came to open a panel whose only content was the
+                  sentence saying it had none. */}
+              {isSong && queued && <UpNext queue={queued} />}
 
               {/* ── The moment that started this ────────────────────────────
                   A press in the margin used to be self-erasing: the passage,
@@ -3136,7 +3216,9 @@ export function PodcastPlayer({
                   transcript…" as static text for four seconds and then the same
                   weight of text saying there is none has been shown one thing
                   twice. */}
-              {expanded && !hasTranscript && !hasPassages && (
+              {/* Not for a song: it has the record above, which is the
+                  opposite of nothing. */}
+              {expanded && !isSong && !hasTranscript && !hasPassages && (
                 transcript === undefined || refs === undefined ? (
                   <div className="podcast-sheet-reaching">
                     <span aria-hidden="true" className="podcast-sheet-reaching-rule" />

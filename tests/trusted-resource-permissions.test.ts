@@ -91,7 +91,14 @@ test("reviewed manifests and cards retain the common link-only permission bounda
      be. Where it lives changes nothing about what it may do, so the terms are
      asserted there — and there is still exactly ONE of it in the renderer,
      which is what stops two publishers playing over each other. */
-  assert.doesNotMatch(block, /<img|<iframe|<video|fetch\(|>Save/);
+  /* See the shelf-face note in trusted-resource-desktop-contract: one image,
+     the publisher's own cover, drawn only when the reader has turned covers on
+     against a default of the packaged mark. */
+  assert.doesNotMatch(block, /<iframe|<video|fetch\(|>Save/);
+  assert.equal((block.match(/<img/g) ?? []).length, 1,
+    "the room may draw a publisher's cover and nothing else");
+  assert.match(read("src/renderer/shelf-face.ts"), /const DEFAULT_FACE: ShelfFace = "mark";/,
+    "the shipped face must fetch nothing");
   assert.doesNotMatch(block, /<audio/);
 
   const player = read("src/renderer/components/PodcastPlayer.tsx");

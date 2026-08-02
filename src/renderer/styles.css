@@ -22975,6 +22975,143 @@ button.lang-phrase-diagram-node:focus-visible,
    UNCONDITIONAL — a one is a fact, and a numeral column with holes in it is
    not a column — and it is at FULL INK, quiet by size rather than by an
    opacity that took nine plates under Law 6's floor. */
+/* ── THE SHELF'S SECOND FACE · 2026-08-02 ──────────────────────────────────
+   The publisher's own cover, in the cell their mark had, chosen in the library
+   panel and off by default.
+
+   IT FILLS THE PLATE rather than sitting inside it at an optical scale. That
+   is the whole difference between the two faces and it is deliberate: the
+   optical scale above exists because eleven wordmarks of different aspect
+   ratios do not read equal at equal height, and it spends the cell's padding
+   buying that evenness. Covers are all square and already composed by their
+   own designers — they are equal at equal size by construction — so the right
+   thing is to let them be the cell. The register stays a register: same box,
+   same rank, same tally in the same corner.
+
+   The tint underneath is the record's own, so a cover still loading is a
+   coloured cell of the right shape rather than a hole. Nothing reflows when
+   the art lands. */
+/* SQUARE, BECAUSE THE ARTWORK IS. A cover cropped into the mark's landscape
+   plate loses the top and bottom of a composition somebody designed — BEMA
+   lost its presenter's name, 5 Minutes in Church History lost half its title.
+   So the cell becomes the shape of the thing in it.
+
+   And smaller with it: a square cell at the mark's 92px would be 92px TALL,
+   nearly twice the row a wordmark needs, and the register would take twice the
+   margin's height to say the same thing. 72px is the trade — the shelf keeps
+   roughly its footprint and a cover is still read at a glance. */
+.resource-shelf[data-face="cover"] {
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+}
+
+.resource-shelf .trusted-resource-imprint[data-face="cover"] {
+  height: auto;
+  aspect-ratio: 1;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* A publisher with no artwork keeps its mark, and in a square shelf it keeps
+   its square too — an even register is the point, and one landscape cell in a
+   grid of squares is a hole with a logo in it. */
+.resource-shelf[data-face="cover"] .trusted-resource-imprint[data-face="mark"] {
+  height: auto;
+  aspect-ratio: 1;
+}
+
+.trusted-resource-cover {
+  display: block;
+  position: absolute;
+  inset: 0;
+}
+
+.trusted-resource-cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* The mark's artwork is a background on this span, so wearing the other face
+   means painting nothing here — the name stays in the DOM and off-screen,
+   which is how it reaches a screen reader either way. */
+.resource-shelf .trusted-resource-imprint[data-face="cover"] .trusted-resource-source {
+  background: none;
+}
+
+/* A tally over artwork needs its own footing: the corner of a photograph is
+   any colour at all, where a plate's ground was the publisher's own and known.
+   A scrim under the numeral rather than a colour chosen for it. */
+.resource-shelf .trusted-resource-imprint[data-face="cover"] .trusted-resource-imprint-count {
+  right: 0;
+  bottom: 0;
+  padding: 5px 7px 4px;
+  border-radius: var(--radius-md) 0 0 0;
+  background: rgb(0 0 0 / 0.55);
+  color: #FFF;
+}
+
+/* ── Which face, chosen in the library panel ───────────────────────────────
+   The layout toggle's idiom, one size down, because this governs the shelf
+   above rather than the listings below and it is a library preference rather
+   than a passage one. */
+.resource-face-toggle {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin: 10px 0 0;
+}
+
+.resource-face-lead {
+  margin-right: 4px;
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.5 var(--font-ui);
+}
+
+.resource-face-choice {
+  position: relative;
+  padding: 3px 8px 5px;
+  border: 0;
+  background: none;
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.5 var(--font-ui);
+  cursor: pointer;
+}
+
+.resource-face-choice[aria-checked="true"] { color: var(--text-primary); }
+
+/* Law 2's seal, on the edge nearest what it governs. */
+.resource-face-choice::after {
+  content: "";
+  position: absolute;
+  right: 8px;
+  bottom: 0;
+  left: 8px;
+  height: 2px;
+  border-radius: var(--radius-mark);
+  background: var(--study-gold);
+  opacity: 0;
+}
+
+.resource-face-choice[aria-checked="true"]::after { opacity: 1; }
+
+.resource-face-choice:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.resource-face-note {
+  margin: 5px 0 0;
+  color: var(--text-tertiary);
+  font: 0.625rem/1.5 var(--font-ui);
+}
+
+/* A forced palette throws away backgrounds and shadows, so the chosen face is
+   restated on a channel it keeps. */
+@media (forced-colors: active) {
+  .resource-face-choice[aria-checked="true"] { outline: 2px solid Highlight; }
+}
+
 .trusted-resource-imprint-count {
   /* Out of the flow 2026-07-31, so the artwork can centre in the plate rather
      than in a row above this. The corner it takes is the padding's own corner,

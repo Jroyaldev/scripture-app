@@ -257,6 +257,7 @@ interface AppSettingsSchema {
    * form and never gains one.
    */
   resourceView: "cards" | "list";
+  shelfFace: "mark" | "cover";
   /**
    * What the reader has muted, permanently and library-wide. Entries are either
    * `publisher` or `publisher:kind`. The two earlier keys are migrated into it.
@@ -431,11 +432,20 @@ function normalizeMarkingSurface(value: unknown): AppSettingsSchema["markingSurf
    unknown id is CARDS rather than a refusal: a comfort setting that arrives
    corrupt should hand the reader the shipped form, not an empty room. */
 const RESOURCE_VIEWS = new Set<AppSettingsSchema["resourceView"]>(["cards", "list"]);
+const SHELF_FACES = new Set<AppSettingsSchema["shelfFace"]>(["mark", "cover"]);
 
 function normalizeResourceView(value: unknown): AppSettingsSchema["resourceView"] {
   return typeof value === "string" && RESOURCE_VIEWS.has(value as AppSettingsSchema["resourceView"])
     ? value as AppSettingsSchema["resourceView"]
     : "cards";
+}
+
+/* The register's own face is the default: an unreadable or unknown stored
+   value becomes the publisher's mark, never their catalogue. */
+function normalizeShelfFace(value: unknown): AppSettingsSchema["shelfFace"] {
+  return typeof value === "string" && SHELF_FACES.has(value as AppSettingsSchema["shelfFace"])
+    ? value as AppSettingsSchema["shelfFace"]
+    : "mark";
 }
 
 function normalizeLastRead(value: unknown): AppSettingsSchema["lastRead"] {
@@ -669,6 +679,7 @@ const store = new Store<AppSettingsSchema>({
     readingSize: "m",
     verseNumbers: "always",
     resourceView: "cards",
+    shelfFace: "mark",
     resourceMutes: [],
     hiddenResourceSources: [],
     hiddenResourceKinds: [],
@@ -3691,6 +3702,7 @@ function registerIpcHandlers(): void {
       material: normalizeMaterial(settled.material, settled.theme),
       markingSurface: normalizeMarkingSurface(settled.markingSurface),
       resourceView: normalizeResourceView(settled.resourceView),
+      shelfFace: normalizeShelfFace(settled.shelfFace),
       lastRead: normalizeLastRead(settled.lastRead),
       lastHeard: normalizeLastHeard(settled.lastHeard),
       researchSession: normalizeResearchSession(settled.researchSession),
@@ -3733,6 +3745,7 @@ function registerIpcHandlers(): void {
       ),
       markingSurface: normalizeMarkingSurface(partial.markingSurface ?? store.store.markingSurface),
       resourceView: normalizeResourceView(partial.resourceView ?? store.store.resourceView),
+      shelfFace: normalizeShelfFace(partial.shelfFace ?? store.store.shelfFace),
       lastRead: normalizeLastRead(hasLastRead ? partial.lastRead : store.store.lastRead),
       lastHeard: normalizeLastHeard(hasLastHeard ? partial.lastHeard : store.store.lastHeard),
       researchSession: normalizeResearchSession(

@@ -281,6 +281,8 @@ export type MarkingSurface = "palette" | "dock";
  * of it ("not for shelf but for listings").
  */
 export type ResourceView = "cards" | "list";
+/** Whether the publisher shelf shows each publisher's mark or their cover art. */
+export type ShelfFace = "mark" | "cover";
 
 /** One stop in the passage-picker recents list. */
 export interface RecentPassageSetting {
@@ -302,6 +304,8 @@ export interface AppSettings {
   verseNumbers: VerseNumberMode;
   /** Cards or list, for the Resources room's listings. See ResourceView. */
   resourceView: ResourceView;
+  /** Marks or covers, for the publisher shelf. See ShelfFace. */
+  shelfFace: ShelfFace;
   /**
    * What the reader muted, permanently: `publisher` or `publisher:kind`.
    * The main process applies it to every query.

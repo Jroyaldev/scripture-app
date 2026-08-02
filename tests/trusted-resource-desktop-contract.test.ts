@@ -63,9 +63,34 @@ test("the Resources room shows a publisher's whole answer, and still only links 
      their prose, their players. It is markup and field names that say that. */
   assert.doesNotMatch(
     room,
-    /<img\b|<iframe\b|<video\b|dangerouslySetInnerHTML|record\.(?:description|excerpt|body|artworkUrl|logoUrl|embedUrl|mediaUrl)/,
+    /<iframe\b|<video\b|dangerouslySetInnerHTML|record\.(?:description|excerpt|body|artworkUrl|logoUrl|embedUrl|mediaUrl)/,
     "the room may name a publisher's material and link to it; it may not reproduce it",
   );
+  /* ── THE SHELF'S COVER FACE · 2026-08-02 ─────────────────────────────────
+     Restated with the maintainer's authorisation, and the restatement carries
+     the cost rather than dropping it.
+
+     A cover on the shelf is NOT the same bargain the dock's sleeve is. The
+     dock does not exist until an episode does, so its artwork is fetched from
+     a host already streaming the listener audio. The shelf draws when a
+     PASSAGE opens — so with covers on, opening Romans 8 tells eleven
+     publishers' servers that this reader opened Romans 8. That is real, and it
+     is the reason this face is a choice and not a change.
+
+     So the contract becomes the DEFAULT rather than the absence: exactly one
+     image in the room, drawn only when the reader has turned covers on, and
+     the shipped face is the packaged mark, which fetches nothing. The store's
+     own default is asserted here too, because that default IS the privacy
+     property — a later edit flipping it would otherwise pass every gate.
+
+     Still forbidden, unchanged: reproducing a publisher's prose, their
+     players, or any field of their record beyond what a card names and links. */
+  assert.equal((room.match(/<img/g) ?? []).length, 1,
+    "the room may draw a publisher's cover and nothing else");
+  assert.match(room, /face === "cover" && SHELF_ART\[chip\.id\] &&/,
+    "and only when the reader asked for covers");
+  assert.match(read("src/renderer/shelf-face.ts"), /const DEFAULT_FACE: ShelfFace = "mark";/,
+    "the shipped face must be the packaged mark, which fetches nothing");
 
   /* The element itself is not here. It was in the margin once, and being there
      is what killed it: the block unmounts on every study tab, passage and panel
