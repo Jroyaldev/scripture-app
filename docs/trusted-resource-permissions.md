@@ -632,6 +632,13 @@ libsyn/adbarker delivery); BEMA's 514 sessions are topical, so its manifest
 will be thin and its passage coverage comes from transcript extraction, which
 is the pipeline's job rather than the title's.
 
+BEMA's audio is served by **fireside.fm**, and the media policy carries the
+wildcard `https://*.fireside.fm` alongside the enclosure host itself. The
+enclosure names `aphid.fireside.fm` and the file is served from a numbered
+shard — `media24.fireside.fm` in the sampled episodes — which is the podbean
+situation again: the shards cannot be enumerated, so the policy takes the
+domain.
+
 ## Importing
 
 Four importers build manifests from publishers' public WordPress REST

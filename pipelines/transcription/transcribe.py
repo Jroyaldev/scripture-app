@@ -388,6 +388,9 @@ class Transcriber:
                     outputs.append(None)
                     lost += 1
                     break
+            heard_words = getattr(outputs[-1], "timestamp", {}).get("word") if outputs and outputs[-1] else None
+            print(f"  chunk {c['index']} ({episode['id'][-12:]}): words={len(heard_words) if heard_words else 0} "
+                  f"chunk_bytes={c['path'].stat().st_size if c['path'].exists() else 0}")
             c["path"].unlink(missing_ok=True)
             # THE WHOLE TRUNCATION, in one line — measured in the debug harness
             # 2026-08-02. NeMo's hypotheses sit in reference cycles, so del and

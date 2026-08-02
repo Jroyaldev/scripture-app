@@ -357,7 +357,12 @@ test("the shipped policy matches the served one, and names the audio host", () =
 test("every media wildcard is accounted for in the permissions doc", () => {
   const page = readFileSync(join(root, "src/renderer/index.html"), "utf8");
   const doc = readFileSync(join(root, "docs/trusted-resource-permissions.md"), "utf8");
-  const policy = /media-src ([^;]+)/.exec(page)?.[1] ?? "";
+  /* `[^;]+` ran to END OF FILE, not end of policy: media-src is the last
+     directive, so nothing closes it but the attribute's own quote — the
+     capture swallowed the rest of the document. Harmless while every wildcard
+     sat mid-list; on 2026-08-02 one landed last and arrived as
+     `fireside.fm">`, a real host reported as undocumented. Stop at the quote. */
+  const policy = /media-src ([^;"]+)/.exec(page)?.[1] ?? "";
   const wildcards = policy.split(/\s+/).filter((source) => source.includes("*."));
   for (const source of wildcards) {
     const domain = source.replace(/^https:\/\/\*\./, "");
