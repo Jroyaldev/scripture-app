@@ -1002,7 +1002,12 @@ const seeded = await evaluate(`(() => {
 })()`);
 gate(seeded.name === "Psalms 23" || /^Psalm/.test(seeded.name ?? ""),
   "a list can be built from a passage", seeded.name);
-gate(/from PSA 23/.test(seeded.kicker ?? ""), "and says where it came from", seeded.kicker);
+/* A NAME, NOT THE THREE-LETTER CODE. The seed stores `PSA` because that is what
+   the backbone keys on, and the kicker printed it raw — so a list headed
+   "Psalms 23" said "Playlist · from PSA 23" an inch above its own name. Both
+   spellings pass, for the same reason the name gate takes both: which one
+   appears is the reference table's business, not this tour's. */
+gate(/from Psalms? 23$/.test(seeded.kicker ?? ""), "and says where it came from", seeded.kicker);
 gate(seeded.rows.length > 0, "with something on it", `${seeded.rows.length} rows`);
 /* The point of the join: the psalm's own setting AND the teaching about it, on
    one list. A list with only one kind would mean half the join silently failed. */
@@ -1048,7 +1053,11 @@ gate(extents.blank.length === 0, "and every one of them prints its length",
 const ordered2 = await evaluate(`(() => {
   const titles = () => [...document.querySelectorAll('.listen-track-title')].map((t) => t.textContent);
   const was = titles();
-  const down = document.querySelector('.listen-track-hand [aria-label="Move down"]');
+  /* PREFIX MATCH, because the label now carries the row's title after the verb —
+     twenty buttons all called "Move down" named nothing a screen-reader user
+     could tell apart. The verb leads precisely so a selector like this can stay
+     honest while the tail belongs to the row. */
+  const down = document.querySelector('.listen-track-hand [aria-label^="Move down"]');
   down?.click();
   return new Promise((r) => setTimeout(() => r({ was, now: titles() }), 500));
 })()`);

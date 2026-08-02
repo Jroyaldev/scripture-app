@@ -25620,7 +25620,13 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 /* Said to a screen reader and to nobody else. "Played" and "22 minutes left"
-   are what the tick and the bar MEAN, and neither shape says it out loud. */
+   are what the tick and the bar MEAN, and neither shape says it out loud.
+
+   THIS WAS AN ASPIRATION FOR SEVERAL COMMITS. The row buttons these spans sit
+   inside carried an explicit `aria-label`, which REPLACES a control's contents
+   in the naming algorithm rather than adding to them — so this text was
+   computed, hidden, and then discarded before anybody heard it. The rows are
+   named by their contents now, which is what makes the sentence above true. */
 .listen-sr {
   position: absolute;
   overflow: hidden;
@@ -25659,7 +25665,18 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .listen-resume { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
 
+/* A doorway card sets its own `--record-tint` inline and, until now, read an
+   accent derived three levels up on `.listen` — so the play glyph and the
+   progress bar on ALL SIX cards wore the colour of whatever the first card
+   happened to be, and the inline tint on cards two through six painted nothing
+   at all. The trap is the one written out above `.listen-card-face`: a custom
+   property resolves against the element that DECLARES it, so a derivation has
+   to be restated wherever a new tint is introduced, never inherited.
+
+   Only the accent, because only the accent is read here: the field is a page's
+   ambient wash and a card of this size lays none. */
 .listen-resume-face {
+  --record-accent: oklch(from var(--record-tint) 0.52 min(calc(c * 2.4), 0.15) h);
   display: flex;
   min-width: 0;
   flex-direction: column;

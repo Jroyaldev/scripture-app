@@ -136,6 +136,11 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 
+/** The publisher's own naming, and the ONLY place the division is read. It was
+ *  written out twice — once to split the record and once to count it — which is
+ *  how a count came to disagree with the rows it was counting. */
+const INSTRUMENTAL = /instrumental/i;
+
 /** What the shows the manifest registry does not carry call themselves. */
 const NAMES: Record<string, string> = {
   "bema": "The BEMA Podcast",
@@ -431,6 +436,12 @@ function About({ text }: { text: string }): React.JSX.Element {
   const [open, setOpen] = useState(false);
   const [clipped, setClipped] = useState(false);
   const ref = useRef<HTMLParagraphElement>(null);
+  /* A disclosure has to say three things and this said one: "More". Not what
+     the more IS, and not whether it is already showing — so a reader who could
+     not see the paragraph change had a button that appeared to do nothing,
+     twice. Generated rather than written, because the hero is drawn on more
+     than one page and a hard-coded id would be a duplicate. */
+  const prose = React.useId();
 
   useEffect(() => {
     const node = ref.current;
@@ -446,9 +457,15 @@ function About({ text }: { text: string }): React.JSX.Element {
 
   return (
     <div className="listen-about">
-      <p className="listen-about-text" data-open={open ? "" : undefined} ref={ref}>{text}</p>
+      <p className="listen-about-text" data-open={open ? "" : undefined} id={prose} ref={ref}>{text}</p>
       {(clipped || open) && (
-        <button className="listen-about-more" onClick={() => setOpen(!open)} type="button">
+        <button
+          aria-controls={prose}
+          aria-expanded={open}
+          className="listen-about-more"
+          onClick={() => setOpen(!open)}
+          type="button"
+        >
           {open ? "Less" : "More"}
         </button>
       )}
@@ -818,9 +835,13 @@ function AlbumGroup({
                   at all. This is the shape the playlist page has used since it
                   shipped, brought over unchanged. */}
               <div className="listen-track-row">
+                {/* Named by its contents — the long note on the series rows
+                    says why an explicit label here was silencing the rest of the
+                    row. A song announces as "Psalm 23, 3:42, button": the album
+                    and the publisher were in the label and are already in the
+                    hero this list sits under. */}
                 <button
                   aria-current={on ? "true" : undefined}
-                  aria-label={`Play ${track.title} — ${album.name}, ${MUSIC.source.name}`}
                   className="listen-track-face"
                   data-on={on ? "" : undefined}
                   onClick={() => onPlay(ordered.indexOf(track))}
@@ -1227,7 +1248,13 @@ export function ListenPage({ backbone, bookNames }: {
      row's mark moves under the reader without a refetch. */
   const places = usePodcastLedger();
   const scroller = useRef<HTMLDivElement>(null);
-  const [passed, mark] = usePassed(scroller, openAlbum ?? openSeries ?? "");
+  /* ALL THREE RECORDS, and a playlist is the third. The key is what re-runs the
+     observer effect, and a playlist page kept the key it had on the shelf — the
+     empty string — so the effect never re-ran, the hero was never observed, and
+     the compact bar on a playlist was hidden for good. The two record pages had
+     it right and the third was written afterwards, which is the same asymmetry
+     Escape had before it. Any fourth thing this room opens belongs here. */
+  const [passed, mark] = usePassed(scroller, openAlbum ?? openSeries ?? openPlaylist ?? "");
 
   /* TWO CATALOGUES, AND THE ROOM NEEDS BOTH — for names, and for episodes.
      `trustedResources.catalogue()` knows what each publisher is CALLED, and
@@ -1392,12 +1419,33 @@ export function ListenPage({ backbone, bookNames }: {
    * exactly as it did, which is every other record here.
    */
   const chapters = useMemo(() => {
-    const sung = shown.filter((group) => !/instrumental/i.test(group.name));
-    const played = shown.filter((group) => /instrumental/i.test(group.name));
+    const sung = shown.filter((group) => !INSTRUMENTAL.test(group.name));
+    const played = shown.filter((group) => INSTRUMENTAL.test(group.name));
     if (sung.length === 0 || played.length === 0) return null;
     return { sung, played };
   }, [shown]);
-  const [half, setHalf] = useState<"all" | "sung" | "played">("all");
+  /**
+   * WHICH HALF, AND WHAT HAPPENS WHEN THERE IS NO HALF TO HOLD.
+   *
+   * The choice is the reader's and it was kept forever, which produced two
+   * states nobody asked for. Filter a divided record down to rows that all live
+   * in one half and `chapters` goes null — the control disappears while the
+   * state still says "played", and the sung rows it was hiding come back with
+   * nothing on screen to explain why. Open a different record and the choice
+   * followed it there.
+   *
+   * Two different repairs, because they are two different facts. The filter case
+   * is CLAMPED rather than reset: there is no such thing as a chosen half on an
+   * undivided list, so `half` is derived and the reader's choice waits intact
+   * for the filter to be cleared. An effect there would have written state on a
+   * keystroke and thrown the choice away for good.
+   *
+   * The record case IS a reset, because opening another album is opening another
+   * thing, and its halves are not this one's.
+   */
+  const [chosenHalf, setChosenHalf] = useState<"all" | "sung" | "played">("all");
+  const half = chapters ? chosenHalf : "all";
+  useEffect(() => { setChosenHalf("all"); }, [openAlbum]);
 
   /* Built from the AUDIO catalogue, so a publisher appears here when it has
      episodes rather than when it has cards — which is how BEMA and 30 Minutes
@@ -1411,13 +1459,16 @@ export function ListenPage({ backbone, bookNames }: {
      publisher's own flag stays authoritative; the kind rules are read straight
      off the list beside it, because "no podcasts from these people" is exactly
      what a shelf of their podcasts should obey. */
-  const muted = new Set([
+  const muted = useMemo(() => new Set([
     ...resourceCatalogue?.sources.filter((s) => s.muted).map((s) => s.id) ?? [],
     ...(resourceCatalogue?.mutes ?? [])
       .filter((rule) => rule.endsWith(":podcast"))
       .map((rule) => rule.slice(0, -":podcast".length)),
-  ]);
-  const named = new Map(resourceCatalogue?.sources.map((s) => [s.id, s.name]) ?? []);
+  ]), [resourceCatalogue]);
+  const named = useMemo(
+    () => new Map(resourceCatalogue?.sources.map((s) => [s.id, s.name]) ?? []),
+    [resourceCatalogue],
+  );
   /* A publisher outside the manifest registry has no name to read, and an id
      title-cased is not a name — it drew "Bema" and "Thirty Minutes Nt". The
      feed registry already holds what these shows call themselves; the two the
@@ -1429,7 +1480,15 @@ export function ListenPage({ backbone, bookNames }: {
      the top-left and told a reader nothing except which publisher had been at
      it longest — a show that posted this morning sat below one that stopped in
      2019. Size is not news. */
-  const series = Object.entries(audio ?? {})
+  /* MEMOISED BECAUSE SOMETHING ELSE DEPENDS ON IT. This array is cheap to build
+     and was rebuilt on every render — a new identity each time — so the `resume`
+     memo below, which lists it as a dependency, recomputed on every render too.
+     A memo whose dependency is rebuilt beside it is not a memo; it is a
+     memo-shaped comment. The doorway walks the whole ledger against the whole
+     catalogue, so this was the expensive half of a keystroke in the filter.
+     `muted` and `named` are memoised above for the same reason: a Set rebuilt
+     per render would have carried the defect straight through. */
+  const series = useMemo(() => Object.entries(audio ?? {})
     .filter(([id]) => !muted.has(id))
     .map(([id, episodes]) => ({
       id,
@@ -1438,7 +1497,8 @@ export function ListenPage({ backbone, bookNames }: {
       latest: episodes.reduce((newest, ep) => (
         (ep.publishedAt ?? "") > newest ? ep.publishedAt ?? "" : newest), ""),
     }))
-    .sort((a, b) => b.latest.localeCompare(a.latest) || b.episodes.length - a.episodes.length);
+    .sort((a, b) => b.latest.localeCompare(a.latest) || b.episodes.length - a.episodes.length),
+  [audio, muted, named]);
   const openedSeries = series.find((s) => s.id === openSeries) ?? null;
 
   /* Identity is the SOURCE and the RECORD, never `episode.id` — that is a key
@@ -1448,6 +1508,27 @@ export function ListenPage({ backbone, bookNames }: {
   const sounding = now.status === "playing" || now.status === "reaching";
   const playingHere = (sourceId: string, recordId: string): boolean =>
     sameEpisode(now.episode, sourceId, recordId);
+
+  /**
+   * IS THIS LIST THE THING YOU ARE HEARING — answered from the entry itself.
+   *
+   * Every other card in the room lights while it plays and a playlist card did
+   * not, which read as "playlists are not really records here". It was left out
+   * because a list holds IDENTITIES rather than episodes, and lighting it looked
+   * like it needed the whole list resolved against the catalogue on every
+   * render.
+   *
+   * It does not. A stored identity IS the record id, in both shapes: a podcast
+   * entry keeps the publisher's own `recordId`, and a music entry's id is
+   * `sourceId:album:title` — the same string `trackId` builds, which is why that
+   * shaper lives in one file. So this is a string comparison against what is
+   * playing, and it costs nothing on a shelf of two hundred lists.
+   */
+  const entryPlaying = (entry: PlaylistEntry): boolean => (
+    entry.kind === "music"
+      ? playingHere(entry.sourceId, `${entry.sourceId}:${entry.album}:${entry.title}`)
+      : playingHere(entry.sourceId, entry.recordId)
+  );
 
   /**
    * WHAT WAS NOT FINISHED, newest first.
@@ -1588,7 +1669,15 @@ export function ListenPage({ backbone, bookNames }: {
                should be unreachable, and is written anyway: a blank square is
                the exact defect this removes, so no path may lead back to one. */
             initial={Array.from(list.name.trim())[0] ?? "—"}
-            kicker={list.seed ? `Playlist · from ${list.seed.book} ${list.seed.chapter}` : "Playlist"}
+            /* THE NAME, NOT THE CODE. The seed stores `PSA` because that is
+               what the backbone keys on, and this printed it raw — so a list
+               called "Psalms 23" carried "Playlist · from PSA 23" an inch above
+               its own name. The list's name was built from `bookNames[book][0]`;
+               this reads the same table the same way, so the two now agree by
+               construction rather than by luck. */
+            kicker={list.seed
+              ? `Playlist · from ${bookNames?.[list.seed.book]?.[0] ?? list.seed.book} ${list.seed.chapter}`
+              : "Playlist"}
             line={[
               `${count} ${count === 1 ? "item" : "items"}`,
               live.length < count ? `${count - live.length} unavailable` : null,
@@ -1686,11 +1775,16 @@ export function ListenPage({ backbone, bookNames }: {
                 return (
                   <li className="listen-track" key={`${row.entry.title}:${index}`}>
                     <div className="listen-track-row" data-dead={row.episode ? undefined : ""}>
+                      {/* NAMED BY ITS CONTENTS. An explicit `aria-label` on a
+                          button REPLACES its contents in the accessible-name
+                          algorithm rather than adding to them, so this label was
+                          silencing everything under it — the publisher's name,
+                          the runtime, and the row's own state. Here it also
+                          stopped a lie being told twice: the row already says
+                          "No longer in the library" in words on screen, and the
+                          label said it again in different ones. */}
                       <button
                         aria-current={on ? "true" : undefined}
-                        aria-label={row.episode
-                          ? `Play ${row.episode.title}`
-                          : `${row.entry.title} — no longer in the library`}
                         className="listen-track-face"
                         data-on={on ? "" : undefined}
                         disabled={!row.episode}
@@ -1758,15 +1852,27 @@ export function ListenPage({ backbone, bookNames }: {
                           type="button"
                           {...askButton(row.entry, row.episode?.title ?? row.entry.title)}
                         >＋</button>
+                        {/* EVERY BUTTON SAYS WHICH ROW IT BELONGS TO. A
+                            twenty-row list read out as twenty buttons called
+                            "Move up" and twenty called "Move down" — a control
+                            list with no nouns in it, while the neighbouring ×
+                            had carried its row's name since the first build.
+
+                            The row's name goes AFTER the verb. A screen-reader
+                            user tabbing a column hears the first word of each
+                            control, so the verb has to lead or the column
+                            becomes twenty readings of the same title — and it
+                            keeps the label prefix-stable, which is what lets a
+                            gate match on the verb alone. */}
                         <button
-                          aria-label="Move up"
+                          aria-label={`Move up — ${row.episode?.title ?? row.entry.title}`}
                           className="listen-track-move"
                           disabled={index === 0}
                           onClick={() => movePlaylistEntry(list.id, index, -1)}
                           type="button"
                         >↑</button>
                         <button
-                          aria-label="Move down"
+                          aria-label={`Move down — ${row.episode?.title ?? row.entry.title}`}
                           className="listen-track-move"
                           disabled={index === rows.length - 1}
                           onClick={() => movePlaylistEntry(list.id, index, 1)}
@@ -1915,9 +2021,19 @@ export function ListenPage({ backbone, bookNames }: {
                           Six hundred episodes now carry a visible way onto a
                           list, at a cost of nothing until the pointer arrives. */}
                       <div className="listen-track-row">
+                        {/* THE LABEL WAS SILENCING EVERYTHING IT SAT ON TOP OF.
+                            An explicit `aria-label` REPLACES a button's contents
+                            in the accessible-name algorithm, so the Progress
+                            component's screen-reader text ("Played", "22 minutes
+                            left"), the publisher's own line and the publication
+                            date were all computed, hidden, and then discarded
+                            before anybody heard them — and a CSS comment two
+                            files away claimed the opposite. Named by its
+                            contents now, which is what makes that sentence true.
+                            The series' name is in the hero this list sits under;
+                            "Play" was context a name should not carry. */}
                         <button
                           aria-current={on ? "true" : undefined}
-                          aria-label={`Play ${ep.title} — ${openedSeries.name}`}
                           className="listen-track-face"
                           data-on={on ? "" : undefined}
                           onClick={() => play(ordered.indexOf(ep))}
@@ -2005,6 +2121,17 @@ export function ListenPage({ backbone, bookNames }: {
       ? albums.filter((one) => one.name !== album.name
         && one.name.replace(/\s+(?:[IVX]+|Part\s+\d+)$/i, "").trim() === family)
       : [];
+    /* THE COUNT COUNTS WHAT IS ON SCREEN. It summed both halves of the record
+       while one half was drawn — "18 of 222" standing over four visible rows,
+       which is not a rounding error, it is the page contradicting itself. Both
+       numbers move together now: the numerator is the rows the reader can see,
+       and the denominator is the same half of the whole record, so narrowing
+       the instrumentals reads "4 of 51" rather than "4 of 222". */
+    const tally = (run: typeof groups): number => run.reduce((n, group) => n + group.tracks.length, 0);
+    const drawn = chapters && half !== "all" ? chapters[half] : shown;
+    const whole = chapters && half !== "all"
+      ? tally(groups.filter((group) => INSTRUMENTAL.test(group.name) === (half === "played")))
+      : album.tracks.length;
     return (
       <div className="listen" ref={scroller} style={album.tint ? { "--record-tint": album.tint } as React.CSSProperties : undefined}>
         <div className="listen-ambient" />
@@ -2039,10 +2166,10 @@ export function ListenPage({ backbone, bookNames }: {
               ours to reverse. */}
           {album.tracks.length > 24 && (
             <Sift
-              count={shown.reduce((n, group) => n + group.tracks.length, 0)}
+              count={tally(drawn)}
               noun="song"
               query={query}
-              total={album.tracks.length}
+              total={whole}
             >
               {chapters && (
                 <div aria-label="Which half of the record" className="listen-halves" role="group">
@@ -2053,7 +2180,7 @@ export function ListenPage({ backbone, bookNames }: {
                         className="listen-half"
                         data-on={half === which ? "" : undefined}
                         key={which}
-                        onClick={() => setHalf(which)}
+                        onClick={() => setChosenHalf(which)}
                         type="button"
                       >{label}</button>
                     ))}
@@ -2119,7 +2246,6 @@ export function ListenPage({ backbone, bookNames }: {
                       aria-label={`${one.name} — ${albumLine(one)}`}
                       className="listen-sibling"
                       onClick={() => setOpenAlbum(one.name)}
-                      style={one.tint ? { "--record-tint": one.tint } as React.CSSProperties : undefined}
                       type="button"
                     >
                       <Cover alt="" src={one.cover} tint={one.tint} />
@@ -2368,11 +2494,17 @@ export function ListenPage({ backbone, bookNames }: {
                 const first = one.entries
                   .map((entry) => resolveEntry(entry, audio, (id) => named.get(id) ?? titleFromId(id)))
                   .find(Boolean);
+                /* Matched against the stored identity rather than the resolved
+                   episode — see `entryPlaying`. A list is playing when anything
+                   on it is, which is what a listener means by it: they put the
+                   track there and they are hearing it. */
+                const on = one.entries.some(entryPlaying) && sounding;
                 return (
                   <li className="listen-card" key={one.id}>
                     <button
                       aria-label={`${one.name} — ${one.entries.length} items`}
                       className="listen-card-face"
+                      data-on={on ? "" : undefined}
                       onClick={() => openListenPlaylist(one.id)}
                       style={first?.tint ? { "--record-tint": first.tint } as React.CSSProperties : undefined}
                       type="button"
@@ -2380,7 +2512,7 @@ export function ListenPage({ backbone, bookNames }: {
                       <span className="listen-card-art">
                         <Cover alt="" src={first?.artUrl} tint={first?.tint} />
                         <span aria-hidden="true" className="listen-card-play">
-                          <PlayGlyph size={18} />
+                          {on ? <BarsGlyph /> : <PlayGlyph size={18} />}
                         </span>
                       </span>
                       <span className="listen-card-name">{one.name}</span>

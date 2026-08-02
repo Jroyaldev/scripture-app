@@ -190,8 +190,21 @@ export function insertPlaylistEntry(id: string, entry: PlaylistEntry, at: number
   }));
 }
 
-/** Move one entry by one place. The whole of reordering, deliberately — see
- *  the room for why there is no drag here. */
+/**
+ * Move one entry by one place. The whole of reordering, deliberately.
+ *
+ * NO DRAG, and the reason is that nothing in this app has one. The only
+ * pointer-drag in the renderer is the workspace tabs' bespoke pointer-capture
+ * reorder, which is a few hundred lines of its own and would have to be
+ * generalised before a second caller could borrow it. Two buttons and a
+ * keyboard path cost nothing and work for a reader who never touches a mouse;
+ * a drag that only half-exists is worse than a pair of arrows that entirely do.
+ *
+ * (This said "see the room for why there is no drag here", and the room said no
+ * such thing — the nearest note explains why the controls sit BESIDE the row,
+ * which is a different question. A cross-reference to a paragraph that was
+ * never written sends the next reader looking for a decision they cannot find.)
+ */
 export function movePlaylistEntry(id: string, at: number, by: 1 | -1): void {
   keep(lists.map((one) => {
     if (one.id !== id) return one;
