@@ -11,17 +11,104 @@ import { buildIndex, indexExists, loadIndex, loadTranscript, CACHE_DIR, ARTIFACT
 import { readPassage } from './scripture.mjs';
 import { MODELS, clientFor } from './model-client.mjs';
 import { runTour, listRuns, readRun, readLedger, loadPricing, CAVEATS, MAX_MODEL_CALLS, MAX_TOOL_CALLS } from './tour-agent.mjs';
+import {
+  MAGIC_DIRECTOR_SCHEMA_VERSION,
+  MAGIC_MODEL_ROLES,
+  assertMagicModel,
+  assertMagicRuntime,
+  directorCacheKey,
+  normalizeDirectorScenes,
+  validateDirectorPayload,
+} from './magic-contract.mjs';
+import {
+  REPLAYS_DIR,
+  listDirectorEvidence,
+  readDirectorEvidence,
+  readReplayFixture,
+  writeDirectorEvidence,
+} from './director-evidence.mjs';
 
 const LAB_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.TOUR_LAB_PORT || 5599);
 
-const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8' };
+const MIME = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8', '.json': 'application/json; charset=utf-8' };
 
 const send = (res, code, body, type = 'application/json; charset=utf-8') => {
+  if (res.destroyed || res.writableEnded) return;
   res.writeHead(code, { 'content-type': type, 'cache-control': 'no-store' });
   res.end(body);
 };
 const sendJson = (res, code, obj) => send(res, code, JSON.stringify(obj));
+
+const DIRECTOR_INFLIGHT = new Map();
+
+function requestAbortScope(req, res) {
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  req.once('aborted', abort);
+  res.once('close', abort);
+  return {
+    signal: controller.signal,
+    release() {
+      req.off('aborted', abort);
+      res.off('close', abort);
+    },
+  };
+}
+
+function magicRuntimeDescriptor(client, resolution) {
+  const described = client.describe();
+  return {
+    key: described.key,
+    requestedSlug: described.requestedSlug,
+    resolvedSlug: resolution.slug,
+    endpointHost: resolution.endpointHost,
+    endpointStyle: resolution.endpointStyle,
+    reasoning: {
+      effort: client.reasoning.effort,
+      source: client.reasoning.source,
+      applied: Boolean(client.reasoning.effort) && resolution.endpointStyle === 'aggregator',
+    },
+  };
+}
+
+async function preflightMagicRole(role) {
+  const key = assertMagicModel(MAGIC_MODEL_ROLES[role]);
+  const client = clientFor(key);
+  const resolution = await client.ensureResolved();
+  const runtime = assertMagicRuntime(magicRuntimeDescriptor(client, resolution));
+  return { client, runtime };
+}
+
+function acquireDirectorJob(requestKey, req, res, create) {
+  let job = DIRECTOR_INFLIGHT.get(requestKey);
+  if (!job) {
+    const controller = new AbortController();
+    job = { controller, consumers: new Set(), settled: false, promise: null };
+    job.promise = Promise.resolve()
+      .then(() => create(controller.signal))
+      .finally(() => {
+        job.settled = true;
+        if (DIRECTOR_INFLIGHT.get(requestKey) === job) DIRECTOR_INFLIGHT.delete(requestKey);
+      });
+    DIRECTOR_INFLIGHT.set(requestKey, job);
+  }
+
+  const consumer = Symbol(requestKey);
+  job.consumers.add(consumer);
+  let released = false;
+  const release = () => {
+    if (released) return;
+    released = true;
+    req.off('aborted', release);
+    res.off('close', release);
+    job.consumers.delete(consumer);
+    if (!job.settled && job.consumers.size === 0) job.controller.abort();
+  };
+  req.once('aborted', release);
+  res.once('close', release);
+  return { promise: job.promise, release };
+}
 
 function ensureIndex() {
   if (indexExists()) return loadIndex().meta;
@@ -137,11 +224,45 @@ const server = http.createServer(async (req, res) => {
         pricing: loadPricing(),
         caveats: CAVEATS,
         ledger: readLedger(),
+        magic: { directorSchemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION, roles: MAGIC_MODEL_ROLES },
       });
     }
 
     if (p === '/api/fixtures') {
       return send(res, 200, fs.readFileSync(path.join(LAB_DIR, 'fixtures.json')));
+    }
+
+    if (p === '/api/direct-runs' && req.method === 'GET') {
+      return sendJson(res, 200, { runs: listDirectorEvidence({ limit: 80 }) });
+    }
+
+    if (p.startsWith('/api/direct-run/') && req.method === 'GET') {
+      const record = readDirectorEvidence(decodeURIComponent(p.slice('/api/direct-run/'.length)));
+      return record ? sendJson(res, 200, record) : sendJson(res, 404, { error: 'no such director run' });
+    }
+
+    if (p === '/api/replays' && req.method === 'GET') {
+      const replays = fs.existsSync(REPLAYS_DIR)
+        ? fs.readdirSync(REPLAYS_DIR)
+          .filter((name) => name.endsWith('.json'))
+          .sort()
+          .map((name) => {
+            const id = name.slice(0, -'.json'.length);
+            const { fixture, errors } = readReplayFixture(id);
+            return fixture
+              ? { id, prompt: fixture.prompt, steps: fixture.tour.steps.length }
+              : { id, errors };
+          })
+        : [];
+      return sendJson(res, 200, { replays });
+    }
+
+    if (p.startsWith('/api/replay/') && req.method === 'GET') {
+      const id = decodeURIComponent(p.slice('/api/replay/'.length));
+      const { fixture, errors } = readReplayFixture(id);
+      if (fixture) return sendJson(res, 200, fixture);
+      const missing = errors.includes('no such replay fixture');
+      return sendJson(res, missing ? 404 : 422, { error: errors.join('; '), errors });
     }
 
     if (p === '/api/runs') return sendJson(res, 200, { runs: listRuns({ limit: 80 }), ledger: readLedger() });
@@ -167,14 +288,38 @@ const server = http.createServer(async (req, res) => {
     if (p === '/api/tour' && req.method === 'POST') {
       const body = await readBody(req);
       const prompt = String(body.prompt || '').trim();
-      const modelKeys = (Array.isArray(body.models) && body.models.length
+      const requestedKeys = (Array.isArray(body.models) && body.models.length
         ? body.models
-        : [body.model]
+        : body.model
+          ? [body.model]
+          : []
       )
         .map((k) => String(k || '').trim())
         .filter(Boolean);
       if (!prompt) return sendJson(res, 400, { error: 'prompt is required' });
+
+      const isMagic = body.surface === 'magic';
+      let modelKeys;
+      if (isMagic) {
+        const refused = requestedKeys.filter((key) => key !== MAGIC_MODEL_ROLES.search);
+        if (refused.length) {
+          return sendJson(res, 400, {
+            error: `\/magic search permits only ${MAGIC_MODEL_ROLES.search}`,
+            refused: [...new Set(refused)],
+          });
+        }
+        try {
+          await preflightMagicRole('search');
+        } catch (error) {
+          return sendJson(res, 503, { error: error?.message || String(error), code: error?.code || 'MAGIC_PREFLIGHT' });
+        }
+        modelKeys = [MAGIC_MODEL_ROLES.search];
+      } else {
+        modelKeys = [...new Set(requestedKeys)];
+      }
       if (!modelKeys.length) return sendJson(res, 400, { error: 'at least one model is required' });
+
+      const abortScope = requestAbortScope(req, res);
 
       res.writeHead(200, {
         'content-type': 'text/event-stream; charset=utf-8',
@@ -184,7 +329,7 @@ const server = http.createServer(async (req, res) => {
       // Each write is one whole frame, so concurrent runs interleave between
       // frames and never inside one.
       const emit = (event, data) => {
-        if (res.writableEnded) return;
+        if (res.destroyed || res.writableEnded || abortScope.signal.aborted) return;
         res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
       };
 
@@ -196,7 +341,13 @@ const server = http.createServer(async (req, res) => {
           const tagged = (event, data) => emit(event, { ...data, model: modelKey });
           tagged('start', { prompt });
           try {
-            await runTour({ prompt, modelKey, promptId: body.promptId || null, emit: tagged });
+            await runTour({
+              prompt,
+              modelKey,
+              promptId: body.promptId || null,
+              emit: tagged,
+              signal: abortScope.signal,
+            });
           } catch (err) {
             // Fail soft: the panel shows a sentence, never a stack trace.
             tagged('fatal', { message: err?.message || String(err) });
@@ -204,6 +355,8 @@ const server = http.createServer(async (req, res) => {
         })
       );
       emit('batch-done', { models: modelKeys });
+      abortScope.release();
+      if (res.destroyed || res.writableEnded) return;
       return res.end();
     }
 
@@ -242,10 +395,12 @@ const server = http.createServer(async (req, res) => {
       const body = await readBody(req);
       const steps = Array.isArray(body.steps) ? body.steps.slice(0, 8) : [];
       if (!steps.length) return sendJson(res, 400, { error: 'steps required' });
+      const abortScope = requestAbortScope(req, res);
       try {
-        const client = clientFor('gpt-5.6-luna-medium');
+        const { client, runtime } = await preflightMagicRole('whispers');
         const reply = await client.chat({
           maxTokens: 4000,
+          signal: abortScope.signal,
           messages: [{
             role: 'user',
             content: `For each clip below, write ONE whisper: the single quiet line a knowledgeable friend leans over and says just as the clip begins. At most 12 words. Start with "Listen for", "Notice", or "Wait for". Point at something concrete the speaker actually says or does (draw it from the reason given). Plain words, no hype, no exclamation marks, never mention AI, tours, or clips.\n\n${steps.map((s, i) => `${i + 1}. [${s.source}] ${s.episodeTitle}\nreason: ${String(s.why || '').slice(0, 500)}`).join('\n\n')}\n\nAnswer with ONLY this JSON: {"whispers": ["...", ...]} — exactly ${steps.length} strings, in order.`,
@@ -256,8 +411,14 @@ const server = http.createServer(async (req, res) => {
         const whispers = Array.isArray(parsed?.whispers)
           ? parsed.whispers.slice(0, steps.length).map((w) => String(w).slice(0, 120))
           : [];
-        return sendJson(res, 200, { whispers, usd: reply.usage?.providerCostUsd ?? null });
+        abortScope.release();
+        return sendJson(res, 200, {
+          whispers,
+          usd: reply.usage?.providerCostUsd ?? null,
+          model: { ...runtime, provider: reply.raw?.provider || 'OpenRouter' },
+        });
       } catch (err) {
+        abortScope.release();
         // The page degrades to no whisper, never to an error in the reader's face.
         return sendJson(res, 200, { whispers: [], note: err?.message || String(err) });
       }
@@ -273,10 +434,12 @@ const server = http.createServer(async (req, res) => {
       const steps = Array.isArray(body.tour?.steps) ? body.tour.steps.slice(0, 8) : [];
       const ask = String(body.prompt || '').slice(0, 400);
       if (!steps.length) return sendJson(res, 400, { error: 'tour required' });
+      const abortScope = requestAbortScope(req, res);
       try {
-        const client = clientFor('gpt-5.6-luna-medium');
+        const { client, runtime } = await preflightMagicRole('form');
         const reply = await client.chat({
           maxTokens: 4000,
+          signal: abortScope.signal,
           messages: [{
             role: 'user',
             content: `A listening tour was built for this request: "${ask}"
@@ -300,8 +463,11 @@ Include only the keys the chosen form needs; stage directions are optional and m
         const m = String(reply.message.content || '').match(/\{[\s\S]*\}/);
         const plan = validateFormPlan(m ? JSON.parse(m[0]) : null, steps.length);
         plan.usd = reply.usage?.providerCostUsd ?? null;
+        plan.model = { ...runtime, provider: reply.raw?.provider || 'OpenRouter' };
+        abortScope.release();
         return sendJson(res, 200, plan);
       } catch (err) {
+        abortScope.release();
         return sendJson(res, 200, { form: 'standard', note: err?.message || String(err) });
       }
     }
@@ -316,14 +482,42 @@ Include only the keys the chosen form needs; stage directions are optional and m
     // the real texts before the page sees it.
     if (p === '/api/direct' && req.method === 'POST') {
       const body = await readBody(req);
-      const tr = loadTranscript(String(body.recordId || ''));
-      if (!tr) return sendJson(res, 200, { scenes: [] });
+      if (body.schemaVersion !== MAGIC_DIRECTOR_SCHEMA_VERSION) {
+        return sendJson(res, 409, {
+          error: `director schema ${String(body.schemaVersion)} is not supported`,
+          supportedSchemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
+        });
+      }
+      try {
+        assertMagicModel(body.model);
+      } catch (error) {
+        return sendJson(res, 400, { error: error.message, code: error.code });
+      }
+
+      const recordId = String(body.recordId || '');
       const from = Math.max(0, Number(body.fromSec) || 0);
       const to = Math.min(from + 900, Number(body.toSec) || from + 900);
       const dur = to - from;
-      const segs = tr.segments.filter((s) => s.e >= from && s.s <= to);
+      const why = String(body.why || '').slice(0, 400);
+      const requestKey = directorCacheKey({
+        schemaVersion: body.schemaVersion,
+        modelKey: body.model,
+        recordId,
+        fromSec: from,
+        toSec: to,
+        why,
+      });
+      const directRequest = {
+        schemaVersion: body.schemaVersion,
+        model: body.model,
+        recordId,
+        fromSec: from,
+        toSec: to,
+        why,
+      };
+      const tr = loadTranscript(recordId);
+      const segs = (tr?.segments || []).filter((s) => s.e >= from && s.s <= to);
       const tape = segs.map((s) => s.t).join(' ').slice(0, 11000);
-      if (tape.length < 200) return sendJson(res, 200, { scenes: [] });
       const norm = (s) => String(s).toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim();
       const tapeNorm = ` ${norm(tape)} `;
 
@@ -340,12 +534,19 @@ Include only the keys the chosen form needs; stage directions are optional and m
         }
         return null;
       };
-      const locateWordAfter = (word, afterRel) => {
+      const locateWordAfter = (word, afterRel, occurrence = 0) => {
         const nw = ` ${norm(word)} `;
+        let seen = 0;
         for (const s of segs) {
           const rel = s.e - from;
           if (rel < afterRel) continue;
-          if ((` ${norm(s.t)} `).includes(nw)) return Math.round(rel);
+          const text = ` ${norm(s.t)} `;
+          let cursor = 0;
+          while ((cursor = text.indexOf(nw, cursor)) >= 0) {
+            if (seen === occurrence) return Math.round(rel);
+            seen += 1;
+            cursor += nw.length;
+          }
         }
         return null;
       };
@@ -472,8 +673,12 @@ Include only the keys the chosen form needs; stage directions are optional and m
       };
 
       try {
-        /* body.model is a lab dial for A/B runs; production callers omit it. */
-        const client = clientFor(typeof body.model === 'string' && body.model ? body.model : 'gpt-5.6-sol-high');
+        /* `/magic` has one cost-bounded model contract. An old A/B caller that
+           still names Sol is refused rather than silently buying it. */
+        const directorModel = assertMagicModel(
+          typeof body.model === 'string' && body.model ? body.model : MAGIC_MODEL_ROLES.director
+        );
+        const client = clientFor(directorModel);
         const spent = [];
         const toks = { in: 0, out: 0, reasoning: 0 };
         const callModel = async (content, maxTokens = 16000) => {

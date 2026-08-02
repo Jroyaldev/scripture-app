@@ -12,9 +12,19 @@
 // marks the list itself. The model directs; the house performs; all
 // geometry — lanes, collisions, layout — is the house's arithmetic alone.
 
+import {
+  MAGIC_DIRECTOR_SCHEMA_VERSION,
+  MAGIC_MODEL_ROLES,
+  directorCacheKey,
+  validateDirectorPayload,
+  validateReplayFixture,
+} from './magic-contract.mjs';
+
 const $ = (s) => document.querySelector(s);
-const MODEL = 'gpt-5.6-luna-medium'; // fast enough to watch, cheap enough to not think about
 const TH = () => $('#theater');
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+const motionMs = (ms) => (reducedMotion.matches ? 0 : ms);
+const nextFrame = (fn) => reducedMotion.matches ? fn() : requestAnimationFrame(() => requestAnimationFrame(fn));
 
 // ----------------------------------------------------------------- scenes
 
@@ -30,13 +40,13 @@ function showScene(id) {
       if (sc !== next) { sc.classList.remove('on', 'entering'); }
     }
     next.classList.add('entering');
-    requestAnimationFrame(() => requestAnimationFrame(() => {
+    nextFrame(() => {
       if (token === sceneToken) next.classList.add('on');
-    }));
+    });
   };
   if (cur && cur !== next) {
     cur.classList.remove('on');
-    setTimeout(reveal, 460);
+    setTimeout(reveal, motionMs(460));
   } else {
     reveal();
   }
@@ -48,6 +58,23 @@ const lineEl = () => $('#making-line');
 let lineQueue = [];
 let lineBusy = false;
 let lastLineAt = 0;
+const makingTimers = new Set();
+
+function makingDelay(fn, ms) {
+  const timer = setTimeout(() => {
+    makingTimers.delete(timer);
+    fn();
+  }, ms);
+  makingTimers.add(timer);
+  return timer;
+}
+
+function cancelMakingLines() {
+  for (const timer of makingTimers) clearTimeout(timer);
+  makingTimers.clear();
+  lineQueue = [];
+  lineBusy = false;
+}
 
 function sayLine(text) {
   lineQueue = [text];
@@ -59,15 +86,15 @@ function drainLines() {
   const el = lineEl();
   const wait = Math.max(0, 1400 - (Date.now() - lastLineAt));
   lineBusy = true;
-  setTimeout(() => {
+  makingDelay(() => {
     el.classList.remove('show');
-    setTimeout(() => {
+    makingDelay(() => {
       el.textContent = lineQueue.shift() || '';
       el.classList.add('show');
       lastLineAt = Date.now();
       lineBusy = false;
       drainLines();
-    }, 260);
+    }, motionMs(260));
   }, wait);
 }
 
@@ -77,7 +104,7 @@ function addMark() {
   const d = document.createElement('span');
   d.className = 'mark';
   marks.appendChild(d);
-  requestAnimationFrame(() => requestAnimationFrame(() => d.classList.add('on')));
+  nextFrame(() => d.classList.add('on'));
 }
 
 const trim = (s, n) => (s.length > n ? s.slice(0, n - 1) + '…' : s);
@@ -102,6 +129,7 @@ for (const b of document.querySelectorAll('.eg')) {
   b.addEventListener('click', () => begin(b.textContent));
 }
 $('#again').addEventListener('click', () => {
+  abortActiveRun();
   stopAudio();
   $('#q').value = '';
   $('#steps').innerHTML = '';
@@ -114,15 +142,60 @@ $('#th-stop').addEventListener('click', () => stopAudio());
 
 // --------------------------------------------------------------- the run
 
+let runCounter = 0;
+let activeRun = null;
+
+function abortActiveRun() {
+  if (activeRun) activeRun.controller.abort();
+  if (activeRun) {
+    for (const timer of activeRun.timers) clearTimeout(timer);
+    activeRun.timers.clear();
+  }
+  activeRun = null;
+  cancelPendingPlay();
+  cancelMakingLines();
+  directorCache.clear();
+}
+
+function startRun({ mode = 'live' } = {}) {
+  abortActiveRun();
+  const run = { id: ++runCounter, mode, controller: new AbortController(), timers: new Set() };
+  activeRun = run;
+  return run;
+}
+
+const runIsActive = (run) => activeRun === run && !run.controller.signal.aborted;
+
+function runDelay(run, fn, ms) {
+  if (!runIsActive(run)) return null;
+  const timer = setTimeout(() => {
+    run.timers.delete(timer);
+    if (runIsActive(run)) fn();
+  }, ms);
+  run.timers.add(timer);
+  return timer;
+}
+
 async function begin(prompt) {
+  const run = startRun({ mode: 'live' });
   showScene('making');
   sayLine('reading your question…');
 
-  const res = await fetch('/api/tour', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ prompt, model: MODEL }),
-  });
+  let res;
+  try {
+    res = await fetch('/api/tour', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ prompt, surface: 'magic' }),
+      signal: run.controller.signal,
+    });
+    if (!res.ok) throw new Error(`tour request returned ${res.status}`);
+  } catch (error) {
+    if (error?.name === 'AbortError' || !runIsActive(run)) return;
+    sayLine('I could not reach the listening room — try again in a moment.');
+    runDelay(run, () => showScene('ask'), 2600);
+    return;
+  }
 
   const reader = res.body.getReader();
   const decoder = new TextDecoder();
@@ -131,8 +204,17 @@ async function begin(prompt) {
   let sawTrouble = null;
 
   while (true) {
-    const { done, value } = await reader.read();
+    let packet;
+    try {
+      packet = await reader.read();
+    } catch (error) {
+      if (error?.name === 'AbortError' || !runIsActive(run)) return;
+      sawTrouble = true;
+      break;
+    }
+    const { done, value } = packet;
     if (done) break;
+    if (!runIsActive(run)) return;
     buf += decoder.decode(value, { stream: true });
     let idx;
     while ((idx = buf.indexOf('\n\n')) >= 0) {
@@ -154,14 +236,16 @@ async function begin(prompt) {
     }
   }
 
+  if (!runIsActive(run)) return;
+
   if (!tour) {
     sayLine(sawTrouble ? 'that one is beyond me today — try asking another way.' : 'try asking another way.');
-    setTimeout(() => showScene('ask'), 2600);
+    runDelay(run, () => showScene('ask'), 2600);
     return;
   }
 
   sayLine('setting the type…');
-  setTimeout(() => presentTour(tour, prompt), 1200);
+  runDelay(run, () => presentTour(tour, prompt, run), 1200);
 }
 
 // ------------------------------------------------------- quotes & marking
@@ -215,7 +299,8 @@ function sharedWords(a, b) {
 let whispers = [];
 let stageDirections = {};
 
-function presentTour(tour, prompt) {
+function presentTour(tour, prompt, run, { replayFixture = null } = {}) {
+  if (!runIsActive(run)) return;
   delete $('#tour').dataset.form;
   document.querySelector('.lexicon')?.remove();
   stageDirections = {};
@@ -227,7 +312,7 @@ function presentTour(tour, prompt) {
 
   const list = $('#steps');
   list.innerHTML = '';
-  whispers = [];
+  whispers = replayFixture ? [...replayFixture.whispers] : [];
 
   tour.steps.forEach((s, i) => {
     const li = document.createElement('li');
@@ -237,7 +322,7 @@ function presentTour(tour, prompt) {
         <span class="step-source"></span>
         <span class="step-mins">${Math.round((s.endSec - s.startSec) / 60)} min</span>
       </div>
-      <div class="step-title" role="button" tabindex="0" title="Why this reading"></div>
+      <button class="step-title" type="button" aria-expanded="false" title="Why this reading"></button>
       <div class="step-row">
         <button class="play" aria-label="Play">
           <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor" aria-hidden="true">
@@ -250,59 +335,74 @@ function presentTour(tour, prompt) {
     `;
     li.querySelector('.step-source').textContent = s.source || s.sourceId;
     li.querySelector('.step-title').textContent = s.episodeTitle;
-    li.querySelector('.why').textContent = s.why;
+    const why = li.querySelector('.why');
+    const whyId = `why-${run.id}-${i}`;
+    why.id = whyId;
+    why.textContent = s.why;
+    const title = li.querySelector('.step-title');
+    title.setAttribute('aria-controls', whyId);
+    li.querySelector('.play').setAttribute('aria-label', `Play ${s.episodeTitle}`);
     li.querySelector('.play').addEventListener('click', () => toggleStep(li, s, i));
-    const toggleWhy = () => li.querySelector('.why').classList.toggle('open');
+    const toggleWhy = () => {
+      const open = why.classList.toggle('open');
+      title.setAttribute('aria-expanded', String(open));
+    };
     li.querySelector('.step-title').addEventListener('click', toggleWhy);
-    li.querySelector('.step-title').addEventListener('keydown', (e) => { if (e.key === 'Enter') toggleWhy(); });
     list.appendChild(li);
   });
 
   showScene('tour');
   document.querySelectorAll('.step').forEach((el, i) => {
-    setTimeout(() => el.classList.add('in'), 350 + i * 240);
+    runDelay(run, () => el.classList.add('in'), motionMs(350 + i * 240));
   });
 
   buildVoices(tour);
-  fetchWhispers(tour);
-  fetchForm(tour, prompt);
+  if (replayFixture) {
+    applyForm(replayFixture.form || { form: 'standard' });
+    seedReplayDirections(tour, replayFixture);
+  } else {
+    fetchWhispers(tour, run);
+    fetchForm(tour, prompt, run);
+  }
 
   /* Prefetch every step's stage directions now, one at a time, so the
      first press of any play button finds them already waiting — the
      11-25s director latency happens while the reader is still reading
      the intro, not while they are listening. */
-  (async () => {
-    for (let i = 0; i < tour.steps.length; i++) {
-      try { await fetchDirector(tour.steps[i], i); } catch { /* next */ }
-    }
-  })();
+  if (!replayFixture) prefetchDirectors(tour, run);
 }
 
-async function fetchWhispers(tour) {
+async function fetchWhispers(tour, run) {
   try {
     const res = await fetch('/api/whispers', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ steps: tour.steps.map((s) => ({ source: s.source, episodeTitle: s.episodeTitle, why: s.why })) }),
+      signal: run.controller.signal,
     });
     const data = await res.json();
-    whispers = data.whispers || [];
-  } catch { whispers = []; }
+    if (runIsActive(run)) whispers = data.whispers || [];
+  } catch (error) {
+    if (error?.name !== 'AbortError' && runIsActive(run)) whispers = [];
+  }
 }
 
 // -------------------------------------------------- the tour's own form
 
-async function fetchForm(tour, prompt) {
+async function fetchForm(tour, prompt, run) {
   let plan = { form: 'standard' };
   try {
     const res = await fetch('/api/form', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ prompt, tour: { steps: tour.steps.map((s) => ({ source: s.source, episodeTitle: s.episodeTitle, why: s.why })) } }),
+      signal: run.controller.signal,
     });
     plan = await res.json();
-  } catch { /* standard */ }
-  applyForm(plan || { form: 'standard' });
+  } catch (error) {
+    if (error?.name === 'AbortError') return;
+  }
+  if (runIsActive(run)) applyForm(plan || { form: 'standard' });
 }
 
 function applyForm(plan) {
@@ -313,7 +413,7 @@ function applyForm(plan) {
   if (plan.form === 'lexicon') {
     const lex = document.createElement('div');
     lex.className = 'lexicon';
-    for (const block of plan.terms) {
+    for (const block of plan.terms || []) {
       const term = document.createElement('p');
       term.className = 'lexicon-term';
       term.textContent = block.term;
@@ -324,7 +424,7 @@ function applyForm(plan) {
         const b = document.createElement('button');
         b.className = 'rendering';
         b.textContent = r.label;
-        b.addEventListener('click', () => items[r.steps[0]]?.scrollIntoView({ behavior: 'smooth', block: 'center' }));
+        b.addEventListener('click', () => items[r.steps[0]]?.scrollIntoView({ behavior: reducedMotion.matches ? 'auto' : 'smooth', block: 'center' }));
         row.appendChild(b);
         for (const idx of r.steps) {
           const li = items[idx];
@@ -342,7 +442,7 @@ function applyForm(plan) {
   }
 
   if (plan.form === 'path') {
-    for (const { step, marker } of plan.waypoints) {
+    for (const { step, marker } of plan.waypoints || []) {
       const li = items[step];
       if (!li || li.querySelector('.step-marker')) continue;
       const t = document.createElement('p');
@@ -359,27 +459,140 @@ function applyForm(plan) {
 
 // -------------------------------------------------- the director's pass
 
-const directorCache = {};
+const DIRECTOR_PREFETCH_CONCURRENCY = 2;
+const directorCache = new Map();
 
-function fetchDirector(step, index) {
-  if (directorCache[index]) return Promise.resolve(directorCache[index]);
-  return fetch('/api/direct', {
+function safeDirection(note = 'No stage direction is available for this reading.') {
+  return {
+    schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
+    scenes: [],
+    model: { key: MAGIC_MODEL_ROLES.director, source: 'house-fallback' },
+    metrics: { wallMs: 0 },
+    note,
+  };
+}
+
+function requireValidDirection(payload) {
+  const check = validateDirectorPayload(payload);
+  if (!check.ok) throw new Error(`director payload refused: ${check.errors.join('; ')}`);
+  return payload;
+}
+
+function keyForStep(step) {
+  return directorCacheKey({
+    modelKey: MAGIC_MODEL_ROLES.director,
+    schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
+    recordId: step.recordId,
+    fromSec: step.startSec,
+    toSec: step.endSec,
+    why: step.why,
+  });
+}
+
+function directorEntry(step) {
+  return directorCache.get(keyForStep(step)) || null;
+}
+
+function cacheResolvedDirection(step, index, payload) {
+  const key = keyForStep(step);
+  const value = requireValidDirection(payload);
+  const entry = { key, index, status: 'resolved', value, promise: Promise.resolve(value) };
+  directorCache.set(key, entry);
+  return entry;
+}
+
+function seedReplayDirections(tour, fixture) {
+  tour.steps.forEach((step, index) => {
+    const key = keyForStep(step);
+    const payload = fixture.directions[key] || safeDirection(`Replay ${fixture.id} has no direction for this reading.`);
+    cacheResolvedDirection(step, index, payload);
+  });
+}
+
+function fetchDirector(step, index, run = activeRun) {
+  if (!run || !runIsActive(run)) return Promise.reject(new DOMException('stale tour', 'AbortError'));
+  const key = keyForStep(step);
+  const existing = directorCache.get(key);
+  if (existing) return existing.promise;
+
+  if (run.mode === 'replay') {
+    return cacheResolvedDirection(step, index, safeDirection('Replay direction missing; no model request was made.')).promise;
+  }
+
+  const entry = { key, index, status: 'pending', value: null, promise: null };
+  entry.promise = fetch('/api/direct', {
     method: 'POST',
     headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ recordId: step.recordId, fromSec: step.startSec, toSec: step.endSec, why: step.why }),
+    body: JSON.stringify({
+      schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
+      model: MAGIC_MODEL_ROLES.director,
+      recordId: step.recordId,
+      fromSec: step.startSec,
+      toSec: step.endSec,
+      why: step.why,
+    }),
+    signal: run.controller.signal,
   })
-    .then((r) => r.json())
-    .then((d) => { directorCache[index] = d; return d; })
-    .catch(() => ({ scenes: [] }));
+    .then((response) => {
+      if (!response.ok) throw new Error(`director request returned ${response.status}`);
+      return response.json();
+    })
+    .then((data) => {
+      if (!runIsActive(run)) throw new DOMException('stale tour', 'AbortError');
+      const value = requireValidDirection(data);
+      entry.status = 'resolved';
+      entry.value = value;
+      return value;
+    })
+    .catch((error) => {
+      if (error?.name === 'AbortError') {
+        directorCache.delete(key);
+        throw error;
+      }
+      entry.status = 'resolved';
+      entry.value = safeDirection(error?.message || String(error));
+      return entry.value;
+    });
+  directorCache.set(key, entry); // cache the in-flight promise before another gesture can ask
+  return entry.promise;
+}
+
+async function prefetchDirectors(tour, run) {
+  let next = 0;
+  const worker = async () => {
+    while (runIsActive(run)) {
+      const index = next;
+      next += 1;
+      if (index >= tour.steps.length) return;
+      try {
+        await fetchDirector(tour.steps[index], index, run);
+      } catch (error) {
+        if (error?.name === 'AbortError') return;
+      }
+    }
+  };
+  await Promise.all(
+    Array.from({ length: Math.min(DIRECTOR_PREFETCH_CONCURRENCY, tour.steps.length) }, () => worker())
+  );
 }
 
 /* The server resolved every cue to seconds; here that becomes one flat
    schedule. The page fires whatever is due — order-proof, replay-proof,
    and immune to a model that numbered its scenes wrong. */
-function beginDirection(li, index, scenes) {
-  if (!current || current.li !== li || !scenes?.length) return;
+function beginDirection(li, index, payload) {
+  if (!current || current.li !== li) return;
+  let direction;
+  try {
+    direction = requireValidDirection(payload);
+  } catch (error) {
+    honestNote(li, error.message);
+    return;
+  }
+  if (!direction.scenes.length) return;
   const timeline = [];
-  const copy = scenes.map((s, i) => {
+  let order = 0;
+  const add = (event, priority) => timeline.push({ ...event, priority, order: order++ });
+  const copy = direction.scenes.map((s, i) => {
     const sc = {
       ...s,
       groups: (s.groups || []).map((g) => ({ ...g })),
@@ -392,45 +605,70 @@ function beginDirection(li, index, scenes) {
       caveat: s.caveat ? { ...s.caveat } : null,
       highlight: s.highlight ? { ...s.highlight } : null,
     };
-    timeline.push({ at: sc.at ?? 0, kind: 'scene', scene: sc, idx: i });
+    add({ at: sc.at ?? 0, kind: 'scene', scene: sc, idx: i }, 0);
     for (const g of sc.groups) {
       for (const wt of g.wordTimes || []) {
-        if (wt.at != null && wt.at < (g.at ?? Infinity)) timeline.push({ at: wt.at, kind: 'word', scene: sc, word: wt.word });
+        if (wt.at != null && wt.at < (g.at ?? Infinity)) {
+          add({
+            at: wt.at,
+            kind: 'word',
+            scene: sc,
+            word: wt.word,
+            occurrence: Number.isInteger(wt.occurrence) && wt.occurrence >= 0 ? wt.occurrence : 0,
+          }, 1);
+        }
       }
-      timeline.push({ at: g.at ?? sc.at ?? 0, kind: 'group', scene: sc, a: g });
+      add({ at: g.at ?? sc.at ?? 0, kind: 'group', scene: sc, a: g }, 3);
     }
     for (const [kind, list] of [['footnote', sc.footnotes], ['term', sc.terms], ['allusion', sc.allusions], ['aside', sc.asides || []]]) {
-      for (const a of list) timeline.push({ at: a.at ?? sc.at ?? 0, kind, scene: sc, a });
+      for (const a of list) add({ at: a.at ?? sc.at ?? 0, kind, scene: sc, a }, 2);
     }
     for (const [kind, a] of [['compare', sc.compare], ['chain', sc.chain], ['caveat', sc.caveat], ['highlight', sc.highlight]]) {
-      if (a) timeline.push({ at: a.at ?? sc.at ?? 0, kind, scene: sc, a });
+      if (a) add({ at: a.at ?? sc.at ?? 0, kind, scene: sc, a }, 2);
     }
     return sc;
   });
-  timeline.sort((x, y) => x.at - y.at);
+  timeline.sort((x, y) => x.at - y.at || x.priority - y.priority || x.order - y.order);
   current.scenes = copy;
   current.timeline = timeline;
   current.fired = 0;
   current.sceneIdx = -1;
+  rebuildStageAt(player.currentTime, { reason: 'direction' });
 }
 
 const TH_BOXES = ['.compare', '.chain', '.terms', '.allusions', '.footnotes', '.caveats', '.asides'];
 
-function activateScene(scene, idx, { force = false } = {}) {
+function playDelay(owner, fn, ms) {
+  if (!owner || current !== owner || owner.controller.signal.aborted) return null;
+  const timer = setTimeout(() => {
+    owner.timers.delete(timer);
+    if (current === owner && !owner.controller.signal.aborted) fn();
+  }, ms);
+  owner.timers.add(timer);
+  return timer;
+}
+
+function activateScene(scene, idx, { force = false, immediate = false, onMounted = null } = {}) {
   if (!current || (!force && idx <= current.sceneIdx)) return;
-  if (force) current.sceneIdx = idx - 1;
-  current.sceneIdx = idx;
+  const owner = current;
+  const generation = ++owner.sceneGeneration;
+  owner.sceneIdx = idx;
+  owner.sceneReady = false;
+  owner.mountedScene = null;
+  owner.eventQueue = [];
   const th = TH();
   const body = th.querySelector('.th-body');
   /* Exits are choreographed like entrances: the page breathes out, turns,
      and breathes back in — nothing is ever simply gone. */
   const firstScene = idx === 0 && !body.classList.contains('turning');
   body.classList.add('turning');
+  body.setAttribute('aria-busy', 'true');
   releaseHighlight();
-  const token = current.playToken;
-  setTimeout(() => {
-    if (current?.playToken !== token || current.scenes?.[current.sceneIdx] !== scene) return;
+  playDelay(owner, () => {
+    if (owner.sceneGeneration !== generation || owner.scenes?.[owner.sceneIdx] !== scene) return;
     for (const sel of TH_BOXES) th.querySelector(sel).innerHTML = '';
+    owner.compareEl = null;
+    owner.compareWords = null;
     const q = th.querySelector('.verses');
     if (scene.verses?.length) {
       q.innerHTML = scene.verses.map((v) => `<sup>${v.verse}</sup>${escapeHtml(v.text)}`).join(' ')
@@ -446,36 +684,45 @@ function activateScene(scene, idx, { force = false } = {}) {
     }
     if (scene.verses?.length) body.classList.remove('bare');
     body.classList.remove('turning');
-  }, firstScene ? 40 : 420);
+    body.setAttribute('aria-busy', 'false');
+    owner.mountedScene = scene;
+    owner.sceneReady = true;
+    onMounted?.();
+    const queued = owner.eventQueue;
+    owner.eventQueue = [];
+    for (const event of queued) renderEvent(event);
+  }, immediate ? 0 : motionMs(firstScene ? 40 : 420));
 }
 
 /* One event from the schedule lands on the stage. Anything that needs the
    verse's laid-out geometry retries once, a beat after the scene's fade. */
 function renderEvent(ev) {
   if (!current) return;
-  const th = TH();
-  const verseReady = th.querySelector('.verses').classList.contains('has');
-  if (!verseReady && ['word', 'group', 'footnote'].includes(ev.kind)) {
-    /* Deferred renders carry their play's token: a retry from one clip can
-       never land on the next clip's stage. */
-    const token = current.playToken;
-    setTimeout(() => { if (current?.playToken === token) renderEvent(ev); }, 380);
+  if (ev.kind === 'scene') {
+    activateScene(ev.scene, ev.idx);
     return;
   }
+  if (current.scenes?.[current.sceneIdx] !== ev.scene) return;
+  if (!current.sceneReady || current.mountedScene !== ev.scene) {
+    if (!current.rebuilding && !current.eventQueue.includes(ev)) current.eventQueue.push(ev);
+    return;
+  }
+  renderEventNow(ev);
+}
+
+function renderEventNow(ev, { reconstruct = false } = {}) {
+  if (!current || current.mountedScene !== ev.scene) return;
+  const th = TH();
   switch (ev.kind) {
-    case 'scene':
-      activateScene(ev.scene, ev.idx);
-      break;
     case 'word': {
       /* A word lights the moment it is said; its bracket completes when
          the group does. */
-      if (current.scenes?.[current.sceneIdx] !== ev.scene) break;
-      const span = getOrWrap(th.querySelector('.verses'), ev.word);
+      const span = getOrWrap(th.querySelector('.verses'), ev.word, ev.occurrence);
       span?.classList.add('lit');
       break;
     }
     case 'group':
-      if (current.scenes?.[current.sceneIdx] === ev.scene) drawMark(ev.a);
+      drawMark(ev.a);
       break;
     case 'term': {
       const el = document.createElement('p');
@@ -505,7 +752,7 @@ function renderEvent(ev) {
          turns — dagger, double dagger, section. */
       const glyph = ['†', '‡', '§'][th.querySelectorAll('.footnote').length % 3];
       const q = th.querySelector('.verses');
-      const span = getOrWrap(q, ev.a.word);
+      const span = getOrWrap(q, ev.a.word, ev.a.occurrence);
       if (span && !span.querySelector('.fnmark')) span.insertAdjacentHTML('beforeend', `<sup class="fnmark">${glyph}</sup>`);
       const el = document.createElement('p');
       el.className = 'footnote appear';
@@ -541,14 +788,14 @@ function renderEvent(ev) {
     case 'chain': {
       /* Links assemble one at a time — a chain that appears is a list. */
       const el = document.createElement('div');
-      el.className = 'chain-box appear';
+      el.className = `chain-box${reconstruct ? '' : ' appear'}`;
       th.querySelector('.chain').appendChild(el);
-      const chainToken = current.playToken;
+      const owner = current;
       ev.a.links.forEach((l, i) => {
-        setTimeout(() => {
-          if (current?.playToken !== chainToken || !el.isConnected) return;
+        playDelay(owner, () => {
+          if (!el.isConnected || owner.mountedScene !== ev.scene) return;
           const link = document.createElement('div');
-          link.className = 'chain-link appear';
+          link.className = `chain-link${reconstruct ? '' : ' appear'}`;
           /* A link that IS the verse on stage is the chain's terminus —
              its reference gathers the line; repeating its text teaches
              nothing twice. */
@@ -560,7 +807,7 @@ function renderEvent(ev) {
           if (i === ev.a.links.length - 1 && ev.a.note) {
             el.insertAdjacentHTML('beforeend', `<span class="box-note">${escapeHtml(ev.a.note)}</span>`);
           }
-        }, i * 900);
+        }, reconstruct ? 0 : motionMs(i * 900));
       });
       break;
     }
@@ -577,10 +824,10 @@ function renderEvent(ev) {
       const bq = th.querySelector('.big-quote');
       bq.textContent = `“${ev.a.quote}”`;
       bq.classList.add('mounted');
-      requestAnimationFrame(() => bq.classList.add('show'));
+      nextFrame(() => bq.classList.add('show'));
       th.querySelector('.th-body').classList.add('spot');
       clearTimeout(current.hlTimer);
-      current.hlTimer = setTimeout(releaseHighlight, 11000);
+      current.hlTimer = playDelay(current, releaseHighlight, 11000);
       break;
     }
   }
@@ -606,20 +853,43 @@ function lightBoxWords(segText) {
   }
 }
 
-function releaseHighlight() {
+function releaseHighlight({ immediate = false } = {}) {
   const th = TH();
   const bq = th.querySelector('.big-quote');
   bq.classList.remove('show');
-  setTimeout(() => { if (!bq.classList.contains('show')) bq.classList.remove('mounted'); }, 950);
+  if (immediate || !current) {
+    bq.classList.remove('mounted');
+  } else {
+    playDelay(current, () => { if (!bq.classList.contains('show')) bq.classList.remove('mounted'); }, motionMs(950));
+  }
   th.querySelector('.th-body').classList.remove('spot');
-  if (current) clearTimeout(current.hlTimer);
+  if (current) {
+    clearTimeout(current.hlTimer);
+    current.timers.delete(current.hlTimer);
+    current.hlTimer = null;
+  }
 }
 
-function getOrWrap(root, word) {
-  const existing = root.querySelector(`.sword[data-w="${CSS.escape(word)}"]`);
+function occurrenceIndex(value) {
+  const n = Number(value);
+  return Number.isInteger(n) && n >= 0 ? n : 0;
+}
+
+function getOrWrap(root, word, occurrence = 0) {
+  if (!root || !word) return null;
+  const lex = normalize(word);
+  const wanted = occurrenceIndex(occurrence);
+  const existing = [...root.querySelectorAll('.sword')].find((span) =>
+    (span.dataset.lex || normalize(span.dataset.w || span.textContent)) === lex
+      && occurrenceIndex(span.dataset.occurrence) === wanted
+  );
   if (existing) return existing;
-  const span = wrapWord(root, word);
-  if (span) span.dataset.w = word;
+  const span = wrapWord(root, word, wanted);
+  if (span) {
+    span.dataset.w = word;
+    span.dataset.lex = lex;
+    span.dataset.occurrence = String(wanted);
+  }
   return span;
 }
 
@@ -628,14 +898,34 @@ function getOrWrap(root, word) {
 // gutter lane whose occupied span it does not intersect, so brackets
 // share lanes when they can and step outward only when they must.
 
-function wrapWord(root, word) {
+function wrapWord(root, word, occurrence = 0) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  const re = new RegExp(`(?<![A-Za-z])${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z])`, 'i');
+  const source = `(?<![A-Za-z])${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z])`;
+  const re = new RegExp(source, 'gi');
+  const countedSwords = new Set();
+  let seen = 0;
   let node;
   while ((node = walker.nextNode())) {
-    if (node.parentElement.closest('.sword, sup, .verses-ref')) continue;
-    const m = re.exec(node.textContent);
-    if (!m) continue;
+    const parent = node.parentElement;
+    if (!parent || parent.closest('sup, .verses-ref, svg')) continue;
+    const sword = parent.closest('.sword');
+    if (sword) {
+      if (!countedSwords.has(sword)) {
+        countedSwords.add(sword);
+        if ((sword.dataset.lex || normalize(sword.dataset.w || sword.textContent)) === normalize(word)) {
+          if (seen === occurrence) return sword;
+          seen += 1;
+        }
+      }
+      continue;
+    }
+    re.lastIndex = 0;
+    const matches = [...node.textContent.matchAll(re)];
+    if (seen + matches.length <= occurrence) {
+      seen += matches.length;
+      continue;
+    }
+    const m = matches[occurrence - seen];
     const hit = node.splitText(m.index);
     hit.splitText(m[0].length);
     const span = document.createElement('span');
@@ -650,7 +940,9 @@ function wrapWord(root, word) {
 function drawMark(mark) {
   const q = TH().querySelector('.verses');
   if (!q?.classList.contains('has')) return;
-  const spans = mark.words.map((w) => getOrWrap(q, w)).filter(Boolean);
+  const spans = mark.words.map((w, index) =>
+    getOrWrap(q, w, mark.wordTimes?.[index]?.occurrence ?? mark.occurrences?.[index] ?? 0)
+  ).filter(Boolean);
   if (spans.length < 2) return;
 
   const NS = 'http://www.w3.org/2000/svg';
@@ -677,7 +969,8 @@ function drawMark(mark) {
   let laneIndex = lanes.findIndex((occupied) => occupied.every(([y1, y2]) => span[1] < y1 || span[0] > y2));
   if (laneIndex === -1) { laneIndex = lanes.length; lanes.push([]); }
   lanes[laneIndex].push(span);
-  const lane = -14 - laneIndex * 11;
+  const gutter = Number.parseFloat(getComputedStyle(q).paddingLeft) || 64;
+  const lane = Math.max(8, gutter - 24 - laneIndex * 11);
 
 
   const g = document.createElementNS(NS, 'g');
@@ -695,14 +988,23 @@ function drawMark(mark) {
      through another group's slotted label because the two systems never
      spoke. */
   svg._labelSlots = svg._labelSlots || [];
+  const narrow = window.innerWidth < 900;
+  const labelExtent = narrow && mark.label ? Math.min(72, Math.max(18, mark.label.length * 5.2)) : 16;
+  const labelX = narrow ? lane - 5 : Math.max(8, gutter - 14);
   const slotForY = (wantY) => {
-    let y = wantY;
+    const half = labelExtent / 2;
+    const low = half + 2;
+    const high = Math.max(low, q.clientHeight - half - 2);
+    const base = Math.max(low, Math.min(high, wantY));
+    let y = base;
     let step = 0;
-    while (svg._labelSlots.some((v) => Math.abs(v - y) < 16)) {
+    while (svg._labelSlots.some((slot) =>
+      Math.abs(slot.x - labelX) < 10 && y + half > slot.y1 && y - half < slot.y2
+    ) && step < 16) {
       step += 1;
-      y = wantY + (step % 2 ? 1 : -1) * Math.ceil(step / 2) * 15;
+      y = Math.max(low, Math.min(high, base + (step % 2 ? 1 : -1) * Math.ceil(step / 2) * (labelExtent + 4)));
     }
-    svg._labelSlots.push(y);
+    svg._labelSlots.push({ x: labelX, y1: y - half, y2: y + half });
     return y;
   };
   const midY = (first.y + last.y) / 2;
@@ -736,18 +1038,22 @@ function drawMark(mark) {
        it mattered. Rotation survives only as the narrow-viewport fallback,
        where the left margin cannot hold a word. */
     const label = document.createElementNS(NS, 'text');
-    if (window.innerWidth >= 900) {
+    if (!narrow) {
       /* One ledger column for every label, outside the deepest common
          lanes — per-lane alignment scattered stacked labels diagonally
          into each other's dashes. */
-      label.setAttribute('x', Math.min(lane, -25) - 10);
+      label.setAttribute('x', labelX);
       label.setAttribute('y', labelY);
       label.setAttribute('text-anchor', 'end');
     } else {
-      label.setAttribute('x', lane - 5);
+      label.setAttribute('x', labelX);
       label.setAttribute('y', labelY);
       label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('transform', `rotate(-90 ${lane - 5} ${labelY})`);
+      label.setAttribute('transform', `rotate(-90 ${labelX} ${labelY})`);
+      if (mark.label.length > 13) {
+        label.setAttribute('textLength', String(labelExtent));
+        label.setAttribute('lengthAdjust', 'spacingAndGlyphs');
+      }
     }
     label.textContent = mark.label;
     g.appendChild(label);
@@ -755,12 +1061,15 @@ function drawMark(mark) {
   const len = path.getTotalLength();
   path.style.strokeDasharray = String(len);
   path.style.strokeDashoffset = String(len);
-  requestAnimationFrame(() => { path.style.strokeDashoffset = '0'; });
+  if (reducedMotion.matches) path.style.strokeDashoffset = '0';
+  else requestAnimationFrame(() => { path.style.strokeDashoffset = '0'; });
 }
 
 /* The fallback layer when the director has no scenes: the plan's stage
    direction, or the passage the why cites. */
 function fallbackVerse(step, index) {
+  const owner = current;
+  if (!owner) return;
   const dirRef = stageDirections[index]?.verse;
   const m = dirRef
     ? String(dirRef).match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3})(?::(\d{1,3})(?:\s*[–-]\s*(\d{1,3}))?)?$/)
@@ -768,16 +1077,18 @@ function fallbackVerse(step, index) {
   if (!m) return;
   const from = m[3] ? Number(m[3]) : 1;
   const to = m[4] ? Math.min(Number(m[4]), from + 5) : (m[3] ? from : 4);
-  fetch(`/api/passage?book=${encodeURIComponent(m[1])}&chapter=${m[2]}&from=${from}&to=${to}`)
+  fetch(`/api/passage?book=${encodeURIComponent(m[1])}&chapter=${m[2]}&from=${from}&to=${to}`, {
+    signal: owner.controller.signal,
+  })
     .then((r) => r.json())
     .then((p) => {
-      if (p.error || !p.verses?.length || !current || current.index !== index || current.scenes) return;
+      if (p.error || !p.verses?.length || current !== owner || owner.index !== index || owner.scenes) return;
       const q = TH().querySelector('.verses');
-      q.innerHTML = p.verses.map((v) => `<sup>${v.verse}</sup>${markRelevant(v.text, current.phrases)}`).join(' ')
+      q.innerHTML = p.verses.map((v) => `<sup>${v.verse}</sup>${markRelevant(v.text, owner.phrases)}`).join(' ')
         + `<span class="verses-ref">${escapeHtml(`${p.bookName} ${p.chapter}:${from}${to > from ? '–' + to : ''}`)}</span>`;
       q.classList.add('has');
     })
-    .catch(() => {});
+    .catch((error) => { if (error?.name !== 'AbortError') { /* quiet fallback */ } });
 }
 
 function cueMarks(segText) {
@@ -831,26 +1142,68 @@ let playCounter = 0;
 
 let pendingPlay = null;
 
+function cancelPendingPlay() {
+  if (!pendingPlay) return;
+  pendingPlay.button.classList.remove('waiting');
+  pendingPlay.button.removeAttribute('aria-busy');
+  pendingPlay = null;
+}
+
 function toggleStep(li, step, index) {
-  if (pendingPlay === index) { pendingPlay = null; li.querySelector('.play').classList.remove('waiting'); return; }
+  const key = keyForStep(step);
+  if (pendingPlay?.key === key) { cancelPendingPlay(); return; }
   if (current && current.li === li) { stopAudio(); return; }
-  stopAudio();
+  cancelPendingPlay();
+  stopAudio({ restoreFocus: false });
   if (!step.audioUrl) { honestNote(li, 'This publisher keeps its audio on its own site.'); return; }
   /* The stage never opens undirected: if this step's directions are still
      on their way (rare — they prefetch while the intro is read), the press
      waits for them, the button breathing quietly instead of spinning. */
-  if (!directorCache[index]) {
-    pendingPlay = index;
-    li.querySelector('.play').classList.add('waiting');
-    fetchDirector(step, index).then(() => {
-      li.querySelector('.play').classList.remove('waiting');
-      if (pendingPlay !== index) return;
-      pendingPlay = null;
-      toggleStep(li, step, index);
+  const entry = directorEntry(step);
+  if (!entry || entry.status !== 'resolved') {
+    const button = li.querySelector('.play');
+    const intent = { key, li, button, run: activeRun };
+    pendingPlay = intent;
+    button.classList.add('waiting');
+    button.setAttribute('aria-busy', 'true');
+    fetchDirector(step, index, activeRun).then((direction) => {
+      if (pendingPlay !== intent || !runIsActive(intent.run)) return;
+      cancelPendingPlay();
+      startStepPlayback(li, step, index, direction);
+    }).catch((error) => {
+      if (pendingPlay === intent) cancelPendingPlay();
+      if (error?.name !== 'AbortError') honestNote(li, 'The stage directions could not be opened.');
     });
     return;
   }
-  current = { li, step, index, segments: null, phrases: quotedPhrases(step.why), capKey: null, scenes: null, timeline: null, fired: 0, sceneIdx: -1, playToken: ++playCounter };
+  startStepPlayback(li, step, index, entry.value);
+}
+
+function startStepPlayback(li, step, index, direction) {
+  if (!activeRun || !runIsActive(activeRun)) return;
+  const playButton = li.querySelector('.play');
+  current = {
+    li, step, index,
+    run: activeRun,
+    controller: new AbortController(),
+    timers: new Set(),
+    segments: null,
+    phrases: quotedPhrases(step.why),
+    capKey: null,
+    scenes: null,
+    timeline: null,
+    fired: 0,
+    sceneIdx: -1,
+    sceneGeneration: 0,
+    seekGeneration: 0,
+    sceneReady: false,
+    mountedScene: null,
+    eventQueue: [],
+    rebuilding: false,
+    playToken: ++playCounter,
+    returnFocus: playButton,
+  };
+  const owner = current;
   li.classList.add('playing');
 
   const th = TH();
@@ -861,15 +1214,27 @@ function toggleStep(li, step, index) {
   th.querySelector('.verses').innerHTML = '';
   th.querySelector('.big-quote').classList.remove('show');
   th.querySelector('.caption').classList.remove('show');
+  th.querySelector('.th-body').classList.remove('turning', 'spot', 'bare');
+  th.querySelector('.th-body').setAttribute('aria-busy', 'false');
   for (const sel of TH_BOXES) th.querySelector(sel).innerHTML = '';
-  th.querySelector('.th-progress i').style.width = '0%';
+  updateProgress(step.startSec);
   th.classList.add('on');
+  th.setAttribute('aria-hidden', 'false');
+  $('#main').inert = true;
+  $('#main').setAttribute('aria-hidden', 'true');
   document.body.classList.add('in-theater');
+  nextFrame(() => { if (current === owner) $('#th-stop').focus({ preventScroll: true }); });
 
   player.src = step.audioUrl;
   player.currentTime = step.startSec;
   player.volume = 0;
-  player.play().then(() => fadeTo(1, 420)).catch(() => {
+  beginDirection(li, index, direction);
+  if (!owner.scenes) fallbackVerse(step, index);
+
+  player.play().then(() => {
+    if (current === owner) fadeTo(1, 420);
+  }).catch(() => {
+    if (current !== owner) return;
     honestNote(li, 'This publisher asks you to listen on their own site — the tour will still be here.');
     stopAudio();
   });
@@ -877,30 +1242,29 @@ function toggleStep(li, step, index) {
   const w = whispers[index];
   if (w) {
     th.querySelector('.th-whisper').textContent = w;
-    setTimeout(() => th.querySelector('.th-whisper').classList.add('show'), 700);
+    playDelay(owner, () => th.querySelector('.th-whisper').classList.add('show'), motionMs(700));
   }
 
-  fetch(`/api/window?recordId=${encodeURIComponent(step.recordId)}&from=${step.startSec}&to=${step.endSec}`)
+  fetch(`/api/window?recordId=${encodeURIComponent(step.recordId)}&from=${step.startSec}&to=${step.endSec}`, {
+    signal: owner.controller.signal,
+  })
     .then((r) => r.json())
-    .then((d) => { if (current && current.li === li && Array.isArray(d.segments)) current.segments = d.segments; })
-    .catch(() => {});
-
-  fetchDirector(step, index).then((d) => beginDirection(li, index, d.scenes));
-  fallbackVerse(step, index);
+    .then((d) => { if (current === owner && Array.isArray(d.segments)) owner.segments = d.segments; })
+    .catch((error) => { if (error?.name !== 'AbortError') { /* captions are optional */ } });
 
   player.ontimeupdate = () => {
-    if (!current) return;
+    if (current !== owner) return;
     const t = player.currentTime;
     updateCaption(t);
     const frac = (t - step.startSec) / (step.endSec - step.startSec);
-    th.querySelector('.th-progress i').style.width = `${Math.max(0, Math.min(100, frac * 100))}%`;
-    if (current.timeline) {
+    updateProgress(t);
+    if (owner.timeline && !owner.rebuilding) {
       /* The schedule, resolved server-side, simply plays out. */
       const rel = t - step.startSec;
-      while (current.fired < current.timeline.length && current.timeline[current.fired].at <= rel) {
-        renderEvent(current.timeline[current.fired]);
-        current.fired += 1;
-        if (!current) return;
+      while (owner.fired < owner.timeline.length && owner.timeline[owner.fired].at <= rel) {
+        renderEvent(owner.timeline[owner.fired]);
+        owner.fired += 1;
+        if (current !== owner) return;
       }
     } else if (frac > 0.7) {
       const dir = stageDirections[index];
@@ -909,7 +1273,7 @@ function toggleStep(li, step, index) {
       }
     }
     const remaining = step.endSec - t;
-    if (remaining <= 0.9 && !current.fading) { current.fading = true; fadeTo(0, 800); }
+    if (remaining <= 0.9 && !owner.fading) { owner.fading = true; fadeTo(0, 800); }
     if (remaining <= 0) stopAudio();
   };
 }

@@ -22388,8 +22388,16 @@ button.lang-phrase-diagram-node:focus-visible,
      lockup's own 29px gutter and trimmed to the emblem's alpha bounds: 63:82,
      an open book with a cross over it, drawn at 37px on the shelf where the
      lockup gave it about four. */
-  --resource-symbol: url("./assets/brand/spoken-gospel-emblem-white.png");
-  --resource-symbol-ratio: 0.768;
+  /* ── GOLD, WHICH IS WHAT THEY ACTUALLY ARE · 2026-08-02 ─────────────────
+     The emblem shipped reversed to white, cut from their one-ink lockup. Their
+     cover — the artwork this show is known by — sets the wordmark and the
+     emblem in GOLD LEAF on navy, and the maintainer was right that the white
+     reverse is not what they would choose. So the emblem is lifted out of the
+     cover's own bottom-left corner and traced: #EAD36E is the mean of the leaf
+     rather than a gold picked by us, and on their navy it measures 9.35:1.
+     Nothing redrawn. */
+  --resource-symbol: url("./assets/brand/spoken-gospel-emblem-gold.svg");
+  --resource-symbol-ratio: 0.888;
 }
 
 /* The five read from public feeds. AMENDED 2026-07-30 (second pass, the brand
@@ -22576,8 +22584,20 @@ button.lang-phrase-diagram-node:focus-visible,
      was would say Ligonier and stop, so the masthead still sets the show's
      name beside it. The shelf and the card draw no names at all now, so there
      is nothing for the tree to stand instead of. */
-  --resource-symbol: url("./assets/brand/ligonier-tree-white.svg");
-  --resource-symbol-ratio: 1;
+  /* ── THE SHOW, NOT ITS PUBLISHER · 2026-08-02 ───────────────────────────
+     This was Ligonier's tree, and the inventory already said what was wrong
+     with it: "a device is not a smaller mark; Ligonier's tree identifies the
+     PUBLISHER of a show, not the show". That was tolerable while the device
+     sat BESIDE the title and left it standing. On a square shelf the mark is
+     alone in its cell with no title beside it, so the tree simply says
+     Ligonier and stops — which is the maintainer's objection exactly.
+
+     Their cover's own display numeral takes its place, traced from the
+     artwork. It also makes a family that was always implied and never drawn:
+     5, 30 and 40 Minutes now each wear their own numeral. White on their
+     ground measures 6.35:1. */
+  --resource-symbol: url("./assets/brand/five-minutes-numeral-white.svg");
+  --resource-symbol-ratio: 0.548;
 }
 
 /* Ask N.T. Wright Anything — Premier Unbelievable?, whose identity is exactly
