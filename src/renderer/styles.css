@@ -22293,7 +22293,13 @@ button.lang-phrase-diagram-node:focus-visible,
      the artwork's own paper rather than sampled from an export's backdrop
      (#AE9B70, which may well be 1517's). Replace it the moment the show
      publishes a real value. */
-  --resource-source: #ece2d0;
+  /* AMENDED 2026-08-02. The paragraph above declines to sample this show's
+     cover backdrop because it might be 1517's rather than the show's. Its
+     sibling's cover settles it: 30 Minutes carries #ee492b and this one
+     carries #b2a070, and a network colour cannot be two colours. The invented
+     cream retires for the show's own ground; the ink below — which the note
+     says turns over with the ground — measures 5.88:1 on it. */
+  --resource-source: #b2a070;
   --resource-mark-ratio: 1.051;
   /* The emblem alone, not the full lockup: the kit's blackletter "MINUTES IN
      THE OLD TESTAMENT" is unreadable under about 40px, and a wordmark nobody
@@ -22357,17 +22363,36 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-card-band[data-source="thirty-minutes-nt"],
 .podcast-dock[data-source="thirty-minutes-nt"],
 .taught-here-plate[data-source="thirty-minutes-nt"] {
-  --resource-source: #ece2d0;
+  /* THE SHOW'S OWN GROUND, not ours — amended within the day, 2026-08-02.
+     This block shipped #ece2d0, which is 40's INVENTED warm field, and the
+     note on 40 explains why it had to be invented: its cover's backdrop "may
+     well be 1517's" network colour rather than the show's, so sampling it
+     would have claimed a value nobody published.
+
+     PUTTING THE TWO COVERS SIDE BY SIDE ANSWERS THAT. 30's ground is #ee492b
+     and 40's is #b2a070 — a red and a khaki. A network colour would be the
+     SAME on both; two different ones are two shows' own. The caution was
+     right to hold until there was evidence, and this is the evidence.
+
+     So each sibling wears its own cover's ground, and the family is drawn the
+     way the covers themselves draw it: one construction, one charcoal
+     numeral, and a halo tone-on-tone just off the ground. */
+  --resource-source: #ee492b;
   --resource-mark-ratio: 1.014;
   --resource-device: url("./assets/brand/thirty-minutes-emblem.svg");
   --resource-symbol: url("./assets/brand/thirty-minutes-emblem.svg");
   --resource-symbol-ratio: 1.014;
-  --resource-ink: #392524;
+  /* #392524 is the artwork's own charcoal and measures 3.84:1 on this red —
+     enough for a MARK, which is held to 3, and short for TYPE, which is held
+     to 4.5. Law 6's remedy is to hold hue and chroma and move lightness only.
+     This is that charcoal at 65% lightness: 4.60:1, the same margin the app's
+     own tertiary ink carries on paper. */
+  --resource-ink: #251817;
   --resource-accent: #B53D2C;
-  --resource-ink-soft: rgb(57 37 36 / 0.76);
-  --resource-line: rgb(57 37 36 / 0.3);
-  --resource-pill-bg: #392524;
-  --resource-pill-ink: #ece2d0;
+  --resource-ink-soft: rgb(37 24 23 / 0.76);
+  --resource-line: rgb(37 24 23 / 0.3);
+  --resource-pill-bg: #251817;
+  --resource-pill-ink: #ffe9e3;
 }
 
 /* 5 Minutes in Church History — Ligonier, whose device is the tree. Both
