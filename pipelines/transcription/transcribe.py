@@ -183,10 +183,24 @@ def fetch(episode: dict) -> dict:
     request = urllib.request.Request(
         episode["audioUrl"], headers={"User-Agent": "scripture-app/transcription"}
     )
-    with urllib.request.urlopen(request, timeout=300) as response:
-        staging.write_bytes(response.read())
-
-    size = staging.stat().st_size
+    # read() returns a SHORT body without raising when the CDN closes the
+    # connection early — fireside did exactly that on 56 of BEMA's 514, and
+    # the truncated files committed as finished because only emptiness was
+    # checked. Verify against Content-Length and retry the whole transfer;
+    # a partial download must never reach the volume.
+    size = 0
+    for attempt in range(4):
+        with urllib.request.urlopen(request, timeout=300) as response:
+            stated = response.headers.get("Content-Length")
+            body = response.read()
+        staging.write_bytes(body)
+        size = staging.stat().st_size
+        if size > 0 and (stated is None or size == int(stated)):
+            break
+        if attempt == 3:
+            raise RuntimeError(
+                f"short download for {episode['id']}: {size} of {stated} bytes after 4 attempts"
+            )
     if size == 0:
         raise RuntimeError(f"empty download for {episode['id']}")
 
