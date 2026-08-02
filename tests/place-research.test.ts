@@ -234,15 +234,31 @@ test("place map construction remains pure core TypeScript", () => {
  * chooses, so a publisher's CDN learns that this reader opened Listen. Audio
  * has always cost that too, but only on a press.
  *
- * So the contract becomes an ALLOWLIST rather than a prohibition: the seven
- * hosts these publishers serve covers from, and nothing else. A wildcard, or
- * a host nobody reviewed, fails here — which is the same shape the media-src
- * policy has always had, and the same shape ALLOWED_RESEARCH_LINK_HOSTS has.
+ * So the contract becomes an ALLOWLIST rather than a prohibition: the hosts
+ * these publishers serve covers from, and nothing else. A wildcard, or a host
+ * nobody reviewed, fails here — which is the same shape the media-src policy
+ * has always had, and the same shape ALLOWED_RESEARCH_LINK_HOSTS has.
+ *
+ * TWO MORE · 2026-08-02, and the door was opened by the maintainer again rather
+ * than by a commit. BibleProject and Naked Bible reached the Listen room once
+ * their episode catalogues existed, and until this they wore branded plates
+ * because their CDNs were named nowhere. Both cover URLs come out of the
+ * publishers' own feeds, which is the provenance every host above it has.
+ *
+ * The cost is the one already stated rather than a new one — and
+ * `nakedbiblepodcast.com` is barely a widening at all: it is already in
+ * `media-src`, so it hears the press regardless. What changes is that it now
+ * also hears the draw.
+ *
+ * The point of this is that it is a LIST. Growing it is allowed and routine;
+ * growing it SILENTLY is not, which is why every host is named here rather
+ * than counted.
  */
 test("renderer permits packaged entity media and only reviewed image hosts", () => {
   const reviewed = [
     "cdn.prod.website-files.com", "megaphone.imgix.net", "static.libsyn.com",
     "pbcdn1.podbean.com", "media24.fireside.fm", "*.fireside.fm", "substackcdn.com",
+    "image.simplecastcdn.com", "nakedbiblepodcast.com",
   ];
   for (const relativePath of ["src/renderer/index.html", "scripts/build-renderer.mjs"]) {
     const html = readFileSync(resolve(root, relativePath), "utf8");

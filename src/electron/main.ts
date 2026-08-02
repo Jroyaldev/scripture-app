@@ -612,15 +612,27 @@ function normalizeLastRead(value: unknown): AppSettingsSchema["lastRead"] {
 /**
  * The image hosts a stored cover may name.
  *
- * The SAME seven the shipped CSP permits, restated here because these two
+ * The SAME hosts the shipped CSP permits, restated here because these two
  * gates guard different doors: the CSP stops the renderer fetching from
  * anywhere else, and this stops an unreviewed URL ever reaching a settings
  * file that the renderer will later hand to an `<img src>`. A value that has
  * been on disk is not a value this process wrote.
+ *
+ * WIDENED BY TWO · 2026-08-02, on the maintainer's word, for BibleProject and
+ * Naked Bible — two publishers whose catalogues the room could finally list and
+ * who were wearing branded plates because their CDNs were not named anywhere.
+ * Both URLs come from the publishers' own feeds, which is where every other
+ * host in this list came from.
+ *
+ * The cost is the one already written against this list rather than a new one:
+ * a cover is fetched when the room DRAWS, so these two now learn that a reader
+ * opened Listen. `nakedbiblepodcast.com` is not even a widening in practice —
+ * it is already in `media-src`, so it hears the audio press regardless.
  */
 const HEARD_ART_HOSTS = new Set([
   "cdn.prod.website-files.com", "megaphone.imgix.net", "static.libsyn.com",
   "pbcdn1.podbean.com", "media24.fireside.fm", "substackcdn.com",
+  "image.simplecastcdn.com", "nakedbiblepodcast.com",
 ]);
 
 function reviewedArt(value: unknown): string | null {

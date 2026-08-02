@@ -903,10 +903,19 @@ gate(onboarded.names.some((n) => /BibleProject/i.test(n ?? ""))
   "the two shows with cards but no catalogue are in the room",
   `${onboarded.count} series`);
 
-/* Their manifests carry no cover, and the shelf has always drawn a publisher's
-   own mark on their own colour for that case — while the HERO, the same object
-   four times the size, drew an empty square. Nobody saw it because until now
-   every source in the room happened to have art. */
+/* RESTATED once these two got covers. This block asserted that BibleProject wore
+   a branded PLATE — a publisher's mark on their own colour — because its
+   manifest carried no artwork, and that the hero's plate was scaled for its own
+   box rather than reusing the card's 22px clamp. Both were true and both are now
+   untestable HERE: the maintainer widened the image allowlist, so this show
+   draws its own 3000px cover and the fallback it used to demonstrate no longer
+   fires anywhere in the room.
+
+   The fallback is still real code and still worth having — it is what any future
+   publisher without art will wear — so it is asserted at the SOURCE level in the
+   contract tests, where it does not depend on a show happening to lack a cover.
+   What the room can prove today is the thing that actually changed: these two
+   shows draw the covers their own feeds name. */
 await evaluate(`(() => {
   const face = [...document.querySelectorAll('.listen-card-face')]
     .find((f) => /BibleProject/i.test(f.querySelector('.listen-card-name')?.textContent || ''));
@@ -914,29 +923,32 @@ await evaluate(`(() => {
   return true;
 })()`);
 await waitFor(`!!document.querySelector('.listen-hero-name')`, "the onboarded show's page");
-const plate = await evaluate(`(() => {
-  const p = document.querySelector('.listen-hero .listen-card-plate');
-  const mark = document.querySelector('.listen-hero .taught-here-mark');
-  const box = document.querySelector('.listen-hero .listen-cover')?.getBoundingClientRect();
+const dressed = await evaluate(`(() => {
+  const img = document.querySelector('.listen-hero .listen-cover img');
   const said = [...document.querySelectorAll('.listen-track-said')].map((s) => s.textContent);
   return {
-    ground: p ? getComputedStyle(p).backgroundColor : null,
-    marked: mark ? /url\\(/.test(getComputedStyle(mark).backgroundImage) : false,
-    markHeight: mark ? Math.round(mark.getBoundingClientRect().height) : 0,
-    box: box ? Math.round(box.width) : 0,
+    name: document.querySelector('.listen-hero-name')?.textContent ?? null,
+    loaded: img ? (img.complete && img.naturalWidth > 0) : false,
+    width: img?.naturalWidth ?? 0,
+    host: img ? new URL(img.currentSrc || img.src).hostname : null,
+    /* The plate must be GONE, not merely covered — a cover drawn over a plate
+       would mean two faces stacked in one square. */
+    plate: !!document.querySelector('.listen-hero .listen-card-plate'),
+    tint: getComputedStyle(document.querySelector('.listen')).getPropertyValue('--record-tint').trim(),
     rows: document.querySelectorAll('.listen-track').length,
     said: said.length,
     sample: said[0] ?? null,
   };
 })()`);
-gate(plate.ground !== null && plate.ground !== "rgba(0, 0, 0, 0)",
-  "a show with no cover wears its own colour", plate.ground);
-gate(plate.marked, "under its own mark");
-/* The optical scale is re-derived for the hero's box rather than reused: the
-   card's clamp caps at 22px, which is a mark alone in a 250px square. */
-gate(plate.markHeight > 40, "at a size derived for this box",
-  `${plate.markHeight}px in ${plate.box}px`);
-await shot("onboarded-series-plate");
+gate(dressed.loaded && dressed.width > 1000,
+  "an onboarded show draws the cover its own feed names",
+  `${dressed.name} — ${dressed.width}px from ${dressed.host}`);
+gate(!dressed.plate, "and the plate stands down rather than stacking beneath it");
+/* The page takes its colour from the cover, computed at author time by the same
+   median-cut pass every other series tint came through. */
+gate(/^#[0-9a-f]{6}$/i.test(dressed.tint), "and the page wears that record's colour",
+  dressed.tint);
+await shot("onboarded-series-cover");
 
 /* ── The publisher's own line ─────────────────────────────────────────────── */
 await evaluate(`document.querySelector('.listen-back').click()`);

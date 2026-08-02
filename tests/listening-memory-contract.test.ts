@@ -247,6 +247,36 @@ test("a playlist fills the queue and is never a machine of its own", () => {
   assert.ok(!/startPodcastQueue\(|playPodcastEpisode\(/.test(store));
 });
 
+test("the plate fallback survives having no live example", () => {
+  /* THE HAZARD THIS EXISTS FOR. The hero draws a publisher's own mark on their
+     own colour when a source carries no cover art, and the room's tour used to
+     prove it against BibleProject — the one show that had none. Then the
+     maintainer widened the image allowlist, BibleProject got its cover, and the
+     fallback stopped being reachable from any page the tour can visit.
+     Unreachable is not the same as unneeded: it is what the NEXT publisher
+     without artwork will wear, and code that nothing exercises is code that
+     quietly rots until somebody deletes it as dead.
+     So the branch is pinned here instead, where it does not depend on a show
+     happening to lack a cover. */
+  const room = code("src/renderer/components/ListenPage.tsx");
+  assert.match(room, /plate\?: string;/, "the hero must still accept a plate");
+  assert.match(room, /listen-card-plate/, "and still draw one when there is no art");
+  /* Passed by the series page, which is the surface that can meet a publisher
+     the packaged art files do not cover. */
+  assert.match(room, /plate=\{openedSeries\.id\}/);
+
+  /* And the tokens it draws with. `.listen-card-plate` was absent from every
+     brand-token selector group until the two onboarded shows exposed it, so the
+     plate resolved `--resource-source` to nothing and painted an empty square on
+     both the shelf and the hero. */
+  const css = read("src/renderer/styles.css");
+  const groups = css.match(/\.listen-card-plate\[data-source="[a-z0-9-]+"\],/g) ?? [];
+  assert.ok(
+    groups.length >= 13,
+    `the plate must be in every publisher's token group — found ${groups.length}`,
+  );
+});
+
 test("one shaper builds episode identities, not two", () => {
   /* A track's id is what every surface matches on. Two shapers drifting by a
      character means a resumed album plays while the room shows nothing
