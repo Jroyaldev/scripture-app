@@ -1,0 +1,401 @@
+{
+  "runId": "2026-08-02T05-16-29-126-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-02T05:16:29.128Z",
+  "promptId": null,
+  "prompt": "rabbinic interpretations in matthew",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "~deepseek/deepseek-v4-flash-latest",
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Rabbinic Interpretation in Matthew: Torah, Debate, and Authority",
+    "intro": "This tour treats “rabbinic interpretations in Matthew” as a question about how Matthew presents Jewish teachers, Torah, inherited traditions, and Jesus’ own interpretive authority. It begins with the Pharisees’ interpretive world, then listens to Jesus’ reading of Torah in the Sermon on the Mount, moves into the concrete Hillel–Shammai divorce debate, and ends with Matthew’s critique of burdensome religious authority. The episodes also model an important historical caution: later rabbinic writings preserve memories of earlier debates, but they are not simply transcripts from Jesus’ lifetime.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:94a67c24-com-94a80db6-43bd-3da1-b632-4b33a8cba064",
+        "startSec": 609,
+        "endSec": 812,
+        "why": "Start here for the social and interpretive setting behind Matthew’s Pharisees. The speaker explains that the Pharisees combined “Torah and tradition,” treating tradition as “the interpretations and applications of God’s law,” and describes their goal as building “a fence around the law.” That gives you a working definition of rabbinic-style interpretation before turning to Matthew’s portrayal of Jesus.",
+        "episodeTitle": "The World of Jesus",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/mb88ep/world_of_Jesus7079l.mp3",
+        "durationSec": 1263,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:matthew-p6-jesus-torah",
+        "startSec": 1692,
+        "endSec": 1990,
+        "why": "This is the central lens for Matthew 5:17–48. The speaker says Jesus is “fulfilling the Torah,” not merely obeying rules, and then works through “You shall not murder” and “You shall not commit adultery.” The key claim is that Jesus “is not contradicting the law” but addresses its intent and “the real issues of the human heart.” Listen for how Matthew presents Jesus as an authoritative interpreter within, and simultaneously beyond, ordinary legal debate.",
+        "episodeTitle": "Jesus & the Torah",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/e5d85dd4-a616-4860-846c-fc4d57e11252/episodes/00268fc3-5d1d-46c1-9ec7-c00cb6c1cef0/audio/128/default.mp3?awCollectionId=e5d85dd4-a616-4860-846c-fc4d57e11252&awEpisodeId=00268fc3-5d1d-46c1-9ec7-c00cb6c1cef0",
+        "durationSec": 2996,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:how-jesus-responded-divorce-debate",
+        "startSec": 330,
+        "endSec": 590,
+        "why": "This clip grounds the idea in a specific Matthew controversy rather than leaving it abstract. The speaker says Jesus is entering “a contemporary first century controversy among Jewish Bible teachers” over Deuteronomy 24, then lays out the House of Shammai’s narrow reading and the House of Hillel’s broad “any cause” reading. It also carefully notes that the Talmud is a later collection that preserves memories of rabbis and earlier debates—an essential qualification when using rabbinic sources to illuminate Matthew.",
+        "episodeTitle": "Sermon on the Mount E13: How Jesus Responded to the Divorce Debate",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/f084312b-7b52-4c76-9166-22b06e8f6bfd/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=f084312b-7b52-4c76-9166-22b06e8f6bfd",
+        "durationSec": 2700,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:baa80c22-com-d3f36b46-2dba-3926-a8cf-64114b952d7b",
+        "startSec": 400,
+        "endSec": 700,
+        "why": "End with Matthew 23:1–12’s own critique of interpretive authority. The speaker connects Jesus’ “heavy burdens” to traditions added to Torah, explaining that these were regarded as “oral Torah” and for many “just as weighty as the words of Moses themselves.” The clip then shows Matthew’s concern with public religious performance—“they’re more interested in looking good than being good”—so the tour closes by holding together rabbinic interpretation’s protective purpose and Matthew’s warning about what it can become.",
+        "episodeTitle": "Matthew 23:1-12",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/2qtxr4ng6dtzgzwh/matthew_231-1287gcq.mp3",
+        "durationSec": 1393,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips present Matthew as engaging a living Jewish world of Torah interpretation rather than opposing Judaism to a brand-new religion. The most useful question to carry forward is not simply whether Matthew is “for” or “against” rabbinic tradition, but how it distinguishes faithful interpretation—especially attention to Torah’s purpose—from authority that piles burdens on people or turns piety into display.",
+    "totalSeconds": 1061
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2369,
+      "promptTokens": 1596,
+      "completionTokens": 142,
+      "reasoningTokens": 26,
+      "cachedPromptTokens": 0,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00028462500000000005
+    },
+    {
+      "i": 1,
+      "latencyMs": 2831,
+      "promptTokens": 7588,
+      "completionTokens": 319,
+      "reasoningTokens": 87,
+      "cachedPromptTokens": 1593,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009566300000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 2167,
+      "promptTokens": 12757,
+      "completionTokens": 272,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 7585,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008854750000000002
+    },
+    {
+      "i": 3,
+      "latencyMs": 3427,
+      "promptTokens": 20969,
+      "completionTokens": 136,
+      "reasoningTokens": 68,
+      "cachedPromptTokens": 12754,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0012359400000000003
+    },
+    {
+      "i": 4,
+      "latencyMs": 2306,
+      "promptTokens": 21882,
+      "completionTokens": 180,
+      "reasoningTokens": 131,
+      "cachedPromptTokens": 20966,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000432085
+    },
+    {
+      "i": 5,
+      "latencyMs": 8459,
+      "promptTokens": 23113,
+      "completionTokens": 941,
+      "reasoningTokens": 140,
+      "cachedPromptTokens": 21879,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009375650000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 13,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "rabbinic interpretation Matthew rabbis",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 138,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Matthew Jewish interpretation Pharisees Torah",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 181,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Jesus debate sages oral tradition Matthew",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 113,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:matthew-p6-jesus-torah"
+      },
+      "ms": 1,
+      "summary": "Jesus & the Torah (2996s)"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:matthew-p6-jesus-torah",
+        "fromSec": 600,
+        "toSec": 1500
+      },
+      "ms": 0,
+      "summary": "19 skim lines, 600s–1500s of Jesus & the Torah"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "bibleproject:podcast:how-jesus-responded-divorce-debate"
+      },
+      "ms": 1,
+      "summary": "Sermon on the Mount E13: How Jesus Responded to the Divorce Debate (2700s)"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:how-jesus-responded-divorce-debate",
+        "fromSec": 300,
+        "toSec": 1500
+      },
+      "ms": 0,
+      "summary": "25 skim lines, 300s–1500s of Sermon on the Mount E13: How Jesus Responded to the Divorce Debate"
+    },
+    {
+      "at": 1,
+      "name": "read_passage",
+      "args": {
+        "book": "Matthew",
+        "chapter": 5,
+        "fromVerse": 17,
+        "toVerse": 48
+      },
+      "ms": 0,
+      "summary": "Matthew 5:17–48 (WEB)"
+    },
+    {
+      "at": 1,
+      "name": "read_passage",
+      "args": {
+        "book": "Matthew",
+        "chapter": 23,
+        "fromVerse": 1,
+        "toVerse": 12
+      },
+      "ms": 1,
+      "summary": "Matthew 23:1–12 (WEB)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:matthew-p6-jesus-torah",
+        "fromSec": 1840,
+        "toSec": 2300
+      },
+      "ms": 0,
+      "summary": "1840s–2140s of Jesus & the Torah"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:how-jesus-responded-divorce-debate",
+        "fromSec": 330,
+        "toSec": 590
+      },
+      "ms": 0,
+      "summary": "330s–590s of Sermon on the Mount E13: How Jesus Responded to the Divorce Debate"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:how-jesus-responded-divorce-debate",
+        "fromSec": 930,
+        "toSec": 1160
+      },
+      "ms": 0,
+      "summary": "930s–1160s of Sermon on the Mount E13: How Jesus Responded to the Divorce Debate"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:baa80c22-com-d3f36b46-2dba-3926-a8cf-64114b952d7b",
+        "fromSec": 400,
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "400s–700s of Matthew 23:1-12"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Matthew 15 traditions elders Corban rabbinic",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 78,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "search_corpus",
+      "args": {
+        "query": "Matthew 23 Moses seat oral Torah rabbi",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 59,
+      "summary": "10 hits"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:94a67c24-com-94a80db6-43bd-3da1-b632-4b33a8cba064",
+        "fromSec": 600,
+        "toSec": 820
+      },
+      "ms": 0,
+      "summary": "600s–820s of The World of Jesus"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:matthew-p6-jesus-torah",
+        "fromSec": 1690,
+        "toSec": 2050
+      },
+      "ms": 0,
+      "summary": "1690s–1990s of Jesus & the Torah"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 6,
+    "toolCalls": 19,
+    "tapeSec": 1610,
+    "deniedWindows": 0,
+    "promptTokens": 87905,
+    "completionTokens": 1990,
+    "reasoningTokens": 452,
+    "cachedPromptTokens": 64777,
+    "wallMs": 22149,
+    "modelLatencyMs": 21559,
+    "toolMs": 585
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004732,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-02T05:16:51.277Z"
+}

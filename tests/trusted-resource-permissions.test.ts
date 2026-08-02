@@ -54,7 +54,12 @@ const DEVICE_SOURCES_PUBLIC_FEED = [
  * Held in its own list for exactly the reason the device list is: these two
  * publishers have still not been asked.
  */
-const MARK_SOURCES_PUBLIC_FEED = ["ask-nt-wright", "listeners-commentary"];
+/* BEMA joins them 2026-08-02, and it is the cleanest case in either list: no
+   reconstruction, no staging, no accuracy caveat. Their cover art is the
+   lockup in flat #000 on #fff, so the mark is a crop of the publisher's own
+   file inked white for a dark ground — the same treatment the Naked Bible
+   emblem and the Spoken Gospel book got, on a public-feed footing. */
+const MARK_SOURCES_PUBLIC_FEED = ["ask-nt-wright", "listeners-commentary", "bema"];
 const ALL_MARK_SOURCES = [...ALL_APPROVED_MARK_SOURCES, ...MARK_SOURCES_PUBLIC_FEED];
 
 test("reviewed manifests and cards retain the common link-only permission boundary", () => {

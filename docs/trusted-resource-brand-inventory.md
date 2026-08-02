@@ -402,3 +402,27 @@ before, on a shelf that is **shorter** — 242px for eleven publishers against
 - Enter the Bible's tile crop is the right file for any surface that ever gives
   them a ground that is not their own yellow; nothing draws it today.
 - **Nothing here is a permission.** The outreach backlog is unchanged.
+
+## BEMA Discipleship — added 2026-08-02
+
+- **Source:** the show's own cover art (`itunes:image` on their feed,
+  fireside-hosted, 3000×3000). Their lockup is set in flat `#000` on `#fff`
+  with DISCIPLESHIP knocked out of a solid bar — no gradient, no second hue,
+  no accent anywhere in their identity.
+- **What we did:** cropped the lockup band out of the cover and inked it white
+  for a dark ground. No recolouring of artwork: the white reverse is the same
+  single-ink shape their black original is, which is the treatment the Naked
+  Bible emblem and the Spoken Gospel book already carry.
+- **What we did NOT use:** the maintainer supplied a render of the same lockup
+  — dark grey letters with an embossed edge over a grey vignette — and asked
+  for it flat black. Flattening a render's lighting IS a modification of the
+  artwork, and no threshold separated the letterforms from the glow anyway;
+  every attempt returned a black blob. The publisher's own file was already
+  the flat mark the render was imitating.
+- **Ratio 2.875**, the second-widest on the shelf: the DISCIPLESHIP bar bleeds
+  the full width of their cover by design, so the mark is a wordmark with an
+  underbar rather than a squarish device. There is no separable symbol, so
+  `--resource-symbol` is the same file declared twice — the statement The
+  Gospel Coalition and Working Preacher already make.
+- **Ground `#0d0d0d`.** Their palette is two values and one of them is the
+  app's own paper; a white band on a cream card is a seam, not a publisher.

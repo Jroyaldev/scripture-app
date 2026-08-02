@@ -358,7 +358,13 @@ test("the publisher shelf is a register: quantised, one optical scale, and a fil
      because one of the two lists that had to agree did not. */
   assert.doesNotMatch(shelfPlate, /\[data-source="/,
     "the shelf's drawing rule is enumerating publishers again");
-  assert.equal((styles.match(/--resource-symbol: url\(/g) ?? []).length, 11,
+  /* 11 → 12 with BEMA, 2026-08-02. The number is the publisher count and has
+     to move with it; what the assertion guards is that it moves TOGETHER with
+     the palette — a source onboarded without a symbol draws an empty plate,
+     which is the defect the reader photographed. 30 Minutes in the New
+     Testament is onboarded and deliberately NOT counted here: it has no
+     palette block yet, and this test is what will say so when it gets one. */
+  assert.equal((styles.match(/--resource-symbol: url\(/g) ?? []).length, 12,
     "every publisher in the app declares a symbol, or the rack has a hole in it");
 
   /* ── THE PLATE LAW · RESTATED 2026-07-31 ─────────────────────────────────
@@ -612,8 +618,9 @@ test("a publisher's ink is derived for TYPE, and holds 4.5 on paper", () => {
     "the run's ink is borrowing the accent's clamp; that clamp is for paper on a mark, not a mark on paper");
 
   /* And the hook is the palette's own, so no publisher can be left off a list.
-     `.resource-source` is declared by all eleven brand blocks. */
-  assert.equal((styles.match(/^\.resource-source\[data-source="/gm) ?? []).length, 11,
+     `.resource-source` is declared by all twelve brand blocks (BEMA joined
+     2026-08-02). */
+  assert.equal((styles.match(/^\.resource-source\[data-source="/gm) ?? []).length, 12,
     "a publisher lost the palette hook the list paints from");
 
   /* qa-podcast-player measures all eleven × four atmospheres in the running

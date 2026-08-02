@@ -1,0 +1,320 @@
+{
+  "runId": "2026-08-02T05-28-41-506-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-02T05:28:41.506Z",
+  "promptId": null,
+  "prompt": "no sin worthy of death - deut 22:26",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "~deepseek/deepseek-v4-flash-latest",
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "“No sin worthy of death” in Deuteronomy 22:26",
+    "intro": "This short tour follows Deuteronomy 22:26 in its immediate setting: a betrothed woman is attacked in the open country, and the law explicitly refuses to treat her as guilty. You’ll hear the passage framed within Israel’s community laws, then hear the crucial comparison to murder, and finally get help with the ancient betrothal terminology behind the case.",
+    "steps": [
+      {
+        "recordId": "spoken-gospel:podcast:d362f57c-978c-4849-b13f-16e08c02b608",
+        "startSec": 160,
+        "endSec": 247,
+        "why": "Start here for the larger legal frame. The hosts describe these chapters as Moses “unpacking the Ten Commandments” and explain that “don’t commit adultery” expands to include “laws about rape” and “deceitful” consensual relationships. That helps you hear Deuteronomy 22:26 as part of a concern for how people are treated in community, not as an isolated rule.",
+        "episodeTitle": "Deuteronomy 22-25: Miscellaneous Laws",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG1734965801.mp3?updated=1664486113",
+        "durationSec": 3744,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:30fde043e9e643b3bb4d8c55275aa197",
+        "startSec": 785,
+        "endSec": 875,
+        "why": "This is the clearest direct treatment of the verse. The teacher distinguishes the case of a woman who “cries out, but nobody can hear her,” says “she’s innocent,” and explains that verse 26 “equates rape with murder in a sense.” In other words, “no sin worthy of death” identifies the woman as not legally culpable; the death sentence falls on the attacker.",
+        "episodeTitle": "Episode 175 (Deuteronomy 22:13-24:4)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_Min_ep_175.mp3?dest-id=245197",
+        "durationSec": 2424,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:2582",
+        "startSec": 2374,
+        "endSec": 2430,
+        "why": "Finish by hearing the legal and cultural distinction underneath the passage. The speaker contrasts the city case with the open-country case, notes that the presumption is that the woman “cried out,” and says plainly, “That’s rape.” He also explains why the text calls the betrothed woman a “neighbor’s wife”: betrothal carried legal status like marriage in that setting.",
+        "episodeTitle": "Naked Bible 289: Exodus 20 Part 3",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2019/09/NakedBible289_Exodus20_Part3.mp3",
+        "durationSec": 4791,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips make the sentence’s force clear: Deuteronomy 22:26 is not saying the assault is morally insignificant. It is saying that the woman has committed no capital offense and must not be punished as though she consented; the text compares the attacker’s violence to murder and assigns guilt to him.",
+    "totalSeconds": 233
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 1892,
+      "promptTokens": 1600,
+      "completionTokens": 194,
+      "reasoningTokens": 16,
+      "cachedPromptTokens": 1574,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00013531500000000003
+    },
+    {
+      "i": 1,
+      "latencyMs": 2714,
+      "promptTokens": 8069,
+      "completionTokens": 291,
+      "reasoningTokens": 84,
+      "cachedPromptTokens": 1597,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0009994950000000002
+    },
+    {
+      "i": 2,
+      "latencyMs": 2236,
+      "promptTokens": 10414,
+      "completionTokens": 238,
+      "reasoningTokens": 36,
+      "cachedPromptTokens": 8066,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000516885
+    },
+    {
+      "i": 3,
+      "latencyMs": 6119,
+      "promptTokens": 13291,
+      "completionTokens": 682,
+      "reasoningTokens": 140,
+      "cachedPromptTokens": 10411,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0008732350000000001
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Deuteronomy",
+        "chapter": 22,
+        "verse": 26,
+        "limit": 25
+      },
+      "ms": 0,
+      "summary": "2 of 22 moments"
+    },
+    {
+      "at": 0,
+      "name": "read_passage",
+      "args": {
+        "book": "Deuteronomy",
+        "chapter": 22,
+        "fromVerse": 23,
+        "toVerse": 30
+      },
+      "ms": 0,
+      "summary": "Deuteronomy 22:23–30 (WEB)"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "no sin worthy of death innocent woman Deuteronomy 22",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 124,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "rape adultery betrothed virgin field cries out",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 107,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Deuteronomy twenty two verse twenty six",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 98,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:30fde043e9e643b3bb4d8c55275aa197",
+        "fromSec": 600,
+        "toSec": 1200
+      },
+      "ms": 0,
+      "summary": "12 skim lines, 600s–1200s of Episode 175 (Deuteronomy 22:13-24:4)"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:2582",
+        "fromSec": 2200,
+        "toSec": 2700
+      },
+      "ms": 0,
+      "summary": "10 skim lines, 2200s–2700s of Naked Bible 289: Exodus 20 Part 3"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:2598",
+        "fromSec": 2150,
+        "toSec": 2750
+      },
+      "ms": 0,
+      "summary": "13 skim lines, 2150s–2750s of Naked Bible 291: Exodus 21-23 Part 2"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d362f57c-978c-4849-b13f-16e08c02b608",
+        "fromSec": 0,
+        "toSec": 900
+      },
+      "ms": 0,
+      "summary": "18 skim lines, 0s–900s of Deuteronomy 22-25: Miscellaneous Laws"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:30fde043e9e643b3bb4d8c55275aa197",
+        "fromSec": 760,
+        "toSec": 875
+      },
+      "ms": 0,
+      "summary": "760s–875s of Episode 175 (Deuteronomy 22:13-24:4)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2582",
+        "fromSec": 2280,
+        "toSec": 2430
+      },
+      "ms": 0,
+      "summary": "2280s–2430s of Naked Bible 289: Exodus 20 Part 3"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2598",
+        "fromSec": 2350,
+        "toSec": 2495
+      },
+      "ms": 0,
+      "summary": "2350s–2495s of Naked Bible 291: Exodus 21-23 Part 2"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:d362f57c-978c-4849-b13f-16e08c02b608",
+        "fromSec": 160,
+        "toSec": 380
+      },
+      "ms": 0,
+      "summary": "160s–380s of Deuteronomy 22-25: Miscellaneous Laws"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 4,
+    "toolCalls": 14,
+    "tapeSec": 630,
+    "deniedWindows": 0,
+    "promptTokens": 33374,
+    "completionTokens": 1405,
+    "reasoningTokens": 276,
+    "cachedPromptTokens": 21648,
+    "wallMs": 13292,
+    "modelLatencyMs": 12961,
+    "toolMs": 329
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.002525,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-02T05:28:54.798Z"
+}

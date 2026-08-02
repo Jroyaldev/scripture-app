@@ -1,0 +1,396 @@
+{
+  "runId": "2026-08-02T05-17-04-758-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-02T05:17:04.758Z",
+  "promptId": null,
+  "prompt": "bema",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "~deepseek/deepseek-v4-flash-latest",
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Bema: the judgment seat of Christ",
+    "intro": "This short tour follows the word “bema” from its concrete setting in Corinth to Paul’s use of it for standing before Christ. It then slows down over the question many people carry with this image: should believers be terrified, and how should the coming judgment shape the way we live and evaluate one another?",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:d8385f2a-com-bcfad8fe-476f-3ecc-b521-ed40b1a28027",
+        "startSec": 1260,
+        "endSec": 1325,
+        "why": "Begin with the setting behind the word. The speaker explains that the “judgment seat is the Bama seat,” a public forum platform where the proconsul sat, and says Paul uses his Corinth experience as imagery for standing before Jesus.",
+        "episodeTitle": "Acts 18:1-22",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/crehy5/acts_181-228tb5y.mp3",
+        "durationSec": 1887,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "startSec": 1280,
+        "endSec": 1411,
+        "why": "This is the central exposition of 2 Corinthians 5:10. The speaker connects the bema to Paul’s aim “to please Jesus,” says each person will be accountable for what they have done, and argues that resurrection hope is meant to “fuel our faithfulness,” not become mere speculation.",
+        "episodeTitle": "2 Corinthians 5:1-10",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/jckmzx/2_corinthians_51-10816em.mp3",
+        "durationSec": 1584,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "radically-christian:podcast:f83c2a2e-https-radicallychristian-com-p-10344",
+        "startSec": 300,
+        "endSec": 397,
+        "why": "Now hear a pastoral response to the fear the bema can provoke. After quoting Romans 14 and 2 Corinthians 5:10, the speaker says plainly that faithful Christians “should not be afraid,” and warns that these passages are often used to scare people rather than read in context.",
+        "episodeTitle": "Appearing Before the Judgment Seat of Christ",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682164/3bfa2147-52f2-4ac0-ab0d-cca3c3057420/transcoded.mp3?post_id=148682164&relation=podcast&Expires=1785437915&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=W9Vn6cGXQ2D1wUyIqDhNGmYOH-nJ3~NDL6epL3I77kSiHX4qwYTYP5cPBslo6yXMBmUrtqWipdM32hyXHZI92pToMQ3FXNClaxMbYDw41O55-xSpIwOQFtupaDLVoWWRhC6~yMm~1LBl0w9dZptkJCtcis-PFIav-2gRax88wLJmCdweTv4YdTFWQ4A-zs58TNZZcq3xH26O7ZefTYLwXY4veyt7NOCxB-coqHhoqi5prfvDgx67n29fqOrUmB76VwbTJonavWKulOeKienlsKabkn3nAQtVZXKGFmr1-jx7HeBoovw7cgJkDIUYiTRC1r9qvYHytTUC4Fabh5u8BA__",
+        "durationSec": 2786,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:there-ever-time-judge-others",
+        "startSec": 1815,
+        "endSec": 1939,
+        "why": "Close by showing one practical consequence of the bema. The hosts connect God’s future judgment—including the disclosure of “motives of men's hearts”—with Jesus’ and Paul’s warnings not to judge a brother, while distinguishing that from appropriately evaluating harmful behavior.",
+        "episodeTitle": "Sermon on the Mount E30: Is There Ever a Time to Judge Others?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/414f5b9b-34dd-4aa8-8ef0-89952e924138/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=414f5b9b-34dd-4aa8-8ef0-89952e924138",
+        "durationSec": 2909,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips present the bema as a real accounting before Christ, grounded in the public courtroom image of Corinth, but not as a license for panic or self-appointed condemnation. The emphasis that emerges is accountable, hopeful faithfulness: aim to please Jesus, leave ultimate judgment to him, and exercise discernment without pretending to know another person’s heart.",
+    "totalSeconds": 417
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2501,
+      "promptTokens": 1591,
+      "completionTokens": 54,
+      "reasoningTokens": 38,
+      "cachedPromptTokens": 1574,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000050190000000000006
+    },
+    {
+      "i": 1,
+      "latencyMs": 4077,
+      "promptTokens": 1886,
+      "completionTokens": 167,
+      "reasoningTokens": 28,
+      "cachedPromptTokens": 1588,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000153255
+    },
+    {
+      "i": 2,
+      "latencyMs": 2558,
+      "promptTokens": 9977,
+      "completionTokens": 202,
+      "reasoningTokens": 60,
+      "cachedPromptTokens": 1883,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0011517050000000003
+    },
+    {
+      "i": 3,
+      "latencyMs": 3200,
+      "promptTokens": 12468,
+      "completionTokens": 297,
+      "reasoningTokens": 52,
+      "cachedPromptTokens": 9974,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000589615
+    },
+    {
+      "i": 4,
+      "latencyMs": 2288,
+      "promptTokens": 14288,
+      "completionTokens": 238,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 12465,
+      "toolCalls": 4,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00049525
+    },
+    {
+      "i": 5,
+      "latencyMs": 8154,
+      "promptTokens": 17382,
+      "completionTokens": 1016,
+      "reasoningTokens": 441,
+      "cachedPromptTokens": 14285,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0011395
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 1,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "bema judgment seat of Christ",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 100,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "appearing before Christ judged works rewards",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 71,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "Greek bema tribunal platform raised seat",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 52,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "2 Corinthians 5:10 Romans 14:10 judgment seat",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 59,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "2 Corinthians",
+        "chapter": 5,
+        "verse": 10,
+        "limit": 10
+      },
+      "ms": 0,
+      "summary": "10 of 143 moments"
+    },
+    {
+      "at": 2,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Acts",
+        "chapter": 18,
+        "verse": 12,
+        "limit": 10
+      },
+      "ms": 0,
+      "summary": "10 of 56 moments"
+    },
+    {
+      "at": 2,
+      "name": "read_passage",
+      "args": {
+        "book": "2 Corinthians",
+        "chapter": 5,
+        "fromVerse": 1,
+        "toVerse": 10
+      },
+      "ms": 1,
+      "summary": "2 Corinthians 5:1–10 (WEB)"
+    },
+    {
+      "at": 2,
+      "name": "read_passage",
+      "args": {
+        "book": "Romans",
+        "chapter": 14,
+        "fromVerse": 10,
+        "toVerse": 12
+      },
+      "ms": 0,
+      "summary": "Romans 14:10–12 (WEB)"
+    },
+    {
+      "at": 3,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 1170,
+        "toSec": 1584
+      },
+      "ms": 0,
+      "summary": "9 skim lines, 1170s–1584s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 3,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d8385f2a-com-bcfad8fe-476f-3ecc-b521-ed40b1a28027",
+        "fromSec": 1180,
+        "toSec": 1400
+      },
+      "ms": 0,
+      "summary": "5 skim lines, 1180s–1400s of Acts 18:1-22"
+    },
+    {
+      "at": 3,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "radically-christian:podcast:f83c2a2e-https-radicallychristian-com-p-10344",
+        "fromSec": 250,
+        "toSec": 1000
+      },
+      "ms": 0,
+      "summary": "16 skim lines, 250s–1000s of Appearing Before the Judgment Seat of Christ"
+    },
+    {
+      "at": 3,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:there-ever-time-judge-others",
+        "fromSec": 1780,
+        "toSec": 2050
+      },
+      "ms": 1,
+      "summary": "6 skim lines, 1780s–2050s of Sermon on the Mount E30: Is There Ever a Time to Judge Others?"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:7dbd0c70-com-ad14c96d-7e81-3bdd-a910-a23bb2f5b5f9",
+        "fromSec": 1260,
+        "toSec": 1510
+      },
+      "ms": 0,
+      "summary": "1260s–1510s of 2 Corinthians 5:1-10"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:d8385f2a-com-bcfad8fe-476f-3ecc-b521-ed40b1a28027",
+        "fromSec": 1240,
+        "toSec": 1325
+      },
+      "ms": 0,
+      "summary": "1240s–1325s of Acts 18:1-22"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:f83c2a2e-https-radicallychristian-com-p-10344",
+        "fromSec": 300,
+        "toSec": 500
+      },
+      "ms": 0,
+      "summary": "300s–500s of Appearing Before the Judgment Seat of Christ"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:there-ever-time-judge-others",
+        "fromSec": 1815,
+        "toSec": 1970
+      },
+      "ms": 0,
+      "summary": "1815s–1970s of Sermon on the Mount E30: Is There Ever a Time to Judge Others?"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 6,
+    "toolCalls": 18,
+    "tapeSec": 690,
+    "deniedWindows": 0,
+    "promptTokens": 57592,
+    "completionTokens": 1974,
+    "reasoningTokens": 619,
+    "cachedPromptTokens": 41769,
+    "wallMs": 23065,
+    "modelLatencyMs": 22778,
+    "toolMs": 285
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.00358,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-02T05:17:27.823Z"
+}

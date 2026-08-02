@@ -22129,6 +22129,53 @@ button.lang-phrase-diagram-node:focus-visible,
   --resource-symbol-ratio: 1.583;
 }
 
+/* ── BEMA · added 2026-08-02 ───────────────────────────────────────────────
+   A publisher whose whole palette is two values. Their cover art is the
+   lockup in pure black on pure white and nothing else — no accent, no second
+   hue, not even a grey — so the usual question (which of their colours does
+   the band wear) has only two answers, and one of them is the app's own
+   paper. White would put a near-invisible seam on a cream card and call it a
+   publisher, so the band takes the BLACK. It is half their palette rather
+   than a colour we chose, and it is the only ground their white reverse can
+   sit on.
+
+   THE MARK IS CROPPED, NOT RE-INKED. The maintainer supplied a render of the
+   lockup — dark grey letters with an embossed edge, on a grey vignette — and
+   asked for it flat black. Flattening a render's lighting is a modification
+   of a publisher's artwork, and no threshold separated the letterforms from
+   the glow anyway (every attempt returned a black blob). Their own cover art
+   is already the flat mark: pure #000 on #fff, cut at the lockup's band and
+   inked white for this ground, which is the same crop-and-reverse the Naked
+   Bible emblem and the Spoken Gospel book got.
+
+   2.875 — the widest mark on the shelf after Spoken Gospel's, because the
+   DISCIPLESHIP bar bleeds the full width of their cover by design. The
+   optical scale formula handles it: at the shelf's K it draws 23px tall
+   rather than the 33 a square symbol gets. */
+.trusted-resource-card[data-source="bema"],
+.trusted-resource-imprint[data-source="bema"],
+.resource-source[data-source="bema"],
+.resource-matrix-row[data-source="bema"],
+.resource-card[data-source="bema"],
+.resource-card-band[data-source="bema"],
+.podcast-dock[data-source="bema"],
+.taught-here-plate[data-source="bema"] {
+  --resource-source: #0d0d0d;
+  --resource-ink: #f4f4f4;
+  --resource-ink-soft: rgb(244 244 244 / 0.78);
+  --resource-line: rgb(244 244 244 / 0.3);
+  --resource-pill-bg: #f4f4f4;
+  --resource-pill-ink: #0d0d0d;
+  --resource-mark: url("./assets/brand/bema-lockup-white.png");
+  --resource-mark-height: 20px;
+  --resource-mark-ratio: 2.875;
+  /* No separable device: their identity is the wordmark with its bar, so the
+     symbol is the same file declared twice — the statement the eleven before
+     them established for The Gospel Coalition and Working Preacher. */
+  --resource-symbol: url("./assets/brand/bema-lockup-white.png");
+  --resource-symbol-ratio: 2.875;
+}
+
 /* Two identities, and the palette had to pick one. The show's cover art is a
    gold gradient on navy; the publisher's stated brand colours are a green, a
    pale yellow and a cream. The green wins the surface because it is the only
@@ -22548,7 +22595,11 @@ button.lang-phrase-diagram-node:focus-visible,
 .podcast-dock[data-source="naked-bible"] .podcast-mast-mark,
 .podcast-dock[data-source="spoken-gospel"] .podcast-mast-mark,
 .podcast-dock[data-source="ask-nt-wright"] .podcast-mast-mark,
-.podcast-dock[data-source="listeners-commentary"] .podcast-mast-mark {
+.podcast-dock[data-source="listeners-commentary"] .podcast-mast-mark,
+/* BEMA joins the list 2026-08-02 — their cover art is the lockup in flat
+   black on white, so a white reverse of it exists honestly and the mast can
+   stop setting their name in type. */
+.podcast-dock[data-source="bema"] .podcast-mast-mark {
   display: block;
   width: calc(var(--player-mark-h) * var(--resource-mark-ratio));
   height: var(--player-mark-h);
