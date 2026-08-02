@@ -83,9 +83,22 @@ test("the two-track register and its packing pass are retired, not disabled", ()
     styles.indexOf("\n.resource-shelf {"),
     styles.indexOf("\n.resource-shelf .trusted-resource-imprint {"),
   );
-  assert.match(shelf, /grid-template-columns: repeat\(auto-fill, minmax\(92px, 1fr\)\)/,
+  /* RESTATED 2026-08-02 — square cells at 72, where they were 92×56.
+     What this gate holds is EQUAL CELLS with a height no plate's own content
+     can raise, which is what made the measuring packer unnecessary. A square
+     holds it more tightly than the old pair did: the height is the cell's own
+     width, so there is not even a row value left for a plate to argue with.
+     The shape changed with the cover face and then with the maintainer's word
+     that the marks should match it. */
+  assert.match(shelf, /grid-template-columns: repeat\(auto-fill, minmax\(72px, 1fr\)\)/,
     "the rack lost its equal cells; without them the widths come back and so does the packer");
-  assert.match(shelf, /--shelf-row: 56px/, "the rack lost its one row height");
+  assert.match(
+    styles.slice(styles.indexOf("\n.resource-shelf .trusted-resource-imprint {")),
+    /aspect-ratio: 1;/,
+    "the rack lost its one cell shape");
+  /* The row value survives for exactly one consumer — the forced-colors block,
+     where the plate becomes text and needs a floor rather than a ratio. */
+  assert.match(shelf, /--shelf-row: 56px/, "the forced-palette floor is gone");
   assert.doesNotMatch(shelf, /min-width: calc\(50%/,
     "the two-track floor is back; that is the register this shelf replaced");
 

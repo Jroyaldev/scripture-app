@@ -20700,9 +20700,22 @@ button.lang-phrase-diagram-node:focus-visible,
    A wide column gets MORE COLUMNS, never bigger plates. */
 .resource-shelf {
   --shelf-gap: 6px;
+  /* KEPT FOR ONE CONSUMER — the forced-colors block far below, where the plate
+     becomes TEXT and a square cell would cut the descenders off the second
+     line of "The Listener's Bible Commentary". A floor is right there and a
+     ratio is not. Everywhere else the cell is square. */
   --shelf-row: 56px;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  /* SQUARE, BOTH FACES · 2026-08-02. The cover face went square first, because
+     artwork forced into a landscape plate loses the top and bottom of a
+     composition. The maintainer then asked for the marks to follow, and they
+     are right: a register whose cells are square on some rows and landscape on
+     others is not a register. One shape, one rhythm, whichever face is on.
+
+     The honest cost is paid by the widest lockups. A 92×56 landscape plate
+     suited a 3.27:1 wordmark; a square does not, and Working Preacher's mark
+     draws a little smaller here than it did. Every other publisher's grows. */
+  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
   gap: var(--shelf-gap);
   padding: 0;
 }
@@ -20727,11 +20740,19 @@ button.lang-phrase-diagram-node:focus-visible,
   display: grid;
   place-items: center;
   position: relative;
-  height: var(--shelf-row);
+  /* `height: auto` is not decoration: the base `.trusted-resource-imprint`
+     rule sets a 56px height for the imprint's other homes, and an
+     `aspect-ratio` with an explicit height still resolves against that height
+     — the cell came out 56 square inside a 78px column, centred, with the
+     grid's own gutters doubled around it. The ratio needs a free axis. */
+  height: auto;
+  aspect-ratio: 1;
   /* Symmetric top and bottom, where the lane needed 5/4. With the numeral out
      of flow the symbol is the only thing left in the grid, so an even padding
      box makes `place-items: center` exact rather than half a pixel low. */
-  padding: 5px 9px;
+  /* Narrower at the sides than at the top: in a square the widest lockups are
+     bound by width, so side margin is height taken straight off them. */
+  padding: 5px 6px;
 }
 
 /* ── ONE OPTICAL SCALE FOR THE MARKS · RESTATED 2026-07-31 ─────────────────
@@ -20766,7 +20787,15 @@ button.lang-phrase-diagram-node:focus-visible,
 
    The clamp is a guard rather than a shape: nothing reaches either end. */
 .resource-shelf .trusted-resource-imprint .trusted-resource-source {
-  --shelf-art-h: clamp(18px, calc(33px / pow(var(--resource-symbol-ratio), 0.34)), 37px);
+  /* K = 42, RESTATED FOR THE SQUARE · 2026-08-02. The rule is untouched — one
+     third of the way from equal-height to equal-area, exponent 0.34 — and only
+     the box it is fitted to is new. It was 33 against a 92×56 plate with 46px
+     of usable height; a square cell of about 72 gives 62, and the mark grows
+     with it. The widest lockups are width-bound in a square where they were
+     not in a landscape, which is why the horizontal padding below is narrower
+     than the vertical: in a square every pixel of side margin comes straight
+     off the height of a wide mark. */
+  --shelf-art-h: clamp(15px, calc(42px / pow(var(--resource-symbol-ratio), 0.34)), 46px);
   /* What the tally's corner needs kept clear of a centred symbol: three
      tabular digits at 9px mono is about 17px, plus a gap. */
   --shelf-tally-clear: 22px;
@@ -23110,32 +23139,12 @@ button.lang-phrase-diagram-node:focus-visible,
    The tint underneath is the record's own, so a cover still loading is a
    coloured cell of the right shape rather than a hole. Nothing reflows when
    the art lands. */
-/* SQUARE, BECAUSE THE ARTWORK IS. A cover cropped into the mark's landscape
-   plate loses the top and bottom of a composition somebody designed — BEMA
-   lost its presenter's name, 5 Minutes in Church History lost half its title.
-   So the cell becomes the shape of the thing in it.
-
-   And smaller with it: a square cell at the mark's 92px would be 92px TALL,
-   nearly twice the row a wordmark needs, and the register would take twice the
-   margin's height to say the same thing. 72px is the trade — the shelf keeps
-   roughly its footprint and a cover is still read at a glance. */
-.resource-shelf[data-face="cover"] {
-  grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
-}
-
+/* The artwork takes the whole cell — no padding to letterbox it, and clipped
+   to the cell's own radius. A publisher with no cover keeps its mark and keeps
+   the square with it. */
 .resource-shelf .trusted-resource-imprint[data-face="cover"] {
-  height: auto;
-  aspect-ratio: 1;
   padding: 0;
   overflow: hidden;
-}
-
-/* A publisher with no artwork keeps its mark, and in a square shelf it keeps
-   its square too — an even register is the point, and one landscape cell in a
-   grid of squares is a hole with a logo in it. */
-.resource-shelf[data-face="cover"] .trusted-resource-imprint[data-face="mark"] {
-  height: auto;
-  aspect-ratio: 1;
 }
 
 .trusted-resource-cover {
