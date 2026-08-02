@@ -2758,6 +2758,26 @@ export function PodcastPlayer({
      on this machine, and hands back null for any source without one. */
   const episodeTitle = episode?.title;
   const episodeSource = episode?.sourceName;
+  /* THE RECORD'S OWN SLEEVE, WHERE IT BROUGHT ONE · 2026-08-02.
+     The plate path above is the right answer for a source whose record carries
+     no artwork, and it stays. It was the only answer, and that was a defect
+     nobody could see from inside the app: `plateArtwork` reads
+     `.podcast-mast-mark`, and an episode WITH a sleeve renders
+     `.podcast-mast-cover > img` instead — so the selector found nothing,
+     returned null, and every song in the library reached the macOS Now Playing
+     panel as text on a grey field while its cover sat on screen two inches
+     below.
+
+     Handing the URL straight to MediaSession crosses no boundary that is not
+     already crossed: the dock does not exist until an episode is playing, and
+     this is the same host already streaming the audio. It learns nothing from
+     a cover request that the stream is not telling it louder. That is the
+     argument the maintainer approved for the mast's own sleeve, unchanged. */
+  const episodeArt = episode?.artUrl;
+  /* An `album` is what the system panel uses for the line under the title, and
+     for a song that line is the record. `sourceName` is the artist and stays
+     the artist; without this a psalm showed its publisher twice. */
+  const episodeAlbum = episode?.kind === "song" ? queued?.of : undefined;
   useEffect(() => {
     const session = navigator.mediaSession;
     if (!session) return undefined;
@@ -2765,19 +2785,26 @@ export function PodcastPlayer({
       session.metadata = null;
       return undefined;
     }
-    session.metadata = new MediaMetadata({ title: episodeTitle, artist: episodeSource });
+    const words = {
+      title: episodeTitle,
+      artist: episodeSource,
+      ...(episodeAlbum ? { album: episodeAlbum } : {}),
+    };
+    session.metadata = new MediaMetadata(
+      episodeArt
+        ? { ...words, artwork: [{ src: episodeArt, sizes: "512x512", type: "image/jpeg" }] }
+        : words,
+    );
     /* Painted after the metadata rather than with it: the plate is read off
        the live dock, and on the first frame of a new episode the mark may not
        have decoded yet. The title and the publisher are on the system's panel
        immediately either way; the artwork arrives when it can, or never. */
     let artworkLive = true;
-    void plateArtwork(dockBoxRef.current).then((artwork) => {
+    /* Only when the record brought nothing of its own. A sleeve beats a plate,
+       and painting one over the other would be work done to lose information. */
+    if (!episodeArt) void plateArtwork(dockBoxRef.current).then((artwork) => {
       if (!artworkLive || !artwork || session.metadata?.title !== episodeTitle) return;
-      session.metadata = new MediaMetadata({
-        title: episodeTitle,
-        artist: episodeSource,
-        artwork: [artwork],
-      });
+      session.metadata = new MediaMetadata({ ...words, artwork: [artwork] });
     });
     const handlers: [MediaSessionAction, MediaSessionActionHandler][] = [
       ["play", () => resumePodcast()],
@@ -2815,7 +2842,7 @@ export function PodcastPlayer({
         try { session.setActionHandler(action, null); } catch { /* as above */ }
       }
     };
-  }, [episodeId, episodeSource, episodeTitle, walkActive, stepping]);
+  }, [episodeId, episodeSource, episodeTitle, episodeArt, episodeAlbum, walkActive, stepping]);
 
   useEffect(() => {
     const session = navigator.mediaSession;

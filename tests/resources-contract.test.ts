@@ -834,7 +834,15 @@ test("the walk is declared, finite, and never a radio", () => {
      worse than one that is not there. */
   assert.match(player, /const stepping = walkActive \|\| queued != null;/);
   assert.match(player, /\.\.\.\(stepping\n\s*\? \(\[\n\s*\["previoustrack"/);
-  assert.match(player, /\}, \[episodeId, episodeSource, episodeTitle, walkActive, stepping\]\);/);
+  /* RESTATED 2026-08-02. What this clause means is that `walkActive` and
+     `stepping` are among the effect's dependencies — register those handlers
+     once and a list started later never gets its next-track button, which is
+     the defect this whole block exists to prevent. It was written as the WHOLE
+     array, so it also pinned the METADATA's dependencies by accident and broke
+     the moment a record's own sleeve and album name joined the system panel.
+     Two assertions now, each saying only the thing it means. */
+  assert.match(player, /\}, \[episodeId,[^\]]*\bwalkActive\b[^\]]*\]\);/);
+  assert.match(player, /\}, \[episodeId,[^\]]*\bstepping\]\);/);
   /* And it steps whichever list is actually running, not always the walk. */
   assert.match(player, /walkActive \? stepPodcastWalk\(1\) : stepPodcastQueue\(1\)/);
 

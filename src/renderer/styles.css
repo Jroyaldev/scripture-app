@@ -24760,6 +24760,175 @@ button.lang-phrase-diagram-node:focus-visible,
   font-variant-numeric: tabular-nums;
 }
 
+/* ── Shuffle, and the way out to the publisher ─────────────────────────────── */
+.listen-shuffle {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: none;
+  color: var(--text-secondary);
+  font: 0.8125rem/1 var(--font-ui);
+  cursor: pointer;
+}
+
+.listen-shuffle:hover { border-color: var(--border-strong); color: var(--text-primary); }
+
+.listen-shuffle:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.listen-hero-source { margin: 10px 0 0; }
+
+/* Quiet enough to be the last thing read on the hero, because it leaves the
+   app — and underlined rather than coloured, so it does not compete with the
+   accent the record's own artwork sets. */
+.listen-hero-link {
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.5 var(--font-ui);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.listen-hero-link:hover { color: var(--text-secondary); }
+
+/* ── The record's own two halves ─────────────────────────────────────────────
+   One record, two chapters — EveryPsalm's 171 sung psalms and 51 instrumentals.
+   A segmented control rather than three buttons in a row, because these are
+   three views of one thing and only one can be true at a time. */
+.listen-halves {
+  display: inline-flex;
+  padding: 2px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+}
+
+.listen-half {
+  padding: 5px 12px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--text-tertiary);
+  font: 0.75rem/1.4 var(--font-ui);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.listen-half:hover { color: var(--text-primary); }
+
+.listen-half[data-on] {
+  background: color-mix(in oklab, var(--record-accent) 16%, transparent);
+  color: var(--record-accent);
+}
+
+.listen-half:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* The chapter heading is heavier than a group head and lighter than the hero —
+   it is the only thing between them in the hierarchy, and it earns that by
+   being said twice on one page rather than thirteen times. */
+.listen-chapter {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin: 36px 0 4px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.listen-chapter-name {
+  margin: 0;
+  color: var(--text-primary);
+  font: 500 1.0625rem/1.3 var(--font-reading);
+}
+
+.listen-chapter-count {
+  color: var(--text-tertiary);
+  font: 0.75rem/1.4 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── The rest of the family ───────────────────────────────────────────────────
+   Hymns I–IV and As Foretold 1–3 were seven unrelated cards on a shelf. The
+   publisher named them as families; nothing in the data recorded it. */
+.listen-siblings { margin-top: 44px; }
+
+.listen-siblings-name {
+  margin: 0 0 14px;
+  color: var(--text-secondary);
+  font: 500 0.875rem/1.4 var(--font-ui);
+}
+
+.listen-siblings-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(112px, 1fr));
+  gap: 18px 16px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.listen-sibling {
+  display: flex;
+  min-width: 0;
+  width: 100%;
+  flex-direction: column;
+  gap: 7px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.listen-sibling .listen-cover {
+  aspect-ratio: 1;
+  width: 100%;
+  border-radius: var(--radius-md);
+  transition: transform 160ms ease;
+}
+
+.listen-sibling:hover .listen-cover { transform: translateY(-3px); }
+
+.listen-sibling-name {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font: 0.75rem/1.35 var(--font-ui);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.listen-sibling:hover .listen-sibling-name { color: var(--text-primary); }
+
+.listen-sibling:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-sm);
+}
+
+/* Silence is the ordinary state of a fresh library, not a failure — so it is
+   said in the room's own voice rather than drawn as an error. */
+.listen-empty {
+  margin: 0;
+  color: var(--text-tertiary);
+  font: 0.8125rem/1.6 var(--font-ui);
+}
+
+.listen-empty code {
+  font: 0.75rem/1 var(--font-mono);
+}
+
+/* The shelf's own field, at half strength. A record page is ABOUT one record
+   and can wear its colour; the shelf is about everything, so it only breathes
+   the colour of what the reader was last hearing. */
+.listen-ambient.is-faint { opacity: 0.45; }
+
 /* ── Finding one thing in six hundred ────────────────────────────────────────
    Quiet, and sitting between the hero and the first year heading where the
    reader's eye already is on the way down. Deliberately not a toolbar: no

@@ -94,6 +94,13 @@ import {
   type MusicTrack,
 } from "./listen-episodes";
 
+/** For separating two records released in the same year. Matched, not parsed —
+ *  `released` is the publisher's own prose and takes every shape prose takes. */
+const MONTHS = [
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+];
+
 /** What the shows the manifest registry does not carry call themselves. */
 const NAMES: Record<string, string> = {
   "bema": "The BEMA Podcast",
@@ -174,6 +181,19 @@ function stamp(iso: string | null): string {
   const when = new Date(iso);
   if (Number.isNaN(when.getTime())) return "";
   return when.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+
+/** Two paths crossing, which is the one shape everybody reads as shuffle. */
+function ShuffleGlyph(): React.JSX.Element {
+  return (
+    <svg aria-hidden="true" viewBox="0 0 16 16" width="15" height="15" fill="none"
+      stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1.6 3.6h2.6c.9 0 1.7.5 2.2 1.2l3.2 6.4c.4.7 1.2 1.2 2.2 1.2h2.6" />
+      <path d="M1.6 12.4h2.6c.9 0 1.7-.5 2.2-1.2l.9-1.8" />
+      <path d="M9.6 5.4l.9-1.8c.4-.7 1.2-1.2 2.2-1.2h1.7" />
+      <path d="M12.6 1.4l1.8 2.2-1.8 2.2M12.6 10.2l1.8 2.2-1.8 2.2" />
+    </svg>
+  );
 }
 
 function PlayGlyph({ size = 15 }: { size?: number }): React.JSX.Element {
@@ -284,13 +304,17 @@ function Progress({ place }: { place?: PodcastPlace }): React.JSX.Element {
  * change to — a control that names its own effect reads as a state, and every
  * reader has been burned by guessing which convention a sort button follows.
  */
-function Sift({ count, forwards, noun, onOrder, query, total }: {
+function Sift({ children, count, forwards, noun, onOrder, query, total }: {
   count: number; noun: string; query: string; total: number;
   /* Absent on an album, and that is a statement rather than an omission: a
      record's running order is the one its publisher sequenced, and offering to
      reverse it would be offering to un-make the record. A series' order is a
      calendar, which belongs to nobody. */
   forwards?: boolean; onOrder?: () => void;
+  /* A record's own division of itself, where it has one — EveryPsalm's two
+     halves. It sits here rather than in a row of its own because it is the
+     same act as the filter: deciding which of these rows to look at. */
+  children?: React.ReactNode;
 }): React.JSX.Element {
   const field = useRef<HTMLInputElement>(null);
   /* "/" is the shortcut every list in every app has trained a reader to try,
@@ -346,6 +370,7 @@ function Sift({ count, forwards, noun, onOrder, query, total }: {
           {count === 0 ? `No ${noun}s` : `${count} of ${total}`}
         </span>
       )}
+      {children}
       {onOrder && (
         <button
           aria-label={`Sorted ${forwards ? "oldest first" : "newest first"}. Press to reverse.`}
@@ -404,6 +429,73 @@ function About({ text }: { text: string }): React.JSX.Element {
 }
 
 /**
+ * One of a record's groups, and its rows.
+ *
+ * Extracted when EveryPsalm gained its two chapters: the same run of rows is
+ * now drawn from two branches, and a group that renders differently depending
+ * on which heading it happens to sit under is a bug waiting for somebody to
+ * edit one copy.
+ */
+function AlbumGroup({ album, group, onPlay, ordered, playingHere, sounding }: {
+  album: MusicAlbum;
+  group: { name: string; cover?: string; tracks: MusicTrack[] };
+  onPlay: (from: number) => void;
+  ordered: MusicTrack[];
+  playingHere: (sourceId: string, recordId: string) => boolean;
+  sounding: boolean;
+}): React.JSX.Element {
+  return (
+    <section className="listen-group">
+      {group.name && (
+        <div className="listen-group-head">
+          <Cover alt={`${group.name} cover`} className="is-group" src={group.cover} tint={album.tint} />
+          <h2 className="listen-group-name">{group.name}</h2>
+          <span className="listen-group-count">{group.tracks.length}</span>
+        </div>
+      )}
+      <ol className="listen-tracks">
+        {group.tracks.map((track, index) => {
+          const on = playingHere(MUSIC.source.id, trackId(album, track));
+          return (
+            <li className="listen-track" key={`${track.title}:${index}`}>
+              <button
+                aria-current={on ? "true" : undefined}
+                aria-label={`Play ${track.title} — ${album.name}, ${MUSIC.source.name}`}
+                className="listen-track-face"
+                data-on={on ? "" : undefined}
+                onClick={() => onPlay(ordered.indexOf(track))}
+                type="button"
+              >
+                <span className="listen-track-mark">
+                  {on && sounding
+                    ? <BarsGlyph />
+                    : <>
+                      <span aria-hidden="true" className="listen-track-no">{index + 1}</span>
+                      <span aria-hidden="true" className="listen-track-play"><PlayGlyph /></span>
+                    </>}
+                </span>
+                <span className="listen-track-words">
+                  <span className="listen-track-title">{track.title}</span>
+                </span>
+                {/* NO PLACE MARK ON A SONG, deliberately. The bar and the tick
+                    answer "where was I in this?", which is a question about a
+                    forty-minute exposition and not about a three-minute psalm —
+                    nobody resumes a hymn halfway, and a tick would end up on all
+                    222 rows of EveryPsalm, which is noise wearing the costume of
+                    information. The row keeps its slot so the runtimes stay in
+                    one line with every other list in the room. */}
+                <span className="listen-track-place" />
+                <span className="listen-track-extent">{track.duration}</span>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+    </section>
+  );
+}
+
+/**
  * ONE hero, both pages.
  *
  * They had drifted: the album got a field of its own colour, the publisher's
@@ -414,10 +506,16 @@ function About({ text }: { text: string }): React.JSX.Element {
  * renders without prose — it does not render a placeholder, and it does not
  * get a different layout for being poorer in metadata.
  */
-function Hero({ art, tint, kicker, name, line, about, credits, onPlay, playing, innerRef }: {
+function Hero({
+  art, tint, kicker, name, line, about, credits, onPlay, onShuffle, playing, innerRef, source,
+}: {
   art?: string | null; tint?: string; kicker: string; name: string; line: string;
   about?: string; credits?: Record<string, string>;
   onPlay: () => void; playing: boolean;
+  /* Songs only. See the album page for why a series is not offered this. */
+  onShuffle?: () => void;
+  /* Where the publisher keeps this record themselves. */
+  source?: { href: string; label: string };
   innerRef?: React.RefObject<HTMLElement | null>;
 }): React.JSX.Element {
   return (
@@ -435,10 +533,28 @@ function Hero({ art, tint, kicker, name, line, about, credits, onPlay, playing, 
             {playing ? <BarsGlyph /> : <PlayGlyph size={16} />}
             {playing ? "Playing" : "Play"}
           </button>
+          {onShuffle && (
+            <button className="listen-shuffle" onClick={onShuffle} type="button">
+              <ShuffleGlyph />
+              Shuffle
+            </button>
+          )}
         </div>
         {credits && (
           <p className="listen-credits">
             {Object.entries(credits).map(([role, who]) => `${role}: ${who}`).join(" · ")}
+          </p>
+        )}
+        {/* The publisher's own page for this record. It was in the catalogue
+            from the first import and had never been drawn — so a room built on
+            "the art and the audio are theirs" gave a reader no way to go to
+            them. Opened outside the app, which is what an external link means
+            and what the shell already enforces. */}
+        {source && (
+          <p className="listen-hero-source">
+            <a className="listen-hero-link" href={source.href} rel="noreferrer" target="_blank">
+              {source.label}
+            </a>
           </p>
         )}
       </div>
@@ -588,11 +704,22 @@ export function ListenPage(): React.JSX.Element {
   }, []);
 
   /* Newest first, then longest — a listening room is a shelf of releases, and
-     "what is new" is the question a record shelf answers before any other. */
+     "what is new" is the question a record shelf answers before any other.
+
+     THE MONTH IS READ TOO, because the year alone could not separate two 2025
+     records and fell through to track count: a 4-track Advent set released in
+     December sorted BEHIND a 35-track record from September, which is the
+     shelf's own claim getting the answer wrong by three months. The month is
+     the publisher's prose ("December 8, 2025"), so it is matched rather than
+     parsed, and anything unreadable simply scores 0 and ties as before. */
   const albums = useMemo(() => [...MUSIC.albums].sort((a, b) => {
-    const ya = Number(year(a.released)?.slice(-4) ?? 0);
-    const yb = Number(year(b.released)?.slice(-4) ?? 0);
-    return yb - ya || b.tracks.length - a.tracks.length;
+    const when = (album: MusicAlbum): number => {
+      const stated = year(album.released)?.slice(-4);
+      if (!stated) return 0;
+      const month = MONTHS.findIndex((name) => new RegExp(name, "i").test(album.released ?? ""));
+      return Number(stated) * 12 + (month < 0 ? 0 : month + 1);
+    };
+    return when(b) - when(a) || b.tracks.length - a.tracks.length;
   }), []);
   const album = albums.find((a) => a.name === openAlbum) ?? null;
 
@@ -671,12 +798,51 @@ export function ListenPage(): React.JSX.Element {
       .filter((group) => group.tracks.length > 0);
   }, [groups, query]);
 
+  /**
+   * TWO CHAPTERS OF ONE RECORD.
+   *
+   * EveryPsalm is 222 tracks: 171 sung psalms in the seven genres their
+   * illustrator drew covers for, then 51 instrumentals filed under the
+   * Psalter's five books. The publisher made that division and the room was
+   * drawing it as thirteen equal groups in a row — so the instrumental half
+   * arrived unannounced, halfway down, looking like six more genres.
+   *
+   * It stays ONE record, on the maintainer's call, because it is one project
+   * and splitting the shelf card would fork the publisher's own work. What it
+   * gains is a division the reader can see and act on: two chapter headings,
+   * and a filter that can hold either half on its own.
+   *
+   * DETECTED, NOT DECLARED. There is no `instrumental` field to read, so the
+   * signal is the publisher's own naming — the suffix on the title and the
+   * word on the group. Any album without that naming has one chapter and draws
+   * exactly as it did, which is every other record here.
+   */
+  const chapters = useMemo(() => {
+    const sung = shown.filter((group) => !/instrumental/i.test(group.name));
+    const played = shown.filter((group) => /instrumental/i.test(group.name));
+    if (sung.length === 0 || played.length === 0) return null;
+    return { sung, played };
+  }, [shown]);
+  const [half, setHalf] = useState<"all" | "sung" | "played">("all");
+
   /* Built from the AUDIO catalogue, so a publisher appears here when it has
      episodes rather than when it has cards — which is how BEMA and 30 Minutes
      in the New Testament reach this shelf at all: neither is in the manifest
      registry the margin reads. The name comes from the manifest where there is
      one and from the id where there is not. */
-  const muted = new Set(resourceCatalogue?.sources.filter((s) => s.muted).map((s) => s.id) ?? []);
+  /* A MUTE COMES IN TWO SHAPES and this room honoured one. `resourceMutes`
+     holds either `publisher` or `publisher:kind`, and a reader who muted
+     "radically-christian:podcast" in the library matrix — the only place the
+     rules are written — still found the show sitting on this shelf. The
+     publisher's own flag stays authoritative; the kind rules are read straight
+     off the list beside it, because "no podcasts from these people" is exactly
+     what a shelf of their podcasts should obey. */
+  const muted = new Set([
+    ...resourceCatalogue?.sources.filter((s) => s.muted).map((s) => s.id) ?? [],
+    ...(resourceCatalogue?.mutes ?? [])
+      .filter((rule) => rule.endsWith(":podcast"))
+      .map((rule) => rule.slice(0, -":podcast".length)),
+  ]);
   const named = new Map(resourceCatalogue?.sources.map((s) => [s.id, s.name]) ?? []);
   /* A publisher outside the manifest registry has no name to read, and an id
      title-cased is not a name — it drew "Bema" and "Thirty Minutes Nt". The
@@ -684,10 +850,21 @@ export function ListenPage(): React.JSX.Element {
      margin cannot name are named here until they join it. */
   const titleFromId = (id: string): string =>
     NAMES[id] ?? id.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+  /* NEWEST FIRST, the same question the Music shelf answers. It sorted by
+     episode COUNT, which permanently pinned the two longest-running shows to
+     the top-left and told a reader nothing except which publisher had been at
+     it longest — a show that posted this morning sat below one that stopped in
+     2019. Size is not news. */
   const series = Object.entries(audio ?? {})
     .filter(([id]) => !muted.has(id))
-    .map(([id, episodes]) => ({ id, name: named.get(id) ?? titleFromId(id), episodes }))
-    .sort((a, b) => b.episodes.length - a.episodes.length);
+    .map(([id, episodes]) => ({
+      id,
+      name: named.get(id) ?? titleFromId(id),
+      episodes,
+      latest: episodes.reduce((newest, ep) => (
+        (ep.publishedAt ?? "") > newest ? ep.publishedAt ?? "" : newest), ""),
+    }))
+    .sort((a, b) => b.latest.localeCompare(a.latest) || b.episodes.length - a.episodes.length);
   const openedSeries = series.find((s) => s.id === openSeries) ?? null;
 
   /* Identity is the SOURCE and the RECORD, never `episode.id` — that is a key
@@ -899,6 +1076,32 @@ export function ListenPage(): React.JSX.Element {
       );
     };
     const start = (): void => play(0);
+    /* SHUFFLE THE PSALTER. A record is sequenced and Play honours that; shuffle
+       is the other thing a listener does with music, and it did not exist here.
+       Fisher–Yates over the whole record, then handed to the queue as an order
+       of its own — so "next" means the next shuffled track rather than the next
+       track on the sleeve, which is what shuffle has to mean to be worth having.
+
+       Not offered on a series: shuffling a teaching series is shuffling the
+       argument. */
+    const shuffle = (): void => {
+      const bag = ordered.map((track) => asEpisode(album, track));
+      for (let at = bag.length - 1; at > 0; at -= 1) {
+        const swap = Math.floor(Math.random() * (at + 1));
+        [bag[at], bag[swap]] = [bag[swap]!, bag[at]!];
+      }
+      startPodcastQueue(album.name, bag, 0);
+    };
+    /* Sibling records, and the reason this is a title match rather than a field:
+       `Hymns I` through `IV` and `As Foretold: Part 1` through `3` are seven
+       separate shelf cards with nothing in the data linking them. The publisher
+       named them as a family; nobody recorded that they were one. So the family
+       is read back out of the naming, which is where it was put. */
+    const family = album.name.match(/^(.*?)(?:\s+(?:[IVX]+|Part\s+\d+))$/i)?.[1]?.trim();
+    const siblings = family
+      ? albums.filter((one) => one.name !== album.name
+        && one.name.replace(/\s+(?:[IVX]+|Part\s+\d+)$/i, "").trim() === family)
+      : [];
     return (
       <div className="listen" ref={scroller} style={album.tint ? { "--record-tint": album.tint } as React.CSSProperties : undefined}>
         <div className="listen-ambient" />
@@ -913,8 +1116,18 @@ export function ListenPage(): React.JSX.Element {
             line={albumLine(album)}
             name={album.name}
             onPlay={start}
+            onShuffle={ordered.length > 1 ? shuffle : undefined}
             innerRef={mark}
             playing={here}
+            source={album.slug
+              /* The catalogue's homepage carries its own trailing slash, so
+                 joining naively built a `.com//projects/` that their server
+                 happens to forgive. Trimmed rather than trusted. */
+              ? {
+                href: `${MUSIC.source.homepageUrl.replace(/\/+$/, "")}/projects/${album.slug}`,
+                label: `${album.name} at ${MUSIC.source.name}`,
+              }
+              : { href: MUSIC.source.listenUrl, label: MUSIC.source.name }}
             tint={album.tint}
           />
           {/* EveryPsalm is 222 rows — long enough to need a way in, and the one
@@ -927,60 +1140,89 @@ export function ListenPage(): React.JSX.Element {
               noun="song"
               query={query}
               total={album.tracks.length}
-            />
-          )}
-
-          {shown.map((group) => (
-            <section className="listen-group" key={group.name || "all"}>
-              {group.name && (
-                <div className="listen-group-head">
-                  <Cover alt={`${group.name} cover`} className="is-group" src={group.cover} tint={album.tint} />
-                  <h2 className="listen-group-name">{group.name}</h2>
-                  <span className="listen-group-count">{group.tracks.length}</span>
+            >
+              {chapters && (
+                <div aria-label="Which half of the record" className="listen-halves" role="group">
+                  {([["all", "All"], ["sung", "Sung"], ["played", "Instrumental"]] as const)
+                    .map(([which, label]) => (
+                      <button
+                        aria-pressed={half === which}
+                        className="listen-half"
+                        data-on={half === which ? "" : undefined}
+                        key={which}
+                        onClick={() => setHalf(which)}
+                        type="button"
+                      >{label}</button>
+                    ))}
                 </div>
               )}
-              <ol className="listen-tracks">
-                {group.tracks.map((track, index) => {
-                  const on = playingHere(MUSIC.source.id, trackId(album, track));
-                  return (
-                    <li className="listen-track" key={`${track.title}:${index}`}>
-                      <button
-                        aria-current={on ? "true" : undefined}
-                        aria-label={`Play ${track.title} — ${album.name}, ${MUSIC.source.name}`}
-                        className="listen-track-face"
-                        data-on={on ? "" : undefined}
-                        onClick={() => play(ordered.indexOf(track))}
-                        type="button"
-                      >
-                        <span className="listen-track-mark">
-                          {on && sounding
-                            ? <BarsGlyph />
-                            : <>
-                              <span aria-hidden="true" className="listen-track-no">{index + 1}</span>
-                              <span aria-hidden="true" className="listen-track-play"><PlayGlyph /></span>
-                            </>}
-                        </span>
-                        <span className="listen-track-words">
-                          <span className="listen-track-title">{track.title}</span>
-                        </span>
-                        {/* NO PLACE MARK ON A SONG, deliberately. The bar and
-                            the tick answer "where was I in this?", which is a
-                            question about a forty-minute exposition and not
-                            about a three-minute psalm — nobody resumes a hymn
-                            halfway. A tick would also end up on all 222 rows of
-                            EveryPsalm eventually, which is noise wearing the
-                            costume of information. The row keeps its slot so
-                            the runtimes stay in one line with every other list
-                            in the room. */}
-                        <span className="listen-track-place" />
-                        <span className="listen-track-extent">{track.duration}</span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ol>
-            </section>
+            </Sift>
+          )}
+
+          {chapters ? (
+            /* Two chapters, each announced once, rather than thirteen equal
+               group heads in a row with the instrumental half arriving
+               unlabelled halfway down. The heading is suppressed when the
+               reader has asked for one half — they know which half they chose,
+               and a heading over the only thing on screen is furniture. */
+            ([["sung", "Sung", chapters.sung], ["played", "Instrumental", chapters.played]] as const)
+              .filter(([which]) => half === "all" || half === which)
+              .map(([which, label, run]) => (
+                <React.Fragment key={which}>
+                  {half === "all" && run.length > 0 && (
+                    <div className="listen-chapter">
+                      <h2 className="listen-chapter-name">{label}</h2>
+                      <span className="listen-chapter-count">
+                        {run.reduce((n, group) => n + group.tracks.length, 0)}
+                      </span>
+                    </div>
+                  )}
+                  {run.map((group) => (
+                    <AlbumGroup
+                      album={album}
+                      group={group}
+                      key={group.name || "all"}
+                      onPlay={play}
+                      ordered={ordered}
+                      playingHere={playingHere}
+                      sounding={sounding}
+                    />
+                  ))}
+                </React.Fragment>
+              ))
+          ) : shown.map((group) => (
+            <AlbumGroup
+              album={album}
+              group={group}
+              key={group.name || "all"}
+              onPlay={play}
+              ordered={ordered}
+              playingHere={playingHere}
+              sounding={sounding}
+            />
           ))}
+
+          {siblings.length > 0 && (
+            <section aria-label={`More in ${family}`} className="listen-siblings">
+              <h2 className="listen-siblings-name">More in {family}</h2>
+              <ul className="listen-siblings-row">
+                {siblings.map((one) => (
+                  <li key={one.name}>
+                    <button
+                      aria-label={`${one.name} — ${albumLine(one)}`}
+                      className="listen-sibling"
+                      onClick={() => setOpenAlbum(one.name)}
+                      style={one.tint ? { "--record-tint": one.tint } as React.CSSProperties : undefined}
+                      type="button"
+                    >
+                      <Cover alt="" src={one.cover} tint={one.tint} />
+                      <span className="listen-sibling-name">{one.name}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
 
           <Colophon who={MUSIC.source.name} />
         </div>
@@ -989,7 +1231,19 @@ export function ListenPage(): React.JSX.Element {
   }
 
   return (
-    <div className="listen" onScroll={rememberScroll} ref={scroller}>
+    <div
+      className="listen"
+      onScroll={rememberScroll}
+      ref={scroller}
+      /* THE ROOM BREATHES WHAT YOU WERE HEARING. Every record page has a field
+         of its own colour and the shelf had bare canvas, which made the one
+         screen a reader always starts from the plainest in the room. It takes
+         the colour of the most recent unfinished record rather than inventing
+         one — so the room is quietly coloured by the reader's own listening,
+         and falls back to plain canvas when there is none. */
+      style={resume[0]?.tint ? { "--record-tint": resume[0].tint } as React.CSSProperties : undefined}
+    >
+      {resume[0]?.tint && <div className="listen-ambient is-faint" />}
       <div className="listen-inner">
         <header className="listen-head">
           <h1 className="listen-title">Listen</h1>
@@ -1079,7 +1333,17 @@ export function ListenPage(): React.JSX.Element {
             <h2 className="listen-shelf-name">Series</h2>
             <p className="listen-shelf-by">Spoken, from your library</p>
           </div>
-          {audio === null ? <Skeleton /> : (
+          {audio === null ? <Skeleton /> : series.length === 0 ? (
+            /* A HEADING OVER NOTHING was what a refused or empty library drew:
+               "Series", "Spoken, from your library", and then an empty list.
+               Silence is not an error here — a library with no episode files is
+               the ordinary state of a fresh install — so it says what is true
+               and where the audio would come from. */
+            <p className="listen-empty">
+              No spoken series in your library yet. Shows appear here once their
+              episodes are in <code>.artifacts/resources</code>.
+            </p>
+          ) : (
             <ul className="listen-grid">
               {series.map((source) => {
                 const art = SERIES_ART[source.id];
@@ -1087,7 +1351,7 @@ export function ListenPage(): React.JSX.Element {
                 return (
                   <li className="listen-card" data-source={source.id} key={source.id}>
                     <button
-                      aria-label={`${source.name} — ${source.episodes.length} episodes`}
+                      aria-label={`${source.name} — ${seriesLine(source.episodes)}`}
                       className="listen-card-face"
                       data-on={on ? "" : undefined}
                       onClick={() => setOpenSeries(source.id)}
@@ -1109,9 +1373,12 @@ export function ListenPage(): React.JSX.Element {
                         </span>
                       </span>
                       <span className="listen-card-name">{source.name}</span>
-                      <span className="listen-card-foot">
-                        {source.episodes.length} {source.episodes.length === 1 ? "episode" : "episodes"}
-                      </span>
+                      {/* The same line the album cards carry, and the same line
+                          this show's own hero carries. It said "676 episodes"
+                          while its sibling said "2020–2022 · 222 songs · 15 hr"
+                          — a poorer card for no reason, next to a function that
+                          already computed the whole thing. */}
+                      <span className="listen-card-foot">{seriesLine(source.episodes)}</span>
                     </button>
                   </li>
                 );

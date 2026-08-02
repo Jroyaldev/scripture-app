@@ -680,5 +680,96 @@ gate(kept.atRecordTop === 0, "a record still opens at its own top", String(kept.
 gate(Math.abs(kept.back - kept.left) < 40,
   "and the shelf comes back where it was left", `left ${kept.left} → back ${kept.back}`);
 
+/* ── The shelf answers "what is new" in both halves ────────────────────────── */
+const shelfOrder = await evaluate(`(() => {
+  const shelf = (name) => [...document.querySelectorAll('.listen-shelf')]
+    .find((s) => s.querySelector('.listen-shelf-name')?.textContent === name);
+  const feet = (name) => [...(shelf(name)?.querySelectorAll('.listen-card-foot') ?? [])]
+    .map((f) => f.textContent);
+  const names = (name) => [...(shelf(name)?.querySelectorAll('.listen-card-name') ?? [])]
+    .map((n) => n.textContent);
+  return {
+    firstAlbum: names('Music')[0] ?? null,
+    seriesFeet: feet('Series').slice(0, 3),
+    seriesAllRich: feet('Series').every((f) => /·/.test(f ?? '')),
+  };
+})()`);
+/* The newest record, which used to sort LAST because it carried no release
+   date at all — and before the month was read, a December record sorted behind
+   a September one from the same year. */
+gate(shelfOrder.firstAlbum === "All My Delight",
+  "the newest record is the first record", shelfOrder.firstAlbum);
+/* A series card said "676 episodes" beside an album card saying
+   "2020–2022 · 222 songs · 15 hr", from a function that already computed both. */
+gate(shelfOrder.seriesAllRich, "a series card says as much as an album card",
+  shelfOrder.seriesFeet[0]);
+
+/* ── A record's own two halves, and the rest of its family ─────────────────── */
+await evaluate(`(() => {
+  const face = [...document.querySelectorAll('.listen-card-face')]
+    .find((f) => /^EveryPsalm$/.test(f.querySelector('.listen-card-name')?.textContent || ''));
+  face?.click();
+  return true;
+})()`);
+await waitFor(`!!document.querySelector('.listen-chapter-name')`, "the record's chapters");
+const halves = await evaluate(`(() => ({
+  chapters: [...document.querySelectorAll('.listen-chapter-name')].map((n) => n.textContent),
+  counts: [...document.querySelectorAll('.listen-chapter-count')].map((n) => Number(n.textContent)),
+  shuffle: !!document.querySelector('.listen-shuffle'),
+  link: document.querySelector('.listen-hero-link')?.getAttribute('href') ?? null,
+  /* The stray one-track group that used to wedge itself between Book 3 and
+     Book 4 wearing a Webflow placeholder. */
+  groups: document.querySelectorAll('.listen-group-name').length,
+  placeholders: [...document.querySelectorAll('.listen-cover img')]
+    .filter((i) => /placeholder/.test(i.src)).length,
+}))()`);
+gate(halves.chapters.join(" · ") === "Sung · Instrumental",
+  "one record, two chapters", halves.chapters.join(" · "));
+gate(halves.counts[0] === 171 && halves.counts[1] === 51,
+  "counted from the publisher's own naming", halves.counts.join(" + "));
+gate(halves.groups === 12 && halves.placeholders === 0,
+  "and the stray group is gone", `${halves.groups} groups, ${halves.placeholders} placeholders`);
+gate(halves.shuffle, "a record can be shuffled");
+gate(/poorbishophooper\.com\/projects\/everypsalm$/.test(halves.link ?? ""),
+  "and points back at its publisher", halves.link);
+
+const oneHalf = await evaluate(`(() => {
+  const button = [...document.querySelectorAll('.listen-half')]
+    .find((b) => b.textContent === 'Instrumental');
+  button?.click();
+  return new Promise((r) => setTimeout(() => r({
+    rows: document.querySelectorAll('.listen-track').length,
+    /* A heading over the only thing on screen is furniture: the reader chose
+       this half and knows which one it is. */
+    chapters: document.querySelectorAll('.listen-chapter-name').length,
+    groups: [...document.querySelectorAll('.listen-group-name')].map((n) => n.textContent),
+  }), 500));
+})()`);
+gate(oneHalf.rows === 51 && oneHalf.groups.every((g) => /Instrumental/.test(g)),
+  "and either half can be held on its own", `${oneHalf.rows} rows`);
+gate(oneHalf.chapters === 0, "with no heading over the only thing on screen");
+await shot("everypsalm-halves");
+
+const family = await evaluate(`(() => {
+  const back = document.querySelector('.listen-back');
+  back?.click();
+  return new Promise((r) => setTimeout(() => {
+    const face = [...document.querySelectorAll('.listen-card-face')]
+      .find((f) => /^Hymns II$/.test(f.querySelector('.listen-card-name')?.textContent || ''));
+    face?.click();
+    setTimeout(() => r({
+      heading: document.querySelector('.listen-siblings-name')?.textContent ?? null,
+      names: [...document.querySelectorAll('.listen-sibling-name')].map((n) => n.textContent),
+    }), 900);
+  }, 800));
+})()`);
+/* Hymns I–IV were four unrelated cards on a shelf: the publisher named them a
+   family and nothing in the data recorded it. */
+gate(/^More in Hymns$/.test(family.heading ?? ""), "a record links to the rest of its family",
+  family.heading);
+gate(family.names.length === 3 && family.names.every((n) => /^Hymns /.test(n ?? "")),
+  "and to its siblings only", family.names.join(", "));
+await shot("album-siblings");
+
 console.log(`\n${failures.length === 0 ? "PASS" : `FAIL (${failures.length})`} — captures in ${OUT_DIR}/`);
 process.exit(failures.length === 0 ? 0 : 1);
