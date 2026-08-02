@@ -23726,35 +23726,157 @@ button.lang-phrase-diagram-node:focus-visible,
    is named wherever the publisher names one. A room full of records is how
    anyone has ever found music; fourteen albums of type all look like the
    same album. */
+/*
+ * THE RECORD'S OWN COLOUR, and the two rules that keep it safe.
+ *
+ * Every page in this room is coloured by the artwork it is about.
+ * `--record-tint` is set inline from the album's or the series' cover — one
+ * colour per record, read out of the image at author time by
+ * scripts/compute-cover-tints.py — and everything below derives from it, so a
+ * page belongs to its record rather than to the app's palette. The Play button
+ * on EveryPsalm is EveryPsalm's colour.
+ *
+ * RULE ONE — chroma is MULTIPLIED, never floored. A floor is the obvious way
+ * to guarantee a visible colour and it is exactly how the BEMA card turned
+ * pink: black-and-white artwork has no hue, a floor invents chroma anyway, and
+ * an undefined hue resolves to 0°, which is red. Multiplying leaves an
+ * achromatic record achromatic — for a black-and-white brand that is not a
+ * degraded result, it is the right one.
+ *
+ * RULE TWO — the field MIXES toward the canvas instead of naming a lightness.
+ * The hue belongs to the record; the lightness belongs to the theme. One
+ * color-mix stays correct in porcelain and onyx both, where an absolute L
+ * would be a wash in one and a stain in the other. This is Law 6 with the
+ * theme, rather than the value, holding the lightness.
+ */
 .listen {
+  /* No record open: the app's own seal, so a play button is never a grey disc. */
+  --record-tint: var(--accent-seal);
+  --record-field: color-mix(in oklab, var(--record-tint) 24%, var(--bg-canvas));
+  --record-accent: oklch(from var(--record-tint) 0.52 min(calc(c * 2.4), 0.15) h);
+  --room-pad: 40px;
+  --room-gutter: 32px;
+  --bar-h: 52px;
   position: relative;
   flex: 1 1 auto;
   min-width: 0;
   overflow-y: auto;
 }
 
-/* The album's own colour, computed from its cover at import and laid behind
-   the hero as a field rather than a fill: it fades to nothing within a
-   viewport height, so the page is still the app's paper by the time the
-   track list starts. Apple and Spotify both do this and it is the single
-   cheapest thing that makes a record feel like an object rather than a row. */
+/* A card carries its own record's colour, and a custom property resolves
+   against the element that DECLARES it — so the derivation is restated here
+   rather than inherited, or every card on the shelf would wear the page's. */
+.listen-card-face {
+  --record-field: color-mix(in oklab, var(--record-tint) 24%, var(--bg-canvas));
+  --record-accent: oklch(from var(--record-tint) 0.52 min(calc(c * 2.4), 0.15) h);
+}
+
+/* The album's own colour, laid behind the hero as a field rather than a fill.
+   It was a whisper at 0.28 of the raw tint — nervous, and on a dark cover it
+   put dark text on a dark ground. Mixing toward the canvas first means the
+   field can be fully itself: the hue is unmistakable and the lightness never
+   leaves the theme's range, so the words on top keep their contrast. */
 .listen-ambient {
   position: absolute;
   inset: 0 0 auto;
-  height: 420px;
-  opacity: 0.28;
+  height: 560px;
+  background: linear-gradient(to bottom, var(--record-field) 0%, var(--bg-canvas) 100%);
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 34%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 34%, transparent 100%);
 }
 
+/* Grain. A computed gradient reads as CSS; the same gradient under a little
+   noise reads as printed, and it is the cheapest instrument in the room. The
+   turbulence is an inline SVG rather than a fetched texture, so it costs no
+   request and asks nothing of the image policy beyond `data:`. */
+.listen-ambient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.16;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
+/* A browse page wants the window; 1000px was the READING measure, inherited on
+   to a shelf, and it held the grid to five columns on any monitor. */
 .listen-inner {
   position: relative;
-  max-width: 1000px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 40px 32px 96px;
+  padding: var(--room-pad) var(--room-gutter) 96px;
 }
 
+/* ── The bar that takes over when the hero leaves ─────────────────────────── */
+
+/* It reserves NO height: the top margin cancels the room's padding so it sits
+   flush when stuck, and the bottom margin gives back exactly what the box
+   took. Net zero, so the page's rhythm is identical whether it shows or not
+   and the content passes beneath it rather than being pushed. */
+.listen-bar {
+  position: sticky;
+  top: 0;
+  z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  height: var(--bar-h);
+  margin:
+    calc(-1 * var(--room-pad))
+    calc(-1 * var(--room-gutter))
+    calc(var(--room-pad) - var(--bar-h));
+  padding: 0 var(--room-gutter);
+  border-bottom: 1px solid var(--border-subtle);
+  background: color-mix(in oklab, var(--record-field) 88%, transparent);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-normal);
+  -webkit-backdrop-filter: blur(18px) saturate(1.4);
+  backdrop-filter: blur(18px) saturate(1.4);
+}
+
+.listen-bar[data-shown] { opacity: 1; pointer-events: auto; }
+
+.listen-bar-back {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  font: 0.9375rem/1 var(--font-ui);
+  cursor: pointer;
+}
+
+.listen-bar-back:hover { color: var(--text-primary); }
+
+.listen-bar-name {
+  flex: 1;
+  overflow: hidden;
+  color: var(--text-primary);
+  font: var(--fw-medium) 0.875rem/1.3 var(--font-reading);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.listen-bar-play {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: var(--record-accent);
+  color: var(--text-on-accent);
+  cursor: pointer;
+}
+
+.listen-bar-back:focus-visible,
+.listen-bar-play:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* ── The shelf ───────────────────────────────────────────────────────────── */
 .listen-head { margin-bottom: 34px; }
 
 .listen-title {
@@ -23794,7 +23916,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .listen-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
-  gap: 26px 20px;
+  gap: 30px 22px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -23816,12 +23938,24 @@ button.lang-phrase-diagram-node:focus-visible,
   cursor: pointer;
 }
 
-.listen-card-face.is-series { cursor: default; }
-
 .listen-card-art {
   position: relative;
   display: block;
   margin-bottom: 9px;
+  transition: transform var(--transition-normal);
+}
+
+/* The card answers the pointer, not just the play button. It used to be inert
+   under the cursor while a glyph faded in over it, which reads as a mockup
+   with one state wired: the object should rise to meet the hand. */
+.listen-card-face:hover .listen-card-art,
+.listen-card-face:focus-visible .listen-card-art { transform: translateY(-4px); }
+
+.listen-card-face:active .listen-card-art { transform: translateY(-1px); }
+
+.listen-card-face:hover .listen-cover,
+.listen-card-face:focus-visible .listen-cover {
+  box-shadow: 0 6px 16px rgb(0 0 0 / 0.2), 0 20px 46px rgb(0 0 0 / 0.16);
 }
 
 /* Square, because every cover here is square and a record is square. The
@@ -23839,6 +23973,7 @@ button.lang-phrase-diagram-node:focus-visible,
   border-radius: var(--radius-md);
   background: var(--bg-canvas);
   box-shadow: 0 1px 3px rgb(0 0 0 / 0.16), 0 8px 24px rgb(0 0 0 / 0.10);
+  transition: box-shadow var(--transition-normal);
 }
 
 .listen-cover img {
@@ -23851,7 +23986,9 @@ button.lang-phrase-diagram-node:focus-visible,
 .listen-cover.is-plate { display: grid; place-items: center; }
 
 /* The press target is the whole card; this is the affordance that says so,
-   and it arrives on hover the way it does in every listening app. */
+   and it arrives on hover the way it does in every listening app. Bottom
+   right, inset, so it never lands on the middle of the artwork — which is
+   where every Poor Bishop Hooper cover puts its lettering. */
 .listen-card-play {
   position: absolute;
   right: 9px;
@@ -23861,7 +23998,7 @@ button.lang-phrase-diagram-node:focus-visible,
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: var(--accent-seal);
+  background: var(--record-accent);
   color: var(--text-on-accent);
   box-shadow: 0 3px 10px rgb(0 0 0 / 0.3);
   opacity: 0;
@@ -23870,7 +24007,8 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 .listen-card-face:hover .listen-card-play,
-.listen-card-face:focus-visible .listen-card-play { opacity: 1; transform: none; }
+.listen-card-face:focus-visible .listen-card-play,
+.listen-card-face[data-on] .listen-card-play { opacity: 1; transform: none; }
 
 .listen-card-face:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring);
@@ -23883,9 +24021,11 @@ button.lang-phrase-diagram-node:focus-visible,
   letter-spacing: -0.003em;
 }
 
+.listen-card-face[data-on] .listen-card-name { color: var(--record-accent); }
+
 .listen-card-foot {
   color: var(--text-tertiary);
-  font: 0.6875rem/1.45 var(--font-ui);
+  font: 0.75rem/1.45 var(--font-ui);
 }
 
 .listen-card-plate[data-source] {
@@ -23907,7 +24047,37 @@ button.lang-phrase-diagram-node:focus-visible,
   text-indent: -200vw;
 }
 
-/* ── An album, opened ────────────────────────────────────────────────────── */
+/* Records that have not arrived yet, drawn at the size they will be. The room
+   used to gate the whole Series shelf on `length > 0`, so the page painted
+   Music alone and then jumped — a comp only ever shows the loaded state, and
+   that jump was the tell. */
+.listen-card.is-ghost {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.listen-card.is-ghost .listen-cover { box-shadow: none; }
+
+.listen-card.is-ghost .listen-cover,
+.listen-ghost-line {
+  background: var(--surface-hover);
+  animation: listen-breathe 1.6s ease-in-out infinite;
+}
+
+.listen-ghost-line {
+  height: 9px;
+  border-radius: var(--radius-mark);
+}
+
+.listen-ghost-line.is-short { width: 52%; }
+
+@keyframes listen-breathe {
+  0%, 100% { opacity: 0.55; }
+  50% { opacity: 1; }
+}
+
+/* ── A record, opened ─────────────────────────────────────────────────────── */
 .listen-back {
   margin: 0 0 20px;
   padding: 0;
@@ -23920,66 +24090,114 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .listen-back:hover { color: var(--text-primary); }
 
+.listen-back:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
 /* The hero is the record at a size worth looking at, with everything the
-   publisher said about it beside — which is the one thing a spreadsheet of
-   runtimes could never carry. */
+   publisher said about it beside. Both measurements are fluid now: a fixed
+   208px cover beside fixed 2rem type is a comp's centre spread, correct at
+   exactly one window width and small at every larger one. */
 .listen-hero {
   display: grid;
-  grid-template-columns: 208px minmax(0, 1fr);
-  gap: 26px;
+  grid-template-columns: clamp(172px, 17vw, 250px) minmax(0, 1fr);
+  gap: clamp(20px, 2.4vw, 34px);
   align-items: end;
-  margin-bottom: 40px;
+  margin-bottom: clamp(30px, 3vw, 46px);
 }
 
 .listen-cover.is-hero { box-shadow: 0 4px 12px rgb(0 0 0 / 0.22), 0 18px 50px rgb(0 0 0 / 0.16); }
 
-.listen-hero-words { padding-bottom: 4px; }
-
 .listen-hero-kicker {
-  margin: 0 0 6px;
+  margin: 0 0 8px;
   color: var(--text-tertiary);
   font: var(--fw-medium) 0.625rem/1.4 var(--font-ui);
   letter-spacing: 0.09em;
   text-transform: uppercase;
 }
 
+/* The loudest thing on the page, which it was not: the art was carrying the
+   record alone while its name sat at body size beside it. */
 .listen-hero-name {
   margin: 0;
   color: var(--text-primary);
-  font: var(--fw-medium) 2rem/1.12 var(--font-reading);
+  font: var(--fw-medium) clamp(1.9rem, 1.15rem + 2vw, 3.1rem)/1.05 var(--font-reading);
+  letter-spacing: -0.026em;
+}
+
+/* A long name steps DOWN rather than wrapping to four lines of display type,
+   which is the one thing a fluid scale cannot decide for itself. */
+.listen-hero-name[data-long] {
+  font-size: clamp(1.55rem, 1.05rem + 1.25vw, 2.25rem);
   letter-spacing: -0.018em;
 }
 
 .listen-hero-line {
-  margin: 8px 0 0;
+  margin: 10px 0 0;
   color: var(--text-secondary);
   font: 0.8125rem/1.5 var(--font-ui);
 }
 
-/* Three lines of the publisher's own words. Clamped rather than truncated by
-   character count, because a sentence cut at 220 characters ends mid-word and
-   a clamp ends at a line. */
-.listen-hero-about {
+/* ── The publisher's words, all of them ───────────────────────────────────── */
+
+/* THE DEFECT THIS REPLACES: three lines clamped with no affordance, cut
+   mid-sentence, the rest unreachable. The clamp stays — cutting on a line
+   beats cutting at 220 characters, which ends mid-word — but it fades into
+   the ground instead of stopping dead, and there is a way through it. */
+.listen-about { margin: 14px 0 0; }
+
+.listen-about-text {
   display: -webkit-box;
   overflow: hidden;
   max-width: 62ch;
-  margin: 12px 0 0;
+  margin: 0;
   color: var(--text-secondary);
-  font: 0.8125rem/1.6 var(--font-reading);
+  font: 0.8125rem/1.65 var(--font-reading);
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
+  -webkit-mask-image: linear-gradient(to bottom, #000 58%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 58%, transparent 100%);
 }
 
-.listen-hero-actions { margin-top: 16px; }
+/* Opened, the mask has to go with the clamp: a fade over prose that is all
+   there reads as a rendering fault. */
+.listen-about-text[data-open] {
+  display: block;
+  overflow: visible;
+  -webkit-mask-image: none;
+  mask-image: none;
+}
+
+.listen-about-more {
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-primary);
+  font: var(--fw-medium) 0.6875rem/1.5 var(--font-ui);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.listen-about-more:hover { color: var(--record-accent); }
+
+.listen-about-more:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.listen-hero-actions { margin-top: 18px; }
 
 .listen-play-all {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  padding: 9px 20px 9px 16px;
+  gap: 8px;
+  padding: 10px 22px 10px 18px;
   border: 0;
   border-radius: 999px;
-  background: var(--accent-seal);
+  background: var(--record-accent);
   color: var(--text-on-accent);
   font: var(--fw-medium) 0.8125rem/1 var(--font-ui);
   cursor: pointer;
@@ -23989,10 +24207,15 @@ button.lang-phrase-diagram-node:focus-visible,
 .listen-play-all:hover { transform: scale(1.03); }
 .listen-play-all:active { transform: scale(0.98); }
 
+.listen-play-all:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
 /* The illustrator, named. A cover shown without its artist is the thing the
    permission clause was written to prevent. */
 .listen-credits {
-  margin: 14px 0 0;
+  margin: 16px 0 0;
   color: var(--text-tertiary);
   font: 0.6875rem/1.6 var(--font-ui);
 }
@@ -24022,10 +24245,13 @@ button.lang-phrase-diagram-node:focus-visible,
   font: var(--fw-medium) 0.875rem/1.4 var(--font-reading);
 }
 
+/* A COUNT IS A LABEL, a duration is data, an index is furniture. All three
+   used to be 0.6875rem tertiary mono, which is a page that has decided
+   everything secondary is equally secondary. */
 .listen-group-count {
   color: var(--text-tertiary);
-  font: 0.6875rem/1.5 var(--font-mono);
-  font-variant-numeric: tabular-nums;
+  font: var(--fw-medium) 0.625rem/1.5 var(--font-ui);
+  letter-spacing: 0.06em;
 }
 
 .listen-tracks { margin: 0; padding: 0; list-style: none; }
@@ -24037,9 +24263,9 @@ button.lang-phrase-diagram-node:focus-visible,
   display: grid;
   grid-template-columns: 1.75rem minmax(0, 1fr) auto;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   width: 100%;
-  padding: 8px 10px;
+  padding: 9px 10px;
   border: 0;
   border-radius: var(--radius-sm);
   background: none;
@@ -24050,9 +24276,23 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .listen-track-face:hover { background: var(--surface-hover); }
 
+/* The row that is sounding says so. Without it a list of six hundred rows
+   gives a listener no way to find the one they are hearing. */
+.listen-track-face[data-on] {
+  background: color-mix(in oklab, var(--record-accent) 10%, transparent);
+}
+
+.listen-track-face[data-on] .listen-track-title { color: var(--record-accent); }
+
 .listen-track-face:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
+}
+
+.listen-track-mark {
+  display: grid;
+  place-items: center;
+  color: var(--record-accent);
 }
 
 .listen-track-no,
@@ -24071,18 +24311,59 @@ button.lang-phrase-diagram-node:focus-visible,
 .listen-track-face:hover .listen-track-play,
 .listen-track-face:focus-visible .listen-track-play { opacity: 1; }
 
+.listen-track-words {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 2px;
+}
+
+/* Two lines, not one ellipsis. Every BEMA episode is titled "Session 41 —
+   something with a colon in it", so a nowrap row was a column of "…". */
 .listen-track-title {
+  display: -webkit-box;
   overflow: hidden;
   color: var(--text-primary);
-  font: 0.875rem/1.5 var(--font-reading);
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  font: 0.875rem/1.45 var(--font-reading);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.listen-track-when {
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.4 var(--font-ui);
 }
 
 .listen-track-extent {
   color: var(--text-tertiary);
-  font: 0.6875rem/1.5 var(--font-mono);
+  font: 0.75rem/1.5 var(--font-mono);
   font-variant-numeric: tabular-nums;
+}
+
+/* ── The mark that says a thing is sounding ───────────────────────────────── */
+.listen-bars {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 1.5px;
+  height: 11px;
+}
+
+.listen-bars i {
+  width: 2px;
+  height: 100%;
+  border-radius: var(--radius-mark);
+  background: currentColor;
+  transform-origin: bottom;
+  animation: listen-bar 900ms ease-in-out infinite;
+}
+
+.listen-bars i:nth-child(2) { animation-delay: -180ms; }
+.listen-bars i:nth-child(3) { animation-delay: -420ms; }
+.listen-bars i:nth-child(4) { animation-delay: -640ms; }
+
+@keyframes listen-bar {
+  0%, 100% { transform: scaleY(0.26); }
+  50% { transform: scaleY(1); }
 }
 
 .listen-colophon {
@@ -24091,6 +24372,21 @@ button.lang-phrase-diagram-node:focus-visible,
   border-top: 1px solid var(--border-subtle);
   color: var(--text-tertiary);
   font: 0.625rem/1.5 var(--font-ui);
+}
+
+/* Held still rather than removed: the bars are how a row says it is the one
+   playing, and a listener who has asked for less motion still needs to know
+   which row that is. */
+@media (prefers-reduced-motion: reduce) {
+  .listen-bars i { animation: none; }
+  .listen-bars i:nth-child(1) { transform: scaleY(0.45); }
+  .listen-bars i:nth-child(2) { transform: scaleY(1); }
+  .listen-bars i:nth-child(3) { transform: scaleY(0.6); }
+  .listen-bars i:nth-child(4) { transform: scaleY(0.85); }
+  .listen-card.is-ghost .listen-cover,
+  .listen-ghost-line { animation: none; }
+  .listen-card-art,
+  .listen-play-all { transition: none; }
 }
 
 @media (max-width: 719px) {

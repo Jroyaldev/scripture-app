@@ -1,10 +1,34 @@
 {
- "spoken-gospel": "https://megaphone.imgix.net/podcasts/76893868-403a-11ed-8bb7-1bf1173d4363/image/cover.jpg?ixlib=rails-4.3.1&max-w=3000&max-h=3000&fit=crop&auto=format,compress",
- "ask-nt-wright": "https://megaphone.imgix.net/podcasts/c636c40e-ce89-11ef-a55e-e7b9b4e58b97/image/58c43404ca5de60cbf44179700da797b.jpg?ixlib=rails-4.3.1&max-w=3000&max-h=3000&fit=crop&auto=format,compress",
- "five-minutes-church-history": "https://static.libsyn.com/p/assets/1/c/9/4/1c94f0f42ad7b757e5bbc093207a2619/3000x3000_5MinutesInChurchHistory.jpg",
- "forty-minutes-ot": "https://static.libsyn.com/p/assets/4/8/e/f/48ef586aaf008b7b27a2322813b393ee/40_OT_Square_Fotor-20220411-z6xmz47rnc.jpg",
- "listeners-commentary": "https://pbcdn1.podbean.com/imglogo/image-logo/7896039/Copy_of_listeners_commentary_copy7h3rw.png",
- "thirty-minutes-nt": "https://static.libsyn.com/p/assets/5/8/b/2/58b2dce97092bae7d959afa2a1bf1c87/30_NT_Square_Fotor.jpg",
- "bema": "https://media24.fireside.fm/file/fireside-images-2024/podcasts/images/7/7d8cc2be-fe66-43fb-ada4-e62e2f8c00e7/cover.jpg?v=2",
- "radically-christian": "https://substackcdn.com/feed/podcast/2966200/cb531d3b48b6163ed2c175d9110b8298.jpg"
+ "spoken-gospel": {
+  "cover": "https://megaphone.imgix.net/podcasts/76893868-403a-11ed-8bb7-1bf1173d4363/image/cover.jpg?ixlib=rails-4.3.1&max-w=3000&max-h=3000&fit=crop&auto=format,compress",
+  "tint": "#172e40"
+ },
+ "ask-nt-wright": {
+  "cover": "https://megaphone.imgix.net/podcasts/c636c40e-ce89-11ef-a55e-e7b9b4e58b97/image/58c43404ca5de60cbf44179700da797b.jpg?ixlib=rails-4.3.1&max-w=3000&max-h=3000&fit=crop&auto=format,compress",
+  "tint": "#093d4a"
+ },
+ "five-minutes-church-history": {
+  "cover": "https://static.libsyn.com/p/assets/1/c/9/4/1c94f0f42ad7b757e5bbc093207a2619/3000x3000_5MinutesInChurchHistory.jpg",
+  "tint": "#8a888c"
+ },
+ "forty-minutes-ot": {
+  "cover": "https://static.libsyn.com/p/assets/4/8/e/f/48ef586aaf008b7b27a2322813b393ee/40_OT_Square_Fotor-20220411-z6xmz47rnc.jpg",
+  "tint": "#b2a070"
+ },
+ "listeners-commentary": {
+  "cover": "https://pbcdn1.podbean.com/imglogo/image-logo/7896039/Copy_of_listeners_commentary_copy7h3rw.png",
+  "tint": "#002055"
+ },
+ "thirty-minutes-nt": {
+  "cover": "https://static.libsyn.com/p/assets/5/8/b/2/58b2dce97092bae7d959afa2a1bf1c87/30_NT_Square_Fotor.jpg",
+  "tint": "#ee492b"
+ },
+ "bema": {
+  "cover": "https://media24.fireside.fm/file/fireside-images-2024/podcasts/images/7/7d8cc2be-fe66-43fb-ada4-e62e2f8c00e7/cover.jpg?v=2",
+  "tint": "#ffffff"
+ },
+ "radically-christian": {
+  "cover": "https://substackcdn.com/feed/podcast/2966200/cb531d3b48b6163ed2c175d9110b8298.jpg",
+  "tint": "#0c1420"
+ }
 }

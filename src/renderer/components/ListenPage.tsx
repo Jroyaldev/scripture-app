@@ -19,30 +19,46 @@
  * The first build of this room drew no artwork, because "publisher artwork and
  * cover thumbnails" sat under Deferred in docs/trusted-resource-permissions.
  * The maintainer lifted that deferral looking at the result, and was right to:
- * a listening room without the record is a spreadsheet of runtimes. A cover is
- * how anyone has ever found music, and fourteen albums of type all look like
- * the same album.
+ * a listening room without the record is a spreadsheet of runtimes.
  *
- * So the room is art-led now, under the terms that clause records — the image
- * is REFERENCED from the publisher's own host at draw time, never copied — and
- * every piece of art carries its illustrator's name where the publisher states
- * one. The tint under each record is computed from the cover itself at import
- * (see scripts/import-poor-bishop-hooper), so an ambient field costs the
- * renderer nothing and cannot disagree with the artwork above it.
+ * The image is REFERENCED from the publisher's own host at draw time, never
+ * copied, and every piece of art carries its illustrator's name where the
+ * publisher states one.
  *
- * ── ONE TRANSPORT ───────────────────────────────────────────────────────────
+ * ── THE DETAIL PASS · 2026-08-02 ────────────────────────────────────────────
  *
- * Music does not get a player of its own. A track is shaped into the same
- * `PodcastEpisode` the margin hands over and goes through the same
- * `playPodcastEpisode`, so there is still exactly one audio element in the
- * app and the dock is still the only thing that owns it.
+ * The maintainer read the first art-led build as a mockup rather than a
+ * finished screen, and named the tell exactly: the publisher's description was
+ * clamped to three lines with no way to open it. That is what separates a comp
+ * from a product — a comp is built with copy that happens to fit. Everything
+ * below is the same category of defect, found by looking for it:
+ *
+ *   · the description opens now, and fades rather than guillotines
+ *   · ONE hero serves both pages, because album and series are siblings and
+ *     were drifting into rich and poor relations of each other
+ *   · a series carries its span and its runtime, so its hero says something
+ *   · the accent is derived from the record's own artwork rather than the
+ *     app's seal, so each page is coloured by the thing it is about
+ *   · the shelf paints a skeleton instead of popping the Series row in when
+ *     the audio IPC lands
+ *   · a playing row says so, in every list
+ *   · Escape leaves a series the way it already left an album
+ *
+ * WHAT IS DELIBERATELY NOT HERE: pressing Play still starts one track rather
+ * than a queue. That is real, it is task #2, and it wants the walk machinery
+ * rather than a second sequencer bolted on here.
  */
 
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import catalogue from "../../../data/music/poor-bishop-hooper.json";
 import seriesArt from "../../../data/music/series-art.json";
-import { playPodcastEpisode, type PodcastEpisode, type PodcastPassage } from "./PodcastPlayer";
+import {
+  playPodcastEpisode,
+  usePodcastNowPlaying,
+  type PodcastEpisode,
+  type PodcastPassage,
+} from "./PodcastPlayer";
 import type { ResourceLibraryCatalogue } from "./ResourceLibraryMatrix";
 import type { AudioCatalogueEpisode } from "../../core/resources/audio-catalogue";
 
@@ -61,7 +77,10 @@ interface MusicCatalogue {
 }
 
 const MUSIC = catalogue as unknown as MusicCatalogue;
-const SERIES_ART = seriesArt as Record<string, string>;
+/** Cover and the one colour it is, computed at author time by
+ *  scripts/compute-cover-tints.py so no page has to look at an image to
+ *  know what colour it should be. */
+const SERIES_ART = seriesArt as Record<string, { cover: string; tint: string }>;
 
 /** What the shows the manifest registry does not carry call themselves. */
 const NAMES: Record<string, string> = {
@@ -76,13 +95,15 @@ function seconds(duration: string): number {
   return parts.reduce((total, part) => total * 60 + part, 0);
 }
 
-/** "3 hr 12 min" — the shape a listener reads a runtime in, not "192 min". */
+/** "3 hr 12 min" — the shape a listener reads a runtime in, not "192 min".
+ *  Past a day of audio the minutes stop meaning anything, so they go. */
 function extent(total: number): string {
   const minutes = Math.round(total / 60);
   if (minutes < 60) return `${minutes} min`;
   const hours = Math.floor(minutes / 60);
   const rest = minutes % 60;
-  return rest === 0 ? `${hours} hr` : `${hours} hr ${rest} min`;
+  if (hours >= 24 || rest === 0) return `${hours} hr`;
+  return `${hours} hr ${rest} min`;
 }
 
 /** The year the publisher stated, out of whatever prose they stated it in. */
@@ -99,14 +120,42 @@ function albumLine(album: MusicAlbum): string {
   return [year(album.released), count, runtime].filter(Boolean).join(" · ");
 }
 
+/**
+ * What a series can say about itself out of what the feed actually gave us.
+ *
+ * The album hero has the publisher's own prose; `episodes.json` carries no
+ * description, so a series hero would be a name and a number unless it counted
+ * something. Its span and its runtime are both real, both derived, and both
+ * the sort of fact a listener weighs before starting a 514-episode show. When
+ * the feed descriptions are captured, they belong above this line, not
+ * instead of it.
+ */
+function seriesLine(episodes: readonly AudioCatalogueEpisode[]): string {
+  const count = `${episodes.length} ${episodes.length === 1 ? "episode" : "episodes"}`;
+  const years = episodes
+    .map((ep) => (ep.publishedAt ? new Date(ep.publishedAt).getFullYear() : NaN))
+    .filter((n) => Number.isFinite(n)) as number[];
+  const span = years.length
+    ? (Math.min(...years) === Math.max(...years)
+      ? String(Math.min(...years))
+      : `${Math.min(...years)}–${Math.max(...years)}`)
+    : null;
+  const runtime = episodes.reduce((n, ep) => n + (ep.durationSeconds ?? 0), 0);
+  return [span, count, runtime > 0 ? extent(runtime) : null].filter(Boolean).join(" · ");
+}
+
 /** The whole track IS the psalm; there is no interior position to point at. */
 function trackPassage(track: MusicTrack): PodcastPassage | null {
   if (track.psalm === undefined) return null;
   return { book: "PSA", chapter: track.psalm, verse: null, endVerse: null, basis: "record" };
 }
 
+function trackId(album: MusicAlbum, track: MusicTrack): string {
+  return `${MUSIC.source.id}:${album.name}:${track.title}`;
+}
+
 function asEpisode(album: MusicAlbum, track: MusicTrack): PodcastEpisode {
-  const id = `${MUSIC.source.id}:${album.name}:${track.title}`;
+  const id = trackId(album, track);
   return {
     id, sourceId: MUSIC.source.id, recordId: id,
     sourceName: MUSIC.source.name,
@@ -147,11 +196,29 @@ function clock(secondsTotal: number | null): string {
     : `${m}:${String(s2).padStart(2, "0")}`;
 }
 
+/** "14 March 2019" — the publisher's date, in the reader's own locale. */
+function stamp(iso: string | null): string {
+  if (!iso) return "";
+  const when = new Date(iso);
+  if (Number.isNaN(when.getTime())) return "";
+  return when.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+}
+
 function PlayGlyph({ size = 15 }: { size?: number }): React.JSX.Element {
   return (
     <svg viewBox="0 0 24 24" width={size} height={size} aria-hidden="true" fill="currentColor">
       <path d="M8 5.5v13l11-6.5z" />
     </svg>
+  );
+}
+
+/** Four bars, moving while the audio is. Held still by prefers-reduced-motion
+ *  in the sheet, where it stays a legible mark rather than becoming nothing. */
+function BarsGlyph(): React.JSX.Element {
+  return (
+    <span aria-hidden="true" className="listen-bars">
+      <i /><i /><i /><i />
+    </span>
   );
 }
 
@@ -174,11 +241,179 @@ function Cover({ src, tint, alt, className = "" }: {
   );
 }
 
+/**
+ * The publisher's own words, all of them.
+ *
+ * THE DEFECT THIS REPLACES: a three-line clamp with no affordance, which cut
+ * mid-sentence and left the rest unreachable. A clamp is the right instrument
+ * — cutting on a line beats cutting at 220 characters, which ends mid-word —
+ * but a clamp without a way out is a screenshot of a paragraph.
+ *
+ * So: it still clamps, it fades on the last line rather than stopping dead,
+ * and the control that opens it says which way it goes. Short prose that fits
+ * inside the clamp gets no control at all, because a More button that reveals
+ * nothing is worse than the truncation it advertises — which is why the
+ * measurement is against the live element rather than a character count.
+ */
+function About({ text }: { text: string }): React.JSX.Element {
+  const [open, setOpen] = useState(false);
+  const [clipped, setClipped] = useState(false);
+  const ref = useRef<HTMLParagraphElement>(null);
+
+  useEffect(() => {
+    const node = ref.current;
+    if (!node) return undefined;
+    const measure = (): void => setClipped(node.scrollHeight - node.clientHeight > 2);
+    measure();
+    /* The clamp is measured in lines and the lines depend on the width, so a
+       window drag can hide or reveal the overflow the button is about. */
+    const observer = new ResizeObserver(measure);
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [text]);
+
+  return (
+    <div className="listen-about">
+      <p className="listen-about-text" data-open={open ? "" : undefined} ref={ref}>{text}</p>
+      {(clipped || open) && (
+        <button className="listen-about-more" onClick={() => setOpen(!open)} type="button">
+          {open ? "Less" : "More"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/**
+ * ONE hero, both pages.
+ *
+ * They had drifted: the album got a field of its own colour, the publisher's
+ * prose and the illustrator's name, and the series got a name and a count on
+ * bare paper. Two pages that arrive by the same gesture and hold the same kind
+ * of thing should not look like different products, so the shape is declared
+ * once here and each page passes what it actually has. A series with no prose
+ * renders without prose — it does not render a placeholder, and it does not
+ * get a different layout for being poorer in metadata.
+ */
+function Hero({ art, tint, kicker, name, line, about, credits, onPlay, playing, innerRef }: {
+  art?: string | null; tint?: string; kicker: string; name: string; line: string;
+  about?: string; credits?: Record<string, string>;
+  onPlay: () => void; playing: boolean;
+  innerRef?: React.RefObject<HTMLElement | null>;
+}): React.JSX.Element {
+  return (
+    <header className="listen-hero" ref={innerRef as React.RefObject<HTMLElement>}>
+      <Cover alt={`${name} cover`} className="is-hero" src={art} tint={tint} />
+      <div className="listen-hero-words">
+        <p className="listen-hero-kicker">{kicker}</p>
+        {/* Long names step down rather than wrapping to four lines of display
+            type, which is the one thing a fluid scale cannot do on its own. */}
+        <h1 className="listen-hero-name" data-long={name.length > 26 ? "" : undefined}>{name}</h1>
+        <p className="listen-hero-line">{line}</p>
+        {about && <About text={about} />}
+        <div className="listen-hero-actions">
+          <button className="listen-play-all" onClick={onPlay} type="button">
+            {playing ? <BarsGlyph /> : <PlayGlyph size={16} />}
+            {playing ? "Playing" : "Play"}
+          </button>
+        </div>
+        {credits && (
+          <p className="listen-credits">
+            {Object.entries(credits).map(([role, who]) => `${role}: ${who}`).join(" · ")}
+          </p>
+        )}
+      </div>
+    </header>
+  );
+}
+
+/**
+ * The bar that takes over when the hero leaves.
+ *
+ * In a 352-track album the header scrolls away within a screen and nothing
+ * replaces it, so a listener four hundred rows down has no idea what they are
+ * looking at. Both reference apps solve it the same way and so does this: the
+ * record's name and its play control, on a blurred plate, appearing exactly
+ * when the real hero stops being visible.
+ *
+ * It reserves no height — the negative margin cancels its own box — so the
+ * page's rhythm is identical whether the bar is showing or not, and content
+ * passes underneath it rather than being pushed by it.
+ */
+function CompactBar({ shown, name, onPlay, onBack, playing }: {
+  shown: boolean; name: string; onPlay: () => void; onBack: () => void; playing: boolean;
+}): React.JSX.Element {
+  return (
+    <div className="listen-bar" data-shown={shown ? "" : undefined}>
+      <button aria-label="Back" className="listen-bar-back" onClick={onBack} type="button">←</button>
+      <span className="listen-bar-name">{name}</span>
+      <button aria-label={`Play ${name}`} className="listen-bar-play" onClick={onPlay} type="button">
+        {playing ? <BarsGlyph /> : <PlayGlyph size={13} />}
+      </button>
+    </div>
+  );
+}
+
+/** Placeholder records, so the Series shelf has a shape before it has content.
+ *  Without this the page paints Music alone and then jumps when the audio IPC
+ *  lands, which is the most reliable way to look unfinished. */
+function Skeleton(): React.JSX.Element {
+  return (
+    <ul className="listen-grid" aria-hidden="true">
+      {Array.from({ length: 8 }, (_, index) => (
+        <li className="listen-card is-ghost" key={index}>
+          <span className="listen-cover" />
+          <span className="listen-ghost-line" />
+          <span className="listen-ghost-line is-short" />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/**
+ * True once the hero has scrolled out of the room's own scroll box.
+ *
+ * TWO THINGS THE TOUR FOUND HERE, both invisible in the source.
+ *
+ * `open` is not decoration. The hero only exists on a record page, so an
+ * effect that ran once on mount found nothing to observe — the shelf is what
+ * is on screen then — and never looked again. The bar stayed hidden in every
+ * album anyone opened.
+ *
+ * And it watches the HERO, not a sentinel after it. The first build observed
+ * an empty `<div>`, which has no area, and a zero-area target is a question
+ * IntersectionObserver answers differently depending on where it sits. The
+ * hero is the thing the bar is standing in for; observing anything else is a
+ * proxy that can drift from what it proxies.
+ */
+function usePassed(scroller: React.RefObject<HTMLDivElement | null>, open: string): [
+  boolean, React.RefObject<HTMLElement | null>,
+] {
+  const mark = useRef<HTMLElement>(null);
+  const [passed, setPassed] = useState(false);
+  useEffect(() => {
+    setPassed(false);
+    const node = mark.current;
+    if (!node) return undefined;
+    const observer = new IntersectionObserver(
+      ([entry]) => setPassed(!(entry?.isIntersecting ?? true)),
+      { root: scroller.current, threshold: 0 },
+    );
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [scroller, open]);
+  return [passed, mark];
+}
+
 export function ListenPage(): React.JSX.Element {
   const [openAlbum, setOpenAlbum] = useState<string | null>(null);
   const [resourceCatalogue, setResourceCatalogue] = useState<ResourceLibraryCatalogue | null>(null);
-  const [audio, setAudio] = useState<Record<string, AudioCatalogueEpisode[]>>({});
+  const [audio, setAudio] = useState<Record<string, AudioCatalogueEpisode[]> | null>(null);
   const [openSeries, setOpenSeries] = useState<string | null>(null);
+  const now = usePodcastNowPlaying();
+  const scroller = useRef<HTMLDivElement>(null);
+  const [passed, mark] = usePassed(scroller, openAlbum ?? openSeries ?? "");
 
   /* TWO CATALOGUES, AND THE ROOM NEEDS BOTH — for names, and for episodes.
      `trustedResources.catalogue()` knows what each publisher is CALLED, and
@@ -190,13 +425,17 @@ export function ListenPage(): React.JSX.Element {
   useEffect(() => {
     let live = true;
     void window.api.trustedResources.catalogue().then(async (result) => {
-      if (!live || !result.ok) return;
+      if (!live || !result.ok) { if (live) setAudio({}); return; }
       setResourceCatalogue({ sources: result.sources, mutes: result.mutes });
       const ids = [...new Set([...result.sources.map((s) => s.id), ...Object.keys(SERIES_ART)])];
       const shelf = await window.api.audio.catalogue(ids);
-      if (!live || !shelf.ok) return;
-      setAudio(Object.fromEntries(shelf.series.map((s) => [s.sourceId, s.episodes])));
-    }).catch(() => { /* an empty shelf is the honest answer to a refusal */ });
+      if (!live) return;
+      setAudio(shelf.ok ? Object.fromEntries(shelf.series.map((s) => [s.sourceId, s.episodes])) : {});
+    }).catch(() => {
+      /* An empty shelf is the honest answer to a refusal, and it has to be set
+         rather than left null or the room waits on a skeleton forever. */
+      if (live) setAudio({});
+    });
     return () => { live = false; };
   }, []);
 
@@ -209,14 +448,26 @@ export function ListenPage(): React.JSX.Element {
   }), []);
   const album = albums.find((a) => a.name === openAlbum) ?? null;
 
+  /* Escape leaves whichever record is open. It used to leave only an album,
+     because the handler was hung on `album` and the series page had been
+     written afterwards — the kind of asymmetry nobody sees until they are in
+     the other page pressing the key that worked a moment ago. */
   useEffect(() => {
-    if (!album) return undefined;
+    if (!openAlbum && !openSeries) return undefined;
     const onKey = (event: KeyboardEvent): void => {
-      if (event.key === "Escape") { event.preventDefault(); setOpenAlbum(null); }
+      if (event.key !== "Escape") return;
+      event.preventDefault();
+      setOpenAlbum(null);
+      setOpenSeries(null);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [album]);
+  }, [openAlbum, openSeries]);
+
+  /* Opening a record puts the reader at its top. Without this the second
+     album you open starts four hundred rows down, inside the scroll position
+     the first one left behind. */
+  useEffect(() => { scroller.current?.scrollTo({ top: 0 }); }, [openAlbum, openSeries]);
 
   /* An album's own groups, in the order its tracks arrive. EveryPsalm ships
      thirteen — the psalm genres their illustrator drew a cover for, plus the
@@ -248,11 +499,14 @@ export function ListenPage(): React.JSX.Element {
      margin cannot name are named here until they join it. */
   const titleFromId = (id: string): string =>
     NAMES[id] ?? id.split("-").map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
-  const series = Object.entries(audio)
+  const series = Object.entries(audio ?? {})
     .filter(([id]) => !muted.has(id))
     .map(([id, episodes]) => ({ id, name: named.get(id) ?? titleFromId(id), episodes }))
     .sort((a, b) => b.episodes.length - a.episodes.length);
   const openedSeries = series.find((s) => s.id === openSeries) ?? null;
+
+  const playingId = now.episode?.id ?? null;
+  const sounding = now.status === "playing" || now.status === "reaching";
 
   if (openedSeries) {
     /* SEASONS, and they are the publisher's calendar rather than our
@@ -269,30 +523,27 @@ export function ListenPage(): React.JSX.Element {
       byYear.get(key)!.push(ep);
     }
     const art = SERIES_ART[openedSeries.id];
+    const here = now.episode?.sourceId === openedSeries.id && sounding;
+    const start = (): void => {
+      const first = openedSeries.episodes[0];
+      if (first) playPodcastEpisode(seriesEpisode(openedSeries.id, openedSeries.name, first));
+    };
     return (
-      <div className="listen">
+      <div className="listen" ref={scroller} style={art ? { "--record-tint": art.tint } as React.CSSProperties : undefined}>
+        <div className="listen-ambient" />
         <div className="listen-inner">
+          <CompactBar name={openedSeries.name} onBack={() => setOpenSeries(null)} onPlay={start} playing={here} shown={passed} />
           <button className="listen-back" onClick={() => setOpenSeries(null)} type="button">← All series</button>
-          <header className="listen-hero">
-            <Cover alt={`${openedSeries.name} cover`} className="is-hero" src={art} />
-            <div className="listen-hero-words">
-              <p className="listen-hero-kicker">Series</p>
-              <h1 className="listen-hero-name">{openedSeries.name}</h1>
-              <p className="listen-hero-line">{openedSeries.episodes.length} episodes</p>
-              <div className="listen-hero-actions">
-                <button
-                  className="listen-play-all"
-                  onClick={() => {
-                    const first = openedSeries.episodes[0];
-                    if (first) playPodcastEpisode(seriesEpisode(openedSeries.id, openedSeries.name, first));
-                  }}
-                  type="button"
-                >
-                  <PlayGlyph size={16} /> Play
-                </button>
-              </div>
-            </div>
-          </header>
+          <Hero
+            art={art?.cover}
+            kicker="Series"
+            line={seriesLine(openedSeries.episodes)}
+            name={openedSeries.name}
+            onPlay={start}
+            innerRef={mark}
+            playing={here}
+            tint={art?.tint}
+          />
           {[...byYear.entries()].map(([when, eps]) => (
             <section className="listen-group" key={when}>
               <div className="listen-group-head">
@@ -300,21 +551,36 @@ export function ListenPage(): React.JSX.Element {
                 <span className="listen-group-count">{eps.length}</span>
               </div>
               <ol className="listen-tracks">
-                {eps.map((ep, index) => (
-                  <li className="listen-track" key={ep.recordId}>
-                    <button
-                      aria-label={`Play ${ep.title} — ${openedSeries.name}`}
-                      className="listen-track-face"
-                      onClick={() => playPodcastEpisode(seriesEpisode(openedSeries.id, openedSeries.name, ep))}
-                      type="button"
-                    >
-                      <span aria-hidden="true" className="listen-track-no">{index + 1}</span>
-                      <span aria-hidden="true" className="listen-track-play"><PlayGlyph /></span>
-                      <span className="listen-track-title">{ep.title}</span>
-                      <span className="listen-track-extent">{clock(ep.durationSeconds)}</span>
-                    </button>
-                  </li>
-                ))}
+                {eps.map((ep, index) => {
+                  const id = `${openedSeries.id}:${ep.recordId}`;
+                  const on = playingId === id;
+                  return (
+                    <li className="listen-track" key={ep.recordId}>
+                      <button
+                        aria-current={on ? "true" : undefined}
+                        aria-label={`Play ${ep.title} — ${openedSeries.name}`}
+                        className="listen-track-face"
+                        data-on={on ? "" : undefined}
+                        onClick={() => playPodcastEpisode(seriesEpisode(openedSeries.id, openedSeries.name, ep))}
+                        type="button"
+                      >
+                        <span className="listen-track-mark">
+                          {on && sounding
+                            ? <BarsGlyph />
+                            : <>
+                              <span aria-hidden="true" className="listen-track-no">{index + 1}</span>
+                              <span aria-hidden="true" className="listen-track-play"><PlayGlyph /></span>
+                            </>}
+                        </span>
+                        <span className="listen-track-words">
+                          <span className="listen-track-title">{ep.title}</span>
+                          {stamp(ep.publishedAt) && <span className="listen-track-when">{stamp(ep.publishedAt)}</span>}
+                        </span>
+                        <span className="listen-track-extent">{clock(ep.durationSeconds)}</span>
+                      </button>
+                    </li>
+                  );
+                })}
               </ol>
             </section>
           ))}
@@ -328,35 +594,26 @@ export function ListenPage(): React.JSX.Element {
   }
 
   if (album) {
+    const here = album.tracks.some((t) => trackId(album, t) === playingId) && sounding;
+    const start = (): void => { const first = album.tracks[0]; if (first) playPodcastEpisode(asEpisode(album, first)); };
     return (
-      <div className="listen">
-        <div className="listen-ambient" style={album.tint ? { background: album.tint } : undefined} />
+      <div className="listen" ref={scroller} style={album.tint ? { "--record-tint": album.tint } as React.CSSProperties : undefined}>
+        <div className="listen-ambient" />
         <div className="listen-inner">
+          <CompactBar name={album.name} onBack={() => setOpenAlbum(null)} onPlay={start} playing={here} shown={passed} />
           <button className="listen-back" onClick={() => setOpenAlbum(null)} type="button">← All music</button>
-
-          <header className="listen-hero">
-            <Cover alt={`${album.name} cover`} className="is-hero" src={album.cover} tint={album.tint} />
-            <div className="listen-hero-words">
-              <p className="listen-hero-kicker">Album · {MUSIC.source.name}</p>
-              <h1 className="listen-hero-name">{album.name}</h1>
-              <p className="listen-hero-line">{albumLine(album)}</p>
-              {album.about && <p className="listen-hero-about">{album.about}</p>}
-              <div className="listen-hero-actions">
-                <button
-                  className="listen-play-all"
-                  onClick={() => { const first = album.tracks[0]; if (first) playPodcastEpisode(asEpisode(album, first)); }}
-                  type="button"
-                >
-                  <PlayGlyph size={16} /> Play
-                </button>
-              </div>
-              {album.credits && (
-                <p className="listen-credits">
-                  {Object.entries(album.credits).map(([role, who]) => `${role}: ${who}`).join(" · ")}
-                </p>
-              )}
-            </div>
-          </header>
+          <Hero
+            about={album.about}
+            art={album.cover}
+            credits={album.credits}
+            kicker={`Album · ${MUSIC.source.name}`}
+            line={albumLine(album)}
+            name={album.name}
+            onPlay={start}
+            innerRef={mark}
+            playing={here}
+            tint={album.tint}
+          />
 
           {groups.map((group) => (
             <section className="listen-group" key={group.name || "all"}>
@@ -368,21 +625,34 @@ export function ListenPage(): React.JSX.Element {
                 </div>
               )}
               <ol className="listen-tracks">
-                {group.tracks.map((track, index) => (
-                  <li className="listen-track" key={`${track.title}:${index}`}>
-                    <button
-                      aria-label={`Play ${track.title} — ${album.name}, ${MUSIC.source.name}`}
-                      className="listen-track-face"
-                      onClick={() => playPodcastEpisode(asEpisode(album, track))}
-                      type="button"
-                    >
-                      <span aria-hidden="true" className="listen-track-no">{index + 1}</span>
-                      <span aria-hidden="true" className="listen-track-play"><PlayGlyph /></span>
-                      <span className="listen-track-title">{track.title}</span>
-                      <span className="listen-track-extent">{track.duration}</span>
-                    </button>
-                  </li>
-                ))}
+                {group.tracks.map((track, index) => {
+                  const on = playingId === trackId(album, track);
+                  return (
+                    <li className="listen-track" key={`${track.title}:${index}`}>
+                      <button
+                        aria-current={on ? "true" : undefined}
+                        aria-label={`Play ${track.title} — ${album.name}, ${MUSIC.source.name}`}
+                        className="listen-track-face"
+                        data-on={on ? "" : undefined}
+                        onClick={() => playPodcastEpisode(asEpisode(album, track))}
+                        type="button"
+                      >
+                        <span className="listen-track-mark">
+                          {on && sounding
+                            ? <BarsGlyph />
+                            : <>
+                              <span aria-hidden="true" className="listen-track-no">{index + 1}</span>
+                              <span aria-hidden="true" className="listen-track-play"><PlayGlyph /></span>
+                            </>}
+                        </span>
+                        <span className="listen-track-words">
+                          <span className="listen-track-title">{track.title}</span>
+                        </span>
+                        <span className="listen-track-extent">{track.duration}</span>
+                      </button>
+                    </li>
+                  );
+                })}
               </ol>
             </section>
           ))}
@@ -397,7 +667,7 @@ export function ListenPage(): React.JSX.Element {
   }
 
   return (
-    <div className="listen">
+    <div className="listen" ref={scroller}>
       <div className="listen-inner">
         <header className="listen-head">
           <h1 className="listen-title">Listen</h1>
@@ -410,63 +680,78 @@ export function ListenPage(): React.JSX.Element {
             <p className="listen-shelf-by">{MUSIC.source.name}</p>
           </div>
           <ul className="listen-grid">
-            {albums.map((entry) => (
-              <li className="listen-card" key={entry.name}>
-                <button
-                  aria-label={`${entry.name} — ${albumLine(entry)}`}
-                  className="listen-card-face"
-                  onClick={() => setOpenAlbum(entry.name)}
-                  type="button"
-                >
-                  <span className="listen-card-art">
-                    <Cover alt={`${entry.name} cover`} src={entry.cover} tint={entry.tint} />
-                    <span aria-hidden="true" className="listen-card-play"><PlayGlyph size={18} /></span>
-                  </span>
-                  <span className="listen-card-name">{entry.name}</span>
-                  <span className="listen-card-foot">{albumLine(entry)}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-
-        {series.length > 0 && (
-          <section aria-label="Series" className="listen-shelf">
-            <div className="listen-shelf-head">
-              <h2 className="listen-shelf-name">Series</h2>
-              <p className="listen-shelf-by">Spoken, from your library</p>
-            </div>
-            <ul className="listen-grid">
-              {series.map((source) => (
-                <li className="listen-card" data-source={source.id} key={source.id}>
+            {albums.map((entry) => {
+              const on = entry.tracks.some((t) => trackId(entry, t) === playingId) && sounding;
+              return (
+                <li className="listen-card" key={entry.name}>
                   <button
-                    aria-label={`${source.name} — ${source.episodes.length} episodes`}
+                    aria-label={`${entry.name} — ${albumLine(entry)}`}
                     className="listen-card-face"
-                    onClick={() => setOpenSeries(source.id)}
+                    data-on={on ? "" : undefined}
+                    onClick={() => setOpenAlbum(entry.name)}
+                    style={entry.tint ? { "--record-tint": entry.tint } as React.CSSProperties : undefined}
                     type="button"
                   >
                     <span className="listen-card-art">
-                      {SERIES_ART[source.id]
-                        ? <Cover alt={`${source.name} cover`} src={SERIES_ART[source.id]} />
-                        : (
-                          <span className="listen-cover is-plate">
-                            <span className="listen-card-plate" data-source={source.id}>
-                              <span className="taught-here-mark">{source.name}</span>
-                            </span>
-                          </span>
-                        )}
-                      <span aria-hidden="true" className="listen-card-play"><PlayGlyph size={18} /></span>
+                      <Cover alt={`${entry.name} cover`} src={entry.cover} tint={entry.tint} />
+                      <span aria-hidden="true" className="listen-card-play">
+                        {on ? <BarsGlyph /> : <PlayGlyph size={18} />}
+                      </span>
                     </span>
-                    <span className="listen-card-name">{source.name}</span>
-                    <span className="listen-card-foot">
-                      {source.episodes.length} {source.episodes.length === 1 ? "episode" : "episodes"}
-                    </span>
+                    <span className="listen-card-name">{entry.name}</span>
+                    <span className="listen-card-foot">{albumLine(entry)}</span>
                   </button>
                 </li>
-              ))}
+              );
+            })}
+          </ul>
+        </section>
+
+        <section aria-label="Series" className="listen-shelf">
+          <div className="listen-shelf-head">
+            <h2 className="listen-shelf-name">Series</h2>
+            <p className="listen-shelf-by">Spoken, from your library</p>
+          </div>
+          {audio === null ? <Skeleton /> : (
+            <ul className="listen-grid">
+              {series.map((source) => {
+                const art = SERIES_ART[source.id];
+                const on = now.episode?.sourceId === source.id && sounding;
+                return (
+                  <li className="listen-card" data-source={source.id} key={source.id}>
+                    <button
+                      aria-label={`${source.name} — ${source.episodes.length} episodes`}
+                      className="listen-card-face"
+                      data-on={on ? "" : undefined}
+                      onClick={() => setOpenSeries(source.id)}
+                      style={art ? { "--record-tint": art.tint } as React.CSSProperties : undefined}
+                      type="button"
+                    >
+                      <span className="listen-card-art">
+                        {art
+                          ? <Cover alt={`${source.name} cover`} src={art.cover} tint={art.tint} />
+                          : (
+                            <span className="listen-cover is-plate">
+                              <span className="listen-card-plate" data-source={source.id}>
+                                <span className="taught-here-mark">{source.name}</span>
+                              </span>
+                            </span>
+                          )}
+                        <span aria-hidden="true" className="listen-card-play">
+                          {on ? <BarsGlyph /> : <PlayGlyph size={18} />}
+                        </span>
+                      </span>
+                      <span className="listen-card-name">{source.name}</span>
+                      <span className="listen-card-foot">
+                        {source.episodes.length} {source.episodes.length === 1 ? "episode" : "episodes"}
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
             </ul>
-          </section>
-        )}
+          )}
+        </section>
 
         <p className="listen-colophon">
           Artwork and audio are shown and streamed from each publisher’s own servers.
