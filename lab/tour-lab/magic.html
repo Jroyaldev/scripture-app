@@ -27,7 +27,7 @@
   <!-- Scene 2 · the making. One quiet line at a time, in honest past-tense of
        what the pipeline is actually doing. No bar, no percent, no spinner. -->
   <section id="making" class="scene">
-    <p id="making-line" class="making-line"></p>
+    <p id="making-line" class="making-line" role="status" aria-live="polite" aria-atomic="true"></p>
     <div id="making-marks" class="making-marks" aria-hidden="true"></div>
   </section>
 
@@ -47,13 +47,13 @@
 
 <!-- The theater: when a reading plays, the page becomes the stage. Controls
      minimize to one quiet bar; the texts get the room. -->
-<section id="theater" aria-label="Now playing">
+<section id="theater" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Now playing" tabindex="-1">
   <header class="th-head">
     <span class="th-source"></span>
     <span class="th-title"></span>
   </header>
   <p class="th-whisper"></p>
-  <div class="th-body">
+  <div class="th-body" aria-busy="false">
     <blockquote class="verses"></blockquote>
     <div class="footnotes"></div>
     <div class="terms"></div>
@@ -72,7 +72,8 @@
       </svg>
     </button>
     <button id="th-back" class="th-jump" aria-label="Back 15 seconds">−15</button>
-    <div class="th-progress" role="slider" aria-label="Position"><i></i></div>
+    <div class="th-progress" role="slider" tabindex="0" aria-label="Position"
+         aria-valuemin="0" aria-valuemax="0" aria-valuenow="0" aria-valuetext="Not playing"><i></i></div>
     <button id="th-fwd" class="th-jump" aria-label="Forward 15 seconds">+15</button>
   </footer>
 </section>

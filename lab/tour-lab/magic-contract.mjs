@@ -55,6 +55,22 @@ export function assertMagicModel(modelKey) {
   return modelKey;
 }
 
+export function resolveMagicSearchModels(input) {
+  if (!isObject(input) || input.surface !== 'magic') return null;
+  const supplied = Array.isArray(input.models) && input.models.length
+    ? input.models
+    : input.model != null
+      ? [input.model]
+      : [];
+  const requested = [...new Set(supplied.map((value) => String(value || '').trim()).filter(Boolean))];
+  if (requested.some((modelKey) => modelKey !== MAGIC_MODEL_ROLES.search)) {
+    const error = new Error(`\/magic search permits only ${MAGIC_MODEL_ROLES.search}`);
+    error.code = 'MAGIC_MODEL_REFUSED';
+    throw error;
+  }
+  return [MAGIC_MODEL_ROLES.search];
+}
+
 export function assertMagicRuntime(runtime) {
   const errors = [];
   if (!isObject(runtime)) {

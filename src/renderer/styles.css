@@ -22397,7 +22397,7 @@ button.lang-phrase-diagram-node:focus-visible,
      rather than a gold picked by us, and on their navy it measures 9.35:1.
      Nothing redrawn. */
   --resource-symbol: url("./assets/brand/spoken-gospel-emblem-gold.svg");
-  --resource-symbol-ratio: 0.888;
+  --resource-symbol-ratio: 0.788;
 }
 
 /* The five read from public feeds. AMENDED 2026-07-30 (second pass, the brand
@@ -22597,7 +22597,7 @@ button.lang-phrase-diagram-node:focus-visible,
      5, 30 and 40 Minutes now each wear their own numeral. White on their
      ground measures 6.35:1. */
   --resource-symbol: url("./assets/brand/five-minutes-numeral-white.svg");
-  --resource-symbol-ratio: 0.548;
+  --resource-symbol-ratio: 0.496;
 }
 
 /* Ask N.T. Wright Anything — Premier Unbelievable?, whose identity is exactly

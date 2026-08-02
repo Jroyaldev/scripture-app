@@ -135,7 +135,7 @@ $('#again').addEventListener('click', () => {
   $('#steps').innerHTML = '';
   $('#making-marks').innerHTML = '';
   showScene('ask');
-  setTimeout(() => $('#q').focus(), 520);
+  setTimeout(() => { if (!activeRun) $('#q').focus(); }, motionMs(520));
 });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') stopAudio(); });
 $('#th-stop').addEventListener('click', () => stopAudio());
@@ -158,6 +158,7 @@ function abortActiveRun() {
 }
 
 function startRun({ mode = 'live' } = {}) {
+  if (current) stopAudio({ restoreFocus: false });
   abortActiveRun();
   const run = { id: ++runCounter, mode, controller: new AbortController(), timers: new Set() };
   activeRun = run;
@@ -462,16 +463,6 @@ function applyForm(plan) {
 const DIRECTOR_PREFETCH_CONCURRENCY = 2;
 const directorCache = new Map();
 
-function safeDirection(note = 'No stage direction is available for this reading.') {
-  return {
-    schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
-    scenes: [],
-    model: { key: MAGIC_MODEL_ROLES.director, source: 'house-fallback' },
-    metrics: { wallMs: 0 },
-    note,
-  };
-}
-
 function requireValidDirection(payload) {
   const check = validateDirectorPayload(payload);
   if (!check.ok) throw new Error(`director payload refused: ${check.errors.join('; ')}`);
@@ -501,11 +492,17 @@ function cacheResolvedDirection(step, index, payload) {
   return entry;
 }
 
+function cacheDirectionFallback(step, index, note) {
+  const key = keyForStep(step);
+  const entry = { key, index, status: 'resolved', value: null, note, promise: Promise.resolve(null) };
+  directorCache.set(key, entry);
+  return entry;
+}
+
 function seedReplayDirections(tour, fixture) {
   tour.steps.forEach((step, index) => {
     const key = keyForStep(step);
-    const payload = fixture.directions[key] || safeDirection(`Replay ${fixture.id} has no direction for this reading.`);
-    cacheResolvedDirection(step, index, payload);
+    cacheResolvedDirection(step, index, fixture.directions[key]);
   });
 }
 
@@ -516,7 +513,7 @@ function fetchDirector(step, index, run = activeRun) {
   if (existing) return existing.promise;
 
   if (run.mode === 'replay') {
-    return cacheResolvedDirection(step, index, safeDirection('Replay direction missing; no model request was made.')).promise;
+    return cacheDirectionFallback(step, index, 'Replay direction missing; no model request was made.').promise;
   }
 
   const entry = { key, index, status: 'pending', value: null, promise: null };
@@ -550,7 +547,8 @@ function fetchDirector(step, index, run = activeRun) {
         throw error;
       }
       entry.status = 'resolved';
-      entry.value = safeDirection(error?.message || String(error));
+      entry.value = null;
+      entry.note = error?.message || String(error);
       return entry.value;
     });
   directorCache.set(key, entry); // cache the in-flight promise before another gesture can ask
@@ -581,6 +579,7 @@ async function prefetchDirectors(tour, run) {
    and immune to a model that numbered its scenes wrong. */
 function beginDirection(li, index, payload) {
   if (!current || current.li !== li) return;
+  if (!payload) return;
   let direction;
   try {
     direction = requireValidDirection(payload);
@@ -1258,13 +1257,15 @@ function startStepPlayback(li, step, index, direction) {
     updateCaption(t);
     const frac = (t - step.startSec) / (step.endSec - step.startSec);
     updateProgress(t);
-    if (owner.timeline && !owner.rebuilding) {
-      /* The schedule, resolved server-side, simply plays out. */
-      const rel = t - step.startSec;
-      while (owner.fired < owner.timeline.length && owner.timeline[owner.fired].at <= rel) {
-        renderEvent(owner.timeline[owner.fired]);
-        owner.fired += 1;
-        if (current !== owner) return;
+    if (owner.timeline) {
+      if (!owner.rebuilding) {
+        /* The schedule, resolved server-side, simply plays out. */
+        const rel = t - step.startSec;
+        while (owner.fired < owner.timeline.length && owner.timeline[owner.fired].at <= rel) {
+          renderEvent(owner.timeline[owner.fired]);
+          owner.fired += 1;
+          if (current !== owner) return;
+        }
       }
     } else if (frac > 0.7) {
       const dir = stageDirections[index];
@@ -1284,41 +1285,99 @@ function startStepPlayback(li, step, index, direction) {
 // scene whose window holds t, dressed with everything already due, spent
 // transients skipped, and the schedule pointer set to the next future beat.
 
-function seekTo(t) {
-  if (!current) return;
-  const { step } = current;
-  t = Math.max(step.startSec, Math.min(step.endSec - 1, t));
-  player.currentTime = t;
-  const rel = t - step.startSec;
-  current.capKey = null;
-  if (!current.timeline) return;
-  const scenes = current.scenes;
+function rebuildStageAt(t, { reason = 'seek', immediate = false } = {}) {
+  if (!current?.timeline || !current.scenes?.length) return;
+  const owner = current;
+  const { step, scenes } = owner;
+  const rel = Math.max(0, Math.min(step.endSec - step.startSec, t - step.startSec));
+  const generation = ++owner.seekGeneration;
+  owner.rebuilding = true;
+  owner.eventQueue = [];
   let k = 0;
   for (let i = 0; i < scenes.length; i++) if ((scenes[i].at ?? 0) <= rel) k = i;
   const scene = scenes[k];
-  const token = current.playToken;
-  activateScene(scene, k, { force: true });
-  releaseHighlight();
-  setTimeout(() => {
-    if (!current || current.playToken !== token || current.sceneIdx !== k) return;
-    for (const ev of current.timeline) {
-      if (ev.scene !== scene || ev.kind === 'scene' || ev.at > rel) continue;
-      /* A spent spotlight stays spent. */
-      if (ev.kind === 'highlight' && rel > ev.at + 11) continue;
-      renderEvent(ev);
-    }
-  }, 520);
-  current.fired = current.timeline.findIndex((ev) => ev.at > rel);
-  if (current.fired === -1) current.fired = current.timeline.length;
+  owner.fired = owner.timeline.findIndex((event) => event.at > rel);
+  if (owner.fired === -1) owner.fired = owner.timeline.length;
+  activateScene(scene, k, {
+    force: true,
+    immediate: immediate || reason === 'resize',
+    onMounted: () => {
+      if (current !== owner || owner.seekGeneration !== generation || owner.mountedScene !== scene) return;
+      for (const ev of owner.timeline) {
+        if (ev.scene !== scene || ev.kind === 'scene' || ev.at > rel) continue;
+        /* A spent spotlight stays spent. */
+        if (ev.kind === 'highlight' && rel > ev.at + 11) continue;
+        renderEventNow(ev, { reconstruct: true });
+      }
+      owner.rebuilding = false;
+      owner.capKey = null;
+      updateCaption(t);
+    },
+  });
+}
+
+function resetFallbackStage(t) {
+  if (!current || current.timeline) return;
+  const dir = stageDirections[current.index];
+  for (const mark of dir?.marks || []) mark.drawn = false;
+  const q = TH().querySelector('.verses');
+  q.querySelector('svg.smarks')?.remove();
+  for (const span of q.querySelectorAll('.sword')) span.classList.remove('lit');
+  for (const mark of q.querySelectorAll('.fnmark')) mark.remove();
+  const frac = (t - current.step.startSec) / (current.step.endSec - current.step.startSec);
+  if (frac > 0.7) {
+    for (const mark of dir?.marks || []) { mark.drawn = true; drawMark(mark); }
+  }
+}
+
+function seekTo(t) {
+  if (!current) return;
+  const owner = current;
+  const { step } = owner;
+  t = Math.max(step.startSec, Math.min(step.endSec - 1, t));
+  cancelAnimationFrame(owner.fadeRaf);
+  owner.fading = false;
+  if (player.volume < 0.99) fadeTo(1, 220);
+  player.currentTime = t;
+  owner.capKey = null;
+  updateProgress(t);
+  updateCaption(t);
+  if (owner.timeline) rebuildStageAt(t);
+  else resetFallbackStage(t);
 }
 
 $('#th-back').addEventListener('click', () => current && seekTo(player.currentTime - 15));
 $('#th-fwd').addEventListener('click', () => current && seekTo(player.currentTime + 15));
 document.addEventListener('keydown', (e) => {
-  if (!current || e.target.tagName === 'INPUT') return;
-  if (e.key === 'ArrowLeft') seekTo(player.currentTime - 15);
-  if (e.key === 'ArrowRight') seekTo(player.currentTime + 15);
+  if (!current || e.target.closest('input, button, [role="slider"], [contenteditable="true"]')) return;
+  if (e.key === 'ArrowLeft') { e.preventDefault(); seekTo(player.currentTime - 15); }
+  if (e.key === 'ArrowRight') { e.preventDefault(); seekTo(player.currentTime + 15); }
 });
+
+function clockText(seconds) {
+  const whole = Math.max(0, Math.round(seconds));
+  return `${Math.floor(whole / 60)}:${String(whole % 60).padStart(2, '0')}`;
+}
+
+function updateProgress(t) {
+  const bar = document.querySelector('.th-progress');
+  if (!current) {
+    bar.querySelector('i').style.width = '0%';
+    bar.setAttribute('aria-valuemin', '0');
+    bar.setAttribute('aria-valuemax', '0');
+    bar.setAttribute('aria-valuenow', '0');
+    bar.setAttribute('aria-valuetext', 'Not playing');
+    return;
+  }
+  const duration = Math.max(1, current.step.endSec - current.step.startSec);
+  const elapsed = Math.max(0, Math.min(duration, t - current.step.startSec));
+  bar.querySelector('i').style.width = `${(elapsed / duration) * 100}%`;
+  bar.setAttribute('aria-valuemin', '0');
+  bar.setAttribute('aria-valuemax', String(Math.round(duration)));
+  bar.setAttribute('aria-valuenow', String(Math.round(elapsed)));
+  bar.setAttribute('aria-valuetext', `${clockText(elapsed)} of ${clockText(duration)}`);
+}
+
 (() => {
   const bar = document.querySelector('.th-progress');
   const toTime = (e) => {
@@ -1327,16 +1386,46 @@ document.addEventListener('keydown', (e) => {
     return current.step.startSec + frac * (current.step.endSec - current.step.startSec);
   };
   let dragging = false;
-  bar.addEventListener('pointerdown', (e) => { if (!current) return; dragging = true; bar.setPointerCapture(e.pointerId); });
+  const preview = (e) => { if (current) updateProgress(toTime(e)); };
+  const cancelDrag = () => {
+    if (!dragging) return;
+    dragging = false;
+    bar.classList.remove('dragging');
+    if (current) updateProgress(player.currentTime);
+  };
+  bar.addEventListener('pointerdown', (e) => {
+    if (!current) return;
+    e.preventDefault();
+    dragging = true;
+    bar.classList.add('dragging');
+    bar.setPointerCapture(e.pointerId);
+    preview(e);
+  });
   bar.addEventListener('pointermove', (e) => {
     if (!dragging || !current) return;
-    const frac = Math.max(0, Math.min(1, (e.clientX - bar.getBoundingClientRect().left) / bar.getBoundingClientRect().width));
-    bar.querySelector('i').style.width = `${frac * 100}%`;
+    preview(e);
   });
   bar.addEventListener('pointerup', (e) => {
     if (!dragging || !current) return;
     dragging = false;
+    bar.classList.remove('dragging');
     seekTo(toTime(e));
+  });
+  bar.addEventListener('pointercancel', cancelDrag);
+  bar.addEventListener('lostpointercapture', cancelDrag);
+  bar.addEventListener('keydown', (e) => {
+    if (!current) return;
+    const keys = new Set(['ArrowLeft', 'ArrowDown', 'ArrowRight', 'ArrowUp', 'PageDown', 'PageUp', 'Home', 'End']);
+    if (!keys.has(e.key)) return;
+    e.preventDefault();
+    let target = player.currentTime;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') target -= 5;
+    if (e.key === 'ArrowRight' || e.key === 'ArrowUp') target += 5;
+    if (e.key === 'PageDown') target -= 15;
+    if (e.key === 'PageUp') target += 15;
+    if (e.key === 'Home') target = current.step.startSec;
+    if (e.key === 'End') target = current.step.endSec - 1;
+    seekTo(target);
   });
 })();
 
@@ -1381,37 +1470,128 @@ function honestNote(li, text) {
 
 function fadeTo(target, ms) {
   if (!current) return;
-  cancelAnimationFrame(current.fadeRaf);
+  const owner = current;
+  cancelAnimationFrame(owner.fadeRaf);
+  if (ms <= 0) { player.volume = target; return; }
   const startVol = player.volume;
   const t0 = performance.now();
   const tick = (t) => {
+    if (current !== owner) return;
     const k = Math.min(1, (t - t0) / ms);
     player.volume = startVol + (target - startVol) * k;
-    if (k < 1 && current) current.fadeRaf = requestAnimationFrame(tick);
+    if (k < 1) owner.fadeRaf = requestAnimationFrame(tick);
   };
-  current.fadeRaf = requestAnimationFrame(tick);
+  owner.fadeRaf = requestAnimationFrame(tick);
 }
 
-function stopAudio() {
+function stopAudio({ restoreFocus = true } = {}) {
   if (!current) return;
-  const { li, fadeRaf, hlTimer } = current;
+  const owner = current;
+  const { li, fadeRaf, hlTimer, returnFocus } = owner;
   cancelAnimationFrame(fadeRaf);
   clearTimeout(hlTimer);
+  owner.controller.abort();
+  for (const timer of owner.timers) clearTimeout(timer);
+  owner.timers.clear();
   player.pause();
   player.ontimeupdate = null;
   li.classList.remove('playing');
-  releaseHighlight();
+  releaseHighlight({ immediate: true });
   const th = TH();
   th.classList.remove('on');
+  th.setAttribute('aria-hidden', 'true');
   th.querySelector('.th-whisper').classList.remove('show');
   /* The theater empties when it closes — nothing from one clip may ever
      greet the next. */
   th.querySelector('.verses').classList.remove('has');
   th.querySelector('.verses').innerHTML = '';
   th.querySelector('.caption').classList.remove('show');
+  th.querySelector('.th-body').classList.remove('turning', 'spot', 'bare');
+  th.querySelector('.th-body').setAttribute('aria-busy', 'false');
+  th.querySelector('.th-progress').classList.remove('dragging');
   for (const sel of TH_BOXES) th.querySelector(sel).innerHTML = '';
   document.body.classList.remove('in-theater');
+  $('#main').inert = false;
+  $('#main').removeAttribute('aria-hidden');
   current = null;
+  updateProgress(0);
+  if (restoreFocus && returnFocus?.isConnected) nextFrame(() => returnFocus.focus({ preventScroll: true }));
 }
 
-$('#q').focus();
+let layoutTimer = null;
+function scheduleStageRedraw() {
+  if (!current) return;
+  const owner = current;
+  if (layoutTimer) {
+    clearTimeout(layoutTimer);
+    owner.timers.delete(layoutTimer);
+  }
+  layoutTimer = playDelay(owner, () => {
+    layoutTimer = null;
+    if (owner.timeline) {
+      rebuildStageAt(player.currentTime, { reason: 'resize', immediate: true });
+      return;
+    }
+    const q = TH().querySelector('.verses');
+    q.querySelector('svg.smarks')?.remove();
+    for (const mark of stageDirections[owner.index]?.marks || []) {
+      if (mark.drawn) drawMark(mark);
+    }
+  }, motionMs(140));
+}
+
+window.addEventListener('resize', scheduleStageRedraw, { passive: true });
+window.addEventListener('orientationchange', scheduleStageRedraw, { passive: true });
+window.visualViewport?.addEventListener('resize', scheduleStageRedraw, { passive: true });
+document.fonts?.ready.then(scheduleStageRedraw).catch(() => {});
+reducedMotion.addEventListener('change', scheduleStageRedraw);
+
+TH().addEventListener('keydown', (event) => {
+  if (event.key !== 'Tab' || !current) return;
+  const controls = [...TH().querySelectorAll('button:not([disabled]), [tabindex="0"]')]
+    .filter((element) => element.getClientRects().length);
+  if (!controls.length) return;
+  const first = controls[0];
+  const last = controls[controls.length - 1];
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
+  }
+});
+
+async function loadReplay(id) {
+  const run = startRun({ mode: 'replay' });
+  showScene('making');
+  sayLine('opening a saved performance…');
+  if (!/^[a-z0-9][a-z0-9-]{1,63}$/.test(id)) {
+    sayLine('that saved performance name is not valid.');
+    runDelay(run, () => showScene('ask'), 1800);
+    return;
+  }
+  try {
+    const response = await fetch(`/api/replay/${encodeURIComponent(id)}`, { signal: run.controller.signal });
+    if (!response.ok) throw new Error(`replay request returned ${response.status}`);
+    const data = await response.json();
+    const fixture = data.fixture || data;
+    const check = validateReplayFixture(fixture);
+    if (!check.ok) throw new Error(`replay refused: ${check.errors.join('; ')}`);
+    if (!runIsActive(run)) return;
+    sayLine('setting the type…');
+    runDelay(run, () => presentTour(fixture.tour, fixture.prompt || '', run, { replayFixture: fixture }), motionMs(320));
+  } catch (error) {
+    if (error?.name === 'AbortError' || !runIsActive(run)) return;
+    sayLine('that saved performance could not be opened.');
+    runDelay(run, () => showScene('ask'), 2200);
+  }
+}
+
+function bootstrap() {
+  const replayId = new URLSearchParams(window.location.search).get('replay');
+  if (replayId) loadReplay(replayId);
+  else $('#q').focus();
+}
+
+bootstrap();

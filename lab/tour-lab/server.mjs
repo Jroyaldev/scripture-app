@@ -18,11 +18,12 @@ import {
   assertMagicRuntime,
   directorCacheKey,
   normalizeDirectorScenes,
+  resolveMagicSearchModels,
   validateDirectorPayload,
 } from './magic-contract.mjs';
 import {
-  REPLAYS_DIR,
   listDirectorEvidence,
+  listReplayFixtures,
   readDirectorEvidence,
   readReplayFixture,
   writeDirectorEvidence,
@@ -82,6 +83,10 @@ async function preflightMagicRole(role) {
 
 function acquireDirectorJob(requestKey, req, res, create) {
   let job = DIRECTOR_INFLIGHT.get(requestKey);
+  if (job?.controller.signal.aborted) {
+    DIRECTOR_INFLIGHT.delete(requestKey);
+    job = null;
+  }
   if (!job) {
     const controller = new AbortController();
     job = { controller, consumers: new Set(), settled: false, promise: null };
@@ -242,19 +247,7 @@ const server = http.createServer(async (req, res) => {
     }
 
     if (p === '/api/replays' && req.method === 'GET') {
-      const replays = fs.existsSync(REPLAYS_DIR)
-        ? fs.readdirSync(REPLAYS_DIR)
-          .filter((name) => name.endsWith('.json'))
-          .sort()
-          .map((name) => {
-            const id = name.slice(0, -'.json'.length);
-            const { fixture, errors } = readReplayFixture(id);
-            return fixture
-              ? { id, prompt: fixture.prompt, steps: fixture.tour.steps.length }
-              : { id, errors };
-          })
-        : [];
-      return sendJson(res, 200, { replays });
+      return sendJson(res, 200, { replays: listReplayFixtures() });
     }
 
     if (p.startsWith('/api/replay/') && req.method === 'GET') {
@@ -301,19 +294,13 @@ const server = http.createServer(async (req, res) => {
       const isMagic = body.surface === 'magic';
       let modelKeys;
       if (isMagic) {
-        const refused = requestedKeys.filter((key) => key !== MAGIC_MODEL_ROLES.search);
-        if (refused.length) {
-          return sendJson(res, 400, {
-            error: `\/magic search permits only ${MAGIC_MODEL_ROLES.search}`,
-            refused: [...new Set(refused)],
-          });
-        }
         try {
+          modelKeys = resolveMagicSearchModels(body);
           await preflightMagicRole('search');
         } catch (error) {
-          return sendJson(res, 503, { error: error?.message || String(error), code: error?.code || 'MAGIC_PREFLIGHT' });
+          const status = error?.code === 'MAGIC_MODEL_REFUSED' ? 400 : 503;
+          return sendJson(res, status, { error: error?.message || String(error), code: error?.code || 'MAGIC_PREFLIGHT' });
         }
-        modelKeys = [MAGIC_MODEL_ROLES.search];
       } else {
         modelKeys = [...new Set(requestedKeys)];
       }
@@ -498,14 +485,15 @@ Include only the keys the chosen form needs; stage directions are optional and m
       const from = Math.max(0, Number(body.fromSec) || 0);
       const to = Math.min(from + 900, Number(body.toSec) || from + 900);
       const dur = to - from;
-      const why = String(body.why || '').slice(0, 400);
+      const whyFull = String(body.why || '');
+      const why = whyFull.slice(0, 400);
       const requestKey = directorCacheKey({
         schemaVersion: body.schemaVersion,
         modelKey: body.model,
         recordId,
         fromSec: from,
         toSec: to,
-        why,
+        why: whyFull,
       });
       const directRequest = {
         schemaVersion: body.schemaVersion,
@@ -549,6 +537,44 @@ Include only the keys the chosen form needs; stage directions are optional and m
           }
         }
         return null;
+      };
+
+      /* Occurrence is a coordinate in the displayed verse, not the tape. For
+         a repeated word-group, choose the tightest left-to-right combination
+         the displayed text permits; transcript timing remains independent. */
+      const displayedMatches = (scene, phrase) => {
+        const haystack = ` ${norm((scene.verses || []).map((verse) => verse.text).join(' '))} `;
+        const needle = ` ${norm(phrase)} `;
+        if (needle === '  ') return [];
+        const matches = [];
+        let cursor = 0;
+        while (matches.length < 40) {
+          const index = haystack.indexOf(needle, cursor);
+          if (index < 0) break;
+          matches.push({ index, end: index + needle.length, occurrence: matches.length });
+          cursor = index + Math.max(1, needle.length - 1);
+        }
+        return matches;
+      };
+      const displayedOccurrences = (scene, words) => {
+        const candidates = words.map((word) => displayedMatches(scene, word));
+        if (candidates.some((matches) => !matches.length)) return words.map(() => 0);
+        let best = null;
+        const visit = (wordIndex, previousEnd, picked) => {
+          if (wordIndex === candidates.length) {
+            const span = picked.at(-1).end - picked[0].index;
+            if (!best || span < best.span || (span === best.span && picked[0].index < best.start)) {
+              best = { span, start: picked[0].index, picked: [...picked] };
+            }
+            return;
+          }
+          for (const match of candidates[wordIndex]) {
+            if (match.index < previousEnd) continue;
+            visit(wordIndex + 1, match.end, [...picked, match]);
+          }
+        };
+        visit(0, -1, []);
+        return best ? best.picked.map((match) => match.occurrence) : words.map(() => 0);
       };
 
       const oneVerse = (refStr) => {
@@ -672,30 +698,123 @@ Include only the keys the chosen form needs; stage directions are optional and m
         return { groups, footnotes, allusions, terms, compare, chain, caveat, highlight, asides };
       };
 
-      try {
-        /* `/magic` has one cost-bounded model contract. An old A/B caller that
-           still names Sol is refused rather than silently buying it. */
-        const directorModel = assertMagicModel(
-          typeof body.model === 'string' && body.model ? body.model : MAGIC_MODEL_ROLES.director
-        );
-        const client = clientFor(directorModel);
-        const spent = [];
-        const toks = { in: 0, out: 0, reasoning: 0 };
-        const callModel = async (content, maxTokens = 16000) => {
-          const reply = await client.chat({ maxTokens, messages: [{ role: 'user', content }] });
-          toks.in += reply.usage?.promptTokens || 0;
-          toks.out += reply.usage?.completionTokens || 0;
-          toks.reasoning += reply.usage?.reasoningTokens || 0;
-          if (reply.usage?.providerCostUsd != null) spent.push(reply.usage.providerCostUsd);
-          const m = String(reply.message.content || '').match(/\{[\s\S]*\}/);
-          return m ? JSON.parse(m[0]) : null;
+      const acquired = acquireDirectorJob(requestKey, req, res, async (signal) => {
+        const startedAt = new Date().toISOString();
+        const wallStarted = Date.now();
+        signal.throwIfAborted();
+        const { client, runtime } = await preflightMagicRole('director');
+        signal.throwIfAborted();
+        const calls = [];
+
+        const finish = (rawScenes, note = null) => {
+          signal.throwIfAborted();
+          for (const scene of rawScenes) delete scene.verseNorm;
+          const normalized = normalizeDirectorScenes(rawScenes, dur);
+          const costs = calls.filter((call) => call.providerCostUsd != null).map((call) => call.providerCostUsd);
+          const provider = calls.find((call) => call.provider)?.provider || 'OpenRouter';
+          const payload = {
+            schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
+            requestKey,
+            scenes: normalized.scenes,
+            model: { ...runtime, provider },
+            metrics: {
+              wallMs: Date.now() - wallStarted,
+              passes: calls.length,
+              calls,
+              totalUsd: costs.length ? costs.reduce((sum, cost) => sum + cost, 0) : null,
+              tokens: {
+                prompt: calls.reduce((sum, call) => sum + call.promptTokens, 0),
+                completion: calls.reduce((sum, call) => sum + call.completionTokens, 0),
+                reasoning: calls.reduce((sum, call) => sum + call.reasoningTokens, 0),
+                cachedPrompt: calls.reduce((sum, call) => sum + call.cachedPromptTokens, 0),
+              },
+              normalization: normalized.report,
+            },
+            ...(note ? { note } : {}),
+          };
+          const checked = validateDirectorPayload(payload);
+          if (!checked.ok) throw new Error(`refusing invalid director payload: ${checked.errors.join('; ')}`);
+          const evidenceFile = writeDirectorEvidence({
+            startedAt,
+            requestKey,
+            request: directRequest,
+            result: payload,
+          });
+          return { ...payload, evidenceFile: path.basename(evidenceFile) };
         };
 
-        const raw = await callModel(`You are directing a small visual stage a listener watches while a podcast clip plays. Here is the clip's full transcript:
+        const callModel = async (role, content, maxTokens = 16000) => {
+          const callStarted = Date.now();
+          let reply;
+          try {
+            reply = await client.chat({
+              maxTokens,
+              messages: [{ role: 'user', content }],
+              signal,
+            });
+          } catch (error) {
+            calls.push({
+              role,
+              latencyMs: Math.max(0, Number(error?.latencyMs) || Date.now() - callStarted),
+              promptTokens: 0,
+              completionTokens: 0,
+              reasoningTokens: 0,
+              cachedPromptTokens: 0,
+              providerCostUsd: null,
+              finishReason: null,
+              rawModel: runtime.resolvedSlug,
+              provider: 'OpenRouter',
+              validation: 'call-error',
+              error: { code: error?.code || 'CALL', message: error?.message || String(error) },
+            });
+            throw error;
+          }
+
+          const text = String(reply.message.content || '');
+          const match = text.match(/\{[\s\S]*\}/);
+          let parsed = null;
+          let validation = 'no-json-object';
+          if (match) {
+            try {
+              parsed = JSON.parse(match[0]);
+              validation = 'json-parsed';
+            } catch {
+              validation = 'invalid-json';
+            }
+          }
+          const rawModel = reply.raw?.model || runtime.resolvedSlug;
+          const runtimeMismatch = Boolean(reply.raw?.model) && reply.raw.model !== runtime.resolvedSlug;
+          calls.push({
+            role,
+            latencyMs: Math.max(0, Number(reply.latencyMs) || Date.now() - callStarted),
+            promptTokens: reply.usage?.promptTokens || 0,
+            completionTokens: reply.usage?.completionTokens || 0,
+            reasoningTokens: reply.usage?.reasoningTokens || 0,
+            cachedPromptTokens: reply.usage?.cachedPromptTokens || 0,
+            providerCostUsd: reply.usage?.providerCostUsd ?? null,
+            finishReason: reply.finishReason || null,
+            rawModel,
+            provider: reply.raw?.provider || 'OpenRouter',
+            validation: runtimeMismatch ? 'runtime-mismatch' : validation,
+          });
+          if (runtimeMismatch) {
+            const error = new Error(`\/magic director resolved ${runtime.resolvedSlug}, but provider returned ${rawModel}`);
+            error.code = 'MAGIC_RUNTIME_REFUSED';
+            throw error;
+          }
+          return parsed;
+        };
+
+        if (!tr) return finish([], 'unknown recording');
+        if (tape.length < 200) return finish([], 'recording window has too little transcript');
+
+        let scenes = [];
+        try {
+          const raw = await callModel('initial', `You are directing a small visual stage a listener watches while a podcast clip plays. Here is the clip's full transcript:
 
 ${tape}
 
-The clip's purpose in its tour: ${String(body.why || '').slice(0, 400)}
+The clip's purpose in its tour: ${why}
 
 Direct up to 4 SCENES — as many as the teaching has MOVEMENTS, no more. ONE scene is common; use several only when the teacher genuinely moves between passages. Each scene:
 - "verse": the passage being discussed at that point — "Book chapter:verse" or a range of at most 3 verses. Only passages genuinely walked through, not passing mentions.
@@ -714,7 +833,7 @@ The stage displays the World English Bible; the teacher may read another transla
 Spread your directions across the WHOLE clip — the stage draws each artifact at the moment its cue is spoken, and long empty stretches are dead air. Every cue is verbatim from the transcript. Fewer, truer artifacts beat coverage. A clip that discusses no specific verse gets {"scenes":[]}.
 Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{"words":["saw","took"],"label":"Eden echo","cue":"..."}],"footnotes":[],"allusions":[],"terms":[],"compare":null,"chain":null,"caveat":null,"highlight":null,"asides":[]}]}`);
 
-        const scenes = [];
+        scenes = [];
         for (const sc of (Array.isArray(raw?.scenes) ? raw.scenes : []).slice(0, 4)) {
           const ref = String(sc?.verse || '').match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3}):(\d{1,3})(?:\s*[–-]\s*(\d{1,3}))?$/);
           if (!ref) { console.log(`[direct] dropped scene, unparsable verse: "${sc?.verse}"`); continue; }
@@ -739,7 +858,7 @@ Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{
            They ride in one verse-less scene the page knows how to dress. */
         if (!scenes.length) {
           try {
-            const bare = await callModel(`A visual stage accompanies this podcast clip, but the clip walks through no specific Bible passage. Here is its transcript:
+            const bare = await callModel('sceneless', `A visual stage accompanies this podcast clip, but the clip walks through no specific Bible passage. Here is its transcript:
 
 ${tape.slice(0, 8000)}
 
@@ -760,7 +879,10 @@ Answer ONLY with JSON: {"asides":[{"text":"...","cue":"..."}],"highlight":null}`
                 });
               }
             }
-          } catch { /* an empty stage stays empty honestly */ }
+          } catch (error) {
+            if (signal.aborted) throw error;
+            /* an empty stage stays empty honestly */
+          }
         }
 
         /* ---- the repair exchange: meaning for meaning ----
@@ -776,7 +898,7 @@ Answer ONLY with JSON: {"asides":[{"text":"...","cue":"..."}],"highlight":null}`
         }
         if (repairs.length) {
           try {
-            const mapRaw = await callModel(`A visual stage displays Bible verses in one translation while a teacher, possibly reading another translation, is heard. For each numbered pair below, name the word or short phrase (at most 3 words) FROM THE DISPLAYED TEXT that carries the same meaning as the teaching's word — or null if the displayed text truly has no counterpart.
+            const mapRaw = await callModel('repair', `A visual stage displays Bible verses in one translation while a teacher, possibly reading another translation, is heard. For each numbered pair below, name the word or short phrase (at most 3 words) FROM THE DISPLAYED TEXT that carries the same meaning as the teaching's word — or null if the displayed text truly has no counterpart.
 
 ${repairs.map((r, i) => `${i}. displayed text: "${r.sc.verses.map((v) => v.text).join(' ').slice(0, 400)}"
    the teaching's word: "${r.spoken}"`).join('\n')}
@@ -792,7 +914,10 @@ Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.lengt
                 r.apply(tt);
               }
             });
-          } catch { /* unrepaired words simply stay absent */ }
+          } catch (error) {
+            if (signal.aborted) throw error;
+            /* unrepaired words simply stay absent */
+          }
         }
         for (const sc of scenes) {
           sc.groups = sc.groups.filter((g) => { delete g.dropped; return g.words.length >= 2; });
@@ -800,10 +925,17 @@ Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.lengt
         }
 
         /* ---- the timeline, resolved by the house ---- */
-        scenes.forEach((sc, i) => { sc.at = i === 0 ? 0 : locatePhrase(sc.cue); });
-        scenes.forEach((sc, i) => { if (sc.at == null) sc.at = Math.round((dur * i) / Math.max(1, scenes.length)); });
+        scenes.forEach((sc, i) => {
+          const located = locatePhrase(sc.cue);
+          sc.at = located ?? (i === 0 ? 0 : null);
+          sc.timingSource = located == null ? 'house' : 'cue';
+        });
+        scenes.forEach((sc, i) => {
+          if (sc.at != null) return;
+          sc.at = Math.round((dur * i) / Math.max(1, scenes.length));
+          sc.timingSource = 'house';
+        });
         scenes.sort((a, b) => a.at - b.at);
-        scenes.forEach((sc, i) => { if (i && sc.at < scenes[i - 1].at + 12) sc.at = scenes[i - 1].at + 12; });
 
         const artifactsOf = (sc) => [
           ...sc.groups, ...sc.footnotes, ...sc.terms, ...sc.allusions, ...(sc.asides || []),
@@ -813,14 +945,40 @@ Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.lengt
           const winStart = sc.at;
           const winEnd = i + 1 < scenes.length ? scenes[i + 1].at : dur;
           const span = Math.max(10, winEnd - winStart);
+          const tapeOccurrences = new Map();
           for (const g of sc.groups) {
-            g.wordTimes = g.words.map((w) => ({ word: w, at: locateWordAfter(w, winStart) }));
+            const verseOccurrences = displayedOccurrences(sc, g.words);
+            g.wordTimes = g.words.map((word, wordIndex) => {
+              const wordKey = norm(word);
+              const tapeOccurrence = tapeOccurrences.get(wordKey) || 0;
+              tapeOccurrences.set(wordKey, tapeOccurrence + 1);
+              return {
+                word,
+                occurrence: verseOccurrences[wordIndex],
+                at: locateWordAfter(word, winStart, tapeOccurrence),
+                timingSource: 'word',
+              };
+            });
             const lastWord = Math.max(...g.wordTimes.map((w) => w.at ?? -1));
-            g.at = locatePhrase(g.cue) ?? (lastWord >= 0 ? lastWord : null);
+            const cueAt = locatePhrase(g.cue);
+            g.at = cueAt ?? (lastWord >= 0 ? lastWord : null);
+            g.timingSource = cueAt != null ? 'cue' : lastWord >= 0 ? 'word' : 'house';
           }
-          for (const a of [...sc.footnotes, ...sc.terms, ...sc.allusions, ...(sc.asides || [])]) a.at = locatePhrase(a.cue);
-          for (const a of [sc.compare, sc.chain, sc.caveat].filter(Boolean)) a.at = locatePhrase(a.cue);
-          if (sc.highlight) sc.highlight.at = locatePhrase(sc.highlight.quote);
+          for (const a of sc.footnotes) {
+            a.occurrence = displayedOccurrences(sc, [a.word])[0];
+          }
+          for (const a of [...sc.footnotes, ...sc.terms, ...sc.allusions, ...(sc.asides || [])]) {
+            a.at = locatePhrase(a.cue);
+            a.timingSource = a.at == null ? 'house' : 'cue';
+          }
+          for (const a of [sc.compare, sc.chain, sc.caveat].filter(Boolean)) {
+            a.at = locatePhrase(a.cue);
+            a.timingSource = a.at == null ? 'house' : 'cue';
+          }
+          if (sc.highlight) {
+            sc.highlight.at = locatePhrase(sc.highlight.quote);
+            sc.highlight.timingSource = sc.highlight.at == null ? 'house' : 'cue';
+          }
           /* The attention budget, by channel. Cue-located beats keep their
              moment — the teacher's own speech paced them, and sync is
              sacred. The highlight is substitutive (it dims the room and
@@ -840,21 +998,10 @@ Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.lengt
               if (len > best.len) best = { len, at: (marks[m] + marks[m - 1]) / 2 };
             }
             a.at = Math.round(best.at);
+            a.timingSource = 'house';
             anchored.push(a.at);
           }
         });
-        /* An aside exists to fill silence: one that lands within 25s of any
-           other beat is clutter on a scene that already has life. */
-        for (const sc of scenes) {
-          const others = artifactsOf(sc).filter((a) => !(sc.asides || []).includes(a)).map((a) => a.at);
-          sc.asides = (sc.asides || []).filter((a) => !others.some((t) => Math.abs(t - a.at) < 25));
-        }
-
-        /* Beats never stack: minimum 2.5s between arrivals. */
-        const flat = scenes.flatMap((sc) => artifactsOf(sc).filter((a) => a !== sc.highlight)).sort((a, b) => a.at - b.at);
-        for (let i = 1; i < flat.length; i++) {
-          if (flat[i].at < flat[i - 1].at + 2.5) flat[i].at = Math.round((flat[i - 1].at + 2.5) * 10) / 10;
-        }
 
         /* ---- the second pass: buy beats for the starved stretch ---- */
         /* A fourteen-minute commentary clip cannot be rescued by one
@@ -874,7 +1021,7 @@ Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.lengt
           const stretchSegs = segs.filter((s) => s.e - from >= gap.start + 2 && s.s - from <= gap.start + gap.len);
           const stretch = stretchSegs.map((s) => s.t).join(' ').slice(0, 6000);
           if (stretch.length > 300) {
-            const extraRaw = await callModel(`A visual stage is showing ${host.ref} while a podcast clip plays, and nothing new appears for ${Math.round(gap.len)} seconds. Here is the transcript of exactly that quiet stretch:
+            const extraRaw = await callModel(`fill-${round + 1}`, `A visual stage is showing ${host.ref} while a podcast clip plays, and nothing new appears for ${Math.round(gap.len)} seconds. Here is the transcript of exactly that quiet stretch:
 
 ${stretch}
 
@@ -884,17 +1031,40 @@ An "aside" is often the right direction for a stretch like this — one line nam
               const stretchNorm = ` ${norm(stretch)} `;
               const extra = validateArtifacts(extraRaw, host.verseNorm, stretchNorm);
               const clampIn = (a) => {
-                a.at = locatePhrase(a.cue || a.quote);
-                if (a.at == null || a.at < gap.start || a.at > gap.start + gap.len + 5) {
+                const cueAt = locatePhrase(a.cue || a.quote);
+                const wordAt = Math.max(...(a.wordTimes || []).map((wordTime) => wordTime.at ?? -1));
+                if (cueAt != null && cueAt >= gap.start && cueAt <= gap.start + gap.len + 5) {
+                  a.at = cueAt;
+                  a.timingSource = 'cue';
+                } else if (wordAt >= gap.start && wordAt <= gap.start + gap.len + 5) {
+                  a.at = wordAt;
+                  a.timingSource = 'word';
+                } else {
                   a.at = Math.round(gap.start + gap.len / 2);
+                  a.timingSource = 'house';
                 }
                 return a;
               };
+              const fillTapeOccurrences = new Map();
               for (const g of extra.groups.slice(0, 2)) {
-                g.wordTimes = g.words.map((w) => ({ word: w, at: locateWordAfter(w, gap.start) }));
+                const verseOccurrences = displayedOccurrences(host, g.words);
+                g.wordTimes = g.words.map((word, wordIndex) => {
+                  const wordKey = norm(word);
+                  const tapeOccurrence = fillTapeOccurrences.get(wordKey) || 0;
+                  fillTapeOccurrences.set(wordKey, tapeOccurrence + 1);
+                  return {
+                    word,
+                    occurrence: verseOccurrences[wordIndex],
+                    at: locateWordAfter(word, gap.start, tapeOccurrence),
+                    timingSource: 'word',
+                  };
+                });
                 host.groups.push(clampIn(g));
               }
-              for (const f of extra.footnotes.slice(0, 1)) host.footnotes.push(clampIn(f));
+              for (const f of extra.footnotes.slice(0, 1)) {
+                f.occurrence = displayedOccurrences(host, [f.word])[0];
+                host.footnotes.push(clampIn(f));
+              }
               for (const t of extra.terms.slice(0, 1)) host.terms.push(clampIn(t));
               for (const a of extra.allusions.slice(0, 1)) host.allusions.push(clampIn(a));
               host.asides = host.asides || [];
@@ -906,10 +1076,30 @@ An "aside" is often the right direction for a stretch like this — one line nam
         }
 
         }
-        for (const sc of scenes) delete sc.verseNorm;
-        return sendJson(res, 200, { scenes, usd: spent.reduce((a, b) => a + b, 0) || null, passes: spent.length, tokens: toks });
-      } catch (err) {
-        return sendJson(res, 200, { scenes: [], note: err?.message || String(err) });
+          return finish(scenes);
+        } catch (error) {
+          if (signal.aborted) throw error;
+          if (error?.code === 'MAGIC_RUNTIME_REFUSED') {
+            const evidence = finish(scenes, error.message);
+            error.evidenceFile = evidence.evidenceFile;
+            throw error;
+          }
+          return finish(scenes, error?.message || String(error));
+        }
+      });
+
+      try {
+        const payload = await acquired.promise;
+        acquired.release();
+        return sendJson(res, 200, payload);
+      } catch (error) {
+        acquired.release();
+        if (res.destroyed || res.writableEnded) return;
+        return sendJson(res, 503, {
+          error: error?.message || String(error),
+          code: error?.code || 'DIRECTOR_FAILED',
+          ...(error?.evidenceFile ? { evidenceFile: error.evidenceFile } : {}),
+        });
       }
     }
 

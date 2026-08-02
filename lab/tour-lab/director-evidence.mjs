@@ -88,6 +88,25 @@ export function readReplayFixture(id, { dir = REPLAYS_DIR } = {}) {
   return check.ok ? { fixture, errors: [] } : { fixture: null, errors: check.errors };
 }
 
+export function listReplayFixtures({ dir = REPLAYS_DIR } = {}) {
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir)
+    .filter((name) => name.endsWith('.json'))
+    .sort()
+    .map((name) => {
+      const id = name.slice(0, -5);
+      const { fixture } = readReplayFixture(id, { dir });
+      if (!fixture) return null;
+      return {
+        id: fixture.id,
+        prompt: fixture.prompt,
+        title: fixture.tour?.title || null,
+        steps: fixture.tour?.steps?.length || 0,
+      };
+    })
+    .filter(Boolean);
+}
+
 export function writeReplayFixture(fixture, { dir = REPLAYS_DIR } = {}) {
   const payload = redactEvidence({ ...fixture, schemaVersion: MAGIC_REPLAY_SCHEMA_VERSION });
   const check = validateReplayFixture(payload);
@@ -97,4 +116,3 @@ export function writeReplayFixture(fixture, { dir = REPLAYS_DIR } = {}) {
   fs.writeFileSync(file, `${JSON.stringify(payload, null, 2)}\n`, { flag: 'wx' });
   return file;
 }
-

@@ -142,7 +142,17 @@ body {
   color: var(--ink-2);
 }
 .step-mins { margin-left: auto; font-size: 12.5px; color: var(--ink-3); font-variant-numeric: tabular-nums; }
-.step-title { font-size: 18.5px; font-weight: 600; line-height: 1.3; }
+.step-title {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 18.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  text-align: left;
+}
 
 .step-row { display: flex; align-items: center; gap: 14px; margin-top: 12px; }
 .play {
@@ -353,7 +363,13 @@ em.rel.pulse { animation: pulse-word 1200ms var(--ease); }
 
 /* Motion is a courtesy, never a requirement. */
 @media (prefers-reduced-motion: reduce) {
-  *, *::before, *::after { transition-duration: 1ms !important; }
+  *, *::before, *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 1ms !important;
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+  }
 }
 
 /* ------------------------------------------------------------ the theater
@@ -369,19 +385,24 @@ body.in-theater { overflow: hidden; }
   visibility: hidden;
   transition: opacity 480ms var(--ease), visibility 0s linear 480ms;
   overflow-y: auto;
-  padding: 7vh 24px 96px;
+  overflow-x: hidden;
+  padding:
+    max(7vh, env(safe-area-inset-top))
+    max(24px, env(safe-area-inset-right))
+    calc(96px + env(safe-area-inset-bottom))
+    max(24px, env(safe-area-inset-left));
 }
 #theater.on { opacity: 1; visibility: visible; transition: opacity 480ms var(--ease); }
 #theater > * { max-width: 660px; margin-left: auto; margin-right: auto; }
 
-.th-head { display: flex; align-items: baseline; gap: 14px; }
+.th-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px 14px; }
 .th-source {
   text-transform: uppercase;
   letter-spacing: 0.13em;
   font-size: 11px;
   color: var(--gold);
 }
-.th-title { font-size: 15px; color: var(--ink-3); }
+.th-title { min-width: 0; overflow-wrap: anywhere; font-size: 15px; color: var(--ink-3); }
 
 .th-whisper {
   margin-top: 18px;
@@ -403,7 +424,7 @@ body.in-theater { overflow: hidden; }
   line-height: 1.85;
   /* The gutter owns its labels: wide enough that a bracket name never
      leaves the block and meets the scroll container's clip. */
-  padding-left: 42px;
+  padding-left: 64px;
   display: none;
 }
 @media (min-width: 900px) {
@@ -486,7 +507,9 @@ body.in-theater { overflow: hidden; }
 /* The transcript, present but unworried: one small line low on the stage. */
 #theater .caption {
   position: fixed;
-  left: 24px; right: 24px; bottom: 58px;
+  left: max(24px, env(safe-area-inset-left));
+  right: max(24px, env(safe-area-inset-right));
+  bottom: calc(58px + env(safe-area-inset-bottom));
   max-width: 660px;
   margin: 0 auto;
   text-align: center;
@@ -499,7 +522,9 @@ body.in-theater { overflow: hidden; }
 
 .th-controls {
   position: fixed;
-  left: 24px; right: 24px; bottom: 16px;
+  left: max(24px, env(safe-area-inset-left));
+  right: max(24px, env(safe-area-inset-right));
+  bottom: calc(16px + env(safe-area-inset-bottom));
   max-width: 660px;
   margin: 0 auto;
   display: flex;
@@ -508,6 +533,7 @@ body.in-theater { overflow: hidden; }
 }
 .th-progress { flex: 1; height: 1.5px; background: var(--hair); border-radius: 1px; overflow: hidden; }
 .th-progress i { display: block; height: 100%; width: 0; background: color-mix(in oklab, var(--gold) 70%, transparent); transition: width 400ms linear; }
+.th-progress.dragging i { transition: none; }
 
 /* The aside: one quiet line naming what the teacher is doing. */
 .aside {
@@ -558,4 +584,27 @@ body.in-theater { overflow: hidden; }
   transform: translateY(-50%);
   background: var(--hair);
   z-index: -1;
+}
+
+.th-progress:focus-visible,
+.play:focus-visible,
+.th-jump:focus-visible,
+.step-title:focus-visible,
+.quiet-link:focus-visible,
+.rendering:focus-visible,
+.eg:focus-visible {
+  outline: 2px solid color-mix(in oklab, var(--gold) 70%, transparent);
+  outline-offset: 3px;
+}
+
+@media (pointer: coarse) {
+  .play { width: 44px; height: 44px; }
+  .th-jump { min-width: 44px; min-height: 44px; }
+}
+
+@media (max-width: 420px) {
+  #theater { padding-left: max(16px, env(safe-area-inset-left)); padding-right: max(16px, env(safe-area-inset-right)); }
+  #theater .verses { padding-left: 58px; font-size: 19px; }
+  .th-controls { left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right)); gap: 8px; }
+  #theater .caption { left: max(16px, env(safe-area-inset-left)); right: max(16px, env(safe-area-inset-right)); }
 }

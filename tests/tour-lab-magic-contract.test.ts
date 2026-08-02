@@ -21,11 +21,13 @@ import {
   directorCacheKey,
   normalizeDirectorScenes,
   redactEvidence,
+  resolveMagicSearchModels,
   validateDirectorPayload,
   validateReplayFixture,
 } from "../lab/tour-lab/magic-contract.mjs";
 import {
   listDirectorEvidence,
+  listReplayFixtures,
   readDirectorEvidence,
   readReplayFixture,
   writeDirectorEvidence,
@@ -121,6 +123,16 @@ test("/magic admits one exact Luna medium role and runtime", () => {
   });
   assert.equal(assertMagicModel(MAGIC_MODEL_KEY), MAGIC_MODEL_KEY);
   assert.equal(assertMagicRuntime(validModelEvidence()).resolvedSlug, "openai/gpt-5.6-luna");
+  assert.deepEqual(resolveMagicSearchModels({ surface: "magic" }), [MAGIC_MODEL_KEY]);
+  assert.deepEqual(
+    resolveMagicSearchModels({ surface: "magic", models: [MAGIC_MODEL_KEY, MAGIC_MODEL_KEY] }),
+    [MAGIC_MODEL_KEY],
+  );
+  assert.equal(resolveMagicSearchModels({ surface: "bench", model: "deepseek-v4-flash" }), null);
+  assert.throws(
+    () => resolveMagicSearchModels({ surface: "magic", model: "gpt-5.6-sol-high" }),
+    /search permits only gpt-5\.6-luna-medium/,
+  );
 
   for (const model of [undefined, "gpt-5.6-sol-high", "gpt-5.6-luna-high", "openai/gpt-5.6-luna"]) {
     assert.throws(
@@ -392,6 +404,12 @@ test("evidence is recursively redacted, append-only, and replay fixtures round-t
     assert.deepEqual(replay.errors, []);
     assert.equal(replay.fixture?.secret, "[redacted]");
     assert.deepEqual(replay.fixture?.directions, fixture.directions);
+    assert.deepEqual(listReplayFixtures({ dir: replayDir }), [{
+      id: fixture.id,
+      prompt: fixture.prompt,
+      title: fixture.tour.title,
+      steps: 1,
+    }]);
     assert.throws(
       () => writeReplayFixture(fixture, { dir: replayDir }),
       (error: unknown) => (
