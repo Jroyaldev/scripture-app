@@ -20795,25 +20795,30 @@ button.lang-phrase-diagram-node:focus-visible,
      not in a landscape, which is why the horizontal padding below is narrower
      than the vertical: in a square every pixel of side margin comes straight
      off the height of a wide mark. */
-  --shelf-art-h: clamp(15px, calc(42px / pow(var(--resource-symbol-ratio), 0.34)), 46px);
-  /* What the tally's corner needs kept clear of a centred symbol: three
-     tabular digits at 9px mono is about 17px, plus a gap. */
-  --shelf-tally-clear: 22px;
+  --shelf-art-h: clamp(15px, calc(42px / pow(var(--resource-symbol-ratio), 0.34)), 42px);
   justify-self: center;
   align-self: center;
   /* `min()` against the cell rather than a second clamp: in the narrow shell
      the cell can be tighter than the widest symbol wants, and `contain` then
-     letterboxes the artwork down by its own ratio instead of cropping it. */
-  /* The second bound is the tally's clear space, added 2026-07-31 when the
-     numeral left the flow for the corner: a centred symbol that grew past this
-     would reach the numeral, which is the collision the row-lane existed to
-     prevent. Twice the reserve, because the symbol is centred — what it takes
-     on the right it takes on the left too. */
-  width: min(
-    100%,
-    calc(100% - 2 * var(--shelf-tally-clear)),
-    calc(var(--shelf-art-h) * var(--resource-symbol-ratio))
-  );
+     letterboxes the artwork down by its own ratio instead of cropping it.
+
+     ── THE TALLY RESERVE IS GONE, AND THE HEIGHT CAP REPLACES IT · 2026-08-02
+     A second bound stood here — `100% - 2 * 22px` — added when the numeral
+     left the flow for the corner, so a centred symbol could never grow into
+     it. In the old 92px landscape cell that left 30px of symbol and was merely
+     tight. In a 79px SQUARE the content box is 67, so the same expression
+     resolves to TWENTY-THREE PIXELS and pinned every mark on the shelf to it:
+     the optical scale still set the height, `contain` then letterboxed the
+     artwork down to fit 23 of width, and eleven publishers were drawn at a
+     size no rule in this file had chosen. Measured in the engine, not read.
+
+     The collision it guarded is real but it is a corner, and in a square the
+     geometry answers it for free. The numeral occupies roughly x 53–70, y
+     61–75 of a 79px cell. A centred mark of height H only reaches that band
+     when H > 43 — so capping the scale at 42 above keeps every mark clear of
+     it without touching the width at all, and the widest lockups get the whole
+     cell to lie across, which is how a wordmark wants to be drawn. */
+  width: min(100%, calc(var(--shelf-art-h) * var(--resource-symbol-ratio)));
   height: var(--shelf-art-h);
   /* CENTRED, where the register left-aligned. A left-aligned logo in a cell it
      does not fill is a logo pushed against a wall; centred in a cell of its own
