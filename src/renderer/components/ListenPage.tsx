@@ -705,7 +705,7 @@ function AlbumGroup({ album, askProps, group, onPlay, ordered, playingHere, soun
  */
 function Hero({
   art, tint, kicker, name, line, about, credits, onPlay, onShuffle, playing, innerRef,
-  plate, source,
+  plate, initial, source,
 }: {
   art?: string | null; tint?: string; kicker: string; name: string; line: string;
   about?: string; credits?: Record<string, string>;
@@ -716,6 +716,8 @@ function Hero({
   source?: { href: string; label: string };
   /* A publisher whose cover art we do not carry. See below. */
   plate?: string;
+  /* A record with no publisher at all — the reader's own. See below. */
+  initial?: string;
   innerRef?: React.RefObject<HTMLElement | null>;
 }): React.JSX.Element {
   return (
@@ -736,7 +738,32 @@ function Hero({
               </span>
             </span>
           )
-          : <Cover alt={`${name} cover`} className="is-hero" src={art} tint={tint} />}
+          : initial
+            ? (
+              /* A PLAYLIST HAS NO PUBLISHER, so it cannot have a plate — and
+                 with no artwork either it drew a `Cover` with no src and no
+                 tint, which is a shadowed empty box: the universal look of an
+                 image that failed to load, on the screen a reader reaches right
+                 after making a list.
+
+                 Three answers were weighed. A generic note glyph is what every
+                 listening app reaches for; it is legible and says nothing about
+                 THIS list. A mosaic of the first few covers is the handsome
+                 answer and is exactly unavailable here — this branch exists
+                 because nothing on the list resolves to art. What is left is the
+                 one thing a playlist always has: the name the reader typed. Its
+                 first letter, in the same reading face as the h1 beside it, so
+                 it reads as the name enlarged rather than as a substitute for a
+                 picture — a spine label. It changes when they rename the list,
+                 which no placeholder ever does.
+
+                 `aria-hidden`, because it is the name said twice and the reading
+                 of it is the h1's job. */
+              <span className="listen-cover is-hero is-initial">
+                <span aria-hidden="true" className="listen-initial">{initial}</span>
+              </span>
+            )
+            : <Cover alt={`${name} cover`} className="is-hero" src={art} tint={tint} />}
       <div className="listen-hero-words">
         <p className="listen-hero-kicker">{kicker}</p>
         {/* Long names step down rather than wrapping to four lines of display
@@ -1237,8 +1264,30 @@ export function ListenPage({ backbone, bookNames }: {
     const play = (from: number): void => {
       if (live.length > 0) startPodcastQueue(list.name, live, from);
     };
+    /* THE ACCENTS AND THE HERO HAVE TO AGREE ABOUT WHAT COLOUR THIS RECORD IS.
+       Both other record pages declare `--record-tint` on `.listen` and lay the
+       ambient beneath it; this branch did neither, and was the only record page
+       standing on bare canvas. The consequence was not a missing gradient.
+       `--record-tint` falls back to the app's seal at `.listen`, so every accent
+       on this page — the play button, the sounding row's wash, the progress bar
+       — wore the seal while the hero two inches away wore the artwork's colour,
+       because the hero receives its tint as a prop. One page, two answers to
+       "what colour is this?", which reads as a rendering fault, not a design.
+
+       The colour is the first entry that still resolves — the same rule the
+       shelf card uses for the same list, so a list is one colour in both places.
+       When nothing resolves the ambient is still drawn: with no inline tint the
+       field and the accents both derive from the seal, so the page is monochrome
+       and INTERNALLY CONSISTENT, which is the whole point. A conditional ambient
+       would hand a reader with an all-dead list the bare canvas this comment
+       exists to abolish. */
     return (
-      <div className="listen" ref={scroller}>
+      <div
+        className="listen"
+        ref={scroller}
+        style={live[0]?.tint ? { "--record-tint": live[0].tint } as React.CSSProperties : undefined}
+      >
+        <div className="listen-ambient" />
         <div className="listen-inner">
           <CompactBar
             name={list.name}
@@ -1252,6 +1301,14 @@ export function ListenPage({ backbone, bookNames }: {
           </button>
           <Hero
             art={live[0]?.artUrl}
+            /* Stated always, used only when there is no art — the hero decides
+               precedence; this branch supplies the fact that a list's fallback
+               face is its own letter. `Array.from` rather than `charAt`, because
+               a list named with an emoji would otherwise get half a surrogate
+               pair and a replacement glyph. The em dash for a nameless list
+               should be unreachable, and is written anyway: a blank square is
+               the exact defect this removes, so no path may lead back to one. */
+            initial={Array.from(list.name.trim())[0] ?? "—"}
             kicker={list.seed ? `Playlist · from ${list.seed.book} ${list.seed.chapter}` : "Playlist"}
             line={[
               `${runtime} ${runtime === 1 ? "item" : "items"}`,

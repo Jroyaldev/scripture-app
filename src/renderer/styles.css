@@ -24618,7 +24618,31 @@ button.lang-phrase-diagram-node:focus-visible,
   outline-offset: var(--focus-ring-offset);
 }
 
-.listen-hero-actions { margin-top: 18px; }
+/* TWO PILLS ARE A PAIR, NOT A WORD. This rule was `margin-top` and nothing
+   else — no display, no gap — so the two buttons fell back to inline layout and
+   the only thing between them was the whitespace the JSX happened to leave,
+   which JSX collapses to nothing. Play and Shuffle rendered touching, one
+   lozenge with a seam down it, on thirteen of the room's fourteen albums. It
+   read as one control drawn wrong rather than as two controls, which is the
+   worst kind of visual defect: it makes the reader doubt the button rather than
+   the stylesheet.
+
+   The gap is 10px rather than the room's usual 12px because these two are not
+   neighbours — they are a primary and its variant, the same act offered two
+   ways. Sitting slightly closer than unrelated controls is how that is said
+   without a label.
+
+   Wrapping is kept: at the 719px breakpoint the hero drops to one column and
+   the two pills together want about 230px, so a narrow window with the study
+   column open is a real width at which they do not fit. A wrapped second line
+   is a correct answer there; a clipped Shuffle is not. */
+.listen-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 18px;
+}
 
 .listen-play-all {
   display: inline-flex;
@@ -24870,6 +24894,45 @@ button.lang-phrase-diagram-node:focus-visible,
    Reusing the card's clamp left a 22px mark alone in a 250px square. */
 .listen-cover.is-hero .taught-here-mark {
   --card-art-h: clamp(40px, calc(96px / pow(var(--resource-symbol-ratio), 0.34)), 104px);
+}
+
+/* ── The reader's own record, which nobody printed a sleeve for ────────────── */
+
+/* THE PLAYLIST'S FACE IS ITS NAME, not a hole where a cover would go. The plate
+   above answers "we carry no artwork for this publisher"; this answers the
+   harder case, "there is no publisher" — a list the reader built, whose entries
+   have all left the library or which has none yet. It was drawing a `Cover`
+   with no src and no tint, which is a 250px square of canvas under a drop
+   shadow, and a shadowed empty box is the universal look of an image that
+   failed to load. A brand-new list looked broken on the screen a reader reaches
+   straight after making one.
+
+   Flat, and that is the decision. The plate keeps the hero's shadow because it
+   stands in for a printed sleeve and a printed sleeve lifts off the page.
+   Nothing printed this. So the shadow becomes an inset hairline — the box sits
+   IN the page rather than on it, which is what a label is and what a record is
+   not. The three-class selector is what lets the ring beat the shadow without
+   an override. */
+.listen-cover.is-hero.is-initial {
+  display: grid;
+  place-items: center;
+  background: var(--surface-sunken);
+  box-shadow: inset 0 0 0 1px var(--border-subtle);
+}
+
+/* The reading face and the hero name's own negative tracking, so the letter
+   reads as the name enlarged rather than as an icon that happens to be a
+   letter. Tertiary rather than the record accent: on a list with nothing
+   resolvable the accent is the app's seal, and a seal-coloured letter at this
+   size would make an empty list the loudest thing in the room. The 104px cap is
+   the ceiling the plate's optical scale lands on, so the two fallback faces sit
+   at the same weight in the same box. */
+.listen-initial {
+  color: var(--text-tertiary);
+  font: 400 clamp(3.4rem, 1.2rem + 6vw, 6.5rem)/1 var(--font-reading);
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+  user-select: none;
 }
 
 /* ── The reader's own lists ─────────────────────────────────────────────────── */
@@ -25263,10 +25326,34 @@ button.lang-phrase-diagram-node:focus-visible,
    reader's eye already is on the way down. Deliberately not a toolbar: no
    fill, no rule under it, nothing that would make a record's page look like an
    application window. */
+/* A ROW THAT WILL NOT WRAP MAKES THE WHOLE PAGE SCROLL SIDEWAYS. This carries
+   the filter field (150px at its floor), the count, the segmented halves
+   control and the order button — about 521px of min-content once the gutters
+   are counted — and had no `flex-wrap`, so below that width it refused to get
+   smaller and pushed its own container out.
+
+   The container is `.listen`, which sets `overflow-y: auto` and says nothing
+   about x. That is the trap: a `visible` value on one axis computes to `auto`
+   when the other is not visible. So the record page grew a horizontal scrollbar
+   across its entire height — hero, tracks, siblings, colophon, all shunting
+   left and right — because four small controls near the top would not stack. It
+   showed on any narrow window and reliably with the study column open, which is
+   the ordinary way this app is used.
+
+   Fixed here rather than at a breakpoint deliberately: wrapping reflows at
+   whatever width the content actually needs, which changes with the reader's
+   type size and with how many halves a record has. `overflow-x: hidden` was
+   rejected — it would hide the scrollbar while leaving the row overflowing
+   underneath, the order button silently unreachable. The scrollbar was the
+   honest report of a real defect; the defect is what gets removed.
+
+   The gap is split: 12px along a line, 10px between lines, because a wrapped
+   row wants less air vertically or the two lines read as two toolbars. */
 .listen-sift {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 12px;
+  gap: 10px 12px;
   margin: 6px 0 18px;
 }
 
@@ -25320,7 +25407,14 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 /* At the far end, because it is the one control here that reorders the whole
-   page rather than narrowing it. */
+   page rather than narrowing it.
+
+   The `margin-left: auto` STAYS now that the row wraps, and that is a decision.
+   When the row breaks, this button lands alone on the last line and the auto
+   margin still throws it to the right edge — so a reader who has learned that
+   the direction of the list is controlled from the far corner finds it there at
+   every width. Letting it fall in line would move the control's house whenever
+   the window narrowed, which is a worse trade than one button on its own line. */
 .listen-sift-order {
   margin-left: auto;
   padding: 7px 12px;
