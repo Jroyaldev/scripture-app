@@ -343,18 +343,33 @@ class Transcriber:
                 outputs.append(None)
                 lost += 1
                 continue
-            try:
-                with self.torch.inference_mode():
-                    outputs.extend(
-                        self.model.transcribe([str(c["path"])], timestamps=True, batch_size=1)
-                    )
-            except Exception as error:  # noqa: BLE001 — one chunk must not cost the episode
-                print(f"  chunk failed ({episode['id']} @ {c['start']:.0f}s): {type(error).__name__}")
-                outputs.append(None)
-                lost += 1
-                self.torch.cuda.empty_cache()
-            finally:
-                c["path"].unlink(missing_ok=True)
+            # The allocator's cached blocks accumulate ACROSS CHUNKS, not only
+            # across episodes: the per-episode empty_cache below was the fix for
+            # the first large run's OOMs, and 66 long episodes then truncated
+            # DETERMINISTICALLY — every chunk past a fixed index OOMed, so the
+            # transcript simply stopped at the same second on every retry, which
+            # cost three redo rounds to tell apart from a download bug. One
+            # attempt, one cache clear, one retry, and the cache cleared after
+            # every chunk win or lose.
+            attempts = 0
+            while True:
+                try:
+                    with self.torch.inference_mode():
+                        outputs.extend(
+                            self.model.transcribe([str(c["path"])], timestamps=True, batch_size=1)
+                        )
+                    break
+                except Exception as error:  # noqa: BLE001 — one chunk must not cost the episode
+                    self.torch.cuda.empty_cache()
+                    attempts += 1
+                    if attempts < 2:
+                        continue
+                    print(f"  chunk failed ({episode['id']} @ {c['start']:.0f}s): {type(error).__name__}")
+                    outputs.append(None)
+                    lost += 1
+                    break
+            c["path"].unlink(missing_ok=True)
+            self.torch.cuda.empty_cache()
 
         result = _shape(episode, _merge(chunks, outputs))
 
