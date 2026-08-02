@@ -25087,11 +25087,14 @@ button.lang-phrase-diagram-node:focus-visible,
   outline-offset: var(--focus-ring-offset);
 }
 
-/* A PLAYLIST ROW CARRIES ITS OWN CONTROLS, and it is the only row in the room
-   that does. Everywhere else the row IS the button, and a control nested inside
-   one is invalid HTML that the engine unnests. Here the row is a grid holding
-   the button and a hand of controls beside it, because ordering the list is the
-   whole point of the list being the reader's. */
+/* EVERY ROW CARRIES ITS OWN HAND NOW, and the playlist page is only where the
+   shape was worked out. Everywhere else the row IS the button, and a control
+   nested inside one is invalid HTML the engine unnests — so the row is a grid
+   holding the button and a hand of controls BESIDE it. The playlist's hand is
+   the long one, because ordering the list is the point of the list being the
+   reader's; an album's and a series' hold one "+", because for a whole wave the
+   only way to put a track on a list was right-click, which is a gesture nothing
+   on screen mentions and therefore, for most readers, no way at all. */
 .listen-track-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -25101,19 +25104,37 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .listen-track-row .listen-track-face { min-width: 0; }
 
+/* THE HAND IS ALWAYS THERE AND ALWAYS THE SAME WIDTH. Hidden with opacity and
+   never with `display`, and every button inside drawn on every row — a disabled
+   one where it does not apply, never an absent one. Both halves matter for more
+   than tidiness: the row button holds the runtime in its last grid cell, and the
+   whole point of that column is that it ends in one line down six hundred rows.
+   A hand that changed width row to row would take the runtimes with it, and the
+   tour measures exactly that.
+
+   `pointer-events` FOLLOWS THE OPACITY, which it did not before. An element at
+   zero opacity is still hit-tested, so an idle playlist row was carrying three
+   invisible buttons a reader could press by aiming at its right end — and one of
+   them was Remove. The reveal is driven by hover on the whole ROW, so by the
+   time a pointer could reach the hand it is already live. */
 .listen-track-hand {
   display: flex;
   gap: 2px;
   opacity: 0;
+  pointer-events: none;
   transition: opacity 140ms ease;
 }
 
-/* On hover, and ALWAYS once something inside has focus — a keyboard reader
-   must not have to guess that three controls exist. */
+/* On hover, and ALWAYS once something inside has focus — a keyboard reader must
+   not have to guess that the controls exist. */
 .listen-track-row:hover .listen-track-hand,
-.listen-track-hand:focus-within { opacity: 1; }
+.listen-track-hand:focus-within {
+  opacity: 1;
+  pointer-events: auto;
+}
 
-.listen-track-move {
+.listen-track-move,
+.listen-track-add {
   display: grid;
   place-items: center;
   width: 24px;
@@ -25127,14 +25148,24 @@ button.lang-phrase-diagram-node:focus-visible,
   cursor: pointer;
 }
 
-.listen-track-move:hover:not(:disabled) {
+.listen-track-move:hover:not(:disabled),
+.listen-track-add:hover:not(:disabled) {
   background: var(--surface-hover);
   color: var(--text-primary);
 }
 
-.listen-track-move:disabled { opacity: 0.3; cursor: default; }
+/* The one control in the hand that takes the record's colour, and only under the
+   pointer. Adding is the additive gesture on a page already about one record, so
+   it borrows the accent the play mark wears rather than inventing one — and ＋ is
+   the same glyph the shelf uses for putting a record back, which is this room's
+   existing word for "add". */
+.listen-track-add:hover:not(:disabled) { color: var(--record-accent); }
 
-.listen-track-move:focus-visible {
+.listen-track-move:disabled,
+.listen-track-add:disabled { opacity: 0.3; cursor: default; }
+
+.listen-track-move:focus-visible,
+.listen-track-add:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
 }

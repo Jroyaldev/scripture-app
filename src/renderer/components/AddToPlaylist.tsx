@@ -40,6 +40,18 @@ export interface PlaylistAsk {
   entry: PlaylistEntry;
   /** What to call it in the confirmation. The stored title, ordinarily. */
   label: string;
+  /**
+   * WHAT TO GIVE FOCUS BACK TO. The menu portals to `document.body` and takes
+   * focus when it opens, so a reader who pressed "+" with the keyboard and then
+   * pressed Escape was returned to `body` — which in a six-hundred-row series
+   * means starting the tab journey again from the top of the page. Recorded
+   * here rather than in the room because the element that opened the ask is a
+   * fact about the ask, and the room holds more than one menu placement.
+   *
+   * Optional, and the row gesture does not set it: right-click does not move
+   * focus in the first place.
+   */
+  origin?: HTMLElement;
 }
 
 /**
@@ -64,6 +76,52 @@ export function usePlaylistAsk(
       event.preventDefault();
       onAsk({ rect: event.currentTarget.getBoundingClientRect(), entry, label });
     },
+  });
+}
+
+/**
+ * The same ask, from a button a reader can see. Returns props to spread on it.
+ *
+ * ANCHORED TO THE BUTTON, NOT THE ROW, which is the whole reason this is a
+ * second hook rather than an `onClick` added to the one above. The row's rect is
+ * the full width of the list, so a menu hung off it opens under the left edge of
+ * the page and the reader has to go looking for the thing they just pressed. A
+ * twenty-four-pixel rect puts the menu under the twenty-four-pixel control.
+ * `Popover` clamps against the viewport itself, so a "+" against the right edge
+ * of a narrow window is already handled.
+ *
+ * It carries its own `aria-label` and `title` because those are the part most
+ * easily got wrong per call site: the tour finds the playlist row's remove
+ * control by a label beginning "Remove" and its reorder control by one beginning
+ * "Move down", and a hand-written "+" label that drifted into either shape would
+ * fail a gate a long way from this file. Written once, here.
+ */
+export function usePlaylistAskButton(
+  onAsk: (ask: PlaylistAsk) => void,
+): (entry: PlaylistEntry, label: string) => {
+  "aria-haspopup": "dialog";
+  "aria-label": string;
+  onClick: (event: React.MouseEvent<HTMLElement>) => void;
+  title: string;
+} {
+  return (entry, label) => ({
+    /* The menu is the `role="dialog"` panel `Popover` draws. Said rather than
+       left to be inferred, so a reader is told a press opens something instead
+       of discovering it when focus moves. */
+    "aria-haspopup": "dialog",
+    "aria-label": `Add ${label} to a playlist`,
+    onClick: (event) => {
+      onAsk({
+        rect: event.currentTarget.getBoundingClientRect(),
+        entry,
+        label,
+        origin: event.currentTarget,
+      });
+    },
+    /* Short and constant. The label names the track because a screen reader
+       hears it out of context; the tooltip does not, because a pointer is
+       already sitting on the row whose title it would repeat. */
+    title: "Add to playlist",
   });
 }
 

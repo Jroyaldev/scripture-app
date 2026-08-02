@@ -798,6 +798,67 @@ gate(!escaped2.menu && escaped2.stillOnRecord,
   "and Escape closes the menu without leaving the record",
   `menu ${escaped2.menu}, record ${escaped2.stillOnRecord}`);
 
+/* ── The visible way in ──────────────────────────────────────────────────────
+   Right-click is a shortcut, not an affordance: nothing on screen mentions it,
+   so for a reader who did not already know the app it was no way at all. Every
+   row in the room now carries a hand with a "+", the same shape the playlist
+   page has used since it shipped.
+
+   The hand must be present on EVERY row and always the same width — the runtime
+   lives in the row button's last grid cell, and a hand that changed width row to
+   row would take the right edge with it.
+
+   The menu the gate above opened is already closed by its own Escape — this
+   block deliberately does NOT dispatch another, because with no menu open that
+   key leaves the record and there would be no rows left to measure. */
+const hands = await evaluate(`(() => {
+  const rows = [...document.querySelectorAll('.listen-track-row')];
+  const adds = rows.map((r) => r.querySelector('.listen-track-add'));
+  const hand = document.querySelector('.listen-track-hand');
+  return {
+    rows: rows.length,
+    withAdd: adds.filter(Boolean).length,
+    /* Hidden by opacity, never by display — and hit-testing must follow, or an
+       idle row carries invisible buttons a reader can press by aiming. */
+    idleHidden: hand ? getComputedStyle(hand).opacity === '0' : null,
+    idleInert: hand ? getComputedStyle(hand).pointerEvents === 'none' : null,
+    labelled: adds.filter(Boolean).every((b) => /^Add /.test(b.getAttribute('aria-label') || '')),
+  };
+})()`);
+gate(hands.rows > 0 && hands.withAdd === hands.rows,
+  "every row on a record carries a visible way onto a list",
+  `${hands.withAdd}/${hands.rows}`);
+gate(hands.idleHidden && hands.idleInert,
+  "quiet until the row is wanted, and inert while quiet",
+  `opacity ${hands.idleHidden}, inert ${hands.idleInert}`);
+gate(hands.labelled, "and each names the track it would add");
+
+const added = await evaluate(`(() => {
+  const add = document.querySelector('.listen-track-add');
+  add.click();
+  return new Promise((r) => setTimeout(() => {
+    const panel = document.querySelector('.playlist-menu');
+    const rect = panel?.getBoundingClientRect();
+    const from = add.getBoundingClientRect();
+    return r({
+      open: !!panel,
+      /* Anchored to the BUTTON, not the row: a menu hung off a full-width row
+         opens under the left edge of the page and the reader goes looking. */
+      nearButton: rect ? Math.abs(rect.left - from.left) < 260 : null,
+      head: document.querySelector('.playlist-menu-head')?.textContent ?? null,
+    });
+  }, 500));
+})()`);
+gate(added.open, "pressing it opens the menu", added.head);
+gate(added.nearButton, "under the control that was pressed", String(added.nearButton));
+await shot("row-add-menu");
+await evaluate(`(() => {
+  window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  return true;
+})()`);
+await sleep(400);
+
+
 const family = await evaluate(`(() => {
   const back = document.querySelector('.listen-back');
   back?.click();

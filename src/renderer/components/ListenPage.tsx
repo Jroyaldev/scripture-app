@@ -106,7 +106,12 @@ import {
   type MusicAlbum,
   type MusicTrack,
 } from "./listen-episodes";
-import { AddToPlaylist, usePlaylistAsk, type PlaylistAsk } from "./AddToPlaylist";
+import {
+  AddToPlaylist,
+  usePlaylistAsk,
+  usePlaylistAskButton,
+  type PlaylistAsk,
+} from "./AddToPlaylist";
 import {
   addToPlaylist,
   createPlaylist,
@@ -757,8 +762,20 @@ function Shelve({ away, of, onToggle }: {
  * on which heading it happens to sit under is a bug waiting for somebody to
  * edit one copy.
  */
-function AlbumGroup({ album, askProps, group, onPlay, ordered, playingHere, sounding }: {
+function AlbumGroup({
+  album, askButton, askProps, group, onPlay, ordered, playingHere, sounding,
+}: {
   album: MusicAlbum;
+  /* Two bindings onto one menu: the row's right-click, and the hand's "+".
+     Threaded in rather than made here because both come from the room's single
+     `setAsk`, and a group that opened its own menu would be a second popover the
+     room could not close. */
+  askButton: (entry: PlaylistEntry, label: string) => {
+    "aria-haspopup": "dialog";
+    "aria-label": string;
+    onClick: (event: React.MouseEvent<HTMLElement>) => void;
+    title: string;
+  };
   askProps: (entry: PlaylistEntry, label: string) => {
     onContextMenu: (event: React.MouseEvent) => void;
     onKeyDown: (event: React.KeyboardEvent) => void;
@@ -781,46 +798,67 @@ function AlbumGroup({ album, askProps, group, onPlay, ordered, playingHere, soun
       <ol className="listen-tracks">
         {group.tracks.map((track, index) => {
           const on = playingHere(MUSIC.source.id, trackId(album, track));
+          /* Named once and handed to both gestures. Written out twice — once for
+             the right-click, once for the "+" — it would be two literals that
+             must stay identical or the menu offers to add a different song than
+             the row it grew out of. */
+          const entry: PlaylistEntry = {
+            kind: "music",
+            sourceId: MUSIC.source.id,
+            album: album.name,
+            title: track.title,
+          };
           return (
             <li className="listen-track" key={`${track.title}:${index}`}>
-              <button
-                aria-current={on ? "true" : undefined}
-                aria-label={`Play ${track.title} — ${album.name}, ${MUSIC.source.name}`}
-                className="listen-track-face"
-                data-on={on ? "" : undefined}
-                onClick={() => onPlay(ordered.indexOf(track))}
-                type="button"
-                {...askProps(
-                  {
-                    kind: "music",
-                    sourceId: MUSIC.source.id,
-                    album: album.name,
-                    title: track.title,
-                  },
-                  track.title,
-                )}
-              >
-                <span className="listen-track-mark">
-                  {on && sounding
-                    ? <BarsGlyph />
-                    : <>
-                      <span aria-hidden="true" className="listen-track-no">{index + 1}</span>
-                      <span aria-hidden="true" className="listen-track-play"><PlayGlyph /></span>
-                    </>}
+              {/* THE ROW IS A BUTTON AND ITS HAND IS A SIBLING. A control nested
+                  inside the row would be invalid HTML the engine unnests, which
+                  is why the room went a whole wave with right-click as the only
+                  way to put a song on a list — a gesture nothing on screen
+                  mentions, so for a reader who did not already know it, no way
+                  at all. This is the shape the playlist page has used since it
+                  shipped, brought over unchanged. */}
+              <div className="listen-track-row">
+                <button
+                  aria-current={on ? "true" : undefined}
+                  aria-label={`Play ${track.title} — ${album.name}, ${MUSIC.source.name}`}
+                  className="listen-track-face"
+                  data-on={on ? "" : undefined}
+                  onClick={() => onPlay(ordered.indexOf(track))}
+                  type="button"
+                  {...askProps(entry, track.title)}
+                >
+                  <span className="listen-track-mark">
+                    {on && sounding
+                      ? <BarsGlyph />
+                      : <>
+                        <span aria-hidden="true" className="listen-track-no">{index + 1}</span>
+                        <span aria-hidden="true" className="listen-track-play"><PlayGlyph /></span>
+                      </>}
+                  </span>
+                  <span className="listen-track-words">
+                    <span className="listen-track-title">{track.title}</span>
+                  </span>
+                  {/* NO PLACE MARK ON A SONG, deliberately. The bar and the tick
+                      answer "where was I in this?", which is a question about a
+                      forty-minute exposition and not about a three-minute psalm
+                      — nobody resumes a hymn halfway, and a tick would end up on
+                      all 222 rows of EveryPsalm, which is noise wearing the
+                      costume of information. The row keeps its slot so the
+                      runtimes stay in one line with every other list. */}
+                  <span className="listen-track-place" />
+                  <span className="listen-track-extent">{track.duration}</span>
+                </button>
+                {/* ONE CONTROL, ALWAYS DRAWN — hidden by opacity, never by
+                    `display`, because every row must reserve the same width or
+                    the runtime column stops ending in one line down the page. */}
+                <span className="listen-track-hand">
+                  <button
+                    className="listen-track-add"
+                    type="button"
+                    {...askButton(entry, track.title)}
+                  >＋</button>
                 </span>
-                <span className="listen-track-words">
-                  <span className="listen-track-title">{track.title}</span>
-                </span>
-                {/* NO PLACE MARK ON A SONG, deliberately. The bar and the tick
-                    answer "where was I in this?", which is a question about a
-                    forty-minute exposition and not about a three-minute psalm —
-                    nobody resumes a hymn halfway, and a tick would end up on all
-                    222 rows of EveryPsalm, which is noise wearing the costume of
-                    information. The row keeps its slot so the runtimes stay in
-                    one line with every other list in the room. */}
-                <span className="listen-track-place" />
-                <span className="listen-track-extent">{track.duration}</span>
-              </button>
+              </div>
             </li>
           );
         })}
@@ -1126,6 +1164,22 @@ export function ListenPage({ backbone, bookNames }: {
   const [showHidden, setShowHidden] = useState(false);
   const [ask, setAsk] = useState<PlaylistAsk | null>(null);
   const askProps = usePlaylistAsk(setAsk);
+  const askButton = usePlaylistAskButton(setAsk);
+  /* WHERE THE READER IS PUT DOWN AGAIN once the menu closes. The menu portals to
+     the document body and takes focus, so without this a keyboard reader who
+     opened it from a row four hundred deep in BEMA and then changed their mind
+     was returned to `body` and had to tab the whole page again. Keyed off the
+     ask going null rather than off any one placement, because the room draws the
+     menu once per branch and this must not care which. `isConnected` guarded:
+     adding an entry can rerender the list the "+" lived in, and focusing a node
+     the engine has already dropped throws. */
+  const askOrigin = useRef<HTMLElement | null>(null);
+  useEffect(() => {
+    if (ask) { askOrigin.current = ask.origin ?? null; return; }
+    const back = askOrigin.current;
+    askOrigin.current = null;
+    if (back?.isConnected) back.focus({ preventScroll: true });
+  }, [ask]);
   /**
    * WHICH LIST IS BEING RENAMED, and what to.
    *
@@ -1680,11 +1734,30 @@ export function ListenPage({ backbone, bookNames }: {
                           {clock(row.episode?.durationSeconds ?? null)}
                         </span>
                       </button>
-                      {/* The one place in the room where a row carries its own
-                          controls: a playlist row is the reader's, and ordering
-                          it is the point. Buttons beside the row rather than
-                          inside it, which is what keeps the row a button. */}
+                      {/* The hand this list invented and the rest of the room
+                          now borrows: buttons beside the row rather than inside
+                          it, which is what keeps the row a button. Here it is
+                          longest, because ordering is the point of a list being
+                          the reader's.
+
+                          ADD COMES FIRST AND REMOVE STAYS LAST. The two arrows
+                          are a pair and are not to be parted, so a fourth
+                          control can only go at one end — and putting an
+                          additive control past a destructive one reads as an
+                          afterthought and puts × under the pointer on the way to
+                          it. A dead row keeps its "+" DISABLED rather than
+                          dropped: the entry is real and could honestly be copied
+                          onto another list, but the record it names has left the
+                          library, and offering to move a ghost somewhere is not
+                          a kindness. Disabled rather than absent also holds the
+                          hand's width, which the runtime column depends on. */}
                       <span className="listen-track-hand">
+                        <button
+                          className="listen-track-add"
+                          disabled={!row.episode}
+                          type="button"
+                          {...askButton(row.entry, row.episode?.title ?? row.entry.title)}
+                        >＋</button>
                         <button
                           aria-label="Move up"
                           className="listen-track-move"
@@ -1827,44 +1900,57 @@ export function ListenPage({ backbone, bookNames }: {
               <ol className="listen-tracks">
                 {eps.map((ep, index) => {
                   const on = playingHere(openedSeries.id, ep.recordId);
+                  /* One entry, both gestures — see the album's rows for why it
+                     is named rather than written out at each of them. */
+                  const entry: PlaylistEntry = {
+                    kind: "podcast",
+                    sourceId: openedSeries.id,
+                    recordId: ep.recordId,
+                    title: ep.title,
+                  };
                   return (
                     <li className="listen-track" key={ep.recordId}>
-                      <button
-                        aria-current={on ? "true" : undefined}
-                        aria-label={`Play ${ep.title} — ${openedSeries.name}`}
-                        className="listen-track-face"
-                        data-on={on ? "" : undefined}
-                        onClick={() => play(ordered.indexOf(ep))}
-                        type="button"
-                        {...askProps(
-                          {
-                            kind: "podcast",
-                            sourceId: openedSeries.id,
-                            recordId: ep.recordId,
-                            title: ep.title,
-                          },
-                          ep.title,
-                        )}
-                      >
-                        <span className="listen-track-mark">
-                          {on && sounding
-                            ? <BarsGlyph />
-                            : <>
-                              <span aria-hidden="true" className="listen-track-no">{index + 1}</span>
-                              <span aria-hidden="true" className="listen-track-play"><PlayGlyph /></span>
-                            </>}
-                        </span>
-                        <span className="listen-track-words">
-                          <span className="listen-track-title">{ep.title}</span>
+                      {/* Same grid as the album's rows and the playlist's: the
+                          row button, and a hand beside it rather than inside it.
+                          Six hundred episodes now carry a visible way onto a
+                          list, at a cost of nothing until the pointer arrives. */}
+                      <div className="listen-track-row">
+                        <button
+                          aria-current={on ? "true" : undefined}
+                          aria-label={`Play ${ep.title} — ${openedSeries.name}`}
+                          className="listen-track-face"
+                          data-on={on ? "" : undefined}
+                          onClick={() => play(ordered.indexOf(ep))}
+                          type="button"
+                          {...askProps(entry, ep.title)}
+                        >
+                          <span className="listen-track-mark">
+                            {on && sounding
+                              ? <BarsGlyph />
+                              : <>
+                                <span aria-hidden="true" className="listen-track-no">{index + 1}</span>
+                                <span aria-hidden="true" className="listen-track-play"><PlayGlyph /></span>
+                              </>}
+                          </span>
+                          <span className="listen-track-words">
+                            <span className="listen-track-title">{ep.title}</span>
                           {/* The publisher's own line, where their feed gave
                               one. A row without it draws exactly as it did —
                               which is most rows, and will stay most rows. */}
-                          {ep.summary && <span className="listen-track-said">{ep.summary}</span>}
-                          {stamp(ep.publishedAt) && <span className="listen-track-when">{stamp(ep.publishedAt)}</span>}
+                            {ep.summary && <span className="listen-track-said">{ep.summary}</span>}
+                            {stamp(ep.publishedAt) && <span className="listen-track-when">{stamp(ep.publishedAt)}</span>}
+                          </span>
+                          <Progress place={places.get(placeKey(openedSeries.id, ep.recordId))} />
+                          <span className="listen-track-extent">{clock(ep.durationSeconds)}</span>
+                        </button>
+                        <span className="listen-track-hand">
+                          <button
+                            className="listen-track-add"
+                            type="button"
+                            {...askButton(entry, ep.title)}
+                          >＋</button>
                         </span>
-                        <Progress place={places.get(placeKey(openedSeries.id, ep.recordId))} />
-                        <span className="listen-track-extent">{clock(ep.durationSeconds)}</span>
-                      </button>
+                      </div>
                     </li>
                   );
                 })}
@@ -1997,6 +2083,7 @@ export function ListenPage({ backbone, bookNames }: {
                   {run.map((group) => (
                     <AlbumGroup
                       album={album}
+                      askButton={askButton}
                       askProps={askProps}
                       group={group}
                       key={group.name || "all"}
@@ -2011,6 +2098,7 @@ export function ListenPage({ backbone, bookNames }: {
           ) : shown.map((group) => (
             <AlbumGroup
               album={album}
+              askButton={askButton}
               askProps={askProps}
               group={group}
               key={group.name || "all"}
