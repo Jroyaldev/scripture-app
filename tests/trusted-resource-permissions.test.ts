@@ -32,6 +32,11 @@ const ALL_APPROVED_MARK_SOURCES = [...APPROVED_MARK_SOURCES, ...APPROVED_MARK_SO
 const DEVICE_SOURCES_PUBLIC_FEED = [
   "five-minutes-church-history",
   "forty-minutes-ot",
+  /* 30 Minutes in the New Testament joins 2026-08-02 on its sibling's footing
+     and with its sibling's treatment — same publisher, same kit structure,
+     same reason for a device rather than a wordmark. See the pair's blocks in
+     styles.css. */
+  "thirty-minutes-nt",
   "radically-christian",
 ];
 

@@ -22168,6 +22168,25 @@ button.lang-phrase-diagram-node:focus-visible,
   --resource-pill-ink: #0d0d0d;
   --resource-mark: url("./assets/brand/bema-lockup-white.png");
   --resource-mark-height: 20px;
+  /* ── A BRAND WITH NO HUE GETS NO HUE · 2026-08-02 ──────────────────────
+     The card's ground keeps the publisher's HUE and clamps chroma into a
+     narrow band, and the floor in that clamp (--ground-fit-c-min) exists to
+     stop an already-neutral brand — Naked Bible's charcoal, C 0.009 — from
+     arriving as the one plain card on a shelf of tinted ones.
+
+     BEMA breaks that assumption rather than sitting near it. #0d0d0d has
+     essentially ZERO chroma, so it has no hue to preserve; the floor then
+     lifts an undefined hue to a visible one, and undefined resolves to 0° —
+     which drew their card PINK. The reader saw it and said it does not fit a
+     black-and-white brand, which is exactly right: the colour was ours, not
+     theirs, and inventing a hue is the one thing this derivation exists to
+     avoid.
+
+     So the shape of the derivation is kept and only the chroma is answered:
+     lightness from the fit, hue from the publisher, chroma ZERO. A publisher
+     whose identity is two neutrals gets a neutral card, which is their
+     palette rather than our reading of it. */
+  --resource-ground: oklch(from var(--resource-source) var(--ground-fit-l) 0 h);
   --resource-mark-ratio: 2.875;
   /* No separable device: their identity is the wordmark with its bar, so the
      symbol is the same file declared twice — the statement the eleven before
@@ -22295,6 +22314,59 @@ button.lang-phrase-diagram-node:focus-visible,
   --resource-ink-soft: rgb(50 34 33 / 0.76);
   --resource-line: rgb(50 34 33 / 0.3);
   --resource-pill-bg: #322221;
+  --resource-pill-ink: #ece2d0;
+}
+
+/* ── 30 Minutes in the New Testament · added 2026-08-02 ────────────────────
+   THE SIBLING, AND IT IS SET UP AS ONE. 40 Minutes in the Old Testament is
+   the same publisher's other show, and the maintainer's ask was that the two
+   "feel like they are similarly setup so you can see the familial relation."
+   So every decision here is 40's decision, made the same way and stated in
+   the same order — the only things that differ are the two values the two
+   kits actually differ in.
+
+   THE FAMILY, as the kits themselves draw it: a numeral inside a decorative
+   halo with the publisher's CF monogram at its centre, then a three-line
+   wordmark. Both kits carry exactly two inks. 40's are #322221 and #776034;
+   30's are #392524 and #B53D2C. Same charcoal to within a shade, one gold
+   and one rust — which is the whole of the difference, and is why the shared
+   ground below is what makes the pair legible AS a pair.
+
+   THE GROUND IS OURS, and it is 40's ground unchanged. The note on that block
+   says why it had to be invented: the show publishes no value we can trust,
+   its kit may carry 1517's network colours rather than the show's, and the
+   kit's dark emblem needs a light field to sit on at all. All of that is true
+   of this show too, and giving the pair one field rather than two guesses is
+   both the more honest choice and the one that draws the family.
+
+   THE EMBLEM, NOT THE LOCKUP — 40's rule again, for 30's own reason. 40 drops
+   its wordmark because blackletter is unreadable under about 40px; 30's
+   wordmark is a clean geometric sans that would survive, but a device beside
+   the name on one sibling and a wordmark replacing it on the other is the
+   two-species shelf this room has twice been fixed for. The pair takes the
+   device. Cut from the kit's own wide-transparent SVG the way 40's was: the
+   viewBox trimmed to the device's bounds and the wordmark paths dropped, so
+   it is the publisher's vector rather than our raster of it. 1.014 against
+   40's 1.051 — the two are within four hundredths of square, which is what
+   lets the shelf's optical scale draw them at the same weight. */
+.trusted-resource-card[data-source="thirty-minutes-nt"],
+.trusted-resource-imprint[data-source="thirty-minutes-nt"],
+.resource-source[data-source="thirty-minutes-nt"],
+.resource-matrix-row[data-source="thirty-minutes-nt"],
+.resource-card[data-source="thirty-minutes-nt"],
+.resource-card-band[data-source="thirty-minutes-nt"],
+.podcast-dock[data-source="thirty-minutes-nt"],
+.taught-here-plate[data-source="thirty-minutes-nt"] {
+  --resource-source: #ece2d0;
+  --resource-mark-ratio: 1.014;
+  --resource-device: url("./assets/brand/thirty-minutes-emblem.svg");
+  --resource-symbol: url("./assets/brand/thirty-minutes-emblem.svg");
+  --resource-symbol-ratio: 1.014;
+  --resource-ink: #392524;
+  --resource-accent: #B53D2C;
+  --resource-ink-soft: rgb(57 37 36 / 0.76);
+  --resource-line: rgb(57 37 36 / 0.3);
+  --resource-pill-bg: #392524;
   --resource-pill-ink: #ece2d0;
 }
 
