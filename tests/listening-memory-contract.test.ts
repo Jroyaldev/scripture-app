@@ -290,6 +290,38 @@ test("the add-to-playlist menu is placed in every room that can ask for it", () 
   );
 });
 
+test("the sung half of a seeded list cannot eat the spoken half", () => {
+  /* THE DEFECT THIS PINS was arithmetic, not logic. `SEEDED_MAX` was checked in
+     the podcast loop only, and the music loop ran ahead of it unbounded — so a
+     chapter with twenty-five or more settings filled the list before the passage
+     index was ever consulted. Psalm 119 has exactly twenty-five in EveryPsalm.
+     "Psalm 119" seeded twenty-five songs and no teaching at all, silently, on
+     the psalm most likely to be tried as a stress test, and the feature's stated
+     premise — a psalm, a sermon and a hymn on one list — was defeated by a loop
+     that simply got there first.
+
+     Asserted against the sung loop's own slice rather than the file at large,
+     because a bound that lives anywhere else is not a bound on this loop. */
+  const room = code("src/renderer/components/ListenPage.tsx");
+  const sung = room.indexOf("for (const album of MUSIC.albums)");
+  const spoken = room.indexOf("window.api.passages.moments(");
+  assert.ok(sung > 0 && spoken > sung, "the sung loop must still run before the spoken half");
+  assert.match(
+    room.slice(sung, spoken),
+    /entries\.length >= SEEDED_SUNG_MAX/,
+    "the music loop must carry its own ceiling — the spoken loop's SEEDED_MAX arrives too late",
+  );
+
+  /* And the ceiling has to leave room. Equal caps would be no cap. */
+  const sungMax = /const SEEDED_SUNG_MAX = (\d+);/.exec(room)?.[1];
+  const seededMax = /const SEEDED_MAX = (\d+);/.exec(room)?.[1];
+  assert.ok(sungMax && seededMax, "both ceilings must be named constants");
+  assert.ok(
+    Number(sungMax) < Number(seededMax),
+    "the sung ceiling must be strictly under the list ceiling, or the spoken half can still starve",
+  );
+});
+
 test("the plate fallback survives having no live example", () => {
   /* THE HAZARD THIS EXISTS FOR. The hero draws a publisher's own mark on their
      own colour when a source carries no cover art, and the room's tour used to

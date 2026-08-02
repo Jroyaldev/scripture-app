@@ -144,10 +144,50 @@ export function addToPlaylist(id: string, entry: PlaylistEntry): boolean {
   return true;
 }
 
-export function removeFromPlaylist(id: string, at: number): void {
+/**
+ * Take one entry off, and hand it back.
+ *
+ * IT RETURNS THE ROW BECAUSE REMOVING HAD NO UNDO while deleting a whole list
+ * did. The gesture that costs least — one `×` on one row, in a column where the
+ * two buttons beside it only reorder — was the one gesture in the room that
+ * could not be taken back, while the gesture that costs a reader an evening's
+ * work offered a toast. That is the wrong way round.
+ *
+ * An index alone cannot restore anything: by the time the reader reaches for
+ * Undo the array has closed over the gap, and the caller would be guessing at
+ * what used to sit there. So the store hands the entry back.
+ */
+export function removeFromPlaylist(id: string, at: number): PlaylistEntry | null {
+  const list = lists.find((one) => one.id === id);
+  const going = list?.entries[at] ?? null;
+  if (!going) return null;
   keep(lists.map((one) => (
     one.id === id ? { ...one, entries: one.entries.filter((_, index) => index !== at) } : one
   )));
+  return going;
+}
+
+/**
+ * Put a removed entry back, in its place. Undo, from the toast.
+ *
+ * Deliberately the same shape as `restorePlaylist` above — clamp, splice, write
+ * whole — because it is the row-level twin of that function, and two undos that
+ * behave differently are two undos a reader has to learn.
+ *
+ * The dedupe check is not decoration. An Undo is live for five seconds, which is
+ * long enough for a reader to remove a track, think better of it, and add it
+ * back from the album page by hand; pressing Undo afterwards would leave two of
+ * it on a list whose whole promise is that it never quietly doubles a track. If
+ * the entry is already home, the undo is a no-op.
+ */
+export function insertPlaylistEntry(id: string, entry: PlaylistEntry, at: number): void {
+  keep(lists.map((one) => {
+    if (one.id !== id) return one;
+    if (one.entries.some((held) => sameEntry(held, entry))) return one;
+    const entries = [...one.entries];
+    entries.splice(Math.min(Math.max(at, 0), entries.length), 0, entry);
+    return { ...one, entries };
+  }));
 }
 
 /** Move one entry by one place. The whole of reordering, deliberately — see

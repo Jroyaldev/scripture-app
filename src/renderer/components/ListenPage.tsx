@@ -111,6 +111,7 @@ import {
   addToPlaylist,
   createPlaylist,
   deletePlaylist,
+  insertPlaylistEntry,
   movePlaylistEntry,
   playlistIndex,
   readPlaylists,
@@ -499,8 +500,32 @@ function PassageSeed({ backbone, bookNames, onMade }: {
 
       /* Sung first: a psalm's own setting is the most direct answer there is to
          "what does the library have on Psalm 23". */
+      /* THE SUNG HALF CARRIES ITS OWN CEILING, and it must, because the seed
+         used to starve its own premise. Only the spoken loop below checked
+         `SEEDED_MAX`, and it ran second — so the music scan filled whatever
+         share of the twenty-five it liked and the teaching half took what was
+         left, which on a long psalm was nothing at all. Psalm 119 has exactly
+         twenty-five settings in EveryPsalm, so seeding "Psalm 119" produced
+         twenty-five songs and zero sermons, silently: no error, no truncation
+         notice, a full and plausible-looking list. The one feature whose whole
+         claim is "a psalm, a sermon and a hymn on the same list" delivered a
+         third of that on the psalm a reader is most likely to try, because it
+         is the famous long one.
+
+         Ten is not a guess about taste: ten settings of one chapter is already
+         more of one thing than a twenty-five row list should spend, and it
+         leaves fifteen the spoken half can always reach. Below ten nothing is
+         capped and nothing changes for Psalm 23, the ordinary case.
+
+         Considered and rejected: interleaving the halves round-robin. It reads
+         well in the abstract and destroys the one ordering that is earned — the
+         spoken half arrives ranked by how many seconds an episode spends in the
+         chapter, and shuffling songs through it would present that as an order
+         nobody computed. */
       for (const album of MUSIC.albums) {
+        if (entries.length >= SEEDED_SUNG_MAX) break;
         for (const track of album.tracks) {
+          if (entries.length >= SEEDED_SUNG_MAX) break;
           const passage = trackPassage(track);
           if (!passage || passage.book !== book || passage.chapter !== chapter) continue;
           entries.push({
@@ -579,6 +604,10 @@ function PassageSeed({ backbone, bookNames, onMade }: {
 
 /** Enough to be a list, few enough to be a list somebody reads. */
 const SEEDED_MAX = 25;
+
+/** How much of that a single chapter's settings may take, so the spoken half is
+ *  never crowded out — see the sung loop for the psalm that proved it. */
+const SEEDED_SUNG_MAX = 10;
 
 /**
  * Take a record off this shelf, or put it back.
@@ -1428,10 +1457,32 @@ export function ListenPage({ backbone, bookNames }: {
                           onClick={() => movePlaylistEntry(list.id, index, 1)}
                           type="button"
                         >↓</button>
+                        {/* THE ROW GOES AT ONCE AND CAN COME BACK, which is the
+                            same bargain the Delete button above makes, and the
+                            reason neither asks "are you sure?". A confirmation
+                            on a one-row edit is a dialog in front of a reader
+                            tidying a list, forty times an evening; an Undo costs
+                            nothing until it is wanted.
+
+                            Removed on the press rather than when the toast
+                            lapses, and that is not a style preference. A
+                            deferred removal reads well in a mockup and is a lie
+                            about what the list contains: the store and the
+                            screen disagree for five seconds, anything resolving
+                            the list in that window sees the old row, and the
+                            room's own tour counts rows half a second after the
+                            press and would find nothing had happened. Truth
+                            first, then the offer to reverse it. */}
                         <button
                           aria-label={`Remove ${row.entry.title}`}
                           className="listen-track-move"
-                          onClick={() => removeFromPlaylist(list.id, index)}
+                          onClick={() => {
+                            const going = removeFromPlaylist(list.id, index);
+                            if (!going) return;
+                            showToast(`Removed ${row.entry.title}`, "Undo", () => {
+                              insertPlaylistEntry(list.id, going, index);
+                            });
+                          }}
                           type="button"
                         >×</button>
                       </span>

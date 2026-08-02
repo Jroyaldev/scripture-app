@@ -913,6 +913,34 @@ const removed = await evaluate(`(() => {
 gate(removed.now === removed.was - 1, "and a row taken off it",
   `${removed.was} → ${removed.now}`);
 
+/* AND PUT BACK, which is the half that used to be missing. Removing a row was
+   the only destructive gesture in the room without an undo, while deleting a
+   whole list — far more expensive — had a toast. This follows the removal
+   immediately for two reasons: the toast lapses after five seconds, and the
+   was−1 arithmetic above is read at 500ms, before this restores anything, so the
+   two gates do not fight over the same count.
+
+   The LAST toast action, not the first: the delete-list toast later in this tour
+   wears the same "Undo" word, and a stale toast still on screen would answer for
+   this press. */
+const undone = await evaluate(`(() => {
+  const count = () => document.querySelectorAll('.listen-track').length;
+  const actions = [...document.querySelectorAll('.toast-action')];
+  const button = actions[actions.length - 1];
+  const label = button?.textContent ?? null;
+  button?.click();
+  return new Promise((r) => setTimeout(() => r({
+    label,
+    now: count(),
+    first: document.querySelector('.listen-track-title')?.textContent ?? null,
+  }), 600));
+})()`);
+gate(undone.label === "Undo" && undone.now === removed.was,
+  "and the removal can be undone", `${removed.now} → ${undone.now} (${undone.label})`);
+/* Back where it was, not appended. A restore that lands at the end is a
+   different list from the one the reader had. */
+gate(undone.first === ordered2.now[0], "with the row back in its own place", `${undone.first}`);
+
 /* And the whole point of the store: a list is the reader's, so it outlives the
    room unmounting and the app reloading. */
 await evaluate(`(() => { location.reload(); return true; })()`);
