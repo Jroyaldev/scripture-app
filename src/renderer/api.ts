@@ -338,6 +338,9 @@ export interface AppSettings {
     officialUrl: string;
     audioUrl: string;
     kind: string;
+    /** The record's cover and the one colour it is, when it brought them. */
+    artUrl?: string;
+    tint?: string;
     passage: {
       book: string;
       chapter: number;

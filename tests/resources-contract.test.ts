@@ -493,7 +493,14 @@ test("every card carries its publisher's mark", () => {
     cardPlateAt,
     styles.indexOf("\n}", styles.indexOf(".resource-card .resource-card-plate .taught-here-mark {", cardPlateAt)),
   );
-  assert.match(cardPlate, /width: 56px;\s*\n\s*height: 28px;/,
+  /* RESTATED 2026-08-02 — 48 square, where it was 56×28. What this gate holds
+     is that the plate is ONE FIXED BOX, not which box: a plate whose size
+     follows its content is the ragged head the reader rejected, and that is
+     as true of a square as it was of a landscape. The shape changed with the
+     shelf's cover face, on the maintainer's word — "even the marks should be
+     square" — so that the card's left column is one column whichever face a
+     row is wearing. */
+  assert.match(cardPlate, /width: 48px;\s*\n\s*height: 48px;/,
     "the card's plate is not one box any more; a plate whose size follows its content is the ragged head the reader rejected");
   assert.match(cardPlate, /background: var\(--resource-symbol\) center \/ contain no-repeat/,
     "the card is drawing something other than the publisher's symbol");

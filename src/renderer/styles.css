@@ -21079,6 +21079,111 @@ button.lang-phrase-diagram-node:focus-visible,
    not go back into the head beside the plate, where two marks argued.
 
    AND THE TITLE GETS THE FLOOR — the whole 288, four times what it had. */
+/* ── THE CARD WEARING ITS SLEEVE · 2026-08-02 ──────────────────────────────
+   The plate is 56×28 — a two-to-one landscape built to lay a wordmark across.
+   A square cover dropped into it would be 28px, which is too small to
+   recognise and too small to be worth a request. So a card that wears artwork
+   is laid out the way every listening app lays out a row: the sleeve down the
+   left, spanning both rows, with the filing and the title stacked beside it.
+
+   48px is the size, and it is the card's own height that chooses it: 96px tall
+   with 14px of padding leaves 68 inside, and 48 sits inside that with air above
+   and below rather than filling it to the edges like a photograph in a frame
+   that is too small for it. */
+.resource-card-face {
+  grid-template-columns: 48px minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, auto);
+  /* CENTRED, WHERE THE MARK FACE STARTS. `align-content: start` is right when
+     the card is one column of stacked rows — the head is a rule across the top
+     and the title hangs under it. Beside a 48px sleeve it is wrong: the cover
+     centres in the card's height and the words did not, so a one-line title
+     left sixteen pixels of slack under it and the pair read as having slipped.
+     Two things sitting side by side share a centre line. */
+  align-content: center;
+  column-gap: 11px;
+  /* Tighter than the card's own 8px. The filing line and the title are a PAIR
+     beside the artwork — one object with two lines — where in the mark face
+     they are two separate registers with a gap between them. */
+  row-gap: 3px;
+}
+
+/* TITLE FIRST, BESIDE THE ART. In the mark face the filing is a rule ACROSS
+   the top of the card and the title hangs beneath it — right, because there
+   the plate is part of that rule and the three small facts read as one line.
+
+   Beside a sleeve the same order fails: the filing is quiet type pushed to the
+   right of its column, so a one-line card had a strong image, an empty corner,
+   and the episode's name arriving third. The title is what a reader scans for
+   and it belongs at the top of the column, with the filing under it — which is
+   how every listening app in the world lays out a row with artwork on it.
+
+   The swap is visual only. The card is ONE button whose accessible name is
+   composed in `spokenFor`, so nothing about the reading order changes: no
+   focusable element is reordered and no text is read out of sequence. */
+.resource-card-face .resource-card-title {
+  grid-area: 1 / 2;
+  /* BRACKETED TO THE ARTWORK. The sleeve spans both rows, so it is the sleeve
+     that sets their combined height — 48px, split between two text boxes that
+     are each taller than the type inside them. Left to centre, both lines
+     floated in their own box and the pair read as loose against a crisp
+     square. Pinned to the ends, the title's first line meets the top edge of
+     the cover and the filing meets its bottom: the words bracket the art
+     instead of drifting beside it. */
+  align-self: start;
+}
+
+.resource-card-face .resource-card-head {
+  grid-area: 2 / 2;
+  align-self: end;
+}
+
+.resource-card-cover {
+  grid-area: 1 / 1 / 3 / 2;
+  align-self: center;
+  display: block;
+  position: relative;
+  width: 48px;
+  aspect-ratio: 1;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  /* The card's ground is a pale wash of the same colour, so a cover needs its
+     own edge or it floats. One hairline in the artwork's own hue rather than
+     the app's grey — the same instrument the card's own edge uses. */
+  /* Two rings and they do different jobs. The inner hairline is the EDGE — a
+     white sleeve on a near-white card (BEMA's is both) has no boundary of its
+     own and would bleed into the ground without it. The soft drop is the LIFT,
+     which is what makes it read as an object lying on the card rather than a
+     hole cut into it. */
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.1),
+    0 1px 4px rgb(0 0 0 / 0.16);
+}
+
+.resource-card-cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* THE GROUND FOLLOWS THE SLEEVE. The formula is the brand ground's, unchanged
+   in kind — the atmosphere fixes the lightness, the hue is the source's — so
+   every contrast the sweep measured over eleven publishers holds over any hue
+   this can produce.
+
+   ONE THING IS DIFFERENT AND IT MATTERS: chroma is MULTIPLIED here, where the
+   brand ground CLAMPS it to a floor of .011. A floor is right for a declared
+   brand colour, which always has hue; it is wrong for a colour read out of
+   artwork, because a black-and-white cover has none — and a floor applied to
+   an undefined hue resolves to 0°, which is red. That is precisely how the
+   BEMA card turned pink once already. Multiplying leaves grey grey. */
+.resource-card[data-face="cover"] {
+  --resource-ground: oklch(from var(--record-tint)
+    var(--ground-fit-l)
+    min(calc(c * 1.6), var(--ground-fit-c-max))
+    h);
+}
+
 .resource-card-head {
   display: flex;
   align-items: center;
@@ -22784,11 +22889,19 @@ button.lang-phrase-diagram-node:focus-visible,
      plate — stretched, every wordmark arrives as a full-width banner in the
      publisher's colour, which is the colour chart with a title under it that
      this whole room is against. */
-  justify-self: start;
+  /* SQUARE, AND IN THE SLEEVE'S SLOT · 2026-08-02. It was 56×28 and
+     `justify-self: start` so a wordmark could not stretch into a full-width
+     banner. It spans both rows of the card now, at the artwork's own size, so
+     the register reads as one column whichever face a row is wearing. The
+     narrow horizontal padding is for the widest lockups: Working Preacher's
+     3.27:1 mark is width-bound in a square and every pixel of margin comes
+     straight off its height. */
+  grid-area: 1 / 1 / 3 / 2;
+  align-self: center;
   place-items: center;
-  width: 56px;
-  height: 28px;
-  padding: 4px 6px;
+  width: 48px;
+  height: 48px;
+  padding: 6px 4px;
   border-radius: var(--radius-sm);
   background: var(--resource-source);
   color: var(--resource-ink);
@@ -22810,7 +22923,13 @@ button.lang-phrase-diagram-node:focus-visible,
    a brand with no separable symbol, paid by the only publisher who has one.
    Every other card's mark goes up, four of them by half again. */
 .resource-card .resource-card-plate .taught-here-mark {
-  --card-art-h: clamp(8px, calc(14.6px / pow(var(--resource-symbol-ratio), 0.34)), 17px);
+  /* K = 25, restated for the square · 2026-08-02. The rule is unchanged — one
+     third of the way from equal-height to equal-area, exponent 0.34 — and only
+     the box it is fitted to is new: 14.6 was drawn for a plate 28px tall, and
+     this one is 48 with 36 inside it. Every mark grows; the widest are still
+     bound by width rather than height, which is the trade the exponent makes
+     and the reason Working Preacher's remains the smallest of the eleven. */
+  --card-art-h: clamp(9px, calc(25px / pow(var(--resource-symbol-ratio), 0.34)), 28px);
   display: block;
   width: min(100%, calc(var(--card-art-h) * var(--resource-symbol-ratio)));
   height: var(--card-art-h);

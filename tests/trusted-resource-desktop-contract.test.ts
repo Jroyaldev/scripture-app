@@ -85,10 +85,15 @@ test("the Resources room shows a publisher's whole answer, and still only links 
 
      Still forbidden, unchanged: reproducing a publisher's prose, their
      players, or any field of their record beyond what a card names and links. */
-  assert.equal((room.match(/<img/g) ?? []).length, 1,
-    "the room may draw a publisher's cover and nothing else");
+  /* TWO, and each is a decision someone made: the shelf's cell and the card's
+     sleeve. Counted rather than merely forbidden, so a third image has to come
+     back through this gate and be argued for. */
+  assert.equal((room.match(/<img/g) ?? []).length, 2,
+    "the room may draw a publisher's cover on the shelf and on a card, and nothing else");
   assert.match(room, /face === "cover" && SHELF_ART\[chip\.id\] &&/,
-    "and only when the reader asked for covers");
+    "the shelf's cover is drawn only when the reader asked for covers");
+  assert.match(room, /const art = face === "cover" \? SHELF_ART\[entry\.sourceId\] : undefined;/,
+    "and the card's is the same one choice, not a second one");
   assert.match(read("src/renderer/shelf-face.ts"), /const DEFAULT_FACE: ShelfFace = "mark";/,
     "the shipped face must be the packaged mark, which fetches nothing");
 

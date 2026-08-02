@@ -306,6 +306,9 @@ interface AppSettingsSchema {
     officialUrl: string;
     audioUrl: string;
     kind: string;
+    /** The record's cover and the one colour it is, when it brought them. */
+    artUrl?: string;
+    tint?: string;
     /** The passage the launch carried, in the coordinates the canvas takes. */
     passage: {
       book: string;
@@ -489,6 +492,32 @@ function normalizeLastRead(value: unknown): AppSettingsSchema["lastRead"] {
  * of one rule start to disagree. What this guarantees is shape and scheme; a
  * resumed episode is a press like any other and crosses the same boundary.
  */
+/**
+ * The image hosts a stored cover may name.
+ *
+ * The SAME seven the shipped CSP permits, restated here because these two
+ * gates guard different doors: the CSP stops the renderer fetching from
+ * anywhere else, and this stops an unreviewed URL ever reaching a settings
+ * file that the renderer will later hand to an `<img src>`. A value that has
+ * been on disk is not a value this process wrote.
+ */
+const HEARD_ART_HOSTS = new Set([
+  "cdn.prod.website-files.com", "megaphone.imgix.net", "static.libsyn.com",
+  "pbcdn1.podbean.com", "media24.fireside.fm", "substackcdn.com",
+]);
+
+function reviewedArt(value: unknown): string | null {
+  if (typeof value !== "string" || !value.startsWith("https://")) return null;
+  let host: string;
+  try { host = new URL(value).hostname; } catch { return null; }
+  return HEARD_ART_HOSTS.has(host) || host.endsWith(".fireside.fm") ? value : null;
+}
+
+/** `#rrggbb`, and nothing else — this ends up in a `background` declaration. */
+function reviewedTint(value: unknown): string | null {
+  return typeof value === "string" && /^#[0-9a-f]{6}$/i.test(value) ? value : null;
+}
+
 function normalizeLastHeard(value: unknown): AppSettingsSchema["lastHeard"] {
   if (!value || typeof value !== "object") return null;
   const candidate = value as Record<string, unknown>;
@@ -533,6 +562,15 @@ function normalizeLastHeard(value: unknown): AppSettingsSchema["lastHeard"] {
     officialUrl: candidate["officialUrl"] as string,
     audioUrl: candidate["audioUrl"] as string,
     kind: candidate["kind"] as string,
+    /* THE COVER SURVIVES THE RESTART · 2026-08-02. This normaliser rebuilds
+       the object from an allowlist rather than copying it, which is the right
+       shape and is exactly why the artwork vanished: a song resumed after a
+       relaunch came back with no sleeve and the dock fell through to the
+       publisher's plate. The two fields are carried now — and validated, not
+       merely passed, because anything on disk is untrusted by the time this
+       process reads it back. */
+    ...(reviewedArt(candidate["artUrl"]) ? { artUrl: reviewedArt(candidate["artUrl"])! } : {}),
+    ...(reviewedTint(candidate["tint"]) ? { tint: reviewedTint(candidate["tint"])! } : {}),
     passage,
     positionSeconds: Math.floor(position),
   };

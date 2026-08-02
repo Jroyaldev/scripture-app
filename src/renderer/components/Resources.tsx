@@ -501,15 +501,23 @@ function ResourceCard({
   heavy,
   running,
   playing,
+  face,
   onOpen,
 }: {
   entry: ResourceEntry;
   heavy: boolean;
   running: boolean;
   playing: boolean;
+  face: ShelfFace;
   onOpen: (entry: ResourceEntry) => void;
 }): React.JSX.Element {
   const spoken = spokenFor(entry, running);
+  /* The reader's ONE choice, made in the library panel, answered the same way
+     on both surfaces. A room where the shelf wears covers and the cards wear
+     marks is a room that made the choice twice. A publisher with no artwork
+     keeps its plate whatever was chosen, so this states what is actually
+     drawn rather than what was asked for. */
+  const art = face === "cover" ? SHELF_ART[entry.sourceId] : undefined;
   return (
     /* The publisher moves to the CARD, and it is the card that needs it: the
        ground is derived from `--resource-source`, and the face below re-declares
@@ -519,12 +527,20 @@ function ResourceCard({
        transport is whose app this is. */
     <li
       className="resource-card"
+      data-face={art ? "cover" : "mark"}
       data-source={entry.sourceId}
       data-weight={heavy ? "heavy" : "light"}
+      /* THE CARD'S GROUND FOLLOWS ITS COVER. The ground is a lightness FIT —
+         the atmosphere sets l, the hue is the source's — so feeding it the
+         artwork's colour instead of the brand's keeps every contrast the sweep
+         measured and makes the card agree with the sleeve lying on it.
+         See the chroma note in styles.css: multiplied, never floored. */
+      style={art ? { "--record-tint": art.tint } as React.CSSProperties : undefined}
     >
       <button
         aria-label={spoken}
         className="resource-card-face"
+        data-face={art ? "cover" : "mark"}
         data-kind={entry.link ? "read" : "hear"}
         data-running={running ? "true" : undefined}
         onClick={() => onOpen(entry)}
@@ -542,10 +558,31 @@ function ResourceCard({
             goes from ~124px to ~288, about 20 characters a line to 48, and the
             card gets SHORTER — one row came out of it. See `.resource-card-head`
             in styles.css for the proportions. */}
-        <span className="resource-card-head">
+        {/* THE SLEEVE, BESIDE THE WORDS. A cover in the plate's 56×28 slot
+            would be a 28px thumbnail — too small to recognise and too small to
+            be worth the fetch. So when a card wears one it takes the whole
+            left of the card, spanning both rows, the way every listening app
+            in the world lays out a row. The head and the title move right and
+            keep their own order. */}
+        {art ? (
+          <span className="resource-card-cover" style={{ background: art.tint }}>
+            <img alt="" decoding="async" loading="lazy" src={art.cover} />
+          </span>
+        ) : (
+          /* The plate, in the sleeve's own slot and at the sleeve's own size.
+             It used to sit INSIDE the head line as a 56×28 landscape colophon,
+             which was right when the head was a rule across the top of the
+             card. With artwork on the shelf the maintainer asked for one shape
+             throughout — "even the marks should be square" — and they are
+             right: a register whose left column is square on some rows and
+             landscape on others is not a column. The publisher's own colour
+             fills the square behind their mark, so a wordmark drawn for a
+             banner still gets a field to sit in. */
           <span className="taught-here-plate resource-card-plate" data-source={entry.sourceId}>
             <span className="taught-here-mark">{entry.sourceName}</span>
           </span>
+        )}
+        <span className="resource-card-head">
           <span className="resource-card-ref">{entry.label}</span>
           {/* The transport mark stays against the extent it acts on — "▸ 12
               min" is one object, which is why the pair moved up together
@@ -1363,6 +1400,7 @@ export function Resources({
                     entry={entry}
                     heavy={false}
                     key={entry.key}
+                    face={face}
                     onOpen={open}
                     playing={playing}
                     running={runningKey === entry.key}
@@ -1378,6 +1416,7 @@ export function Resources({
             {shown.map((entry) => (
               <ResourceCard
                 entry={entry}
+                face={face}
                 heavy={isHeavy(entry)}
                 key={entry.key}
                 onOpen={open}

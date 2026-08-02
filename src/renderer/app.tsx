@@ -807,6 +807,14 @@ export function App(): React.JSX.Element {
               audioUrl: held.audioUrl,
               passage: held.passage,
               kind: held.kind,
+              /* THE SLEEVE COMES BACK WITH IT. Both ends of this round trip
+                 rebuild the episode field by field rather than copying it —
+                 right, and the reason a song resumed after a relaunch arrived
+                 with no artwork and the dock fell back to the publisher's
+                 plate. Two more fields, on both ends, or it silently drops
+                 again the next time one is added. */
+              ...(held.artUrl ? { artUrl: held.artUrl } : {}),
+              ...(held.tint ? { tint: held.tint } : {}),
             },
             positionSeconds: held.positionSeconds,
           }
@@ -822,6 +830,8 @@ export function App(): React.JSX.Element {
                 officialUrl: next.episode.officialUrl,
                 audioUrl: next.episode.audioUrl,
                 kind: next.episode.kind,
+                ...(next.episode.artUrl ? { artUrl: next.episode.artUrl } : {}),
+                ...(next.episode.tint ? { tint: next.episode.tint } : {}),
                 passage: next.episode.passage,
                 positionSeconds: next.positionSeconds,
               }

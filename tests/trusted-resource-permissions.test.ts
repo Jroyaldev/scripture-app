@@ -95,8 +95,11 @@ test("reviewed manifests and cards retain the common link-only permission bounda
      the publisher's own cover, drawn only when the reader has turned covers on
      against a default of the packaged mark. */
   assert.doesNotMatch(block, /<iframe|<video|fetch\(|>Save/);
-  assert.equal((block.match(/<img/g) ?? []).length, 1,
-    "the room may draw a publisher's cover and nothing else");
+  /* TWO, and each is a decision someone made: the shelf's cell and the card's
+     sleeve. Counted rather than merely forbidden, so a third image has to come
+     back through this gate and be argued for. */
+  assert.equal((block.match(/<img/g) ?? []).length, 2,
+    "the room may draw a publisher's cover on the shelf and on a card, and nothing else");
   assert.match(read("src/renderer/shelf-face.ts"), /const DEFAULT_FACE: ShelfFace = "mark";/,
     "the shipped face must fetch nothing");
   assert.doesNotMatch(block, /<audio/);
