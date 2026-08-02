@@ -87,7 +87,8 @@
     }
    ],
    "tint": "#000000",
-   "slug": null
+   "slug": "all-my-delight",
+   "released": "June 25, 2026"
   },
   {
    "name": "Hymns IV",
@@ -1933,7 +1934,9 @@
      "duration": "4:08",
      "group": "Wisdom",
      "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
-     "download": "https://drive.google.com/uc?export=download&id=1v_4269sLOIUIevdW2bjFIWMZfN7NGM43"
+     "download": "https://drive.google.com/uc?export=download&id=1v_4269sLOIUIevdW2bjFIWMZfN7NGM43",
+     "psalm": 119,
+     "stanza": 21
     },
     {
      "title": "Psalm 119 - Taw",
@@ -2463,8 +2466,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c61caec2f4b60fbb448c6_Psalm%2083%20Instrumental.txt",
      "duration": "4:54",
      "psalm": 83,
-     "group": "Other",
-     "cover": "https://cdn.prod.website-files.com/plugins/Basic/assets/placeholder.60f9b1840c.svg",
+     "group": "Book 3 · Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a1706d09a6c49ff288d_book-3.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=15uu5dcVc72EbjxORHxAjd9UPVGU6heGx"
     },
     {
@@ -2608,7 +2611,9 @@
      "duration": "3:15",
      "group": "Book 5 · Instrumental",
      "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278ab831f181df56b3fb93_book-5.jpeg",
-     "download": "https://drive.google.com/uc?export=download&id=1luidKvDzclKwWdIUwz7jfdXSCeDvO5CS"
+     "download": "https://drive.google.com/uc?export=download&id=1luidKvDzclKwWdIUwz7jfdXSCeDvO5CS",
+     "psalm": 119,
+     "stanza": 1
     },
     {
      "title": "Psalm 119 - Gimel (instrumental)",
@@ -2616,7 +2621,9 @@
      "duration": "3:07",
      "group": "Book 5 · Instrumental",
      "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278ab831f181df56b3fb93_book-5.jpeg",
-     "download": "https://drive.google.com/uc?export=download&id=1yZ959DzYRCCgjARhIxRIsh-ukeuUHgul"
+     "download": "https://drive.google.com/uc?export=download&id=1yZ959DzYRCCgjARhIxRIsh-ukeuUHgul",
+     "psalm": 119,
+     "stanza": 3
     },
     {
      "title": "Psalm 119 - Lamedh (instrumental)",
@@ -2624,7 +2631,9 @@
      "duration": "3:59",
      "group": "Book 5 · Instrumental",
      "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278ab831f181df56b3fb93_book-5.jpeg",
-     "download": "https://drive.google.com/uc?export=download&id=1R7lyQscwHurtY9preqs3RatFnRmgqIyE"
+     "download": "https://drive.google.com/uc?export=download&id=1R7lyQscwHurtY9preqs3RatFnRmgqIyE",
+     "psalm": 119,
+     "stanza": 12
     },
     {
      "title": "Psalm 122 (instrumental)",

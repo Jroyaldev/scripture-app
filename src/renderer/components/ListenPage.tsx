@@ -44,9 +44,17 @@
  *   · a playing row says so, in every list
  *   · Escape leaves a series the way it already left an album
  *
- * WHAT IS DELIBERATELY NOT HERE: pressing Play still starts one track rather
- * than a queue. That is real, it is task #2, and it wants the walk machinery
- * rather than a second sequencer bolted on here.
+ * ── THE ROOM REMEMBERS · 2026-08-02 ────────────────────────────────────────
+ *
+ * Play starts a QUEUE now, not a track — the record plays through, in the order
+ * on screen, through the queue machine in PodcastPlayer (which is deliberately
+ * not the walk; the note beside it says why). The line that used to stand here
+ * calling that "task #2" outlived its own defect by several commits, which is
+ * its own small lesson about comments that describe intentions.
+ *
+ * What arrived with it: every episode's position is remembered rather than only
+ * the last one, so a row can say how far in you are and the room can open on
+ * what you had not finished.
  */
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -126,7 +134,7 @@ function albumLine(album: MusicAlbum): string {
  * The album hero has the publisher's own prose; `episodes.json` carries no
  * description, so a series hero would be a name and a number unless it counted
  * something. Its span and its runtime are both real, both derived, and both
- * the sort of fact a listener weighs before starting a 514-episode show. When
+ * the sort of fact a listener weighs before starting a 676-episode show. When
  * the feed descriptions are captured, they belong above this line, not
  * instead of it.
  */
@@ -383,6 +391,24 @@ function Skeleton(): React.JSX.Element {
 }
 
 /**
+ * Where the art and the audio come from, at the foot of every page in the room.
+ *
+ * It said the same thing in three places, varying only in whether it could name
+ * one publisher or had to say "each". Three copies of a sentence about where
+ * data goes is three chances for two of them to fall out of date after somebody
+ * edits the third — and this particular sentence is a permission claim, so the
+ * copies disagreeing would be worse than untidy.
+ */
+function Colophon({ who }: { who?: string }): React.JSX.Element {
+  return (
+    <p className="listen-colophon">
+      Artwork and audio are shown and streamed from {who ? `${who}’s` : "each publisher’s"} own
+      servers. Nothing is stored here.
+    </p>
+  );
+}
+
+/**
  * True once the hero has scrolled out of the room's own scroll box.
  *
  * TWO THINGS THE TOUR FOUND HERE, both invisible in the source.
@@ -607,10 +633,7 @@ export function ListenPage(): React.JSX.Element {
               </ol>
             </section>
           ))}
-          <p className="listen-colophon">
-            Artwork and audio are shown and streamed from each publisher’s own servers.
-            Nothing is stored here.
-          </p>
+          <Colophon />
         </div>
       </div>
     );
@@ -687,10 +710,7 @@ export function ListenPage(): React.JSX.Element {
             </section>
           ))}
 
-          <p className="listen-colophon">
-            Artwork and audio are shown and streamed from {MUSIC.source.name}’s own servers.
-            Nothing is stored here.
-          </p>
+          <Colophon who={MUSIC.source.name} />
         </div>
       </div>
     );
@@ -783,10 +803,7 @@ export function ListenPage(): React.JSX.Element {
           )}
         </section>
 
-        <p className="listen-colophon">
-          Artwork and audio are shown and streamed from each publisher’s own servers.
-          Nothing is stored here.
-        </p>
+        <Colophon />
       </div>
     </div>
   );
