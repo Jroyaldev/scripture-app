@@ -379,6 +379,7 @@ class Transcriber:
                     del heard
                     break
                 except Exception as error:  # noqa: BLE001 — one chunk must not cost the episode
+                    gc.collect()
                     self.torch.cuda.empty_cache()
                     attempts += 1
                     if attempts < 2:
@@ -388,6 +389,14 @@ class Transcriber:
                     lost += 1
                     break
             c["path"].unlink(missing_ok=True)
+            # THE WHOLE TRUNCATION, in one line — measured in the debug harness
+            # 2026-08-02. NeMo's hypotheses sit in reference cycles, so del and
+            # empty_cache leave ~2.8GB per chunk allocated-but-unreachable
+            # until the collector happens to run; an L4 holds seven chunks of
+            # that. gc first, THEN empty_cache: collected tensors become cached
+            # blocks, and cached blocks are what empty_cache frees. With it,
+            # free memory is flat at ~17.8GB across a 97-minute episode.
+            gc.collect()
             self.torch.cuda.empty_cache()
 
         result = _shape(episode, _merge(chunks, outputs))
