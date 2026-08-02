@@ -24107,7 +24107,15 @@ button.lang-phrase-diagram-node:focus-visible,
   margin-bottom: clamp(30px, 3vw, 46px);
 }
 
-.listen-cover.is-hero { box-shadow: 0 4px 12px rgb(0 0 0 / 0.22), 0 18px 50px rgb(0 0 0 / 0.16); }
+/* THE ARTWORK IS AN ANCHOR AND MUST NOT MOVE. The hero bottom-aligns its
+   column, so opening the description grew the row and shoved the cover down
+   the page — the reader pressed MORE to read a sentence and the record jumped.
+   Held to the top of the row, it stays exactly where it was while the words
+   grow beneath it. */
+.listen-cover.is-hero {
+  align-self: start;
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.22), 0 18px 50px rgb(0 0 0 / 0.16);
+}
 
 .listen-hero-kicker {
   margin: 0 0 8px;

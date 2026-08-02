@@ -28,3 +28,29 @@ export interface AudioCatalogueSeries {
 export type AudioCatalogueResult =
   | { ok: true; series: AudioCatalogueSeries[] }
   | { ok: false; reason: "refused" };
+
+/**
+ * IS THIS THE EPISODE THAT IS PLAYING?
+ *
+ * An episode's identity ACROSS surfaces is its source and its record. It is
+ * NOT `episode.id`, which every surface builds for its own list keys and
+ * builds differently: the margin hands over `entry.key`, the Listen room
+ * composes `sourceId:recordId`, and both are correct locally.
+ *
+ * That difference was a real bug. Press play on the reading page, walk to the
+ * Listen room, and nothing was marked — no tinted row, no moving bars — because
+ * the room was comparing its own key against the margin's. The same episode,
+ * unrecognised, purely because two surfaces name their rows differently.
+ *
+ * `recordId` is the publisher's own episode id and is identical in
+ * `manifest.json` and `episodes.json`, so this holds for an episode reached
+ * from any surface, before or after a restart.
+ */
+export function sameEpisode(
+  playing: { sourceId: string; recordId: string } | null | undefined,
+  sourceId: string,
+  recordId: string,
+): boolean {
+  if (!playing) return false;
+  return playing.sourceId === sourceId && playing.recordId === recordId;
+}

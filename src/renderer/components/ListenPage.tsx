@@ -60,7 +60,7 @@ import {
   type PodcastPassage,
 } from "./PodcastPlayer";
 import type { ResourceLibraryCatalogue } from "./ResourceLibraryMatrix";
-import type { AudioCatalogueEpisode } from "../../core/resources/audio-catalogue";
+import { sameEpisode, type AudioCatalogueEpisode } from "../../core/resources/audio-catalogue";
 
 interface MusicTrack {
   title: string; url: string; duration: string;
@@ -505,8 +505,13 @@ export function ListenPage(): React.JSX.Element {
     .sort((a, b) => b.episodes.length - a.episodes.length);
   const openedSeries = series.find((s) => s.id === openSeries) ?? null;
 
-  const playingId = now.episode?.id ?? null;
+  /* Identity is the SOURCE and the RECORD, never `episode.id` — that is a key
+     each surface builds for its own lists, and the margin builds a different
+     one. Matching on it meant an episode started from the reading page reached
+     this room unrecognised. See sameEpisode() in core. */
   const sounding = now.status === "playing" || now.status === "reaching";
+  const playingHere = (sourceId: string, recordId: string): boolean =>
+    sameEpisode(now.episode, sourceId, recordId);
 
   if (openedSeries) {
     /* SEASONS, and they are the publisher's calendar rather than our
@@ -552,8 +557,7 @@ export function ListenPage(): React.JSX.Element {
               </div>
               <ol className="listen-tracks">
                 {eps.map((ep, index) => {
-                  const id = `${openedSeries.id}:${ep.recordId}`;
-                  const on = playingId === id;
+                  const on = playingHere(openedSeries.id, ep.recordId);
                   return (
                     <li className="listen-track" key={ep.recordId}>
                       <button
@@ -594,7 +598,7 @@ export function ListenPage(): React.JSX.Element {
   }
 
   if (album) {
-    const here = album.tracks.some((t) => trackId(album, t) === playingId) && sounding;
+    const here = album.tracks.some((t) => playingHere(MUSIC.source.id, trackId(album, t))) && sounding;
     const start = (): void => { const first = album.tracks[0]; if (first) playPodcastEpisode(asEpisode(album, first)); };
     return (
       <div className="listen" ref={scroller} style={album.tint ? { "--record-tint": album.tint } as React.CSSProperties : undefined}>
@@ -626,7 +630,7 @@ export function ListenPage(): React.JSX.Element {
               )}
               <ol className="listen-tracks">
                 {group.tracks.map((track, index) => {
-                  const on = playingId === trackId(album, track);
+                  const on = playingHere(MUSIC.source.id, trackId(album, track));
                   return (
                     <li className="listen-track" key={`${track.title}:${index}`}>
                       <button
@@ -681,7 +685,7 @@ export function ListenPage(): React.JSX.Element {
           </div>
           <ul className="listen-grid">
             {albums.map((entry) => {
-              const on = entry.tracks.some((t) => trackId(entry, t) === playingId) && sounding;
+              const on = entry.tracks.some((t) => playingHere(MUSIC.source.id, trackId(entry, t))) && sounding;
               return (
                 <li className="listen-card" key={entry.name}>
                   <button

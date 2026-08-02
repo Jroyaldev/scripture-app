@@ -230,7 +230,14 @@ gate(album.twoLine === "2", "a track title may take two lines", album.twoLine);
 gate(!album.accent.startsWith("rgb(150, 104, 74)"), "the accent is the record's, not the app's seal", album.accent);
 await shot("album");
 
+/* THE ARTWORK MUST NOT MOVE. Opening the description used to grow the hero
+   row, and the hero bottom-aligns, so the cover was shoved down the page —
+   press MORE to read a sentence, watch the record jump. Measured rather than
+   eyeballed, because a few pixels of drift is exactly what an eye forgives
+   and a reader notices. */
 const opened = await evaluate(`(() => {
+  const cover = document.querySelector('.listen-cover.is-hero');
+  const before = cover.getBoundingClientRect().top;
   document.querySelector('.listen-about-more').click();
   return new Promise((r) => setTimeout(() => {
     const about = document.querySelector('.listen-about-text');
@@ -239,12 +246,14 @@ const opened = await evaluate(`(() => {
       whole: about.scrollHeight - about.clientHeight <= 2,
       mask: getComputedStyle(about).maskImage,
       label: document.querySelector('.listen-about-more').textContent,
+      moved: Math.round(Math.abs(cover.getBoundingClientRect().top - before)),
     });
-  }, 200));
+  }, 260));
 })()`);
 gate(opened.open && opened.whole, "the description opens to all of it");
 gate(opened.mask === "none", "and drops the fade once there is nothing to fade", opened.mask);
 gate(opened.label === "Less", "and says how to close it", opened.label);
+gate(opened.moved === 0, "and the artwork does not move when it opens", `${opened.moved}px`);
 await shot("album-description-open");
 
 /* ── The bar that takes over when the hero leaves ────────────────────────── */

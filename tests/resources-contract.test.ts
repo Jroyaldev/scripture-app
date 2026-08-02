@@ -5,6 +5,7 @@ import { test } from "node:test";
 
 import { RELATION_WORDS_FIXTURE, relationSaid } from "../src/core/relation-words.js";
 import type { ReferenceRelation } from "../src/core/references.js";
+import { sameEpisode } from "../src/core/resources/audio-catalogue.js";
 
 const root = resolve(import.meta.dirname, "..");
 const read = (path: string): string => readFileSync(resolve(root, path), "utf8");
@@ -994,4 +995,44 @@ test("the discovery shape is the open question, and never a product control", ()
 
   const vocabulary = read("scripts/qa-support/app-vocabulary.mjs");
   assert.match(vocabulary, /"data-discovery": \{[\s\S]*values: \["weight", "even", "spine", "digest"\]/);
+});
+
+/**
+ * AN EPISODE IS THE SAME EPISODE WHATEVER SURFACE STARTED IT.
+ *
+ * The Listen room used to recognise the playing episode by `episode.id`, and
+ * `id` is a key each surface builds for its own lists: the margin hands over
+ * `entry.key`, the Listen room composes `sourceId:recordId`. Both are correct
+ * locally and they do not agree, so pressing play on the reading page and then
+ * walking to the Listen room showed nothing marked — no tinted row, no moving
+ * bars — for the episode audibly playing.
+ *
+ * The identity that survives the trip is the publisher's: the source it came
+ * from and the record it is. Both catalogues state the same `recordId` for the
+ * same episode, which is what makes this hold across a restart too.
+ */
+test("an episode started from another surface is still recognised", () => {
+  const fromTheMargin = {
+    id: "five-minutes-church-history:2324:bref:v1/GEN.12.1",
+    sourceId: "five-minutes-church-history",
+    recordId: "five-minutes-church-history:podcast:2324",
+  };
+  const asTheRoomWouldName = {
+    sourceId: "five-minutes-church-history",
+    recordId: "five-minutes-church-history:podcast:2324",
+  };
+
+  assert.notEqual(
+    fromTheMargin.id,
+    `${asTheRoomWouldName.sourceId}:${asTheRoomWouldName.recordId}`,
+    "the premise: two surfaces really do build different ids",
+  );
+  assert.ok(
+    sameEpisode(fromTheMargin, asTheRoomWouldName.sourceId, asTheRoomWouldName.recordId),
+    "and the room must recognise it anyway",
+  );
+
+  assert.ok(!sameEpisode(fromTheMargin, "bema", asTheRoomWouldName.recordId), "a different source is a different episode");
+  assert.ok(!sameEpisode(fromTheMargin, fromTheMargin.sourceId, "other"), "a different record is a different episode");
+  assert.ok(!sameEpisode(null, "any", "any"), "nothing playing matches nothing");
 });
