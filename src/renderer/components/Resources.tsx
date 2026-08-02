@@ -1494,6 +1494,11 @@ export function ResourcesDigest({
   onOpen: () => void;
 }): React.JSX.Element {
   const nowPlaying = usePodcastNowPlaying();
+  /* The digest is a resource room like the others and wears the same face the
+     reader chose. It was drawing without one — the prop was added when the
+     shelf gained covers and this call site was missed, which typechecks in the
+     main project and only fails under the renderer's own config. */
+  const face = useSyncExternalStore(subscribeShelfFace, readShelfFace);
   const runningKey = nowPlaying.status === "idle" || nowPlaying.status === "failed"
     ? null
     : nowPlaying.episode?.id ?? null;
@@ -1515,6 +1520,7 @@ export function ResourcesDigest({
           {digest.map((entry) => (
             <ResourceCard
               entry={entry}
+              face={face}
               heavy={false}
               key={entry.key}
               onOpen={(chosen) => playPodcastEpisode(episodeOf(chosen))}
