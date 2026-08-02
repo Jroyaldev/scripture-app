@@ -193,6 +193,33 @@ interface Episode {
   officialUrl: string | null;
   durationSeconds: number | null;
   publishedAt: string | null;
+  summary?: string;
+}
+
+/**
+ * The publisher's own line, out of whatever HTML they put in their feed.
+ *
+ * Feeds carry markup in these — links, lists, whole sponsor blocks — and the
+ * room draws one plain line. So the tags come out HERE, at import, rather than
+ * being carried into a catalogue and stripped again at every draw.
+ *
+ * `itunes:summary` is preferred where both exist, because that is the field
+ * publishers write for listeners; `description` is more often the one carrying
+ * the affiliate links.
+ *
+ * Trimmed to 300: a row shows one line, and keeping four paragraphs to render
+ * forty characters is four paragraphs over an IPC for nothing.
+ */
+function summaryOf(block: string): string | undefined {
+  const raw = tag(block, "itunes:summary") || tag(block, "description");
+  if (!raw) return undefined;
+  const text = raw
+    .replace(/<br\s*\/?>/gi, " ")
+    .replace(/<\/p>/gi, " ")
+    .replace(/<[^>]+>/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return text.length > 0 ? text.slice(0, 300) : undefined;
 }
 
 async function importShow(show: Show): Promise<void> {
@@ -251,7 +278,11 @@ async function importShow(show: Show): Promise<void> {
     const date = published ? new Date(published) : null;
     const publishedAt = date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0, 10) : null;
 
-    episodes.push({ id, title, audioUrl, officialUrl, durationSeconds: seconds, publishedAt });
+    const said = summaryOf(block);
+    episodes.push({
+      id, title, audioUrl, officialUrl, durationSeconds: seconds, publishedAt,
+      ...(said ? { summary: said } : {}),
+    });
 
     /* A card needs both halves: somewhere to send a reader, and a passage to
        rank on. An episode missing either is still transcribed — it is in the
@@ -314,8 +345,16 @@ async function importShow(show: Show): Promise<void> {
     return;
   }
 
-  mkdirSync(dirname(outPath), { recursive: true });
-  writeFileSync(outPath, `${JSON.stringify(validated.value, null, 2)}\n`);
+  /* `--episodes-only` REFRESHES THE CATALOGUE AND LEAVES THE CARDS ALONE.
+     Added when the episode catalogue learned to carry the publisher's own line:
+     the eight shows here wanted a re-import for the summaries alone, and a full
+     import rewrites `manifest.json` — which for a publisher whose cards were
+     built by a different, richer importer would replace curated records with
+     title-parsed ones. Two files, and now two reasons to write only one. */
+  if (!process.argv.includes("--episodes-only")) {
+    mkdirSync(dirname(outPath), { recursive: true });
+    writeFileSync(outPath, `${JSON.stringify(validated.value, null, 2)}\n`);
+  }
   mkdirSync(dirname(episodesPath), { recursive: true });
   writeFileSync(episodesPath, `${JSON.stringify({
     schema: "podcast-catalog/v1",

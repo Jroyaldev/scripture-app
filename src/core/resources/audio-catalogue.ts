@@ -18,6 +18,16 @@ export interface AudioCatalogueEpisode {
   officialUrl: string | null;
   publishedAt: string | null;
   durationSeconds: number | null;
+  /**
+   * The publisher's own line about this episode, where the feed gave one.
+   *
+   * OPTIONAL, and it stays optional. A catalogue built before this field
+   * existed carries none, and a publisher who writes no show notes never will
+   * — a row without one draws exactly as it always did. Plain text by the time
+   * it reaches here: feeds put HTML in these, and the room is not a place that
+   * renders a publisher's markup.
+   */
+  summary?: string;
 }
 
 export interface AudioCatalogueSeries {

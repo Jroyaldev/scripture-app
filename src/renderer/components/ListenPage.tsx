@@ -60,10 +60,13 @@
 import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import {
+  isListenHidden,
   keepShelfScroll,
   openListenRecord,
+  readListenHidden,
   readListenRoom,
   readSeriesOrder,
+  setListenHidden,
   setListenQuery,
   setSeriesOrder,
   subscribeListenRoom,
@@ -580,6 +583,36 @@ function PassageSeed({ backbone, bookNames, onMade }: {
 const SEEDED_MAX = 25;
 
 /**
+ * Take a record off this shelf, or put it back.
+ *
+ * NOT A MUTE, and the difference is the whole design. `resourceMutes` silences
+ * a publisher everywhere — the margin stops offering them, their cards leave
+ * the reading page — which is a judgement about a publisher. A reader who does
+ * not want fourteen albums on their listening shelf is not making that
+ * judgement; they are tidying a shelf.
+ *
+ * So it hides a card from ONE room, the count of what is hidden is always on
+ * screen, and every hidden record is one press from returning. Nothing here can
+ * lose anything, which is what earns it a one-press affordance instead of a
+ * confirmation.
+ */
+function Shelve({ away, of, onToggle }: {
+  away: boolean; of: string; onToggle: (next: boolean) => void;
+}): React.JSX.Element {
+  return (
+    <button
+      aria-label={away ? `Put ${of} back on the shelf` : `Hide ${of} from this shelf`}
+      className="listen-shelve"
+      onClick={() => onToggle(!away)}
+      title={away ? "Put back" : "Hide from this shelf"}
+      type="button"
+    >
+      {away ? "＋" : "−"}
+    </button>
+  );
+}
+
+/**
  * One of a record's groups, and its rows.
  *
  * Extracted when EveryPsalm gained its two chapters: the same run of rows is
@@ -671,7 +704,8 @@ function AlbumGroup({ album, askProps, group, onPlay, ordered, playingHere, soun
  * get a different layout for being poorer in metadata.
  */
 function Hero({
-  art, tint, kicker, name, line, about, credits, onPlay, onShuffle, playing, innerRef, source,
+  art, tint, kicker, name, line, about, credits, onPlay, onShuffle, playing, innerRef,
+  plate, source,
 }: {
   art?: string | null; tint?: string; kicker: string; name: string; line: string;
   about?: string; credits?: Record<string, string>;
@@ -680,11 +714,29 @@ function Hero({
   onShuffle?: () => void;
   /* Where the publisher keeps this record themselves. */
   source?: { href: string; label: string };
+  /* A publisher whose cover art we do not carry. See below. */
+  plate?: string;
   innerRef?: React.RefObject<HTMLElement | null>;
 }): React.JSX.Element {
   return (
     <header className="listen-hero" ref={innerRef as React.RefObject<HTMLElement>}>
-      <Cover alt={`${name} cover`} className="is-hero" src={art} tint={tint} />
+      {/* THE PLATE IS A REAL FACE, not a hole where a cover would go. The shelf
+          has always drawn a publisher's own mark on their own colour for a
+          source we carry no artwork for — and the hero, which is the same
+          object at four times the size, drew an empty square. Nobody saw it
+          because every source in the room happened to have art; onboarding two
+          that do not is what made the gap visible. */}
+      {art
+        ? <Cover alt={`${name} cover`} className="is-hero" src={art} tint={tint} />
+        : plate
+          ? (
+            <span className="listen-cover is-hero is-plate">
+              <span className="listen-card-plate" data-source={plate}>
+                <span className="taught-here-mark">{name}</span>
+              </span>
+            </span>
+          )
+          : <Cover alt={`${name} cover`} className="is-hero" src={art} tint={tint} />}
       <div className="listen-hero-words">
         <p className="listen-hero-kicker">{kicker}</p>
         {/* Long names step down rather than wrapping to four lines of display
@@ -840,6 +892,10 @@ export function ListenPage({ backbone, bookNames }: {
   const setOpenAlbum = (name: string | null): void => openListenRecord({ album: name });
   const setOpenSeries = (id: string | null): void => openListenRecord({ series: id });
   const lists = useSyncExternalStore(subscribePlaylists, readPlaylists);
+  /* Shown while the reader is looking at what they hid, so the shelves fill
+     back in and every card carries a way to bring it back. Session-only: it
+     is a glance, not a mode, and it should not still be open tomorrow. */
+  const [showHidden, setShowHidden] = useState(false);
   const [ask, setAsk] = useState<PlaylistAsk | null>(null);
   const askProps = usePlaylistAsk(setAsk);
   const { showToast } = useToast();
@@ -898,6 +954,13 @@ export function ListenPage({ backbone, bookNames }: {
 
   /* Whatever is open — an album, a series, or one of the reader's own lists. */
   const opened = openAlbum ?? openSeries ?? openPlaylist;
+
+  /* THE KEY A RECORD IS SHELVED UNDER. A series is its publisher; an album has
+     no id of its own, so it is named — the same string the playlist entries
+     key on, for the same reason. */
+  const albumKey = (name: string): string => `music:${name}`;
+  const hiddenCount = readListenHidden().size;
+  const away = (key: string): boolean => !showHidden && isListenHidden(key);
 
   /* Escape leaves whichever record is open. It used to leave only an album,
      because the handler was hung on `album` and the series page had been
@@ -1334,6 +1397,7 @@ export function ListenPage({ backbone, bookNames }: {
             onPlay={start}
             innerRef={mark}
             playing={here}
+            plate={openedSeries.id}
             tint={art?.tint}
           />
           <Sift
@@ -1382,6 +1446,10 @@ export function ListenPage({ backbone, bookNames }: {
                         </span>
                         <span className="listen-track-words">
                           <span className="listen-track-title">{ep.title}</span>
+                          {/* The publisher's own line, where their feed gave
+                              one. A row without it draws exactly as it did —
+                              which is most rows, and will stay most rows. */}
+                          {ep.summary && <span className="listen-track-said">{ep.summary}</span>}
                           {stamp(ep.publishedAt) && <span className="listen-track-when">{stamp(ep.publishedAt)}</span>}
                         </span>
                         <Progress place={places.get(placeKey(openedSeries.id, ep.recordId))} />
@@ -1641,10 +1709,14 @@ export function ListenPage({ backbone, bookNames }: {
             <p className="listen-shelf-by">{MUSIC.source.name}</p>
           </div>
           <ul className="listen-grid">
-            {albums.map((entry) => {
+            {albums.filter((entry) => !away(albumKey(entry.name))).map((entry) => {
               const on = entry.tracks.some((t) => playingHere(MUSIC.source.id, trackId(entry, t))) && sounding;
               return (
-                <li className="listen-card" key={entry.name}>
+                <li
+                  className="listen-card"
+                  data-away={isListenHidden(albumKey(entry.name)) ? "" : undefined}
+                  key={entry.name}
+                >
                   <button
                     aria-label={`${entry.name} — ${albumLine(entry)}`}
                     className="listen-card-face"
@@ -1662,6 +1734,8 @@ export function ListenPage({ backbone, bookNames }: {
                     <span className="listen-card-name">{entry.name}</span>
                     <span className="listen-card-foot">{albumLine(entry)}</span>
                   </button>
+                  <Shelve away={isListenHidden(albumKey(entry.name))} of={entry.name}
+                    onToggle={(next) => setListenHidden(albumKey(entry.name), next)} />
                 </li>
               );
             })}
@@ -1685,11 +1759,16 @@ export function ListenPage({ backbone, bookNames }: {
             </p>
           ) : (
             <ul className="listen-grid">
-              {series.map((source) => {
+              {series.filter((source) => !away(source.id)).map((source) => {
                 const art = SERIES_ART[source.id];
                 const on = now.episode?.sourceId === source.id && sounding;
                 return (
-                  <li className="listen-card" data-source={source.id} key={source.id}>
+                  <li
+                    className="listen-card"
+                    data-away={isListenHidden(source.id) ? "" : undefined}
+                    data-source={source.id}
+                    key={source.id}
+                  >
                     <button
                       aria-label={`${source.name} — ${seriesLine(source.episodes)}`}
                       className="listen-card-face"
@@ -1720,6 +1799,8 @@ export function ListenPage({ backbone, bookNames }: {
                           already computed the whole thing. */}
                       <span className="listen-card-foot">{seriesLine(source.episodes)}</span>
                     </button>
+                    <Shelve away={isListenHidden(source.id)} of={source.name}
+                      onToggle={(next) => setListenHidden(source.id, next)} />
                   </li>
                 );
               })}
@@ -1774,6 +1855,20 @@ export function ListenPage({ backbone, bookNames }: {
             </ul>
           )}
         </section>
+
+        {/* NOTHING IS EVER LOST, and the shelf says so out loud. A hidden record
+            with no way back is a deleted record that lied about it, so the count
+            is always on screen when it is not zero. */}
+        {hiddenCount > 0 && (
+          <p className="listen-hidden-note">
+            {hiddenCount} {hiddenCount === 1 ? "record" : "records"} hidden from this room.{" "}
+            <button
+              className="listen-hidden-show"
+              onClick={() => setShowHidden(!showHidden)}
+              type="button"
+            >{showHidden ? "Hide them again" : "Show them"}</button>
+          </p>
+        )}
 
         <Colophon />
       </div>

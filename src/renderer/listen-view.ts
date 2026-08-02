@@ -89,6 +89,13 @@ function load(): void {
       order[id] = "oldest";
       changed = true;
     }
+    /* A record the reader shelved by hand this session keeps that; the rest
+       adopt what was on disk. */
+    const shelved = result.value.listenHidden;
+    if (Array.isArray(shelved) && shelved.length > 0 && !chosen.has("__hidden")) {
+      hidden = new Set(shelved);
+      changed = true;
+    }
     if (!changed) return;
     room = { ...room, orderNonce: room.orderNonce + 1 };
     announce();
@@ -136,6 +143,32 @@ export function setListenQuery(query: string): void {
   if (room.query === query) return;
   room = { ...room, query };
   announce();
+}
+
+/* ── Shelved records ────────────────────────────────────────────────────────
+   Narrow on purpose. `resourceMutes` already silences a publisher EVERYWHERE,
+   which is a judgement about them; this hides a card from one room, which is a
+   preference about a shelf. Nothing is lost — the count is always shown and
+   every hidden record is one press from returning. */
+let hidden = new Set<string>();
+
+export function readListenHidden(): ReadonlySet<string> {
+  return hidden;
+}
+
+export function isListenHidden(key: string): boolean {
+  return hidden.has(key);
+}
+
+export function setListenHidden(key: string, away: boolean): void {
+  chosen.add("__hidden");
+  asked = true;
+  if (hidden.has(key) === away) return;
+  hidden = new Set(hidden);
+  if (away) hidden.add(key); else hidden.delete(key);
+  room = { ...room, orderNonce: room.orderNonce + 1 };
+  announce();
+  void safeCall(() => window.api.settings.set({ listenHidden: [...hidden] }));
 }
 
 export function readSeriesOrder(sourceId: string): SeriesOrder {

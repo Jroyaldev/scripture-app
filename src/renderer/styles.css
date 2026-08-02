@@ -22197,6 +22197,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-matrix-row[data-source="working-preacher"],
 .resource-card[data-source="working-preacher"],
 .podcast-dock[data-source="working-preacher"],
+.listen-card-plate[data-source="working-preacher"],
 .taught-here-plate[data-source="working-preacher"] {
   --resource-source: #9d2235;
   --resource-ink: #fbf1ea;
@@ -22225,6 +22226,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-matrix-row[data-source="bibleproject"],
 .resource-card[data-source="bibleproject"],
 .podcast-dock[data-source="bibleproject"],
+.listen-card-plate[data-source="bibleproject"],
 .taught-here-plate[data-source="bibleproject"] {
   --resource-source: #00b3e5;
   --resource-ink: #05303f;
@@ -22261,6 +22263,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-matrix-row[data-source="enter-the-bible"],
 .resource-card[data-source="enter-the-bible"],
 .podcast-dock[data-source="enter-the-bible"],
+.listen-card-plate[data-source="enter-the-bible"],
 .taught-here-plate[data-source="enter-the-bible"] {
   /* Their yellow is the plate, which is the ground their colour artwork was
      drawn for. It cannot also be the accent: fitted to a light atmosphere a
@@ -22303,6 +22306,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-matrix-row[data-source="naked-bible"],
 .resource-card[data-source="naked-bible"],
 .podcast-dock[data-source="naked-bible"],
+.listen-card-plate[data-source="naked-bible"],
 .taught-here-plate[data-source="naked-bible"] {
   /* Their gold, dated 2026-07-30. This was #6e7a80 — a grey lifted off a
      near-black surface so a 3px rail could hold against two grounds, for a rail
@@ -22360,6 +22364,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-card[data-source="bema"],
 .resource-card-band[data-source="bema"],
 .podcast-dock[data-source="bema"],
+.listen-card-plate[data-source="bema"],
 .taught-here-plate[data-source="bema"] {
   --resource-source: #0d0d0d;
   --resource-ink: #f4f4f4;
@@ -22413,6 +22418,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-matrix-row[data-source="spoken-gospel"],
 .resource-card[data-source="spoken-gospel"],
 .podcast-dock[data-source="spoken-gospel"],
+.listen-card-plate[data-source="spoken-gospel"],
 .taught-here-plate[data-source="spoken-gospel"] {
   /* ── THEIR OWN GROUND, NOT THEIR OLD ONE · 2026-08-02 ────────────────────
      Was #239948, a kelly green, and two things were wrong with it at once.
@@ -22502,6 +22508,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-matrix-row[data-source="forty-minutes-ot"],
 .resource-card[data-source="forty-minutes-ot"],
 .podcast-dock[data-source="forty-minutes-ot"],
+.listen-card-plate[data-source="forty-minutes-ot"],
 .taught-here-plate[data-source="forty-minutes-ot"] {
   /* WHOSE COLOURS THESE ARE, stated carefully because the last two values here
      were the wrong publisher's. #A8402A and then #A73D2D were 1517's — the
@@ -22584,6 +22591,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-card[data-source="thirty-minutes-nt"],
 .resource-card-band[data-source="thirty-minutes-nt"],
 .podcast-dock[data-source="thirty-minutes-nt"],
+.listen-card-plate[data-source="thirty-minutes-nt"],
 .taught-here-plate[data-source="thirty-minutes-nt"] {
   /* THE SHOW'S OWN GROUND, not ours — amended within the day, 2026-08-02.
      This block shipped #ece2d0, which is 40's INVENTED warm field, and the
@@ -22629,6 +22637,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-matrix-row[data-source="five-minutes-church-history"],
 .resource-card[data-source="five-minutes-church-history"],
 .podcast-dock[data-source="five-minutes-church-history"],
+.listen-card-plate[data-source="five-minutes-church-history"],
 .taught-here-plate[data-source="five-minutes-church-history"] {
   /* Ligonier primary-400. Their loudest published colour, which is what an
      accent is for; the surface alone made a deep sage disc of the play pill. */
@@ -22671,6 +22680,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-matrix-row[data-source="ask-nt-wright"],
 .resource-card[data-source="ask-nt-wright"],
 .podcast-dock[data-source="ask-nt-wright"],
+.listen-card-plate[data-source="ask-nt-wright"],
 .taught-here-plate[data-source="ask-nt-wright"] {
   /* Their published blue, from their own logo file — the vector lifted off
      premierunbelievable.com's masthead and staged at pending/. It is the
@@ -22759,6 +22769,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-matrix-row[data-source="listeners-commentary"],
 .resource-card[data-source="listeners-commentary"],
 .podcast-dock[data-source="listeners-commentary"],
+.listen-card-plate[data-source="listeners-commentary"],
 .taught-here-plate[data-source="listeners-commentary"] {
   /* Their navy, read off the publisher's own current cover file (staged at
      pending/listeners-commentary-cover.png) rather than off a screenshot: the
@@ -22802,6 +22813,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-matrix-row[data-source="radically-christian"],
 .resource-card[data-source="radically-christian"],
 .podcast-dock[data-source="radically-christian"],
+.listen-card-plate[data-source="radically-christian"],
 .taught-here-plate[data-source="radically-christian"] {
   /* Both values are now the publisher's own, read out of their logo file
      (their own logo file): the drop is #721203 and
@@ -22842,6 +22854,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-matrix-row[data-source="the-gospel-coalition"],
 .resource-card[data-source="the-gospel-coalition"],
 .podcast-dock[data-source="the-gospel-coalition"],
+.listen-card-plate[data-source="the-gospel-coalition"],
 .taught-here-plate[data-source="the-gospel-coalition"] {
   --resource-source: #79ae4a;
   --resource-ink: #1b2a0d;
@@ -24754,10 +24767,109 @@ button.lang-phrase-diagram-node:focus-visible,
   font: 0.6875rem/1.4 var(--font-ui);
 }
 
+/* One line and no more. A show-notes paragraph in a six-hundred-row list would
+   make the list about the notes rather than about the episodes — and the row
+   height has to stay predictable for `contain-intrinsic-size` to keep telling
+   the scrollbar the truth. */
+.listen-track-said {
+  overflow: hidden;
+  color: var(--text-secondary);
+  font: 0.75rem/1.45 var(--font-reading);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .listen-track-extent {
   color: var(--text-tertiary);
   font: 0.75rem/1.5 var(--font-mono);
   font-variant-numeric: tabular-nums;
+}
+
+/* ── Taking a record off this shelf ───────────────────────────────────────────
+   One press, no confirmation, because nothing here can lose anything: the count
+   of what is hidden is always on screen and every hidden record comes back with
+   the same press that sent it away. */
+.listen-card { position: relative; }
+
+.listen-shelve {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  opacity: 0;
+  background: color-mix(in oklab, var(--bg-canvas) 82%, transparent);
+  color: var(--text-secondary);
+  font: 0.875rem/1 var(--font-ui);
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  transition: opacity 140ms ease;
+}
+
+.listen-card:hover .listen-shelve,
+.listen-shelve:focus-visible { opacity: 1; }
+
+.listen-shelve:hover { color: var(--text-primary); }
+
+.listen-shelve:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* A record shown only because the reader asked to see what they had hidden —
+   dimmed, so the shelf still reads as the shelf they arranged. */
+.listen-card[data-away] .listen-card-face { opacity: 0.45; }
+.listen-card[data-away] .listen-shelve { opacity: 1; }
+
+.listen-hidden-note {
+  margin: 4px 0 0;
+  color: var(--text-tertiary);
+  font: 0.75rem/1.6 var(--font-ui);
+}
+
+.listen-hidden-show {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-secondary);
+  font: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.listen-hidden-show:hover { color: var(--text-primary); }
+
+.listen-hidden-show:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* The hero's own plate, for a publisher whose artwork we do not carry. The
+   shelf card has always had this; the hero drew an empty square, which nobody
+   saw because every source in the room happened to have a cover. */
+.listen-cover.is-hero.is-plate { display: grid; place-items: stretch; }
+
+.listen-cover.is-hero .listen-card-plate {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+}
+
+/* THE OPTICAL SCALE IS RE-DERIVED FOR THIS BOX rather than reused — the same
+   move the shelf made when its cells went square. K = 96 against a hero about
+   four times the card plate's usable height, same rule and the same 0.34
+   exponent, so the widest lockups still give up height rather than overflow it.
+   Reusing the card's clamp left a 22px mark alone in a 250px square. */
+.listen-cover.is-hero .taught-here-mark {
+  --card-art-h: clamp(40px, calc(96px / pow(var(--resource-symbol-ratio), 0.34)), 104px);
 }
 
 /* ── The reader's own lists ─────────────────────────────────────────────────── */

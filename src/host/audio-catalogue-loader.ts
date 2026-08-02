@@ -39,6 +39,8 @@ export interface AudioCatalogueEpisode {
   officialUrl: string | null;
   publishedAt: string | null;
   durationSeconds: number | null;
+  /** The publisher's own line, where the feed gave one. Plain text, optional. */
+  summary?: string;
 }
 
 export interface AudioCatalogueSeries {
@@ -53,7 +55,11 @@ export type AudioCatalogueResult =
 interface RawEpisode {
   id?: unknown; title?: unknown; audioUrl?: unknown;
   officialUrl?: unknown; publishedAt?: unknown; durationSeconds?: unknown;
+  summary?: unknown;
 }
+
+/** Long enough to be worth a row, short enough not to become the row. */
+const SUMMARY_MAX = 300;
 
 const str = (value: unknown): string | null =>
   typeof value === "string" && value.length > 0 ? value : null;
@@ -105,6 +111,10 @@ export function loadAudioCatalogue(
         durationSeconds: typeof row.durationSeconds === "number" && Number.isFinite(row.durationSeconds)
           ? row.durationSeconds
           : null,
+        /* Trimmed HERE rather than where it is drawn, so a catalogue holding a
+           publisher's whole three-thousand-word show notes does not send three
+           thousand words over the IPC for a row that shows one line of them. */
+        ...(str(row.summary) ? { summary: (row.summary as string).slice(0, SUMMARY_MAX) } : {}),
       });
     }
     if (episodes.length > 0) series.push({ sourceId, episodes });

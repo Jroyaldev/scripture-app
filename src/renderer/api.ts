@@ -374,6 +374,9 @@ export interface AppSettings {
   listeningRate: number;
   /** The shows a reader reads forwards. Only deviations from newest-first. */
   listenSeriesOrder: Record<string, "oldest">;
+  /** Records shelved from the Listen room only — not a mute. `sourceId` or
+   *  `music:<album name>`. */
+  listenHidden: string[];
   /**
    * Lists the reader made. Identities and one display field per entry —
    * everything playable is resolved against the live catalogue on open, so a

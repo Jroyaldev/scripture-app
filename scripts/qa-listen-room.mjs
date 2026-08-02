@@ -891,5 +891,81 @@ const empty = await evaluate(`(() => {
 })()`);
 gate(empty === 0, "and can be deleted again", `${empty} left`);
 
+/* ── Two shows that had everything except a way in ─────────────────────────── */
+const onboarded = await evaluate(`(() => {
+  const shelf = [...document.querySelectorAll('.listen-shelf')]
+    .find((s) => s.querySelector('.listen-shelf-name')?.textContent === 'Series');
+  const names = [...(shelf?.querySelectorAll('.listen-card-name') ?? [])].map((n) => n.textContent);
+  return { count: names.length, names };
+})()`);
+gate(onboarded.names.some((n) => /BibleProject/i.test(n ?? ""))
+  && onboarded.names.some((n) => /Naked Bible/i.test(n ?? "")),
+  "the two shows with cards but no catalogue are in the room",
+  `${onboarded.count} series`);
+
+/* Their manifests carry no cover, and the shelf has always drawn a publisher's
+   own mark on their own colour for that case — while the HERO, the same object
+   four times the size, drew an empty square. Nobody saw it because until now
+   every source in the room happened to have art. */
+await evaluate(`(() => {
+  const face = [...document.querySelectorAll('.listen-card-face')]
+    .find((f) => /BibleProject/i.test(f.querySelector('.listen-card-name')?.textContent || ''));
+  face?.click();
+  return true;
+})()`);
+await waitFor(`!!document.querySelector('.listen-hero-name')`, "the onboarded show's page");
+const plate = await evaluate(`(() => {
+  const p = document.querySelector('.listen-hero .listen-card-plate');
+  const mark = document.querySelector('.listen-hero .taught-here-mark');
+  const box = document.querySelector('.listen-hero .listen-cover')?.getBoundingClientRect();
+  const said = [...document.querySelectorAll('.listen-track-said')].map((s) => s.textContent);
+  return {
+    ground: p ? getComputedStyle(p).backgroundColor : null,
+    marked: mark ? /url\\(/.test(getComputedStyle(mark).backgroundImage) : false,
+    markHeight: mark ? Math.round(mark.getBoundingClientRect().height) : 0,
+    box: box ? Math.round(box.width) : 0,
+    rows: document.querySelectorAll('.listen-track').length,
+    said: said.length,
+    sample: said[0] ?? null,
+  };
+})()`);
+gate(plate.ground !== null && plate.ground !== "rgba(0, 0, 0, 0)",
+  "a show with no cover wears its own colour", plate.ground);
+gate(plate.marked, "under its own mark");
+/* The optical scale is re-derived for the hero's box rather than reused: the
+   card's clamp caps at 22px, which is a mark alone in a 250px square. */
+gate(plate.markHeight > 40, "at a size derived for this box",
+  `${plate.markHeight}px in ${plate.box}px`);
+await shot("onboarded-series-plate");
+
+/* ── The publisher's own line ─────────────────────────────────────────────── */
+await evaluate(`document.querySelector('.listen-back').click()`);
+await waitFor(`${SHELVES}.includes('Series')`, "the shelf");
+await evaluate(`(() => {
+  const face = [...document.querySelectorAll('.listen-card-face')]
+    .find((f) => /5 Minutes/i.test(f.querySelector('.listen-card-name')?.textContent || ''));
+  face?.click();
+  return true;
+})()`);
+await waitFor(`document.querySelectorAll('.listen-track').length > 0`, "a show with show notes");
+const said = await evaluate(`(() => {
+  const rows = [...document.querySelectorAll('.listen-track-face')];
+  const lines = [...document.querySelectorAll('.listen-track-said')];
+  return {
+    rows: rows.length,
+    said: lines.length,
+    /* One line and no more: a show-notes paragraph in six hundred rows makes
+       the list about the notes rather than the episodes, and a row height has
+       to stay predictable for the intrinsic-size hint to keep telling the
+       scrollbar the truth. */
+    oneLine: lines.every((l) => l.getBoundingClientRect().height < 26),
+    sample: lines[0]?.textContent?.slice(0, 60) ?? null,
+  };
+})()`);
+gate(said.said > 0, "an episode carries the publisher's own line",
+  `${said.said}/${said.rows}`);
+gate(said.oneLine, "clipped to one line", said.sample);
+await shot("series-summaries");
+
 console.log(`\n${failures.length === 0 ? "PASS" : `FAIL (${failures.length})`} — captures in ${OUT_DIR}/`);
 process.exit(failures.length === 0 ? 0 : 1);

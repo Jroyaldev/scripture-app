@@ -384,6 +384,21 @@ interface AppSettingsSchema {
    */
   listenSeriesOrder: Record<string, "oldest">;
   /**
+   * RECORDS THE READER HAS SHELVED, by `sourceId` or `music:<album name>`.
+   *
+   * `resourceMutes` already exists and is the wrong instrument: it silences a
+   * publisher EVERYWHERE — the margin stops offering them, their cards leave
+   * the reading page — which is a judgement about a publisher rather than a
+   * preference about a shelf. A reader who simply does not want fourteen albums
+   * on their listening shelf is not asking for that.
+   *
+   * So this is narrow on purpose. It hides a card from ONE room and changes
+   * nothing else, the count of what is hidden is always shown, and every hidden
+   * record is one press from coming back. Nothing here is destructive and
+   * nothing here is a mute.
+   */
+  listenHidden: string[];
+  /**
    * LISTS THE READER MADE, which is the one kind of record the library cannot
    * hold on its own.
    *
@@ -846,6 +861,17 @@ function normalizePlaylists(value: unknown): AppSettingsSchema["playlists"] {
   return kept;
 }
 
+/** Shelved records: short, unique strings and nothing else. */
+function normalizeListenHidden(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  const kept = new Set<string>();
+  for (const one of value) {
+    if (typeof one !== "string" || one.length === 0 || one.length > 512) continue;
+    kept.add(one);
+  }
+  return [...kept];
+}
+
 /** Only "oldest" is storable; newest-first is the default and stays unwritten. */
 function normalizeListenSeriesOrder(value: unknown): AppSettingsSchema["listenSeriesOrder"] {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
@@ -1008,6 +1034,7 @@ const store = new Store<AppSettingsSchema>({
     heardLedger: {},
     listeningRate: 1,
     listenSeriesOrder: {},
+    listenHidden: [],
     playlists: [],
     researchSession: null,
     researchWorkspace: null,
@@ -4050,6 +4077,7 @@ function registerIpcHandlers(): void {
       heardLedger: normalizeHeardLedger(settled.heardLedger),
       listeningRate: normalizeListeningRate(settled.listeningRate),
       listenSeriesOrder: normalizeListenSeriesOrder(settled.listenSeriesOrder),
+      listenHidden: normalizeListenHidden(settled.listenHidden),
       playlists: normalizePlaylists(settled.playlists),
       researchSession: normalizeResearchSession(settled.researchSession),
       researchWorkspace: normalizeResearchWorkspace(settled.researchWorkspace),
@@ -4075,6 +4103,7 @@ function registerIpcHandlers(): void {
     const hasListeningRate = Object.prototype.hasOwnProperty.call(partial, "listeningRate");
     const hasListenSeriesOrder = Object.prototype.hasOwnProperty.call(partial, "listenSeriesOrder");
     const hasPlaylists = Object.prototype.hasOwnProperty.call(partial, "playlists");
+    const hasListenHidden = Object.prototype.hasOwnProperty.call(partial, "listenHidden");
     const hasResearchSession = Object.prototype.hasOwnProperty.call(partial, "researchSession");
     const hasResearchWorkspace = Object.prototype.hasOwnProperty.call(partial, "researchWorkspace");
     const hasKeptContext = Object.prototype.hasOwnProperty.call(partial, "keptContext");
@@ -4113,6 +4142,9 @@ function registerIpcHandlers(): void {
         hasListenSeriesOrder ? partial.listenSeriesOrder : store.store.listenSeriesOrder,
       ),
       playlists: normalizePlaylists(hasPlaylists ? partial.playlists : store.store.playlists),
+      listenHidden: normalizeListenHidden(
+        hasListenHidden ? partial.listenHidden : store.store.listenHidden,
+      ),
       researchSession: normalizeResearchSession(
         hasResearchSession ? partial.researchSession : store.store.researchSession,
       ),
