@@ -61,7 +61,13 @@ OUT_DIR = "/transcripts"
 # Long enough that a 99-minute episode cannot be cut off, short enough that a
 # hung container is bounded. The default is 300s, which would kill the very
 # first real episode; this is the setting most likely to be wrong by omission.
-TRANSCRIBE_TIMEOUT = 900
+TRANSCRIBE_TIMEOUT = 3600
+# 900 — fifteen minutes — until 2026-08-02, and it is half of why 66 long
+# episodes shipped truncated: an episode over ~75 minutes cannot transcribe
+# inside 15, so the only attempt that could ever WRITE was one whose tail
+# chunks failed fast (the hypothesis tensor leak made them insta-OOM), and
+# the write it produced was the truncation. Two bugs holding hands; raising
+# the ceiling is half the fix and freeing the tensors is the other half.
 FETCH_TIMEOUT = 1800
 
 # Window length and overlap for long audio. Ten minutes keeps encoder memory
