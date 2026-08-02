@@ -40,6 +40,7 @@ accurate of the two on English benchmarks, and roughly an order of magnitude
 faster, but those are a bonus rather than the argument.
 """
 
+import types
 import gc
 import json
 import os
