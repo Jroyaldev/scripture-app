@@ -234,6 +234,36 @@ async function waitFor(expression, timeout = 8_000) {
 }
 
 /**
+ * THE FACE THIS TOUR MEASURES, pinned rather than inherited.
+ *
+ * Every card and chip gate below was written when a publisher had exactly one
+ * face: their mark on their colour, or their name in type. Then the maintainer
+ * asked for cover art and the shelf gained a second face, chosen in the library
+ * panel — and this tour began passing or failing on a READER'S PREFERENCE.
+ * With covers on, every card failed a gate about a plate the reader had asked
+ * not to see, and four shelf chips "drew no symbol" because they were drawing
+ * artwork instead.
+ *
+ * A tour whose result depends on a setting is not measuring the app, it is
+ * measuring the settings file. So it states the face it is about, and puts the
+ * reader's own choice back when it is done — this runs against a live app the
+ * maintainer is using, and a QA script has no business changing what they see.
+ */
+const readerFace = await evaluate(`window.api.settings.get().then((s) => s.shelfFace)`);
+if (readerFace !== "mark") {
+  await evaluate(`window.api.settings.set({ shelfFace: "mark" }).then(() => 1)`);
+  await sleep(600);
+}
+process.on("exit", () => {
+  if (readerFace !== "mark") {
+    /* Best effort and deliberately synchronous-fire-and-forget: the socket may
+       already be closing, and a tour that hangs restoring a preference is worse
+       than one that leaves it. The same line runs on the happy path below. */
+    void evaluate(`window.api.settings.set({ shelfFace: ${JSON.stringify(readerFace)} }).then(() => 1)`);
+  }
+});
+
+/**
  * `settle` is how long the page is given to stop moving before the shutter.
  *
  * The default is a quarter second, which is right for every state that stays
@@ -863,12 +893,28 @@ const room = await evaluate(`(() => {
     // Nothing else starts audio: no play control outside the room's own cards.
     playOutside: [...document.querySelectorAll(".living-margin .transport-play")]
       .filter((play) => !play.closest(".resource-card-face") && !play.closest(".taught-here-walk")).length,
-    // THE FACE. Four things, and the fifth is what this gate refuses: no
-    // relation word, no timestamp, no evidence sentence on any card.
+    /* THE FACE. Four things, and the fifth is what this gate refuses: no
+       relation word, no timestamp, no evidence sentence on any card.
+
+       THE FOURTH THING HAS TWO FORMS NOW · RESTATED 2026-08-02. This asserted
+       plate-or-out, which was the whole world when it was written: a card wore
+       the publisher's mark on the publisher's colour, or their name in type.
+       Then the maintainer asked for cover art and the shelf gained a second
+       face, chosen in the library panel and carried by these cards too — so a
+       reader with covers on made every card fail a gate about a plate they had
+       asked not to see. The gate was measuring one face and calling it the
+       grammar.
+
+       What it means, and now says, is that a card must IDENTIFY ITS PUBLISHER
+       somehow. Three forms are legal because three exist: the plate, the name
+       in type, and the record's own sleeve. A card with none of them is still
+       the defect this was written to catch. */
     grammar: cards.every((card) => card.querySelector(".resource-card-title")
       && card.querySelector(".resource-card-ref")
       && card.querySelector(".resource-card-extent")
-      && (card.querySelector(".resource-card-plate") || card.querySelector(".resource-card-out"))),
+      && (card.querySelector(".resource-card-plate")
+        || card.querySelector(".resource-card-out")
+        || card.querySelector(".resource-card-cover"))),
     stray: cards.some((card) => /worked through|brought in alongside|mentioned|alluded to/
       .test(card.textContent ?? "")),
     // One control per card, and it is the card: the face IS the button, and
@@ -989,8 +1035,20 @@ assert.equal(room.shelfMarked, room.shelfChips,
   `${room.shelfChips - room.shelfMarked} shelf plates draw no symbol; the rack is logos or it is nothing`);
 assert.equal(room.filter, true, "the shelf is a drawer again rather than a filter");
 assert.equal(room.settings, true, "the route into resource settings is missing from the shelf");
-assert.deepEqual(room.shelfPlate, ["56/8px"],
-  `the shelf left the plate law: ${room.shelfPlate.join(", ")} (want 56px tall, 8px corner — 0.22 × 56 capped at 8)`);
+/* RESTATED 2026-08-02, and it is the shape that changed rather than the law.
+   This wanted 56px, which was the height of the landscape 92×56 plate the rack
+   drew when every cell was a wordmark's row. The maintainer then asked for the
+   register to go square on both faces — "i like the squares im convinced even
+   the marks should be square" — and the cells became one square of about 79px,
+   with the optical scale re-derived for the new box rather than reused. This
+   gate was not restated with it, so it has been asserting a geometry the room
+   deliberately left behind.
+
+   The corner is unchanged and is the part that is actually a law: 0.22 of the
+   cell, capped at 8. A square cell is past that cap, so 8 is still the answer —
+   which is why only the first number moves. */
+assert.deepEqual(room.shelfPlate, ["79/8px"],
+  `the shelf left the plate law: ${room.shelfPlate.join(", ")} (want 79px square, 8px corner — 0.22 × 79 capped at 8)`);
 assert.equal(room.shelfTallies, room.shelfChips,
   `${room.shelfChips - room.shelfTallies} plates carry no tally; a numeral column with holes in it is not a column`);
 /* AND THE RACK'S WHOLE GEOMETRY. The reference chapter is the thin composition,

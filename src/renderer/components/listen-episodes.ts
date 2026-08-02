@@ -29,6 +29,7 @@
 import catalogue from "../../../data/music/poor-bishop-hooper.json";
 import seriesArt from "../../../data/music/series-art.json";
 import type { PodcastEpisode, PodcastPassage } from "./PodcastPlayer";
+import type { PlaylistEntry } from "../playlists.js";
 import type { AudioCatalogueEpisode } from "../../core/resources/audio-catalogue";
 
 export interface MusicTrack {
@@ -216,4 +217,60 @@ export function resolveEntry(
   const found = episodes?.find((one) => one.recordId === entry.recordId);
   if (!found) return null;
   return seriesEpisode(entry.sourceId, named(entry.sourceId), found, SERIES_ART[entry.sourceId]);
+}
+
+/**
+ * The other direction: something already playing, turned back into an entry.
+ *
+ * It lives beside `resolveEntry` because the two are inverses of one shape, and
+ * a shape whose halves live in different files drifts. The room could always
+ * write entries — it holds the album and the track as it draws the row. The DOCK
+ * could not: by the time a song reaches the transport it has been flattened into
+ * one `PodcastEpisode`, and the album name is no longer a field on anything. It
+ * survives only inside `recordId`.
+ *
+ * ── SPLITTING THE recordId IS THE TRAP, and it is not hypothetical ──────────
+ *
+ * A song's identity is `${sourceId}:${album.name}:${track.title}`, built from
+ * display strings because the catalogue gives songs no ids. Both of those may
+ * contain a colon, so the separator is not a separator — it is a character that
+ * also appears in the data.
+ *
+ * The album half is ALREADY broken: three bundled records are called "As
+ * Foretold: Part 1", "…Part 2" and "…Part 3" — thirty tracks whose recordId
+ * carries a colon nobody put there as a delimiter. `split(":")` returns five
+ * parts for those and names the album "As Foretold". The title half is not
+ * broken yet and will be: a psalm filed as "Psalm 119:1-8" is the ordinary
+ * shape of that catalogue's next import.
+ *
+ * SO NOTHING IS COUNTED. Both ends are anchored on strings already held from the
+ * episode: strip the known `sourceId` off the front and the known `title` off
+ * the back, and whatever is left in the middle is the album, colons and all.
+ * Exact for every shape either string can take, including both at once, because
+ * it never has to decide which colon meant what.
+ *
+ * Null means "this episode is not a thing I can name in the reader's own list",
+ * and the caller must then offer nothing rather than guess: an entry filed under
+ * a wrong album resolves to null forever afterwards, and the reader is left with
+ * a row that never plays and cannot be explained.
+ */
+export function playlistEntry(episode: PodcastEpisode): PlaylistEntry | null {
+  /* Spoken records carry a publisher's own id, so there is nothing to work out —
+     `recordId` is what `resolveEntry` matches on, whole and unparsed. */
+  if (episode.kind !== "song") {
+    return {
+      kind: "podcast",
+      sourceId: episode.sourceId,
+      recordId: episode.recordId,
+      title: episode.title,
+    };
+  }
+  const head = `${episode.sourceId}:`;
+  const tail = `:${episode.title}`;
+  if (!episode.recordId.startsWith(head) || !episode.recordId.endsWith(tail)) return null;
+  const album = episode.recordId.slice(head.length, episode.recordId.length - tail.length);
+  /* An empty middle means the two ends met or overlapped — `a:b` against
+     sourceId "a" and title "b". No album was ever in there to find. */
+  if (!album) return null;
+  return { kind: "music", sourceId: episode.sourceId, album, title: episode.title };
 }

@@ -938,10 +938,32 @@
   font: 0.6875rem/1.4 var(--font-ui);
 }
 
+/* ── The episode's own two sentences ──────────────────────────────────────
+   The publisher's page and the reader's shelf, side by side. A flex row rather
+   than two grid rows because they are one register — what this record is for
+   past the end of the file — and stacking them read as two unrelated links.
+
+   `wrap`, with the row gap the block already uses between its lines: the sheet's
+   column is about 226px and the publisher sentence carries their whole name, so
+   on the longest of them the second takes a line of its own rather than either
+   being cut. Baseline alignment, because these are text. */
+.podcast-episode-hand {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--sp-xs) var(--sp-md);
+}
+
 /* The publisher's own page, named as a sentence rather than as a third glyph
-   competing for the masthead's line. */
-.podcast-episode-official {
-  justify-self: start;
+   competing for the masthead's line — and beside it the reader's own lists,
+   sharing the shape outright rather than approximating it. One rule for both is
+   what stops them drifting into two weights of the same thing.
+
+   `justify-self` is gone with the grid row that made it necessary: these were
+   direct children of the episode grid and had to refuse its full width. The flex
+   row places them now. */
+.podcast-episode-official,
+.podcast-episode-list {
   padding: 0;
   border: 0;
   border-bottom: 1px solid var(--border-medium);
@@ -952,7 +974,8 @@
   transition: color var(--transition-fast), border-color var(--transition-fast);
 }
 
-.podcast-episode-official:hover { border-bottom-color: var(--text-primary); color: var(--text-primary); }
+.podcast-episode-official:hover,
+.podcast-episode-list:hover { border-bottom-color: var(--text-primary); color: var(--text-primary); }
 
 /* ── Chapters ─────────────────────────────────────────────────────────────── */
 
@@ -2621,6 +2644,7 @@
   .podcast-episode-title,
   .podcast-episode-meta,
   .podcast-episode-official,
+  .podcast-episode-list,
   .podcast-dock-title,
   .podcast-dock-now-ref,
   .podcast-dock-now-title,

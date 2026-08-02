@@ -278,6 +278,24 @@ test("the add-to-playlist menu is placed in every room that can ask for it", () 
     "placed in the playlist, series, album and shelf returns",
   );
 
+  /* THE DOCK IS THE SECOND SURFACE, and two shipped docstrings claimed it long
+     before it existed: AddToPlaylist's "from a row, or from the dock", and the
+     playlists store's "written from two surfaces — the room's rows and the
+     dock's mast". They are true now, and this is what keeps them true. Its own
+     mount and its own ask: an ask is a rect captured at a press, and a shared
+     one would let a menu raised in the room reopen over the dock anchored to an
+     element that had since moved. */
+  const player = code("src/renderer/components/PodcastPlayer.tsx");
+  assert.equal(
+    (player.match(/<AddToPlaylist /g) ?? []).length, 1,
+    "the dock mounts the menu once, for its mast and its Up Next rows",
+  );
+  assert.match(player, /usePlaylistAsk\(setAsk\)/);
+  /* And it puts the menu away when what is playing changes underneath it. The
+     dock is the one surface that changes what it is ABOUT with nobody touching
+     it, so a menu left open would offer to add the previous track. */
+  assert.match(player, /useEffect\(\(\) => \{ setAsk\(null\); \}, \[episodeId, expanded\]\)/);
+
   /* And the guard that makes it survivable. Both Escape handlers are on
      `window` and the room's registers first, so without this the popover's
      stopImmediatePropagation lands too late and one press closes the menu AND

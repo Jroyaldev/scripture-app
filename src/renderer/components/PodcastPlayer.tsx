@@ -10,6 +10,8 @@ import { relationSaid, relationSpoken } from "../../core/relation-words.js";
 import { transcriptBasis } from "../../core/transcripts.js";
 import { sameEpisode } from "../../core/resources/audio-catalogue.js";
 import { safeCall } from "../utils/safeCall.js";
+import { AddToPlaylist, usePlaylistAsk, type PlaylistAsk } from "./AddToPlaylist.js";
+import { playlistEntry } from "./listen-episodes.js";
 import { useToast } from "./Toast.js";
 
 /**
@@ -1453,6 +1455,22 @@ function SkipButton({
 }
 
 /**
+ * The playlist gesture, already bound to an episode.
+ *
+ * `usePlaylistAsk` hands back handlers for an ENTRY, and the two places in this
+ * file that want them hold episodes instead — the mast holds whatever is
+ * playing, Up Next holds tracks the reader is not playing yet. So the derivation
+ * happens once at the top of the dock and is passed down as this, which also
+ * gives the un-nameable case somewhere honest to go: an episode whose album
+ * cannot be recovered yields NO handlers, so the right-click falls through to
+ * the platform's own menu rather than opening ours over a guess.
+ */
+type PlaylistHold = (episode: PodcastEpisode) => {
+  onContextMenu?: (event: React.MouseEvent) => void;
+  onKeyDown?: (event: React.KeyboardEvent) => void;
+};
+
+/**
  * UP NEXT — what the sheet holds open for a song.
  *
  * THE DEFECT THIS REPLACES: the chevron opened the transcript machinery for a
@@ -1467,7 +1485,7 @@ function SkipButton({
  * these are different lists and both can be shown, though in practice a walk
  * and a record never run together.
  */
-function UpNext({ queue }: { queue: PodcastQueue }): React.JSX.Element {
+function UpNext({ hold, queue }: { hold: PlaylistHold; queue: PodcastQueue }): React.JSX.Element {
   const here = useRef<HTMLButtonElement>(null);
   /* Opening the sheet forty tracks into EveryPsalm should not open it at track
      one. `block: "center"` rather than "nearest" because the running track is
@@ -1495,6 +1513,11 @@ function UpNext({ queue }: { queue: PodcastQueue }): React.JSX.Element {
                 onClick={() => jumpPodcastQueue(index)}
                 ref={on ? here : undefined}
                 type="button"
+                /* The same gesture the room's own track rows answer, on rows
+                   that are the same object: a record's tracks in the publisher's
+                   order. A reader who has learned to right-click a psalm on the
+                   album page should not find the identical row inert here. */
+                {...hold(entry)}
               >
                 <span aria-hidden="true" className="podcast-upnext-no">{index + 1}</span>
                 <span className="podcast-upnext-title">{entry.title}</span>
@@ -1654,6 +1677,38 @@ export function PodcastPlayer({
      on release rather than on every input keeps one seek per drag instead of
      sixty, and one range request on the publisher's server instead of sixty. */
   const [scrubbingAt, setScrubbingAt] = useState<number | null>(null);
+  /* ── THE DOCK CAN WRITE TO A LIST NOW, and two shipped comments have been
+        claiming so since the lists were built.
+
+     `AddToPlaylist` opens "PUT THIS ON A LIST — from a row, or from the dock",
+     and `playlists.ts` explains its state lives on a module because lists "are
+     also written from two surfaces — the room's rows and the dock's mast". Both
+     were written against a design that was never built: this file held no
+     playlist code at all, so the second surface did not exist and the first
+     sentence named a gesture that did nothing. The repair the prose was waiting
+     for, rather than an edit making the prose smaller.
+
+     THE ARGUMENT FOR THE DOCK IS THE STRONGEST ON THIS SURFACE. Everywhere else
+     "put this on a list" is said about something the reader is LOOKING at. Here
+     it is said about what they are HEARING — the moment a psalm setting turns
+     out to belong beside yesterday's sermon is forty seconds into it, and until
+     now acting on that meant leaving what you were doing to go and find the row.
+
+     Its own ask, deliberately not shared with the room's. An ask is a rect and
+     an entry captured at a press, and a rect belongs to the surface pressed; one
+     shared ask would let a menu raised in the room reopen over the dock,
+     anchored to an element that had since moved. Two surfaces, two asks, one
+     store underneath. */
+  const [ask, setAsk] = useState<PlaylistAsk | null>(null);
+  const askProps = usePlaylistAsk(setAsk);
+  const hold: PlaylistHold = (one) => {
+    const entry = playlistEntry(one);
+    return entry ? askProps(entry, one.title) : {};
+  };
+  /* What is playing, as something a list can hold — or null when it cannot be
+     named. Null draws no control, because the alternative is a visible offer
+     that either does nothing or files the track under a guess. */
+  const listable = episode ? playlistEntry(episode) : null;
   /* Open is the reader asking for the whole episode rather than the corner of
      it. It is deliberately not remembered across episodes: pressing play on a
      new card should give back the corner, not whatever the last one was left
@@ -1971,6 +2026,30 @@ export function PodcastPlayer({
     // whole reset if the same episode were ever re-announced without one.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [episodeId]);
+
+  /* ── THE GUARD THE DOCK NEEDS IS NOT ESCAPE ─────────────────────────────
+     The room has a window-level Escape that leaves whichever record is open, so
+     an open menu there had to be taught to hold the key or one press both closed
+     the menu and threw the reader out of the album. The dock owns no such
+     handler: Escape here is already arbitrated by `Popover`, which claims it
+     through the shared layer registry and stops it dead. Adding a listener to
+     prove that would be adding the very hazard the room is fixing.
+
+     WHAT THE DOCK HAS THAT THE ROOM DOES NOT IS MOVEMENT UNDER THE MENU. An
+     album page is still while a reader reads it. The dock is the one surface
+     that changes what it is ABOUT with nobody touching it: a queue advances at
+     the end of a track, a walk steps to the next treatment, the system's
+     transport keys arrive from outside React, and `stopPodcast` takes the
+     element away. An ask is a rect and an entry frozen at the press, so a menu
+     left open across any of those offers to add the PREVIOUS track over a mast
+     now naming a different one — and the reader is told "Added to Advent" about
+     a title they never chose. Identity changing puts the menu away.
+
+     Folding is in here for the smaller version of the same thing: the visible
+     control lives in the sheet, and a folded sheet is clipped to nothing, so its
+     anchor stops existing. The margin's own tab and `stopPodcast` fold this from
+     outside, and neither knows about the menu. */
+  useEffect(() => { setAsk(null); }, [episodeId, expanded]);
 
   /* FOLDING PUTS THE TRANSCRIPT BACK UNDER THE VOICE. Added 2026-07-30 with
      the column swap.
@@ -2978,7 +3057,21 @@ export function PodcastPlayer({
               source, so it can be left on. */}
           <span className="sr-only" role="status" aria-live="polite">{notice}</span>
 
-          <header className="podcast-mast">
+          {/* THE MAST IS THE RECORD'S OWN ROW, so it answers the gesture the
+              room's rows answer. Right-click anywhere along it and the menu
+              opens about what is playing.
+
+              Hung on the header rather than on one thing inside it, and that is
+              what makes the keyboard path work as well as the pointer one: the
+              mast has no focusable title to press the menu key on, but keydown
+              bubbles, so a reader standing on any control in this row gets the
+              same menu from the same key. The rect is the mast's, which is the
+              object the menu is about.
+
+              This is the shortcut, not the route. The discoverable control is a
+              sentence in the sheet beside the publisher's own link, and nothing
+              here is reachable ONLY by right-click. */}
+          <header className="podcast-mast" {...hold(episode)}>
             {/* The plate: the publisher's own colour at signature size,
                 carrying either their approved mark or their name. Both forms
                 are one object — see .podcast-mast-plate — and the mark's
@@ -3167,14 +3260,48 @@ export function PodcastPlayer({
                   {passage ? `${passageLabel(passage, bookNames)} · ` : ""}
                   {of > 0 ? formatClock(of) : "length unknown until it loads"}
                 </p>
-                <button
-                  aria-label={`Open ${episode.title} at ${episode.sourceName} — opens the official page`}
-                  className="podcast-episode-official"
-                  onClick={() => void openOfficial()}
-                  type="button"
-                >
-                  {`Open at ${episode.sourceName}`}
-                </button>
+                {/* ── The two things a reader can do with the record itself ──
+                    One goes out to the publisher, one comes in to the reader's
+                    own shelf, and they are the same kind of act: not transport
+                    controls, not part of playing this, but what this episode is
+                    FOR beyond the next ninety minutes. So they read as two
+                    sentences on one line rather than a sentence and a button,
+                    and the second takes the first's exact shape — a heavier
+                    control here would claim the sheet's emphasis away from the
+                    title above it.
+
+                    They wrap rather than shrink: "Open at Naked Bible Podcast"
+                    is most of a 226px line on its own, so on a narrow column the
+                    second drops beneath it at full length. An ellipsed verb is
+                    not a verb — "Add to play…" tells a reader nothing. */}
+                <div className="podcast-episode-hand">
+                  <button
+                    aria-label={`Open ${episode.title} at ${episode.sourceName} — opens the official page`}
+                    className="podcast-episode-official"
+                    onClick={() => void openOfficial()}
+                    type="button"
+                  >
+                    {`Open at ${episode.sourceName}`}
+                  </button>
+                  {/* Absent rather than disabled when the episode cannot be
+                      named as an entry — a control visibly there and refusing is
+                      a worse answer than one never offered, for a case no reader
+                      can do anything about. */}
+                  {listable && (
+                    <button
+                      aria-label={`Add ${episode.title} to a playlist`}
+                      className="podcast-episode-list"
+                      onClick={(event) => setAsk({
+                        rect: event.currentTarget.getBoundingClientRect(),
+                        entry: listable,
+                        label: episode.title,
+                      })}
+                      type="button"
+                    >
+                      Add to playlist
+                    </button>
+                  )}
+                </div>
                 {/* Which footing this publisher is on, said once and quietly,
                     in the same register as the transcript's "auto" mark.
 
@@ -3211,7 +3338,7 @@ export function PodcastPlayer({
                   and for a hymn every branch of it is false, which is how the
                   chevron came to open a panel whose only content was the
                   sentence saying it had none. */}
-              {isSong && queued && <UpNext queue={queued} />}
+              {isSong && queued && <UpNext hold={hold} queue={queued} />}
 
               {/* ── The moment that started this ────────────────────────────
                   A press in the margin used to be self-erasing: the passage,
@@ -3797,6 +3924,19 @@ export function PodcastPlayer({
           </button>
         </section>
       )}
+
+      {/* Outside both the dock and the resume card, and outside the sheet in
+          particular. The panel portals to the document body wherever it is
+          declared, so this is about ownership rather than paint: the menu
+          belongs to the player, not to whichever region raised it, and must not
+          die with a fold. It renders nothing until an ask exists, and the effect
+          above is what makes an ask stop existing when the episode changes.
+
+          It does not play, and may not learn to. This dock is on the caller list
+          that may call the play verbs — but the menu is held to the harder rule,
+          because a playlist is a way to FILL the queue and never a second way to
+          start it. */}
+      <AddToPlaylist ask={ask} onClose={() => setAsk(null)} />
     </>
   );
 }
