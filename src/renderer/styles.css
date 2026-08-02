@@ -25438,11 +25438,28 @@ button.lang-phrase-diagram-node:focus-visible,
    the engine skip layout and paint for rows outside the viewport while keeping
    them in the DOM — so find-in-page, tab order and the queue's own indexing all
    still see the whole series, which is what makes this preferable to
-   virtualising the list. The intrinsic size is a row's real height, so the
-   scrollbar does not lie about how long the show is. */
+   virtualising the list.
+
+   THE ESTIMATE IS WHAT MAKES THIS HONEST, and it stopped being honest when the
+   rows grew. 46px was measured off a bare music row — mark, title, and nothing
+   else — back when that was the only shape a row took. Since then a series row
+   gained a one-line summary and a playlist row gained a hand of controls, and
+   the rows measured in the running engine now come out at roughly 38px for a
+   song, 56px for a playlist row or a summary-less series row, 75px for a series
+   row wearing a summary, and 95px where the title also takes two lines. On
+   BEMA's 676 episodes the old figure told the scrollbar the show was about
+   31,000px long against a real 50,000 — a thumb sixty per cent too long on
+   first paint, shrinking under the reader's hand as they scrolled.
+
+   76px is the figure wrong by least across the shapes that actually exist,
+   weighted towards the long ones because those are the lists long enough for
+   the lie to be visible. It cannot be right for all four; `.listen-track-said`
+   is nowrap with an ellipsis precisely so the tall case stays a single
+   deterministic height rather than a paragraph, which is what makes one number
+   defensible at all. */
 .listen-track {
   content-visibility: auto;
-  contain-intrinsic-size: auto 46px;
+  contain-intrinsic-size: auto 76px;
 }
 
 /* ── How far in the reader already is ─────────────────────────────────────────

@@ -140,6 +140,22 @@ export interface PodcastEpisode {
    */
   artUrl?: string;
   tint?: string;
+  /**
+   * How long the record is, in seconds, as the PUBLISHER states it.
+   *
+   * Not to be confused with the ledger's duration. The ledger records what the
+   * audio file actually reported while it played, which is the honest
+   * denominator for "how far in am I"; this is the claim a feed or a catalogue
+   * makes before anything has been played at all. A row never touched has no
+   * ledger entry, so without this it can say nothing about its own length —
+   * which is exactly the state the playlist rows shipped in.
+   *
+   * Carried on the EPISODE and never on a stored playlist entry. An entry holds
+   * identity and nothing drawable; the duration is resolved out of the live
+   * catalogue when the list is opened, so a re-cut record says its new length
+   * rather than printing a number from last year.
+   */
+  durationSeconds?: number;
 }
 
 /**

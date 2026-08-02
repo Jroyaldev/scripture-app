@@ -95,6 +95,11 @@ import {
   SERIES_ART,
   asEpisode,
   resolveEntry,
+  /* Written here, moved out with the shapers, imported back for the one thing
+     the room still wants it for: summing an album into a hero line. The note
+     beside it in listen-episodes says why a copy would have been worse than
+     the round trip. */
+  seconds,
   seriesEpisode,
   trackId,
   trackPassage,
@@ -130,13 +135,6 @@ const NAMES: Record<string, string> = {
   "bema": "The BEMA Podcast",
   "thirty-minutes-nt": "30 Minutes in the New Testament",
 };
-
-/** Seconds, from the publisher's own "m:ss". Summed for a runtime, never shown. */
-function seconds(duration: string): number {
-  const parts = duration.split(":").map(Number);
-  if (parts.some((n) => !Number.isFinite(n))) return 0;
-  return parts.reduce((total, part) => total * 60 + part, 0);
-}
 
 /** "3 hr 12 min" — the shape a listener reads a runtime in, not "192 min".
  *  Past a day of audio the minutes stop meaning anything, so they go. */
@@ -1251,7 +1249,13 @@ export function ListenPage({ backbone, bookNames }: {
       episode: resolveEntry(entry, audio, (id) => named.get(id) ?? titleFromId(id)),
     }));
     const live = rows.filter((row) => row.episode).map((row) => row.episode!);
-    const runtime = list.entries.length;
+    /* HOW MANY THINGS ARE ON THE LIST, which is not how long the list is. This
+       stood as `runtime` in a file where `extent()` and `clock()` produce actual
+       runtimes and every other `runtime` is a sum of seconds — so the hero's
+       "12 items" was computed by a variable whose name promised "48 min".
+       Nothing was wrong on screen; the next person to read the line would
+       have been. */
+    const count = list.entries.length;
     const here = live.some((ep) => playingHere(ep.sourceId, ep.recordId)) && sounding;
     /* Through the QUEUE, like everything else that plays through. A playlist is
        a way to fill it, not a second machine that advances on its own — see the
@@ -1311,8 +1315,8 @@ export function ListenPage({ backbone, bookNames }: {
             initial={Array.from(list.name.trim())[0] ?? "—"}
             kicker={list.seed ? `Playlist · from ${list.seed.book} ${list.seed.chapter}` : "Playlist"}
             line={[
-              `${runtime} ${runtime === 1 ? "item" : "items"}`,
-              live.length < runtime ? `${runtime - live.length} unavailable` : null,
+              `${count} ${count === 1 ? "item" : "items"}`,
+              live.length < count ? `${count - live.length} unavailable` : null,
             ].filter(Boolean).join(" · ")}
             name={list.name}
             onPlay={() => play(0)}
@@ -1384,8 +1388,26 @@ export function ListenPage({ backbone, bookNames }: {
                             {row.episode?.sourceName ?? "No longer in the library"}
                           </span>
                         </span>
+                        {/* The mark slot, empty and deliberately drawn: a row
+                            that omitted the cell would slide its duration left
+                            into the mark column and break the right edge of the
+                            whole list — the same reason unheard rows on a record
+                            page keep theirs. */}
                         <span className="listen-track-place" />
-                        <span className="listen-track-extent" />
+                        {/* A PLAYLIST ROW PRINTS ITS LENGTH like every other row
+                            in the room. This span shipped self-closing and empty,
+                            and so did the one beside it: fifty-four pixels of
+                            column reserved on every row for nothing, on the one
+                            page where a reader is deciding what to queue for a
+                            drive. It was not missing by choice — it was
+                            unreachable, because the episode shape carried no
+                            length and both shapers dropped what their sources
+                            had. It comes off the RESOLVED episode, never off the
+                            stored entry: a number cached beside a title goes
+                            stale the first time a publisher re-cuts a file. */}
+                        <span className="listen-track-extent">
+                          {clock(row.episode?.durationSeconds ?? null)}
+                        </span>
                       </button>
                       {/* The one place in the room where a row carries its own
                           controls: a playlist row is the reader's, and ordering

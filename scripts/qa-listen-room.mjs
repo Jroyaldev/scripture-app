@@ -860,6 +860,36 @@ gate(new Set(seeded.sources.filter(Boolean)).size > 1,
   "and more than one publisher's voice", [...new Set(seeded.sources)].slice(0, 3).join(" · "));
 await shot("playlist-from-passage");
 
+/* ── And every row on it says how long it is ────────────────────────────────
+   THE DEFECT THIS GATE EXISTS FOR was invisible to every other check: the
+   playlist row rendered `.listen-track-extent` as a self-closing EMPTY span, so
+   the column was reserved, aligned, and blank on every row of every list. The
+   alignment gate on the record page passed the whole time, because empty cells
+   align perfectly with each other.
+
+   Dead rows are excluded rather than counted as failures. A row whose record has
+   left the library resolves to nothing, and nothing has no length — that row is
+   expected to be blank, and demanding a time from it would be demanding the room
+   invent one. */
+const extents = await evaluate(`(() => {
+  const rows = [...document.querySelectorAll('.listen-track-row')];
+  const alive = rows.filter((r) => !r.hasAttribute('data-dead'));
+  const times = alive.map((r) => ({
+    title: (r.querySelector('.listen-track-title')?.textContent || '').slice(0, 40),
+    extent: (r.querySelector('.listen-track-extent')?.textContent || '').trim(),
+  }));
+  return {
+    rows: rows.length,
+    alive: alive.length,
+    blank: times.filter((t) => !/\\d+:\\d\\d/.test(t.extent)).map((t) => t.title),
+    sample: times.slice(0, 3).map((t) => t.extent),
+  };
+})()`);
+gate(extents.alive > 0, "the seeded list has rows that resolve",
+  `${extents.alive}/${extents.rows}`);
+gate(extents.blank.length === 0, "and every one of them prints its length",
+  extents.blank.length ? extents.blank.slice(0, 3).join(" · ") : extents.sample.join(", "));
+
 /* Reordering is the point of a list being the reader's, and it is the one row
    in the room that carries its own controls — a row that IS a button cannot
    hold one. */

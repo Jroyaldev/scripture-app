@@ -52,6 +52,36 @@ export const MUSIC = catalogue as unknown as MusicCatalogue;
  *  know what colour it should be. */
 export const SERIES_ART = seriesArt as Record<string, { cover: string; tint: string }>;
 
+/**
+ * Seconds, out of the publisher's own "m:ss" (or "h:mm:ss").
+ *
+ * ── WHY THIS PARSER LIVES HERE AND NOT IN THE ROOM ─────────────────────────
+ *
+ * It was written in the Listen room, where the only thing wanted from it was a
+ * sum: thirteen tracks added into "48 min" under an album's name. Then playlist
+ * rows needed a duration each, and the shaping that would have to carry it —
+ * `asEpisode` — had already moved out here, because a track's `id` must be built
+ * in exactly one place or a resumed album plays while every row on screen shows
+ * nothing playing.
+ *
+ * That left two bad options and one right one. Importing the room from this file
+ * would make the shapers depend on the surface that draws them, which is the
+ * loop the move was made to break. Copying six lines of parser would put the two
+ * halves of a duration — the sum in the hero and the number on the row — on
+ * separate implementations, free to disagree the first time a publisher writes
+ * an hour. So the parser comes here with the shapers and the room imports it
+ * back. One parser, two callers, same as the ids.
+ *
+ * The two sources genuinely disagree in type and neither is wrong: a song's
+ * length is a string the publisher typed, a spoken episode's is a number the
+ * feed stated. This is the only place that has to know that.
+ */
+export function seconds(duration: string): number {
+  const parts = duration.split(":").map(Number);
+  if (parts.some((n) => !Number.isFinite(n))) return 0;
+  return parts.reduce((total, part) => total * 60 + part, 0);
+}
+
 /** The whole track IS the psalm; there is no interior position to point at. */
 export function trackPassage(track: MusicTrack): PodcastPassage | null {
   if (track.psalm === undefined) return null;
@@ -73,6 +103,11 @@ export function trackId(album: MusicAlbum, track: MusicTrack): string {
 
 export function asEpisode(album: MusicAlbum, track: MusicTrack): PodcastEpisode {
   const id = trackId(album, track);
+  /* Parsed once, and omitted rather than carried as zero when the publisher's
+     string is something this parser cannot read. Zero would print as an empty
+     clock anyway, but through a branch claiming the publisher stated nothing
+     while carrying a number that says otherwise. */
+  const stated = seconds(track.duration);
   return {
     id, sourceId: MUSIC.source.id, recordId: id,
     sourceName: MUSIC.source.name,
@@ -88,6 +123,7 @@ export function asEpisode(album: MusicAlbum, track: MusicTrack): PodcastEpisode 
        one, the record's otherwise. */
     ...(track.cover ?? album.cover ? { artUrl: track.cover ?? album.cover ?? undefined } : {}),
     ...(album.tint ? { tint: album.tint } : {}),
+    ...(stated > 0 ? { durationSeconds: stated } : {}),
   };
 }
 
@@ -109,6 +145,14 @@ export function seriesEpisode(
     passage: null,
     kind: "podcast",
     ...(art ? { artUrl: art.cover, tint: art.tint } : {}),
+    /* `durationSeconds` on a catalogue episode is `number | null` — a feed that
+       stated no length is ordinary, not an error — so the field is omitted
+       rather than set to null. An episode carrying none draws a blank cell of
+       the right width, which keeps the right edge of the list in one line
+       whether the publisher said anything or not. */
+    ...(ep.durationSeconds != null && ep.durationSeconds > 0
+      ? { durationSeconds: ep.durationSeconds }
+      : {}),
   };
 }
 

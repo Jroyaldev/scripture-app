@@ -216,7 +216,16 @@ test("a playlist stores identities, never anything fetchable", () => {
      keeps a muted publisher's tracks out of a playlist, keeps a renamed track
      showing its new name, and keeps anything on this list from ever becoming
      an `<img src>` or a fetch. */
-  for (const forbidden of ["audioUrl", "artUrl", "officialUrl", "cover", "tint"]) {
+  /* `durationSeconds` and `duration` are here because the comment above already
+     claimed them and the assertion did not — a contract that says one thing and
+     checks another is worse than none, because it is read as covered. The claim
+     is enforced now: the episode shape carries a duration and the playlist rows
+     print one, so the tempting shortcut is real and this is what stops it. A
+     length cached on an entry would survive a re-cut file, an unmuted publisher
+     and a re-import, and would be wrong after all three. */
+  for (const forbidden of [
+    "audioUrl", "artUrl", "officialUrl", "cover", "tint", "durationSeconds", "duration",
+  ]) {
     assert.ok(!body.includes(forbidden), `a playlist entry must not carry ${forbidden}`);
   }
   // And per-entry drops, like the ledger, so one bad row costs only itself.
