@@ -355,9 +355,21 @@ class Transcriber:
             while True:
                 try:
                     with self.torch.inference_mode():
-                        outputs.extend(
-                            self.model.transcribe([str(c["path"])], timestamps=True, batch_size=1)
+                        heard = self.model.transcribe(
+                            [str(c["path"])], timestamps=True, batch_size=1
                         )
+                    # The hypothesis is the leak: it carries the decoder's GPU
+                    # tensors (y_sequence, alignments), and a list of them pins
+                    # memory no empty_cache can touch — which is why the OOMs
+                    # survived per-chunk cache clearing and always began at the
+                    # same chunk of a long episode. Keep the two fields _merge
+                    # reads, as plain Python, and let the tensors go.
+                    for h in heard:
+                        outputs.append(types.SimpleNamespace(
+                            text=str(getattr(h, "text", "") or ""),
+                            timestamp=getattr(h, "timestamp", None) or {},
+                        ))
+                    del heard
                     break
                 except Exception as error:  # noqa: BLE001 — one chunk must not cost the episode
                     self.torch.cuda.empty_cache()
