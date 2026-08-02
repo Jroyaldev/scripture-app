@@ -22352,7 +22352,20 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-card[data-source="spoken-gospel"],
 .podcast-dock[data-source="spoken-gospel"],
 .taught-here-plate[data-source="spoken-gospel"] {
-  --resource-source: #239948;
+  /* ── THEIR OWN GROUND, NOT THEIR OLD ONE · 2026-08-02 ────────────────────
+     Was #239948, a kelly green, and two things were wrong with it at once.
+     The inventory already recorded the first: cream #FAF0D7 on that green
+     measures 3.24:1, under the floor, tolerated only because the name is never
+     drawn as type on this plate. The second is what the maintainer saw — it is
+     not the colour this publisher looks like. Their cover art's dominant is
+     #172E40, a dark navy, and their own lockup is served in gold leaf on dark.
+     Measured against their artwork the green is 95° off in hue, the largest
+     disagreement of the twelve.
+
+     So the surface becomes their artwork's own colour. Cream on it measures
+     12.33:1 and white 13.99, so the contrast note above it is answered rather
+     than merely inherited. */
+  --resource-source: #172e40;
   --resource-ink: #faf0d7;
   --resource-ink-soft: rgb(250 240 215 / 0.78);
   --resource-line: rgb(250 240 215 / 0.3);
@@ -22583,12 +22596,26 @@ button.lang-phrase-diagram-node:focus-visible,
      type: white on #0086BA measures 4.10:1, under Law 6's floor, and the
      accent is lightness-clamped by --player-accent so hue and chroma stay
      theirs while the contrast becomes ours. Added 2026-07-30. */
+  /* ── THE PLATE WAS SWALLOWING THE MARK · 2026-08-02 ─────────────────────
+     Their "ASK" bubble is teal (#19A58E-ish) and the surface below was
+     #0079A8, a mid blue. Measured against each other those two are 1.58:1 —
+     a mark and its own plate, all but the same value, which is why the shelf
+     cell read as a blue square with something faint in it rather than as a
+     logo. The derivation that produced #0079A8 was sound and is kept as the
+     ACCENT below: it is their published #0086BA darkened until white type
+     clears 4.5.
+
+     What the plate wants is not their type colour but their picture's. Their
+     cover art's dominant is #093D4A, and on it the bubble measures 3.83:1 —
+     more than twice the separation — while white rises from 4.88 to 11.81.
+     Their colour either way; the difference is which of their own surfaces we
+     took it from. */
   --resource-accent: #0086ba;
   /* #0079A8 is Premier's #0086BA darkened BY US until white clears 4.5 on it
      (measured 4.88 in the engine). A re-pick with a reason, recorded as ours
      in docs/trusted-resource-brand-inventory.md rather than passed off as a
      published value. */
-  --resource-source: #0079a8;
+  --resource-source: #093d4a;
   /* White rather than the pale blue sampled from their artwork. Dated
      2026-07-30 with the shelf's ink fix: Premier's name has no approved mark,
      so it is the only one of these palettes whose ink is drawn as TEXT at

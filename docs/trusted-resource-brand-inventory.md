@@ -193,10 +193,18 @@ lockup as a 660×108 WEBP/PNG (the gold-leaf colour version); `/brand`, `/press`
 `/media`, `/logos` and `/style-guide` are all 404. **There is no public vector.**
 That is now a known fact rather than an open question, and it is a question for
 the publisher rather than for a search engine.
-Their `--resource-ink` (cream `#FAF0D7`) against their green `#239948` is
-**3.24:1**, under the floor — and it is never drawn, because the mark is
-artwork with the name indented behind it. Recorded here so that nobody
-introduces a name form on that plate without re-picking the ink first.
+**Surface re-picked 2026-08-02 — `#239948` → `#172E40`.** The green failed
+twice over. Cream `#FAF0D7` on it measured **3.24:1**, under the floor, and was
+tolerated only because the name is never drawn as type on that plate. And it
+was not the colour this publisher looks like: measured against their own cover
+art, whose dominant is `#172E40`, the green is **95° off in hue** — the largest
+disagreement of the twelve publishers on the shelf. Their site serves the
+lockup in gold leaf on dark, which agrees with the artwork rather than with the
+green.
+
+The surface is now their artwork's own colour. Cream measures **12.33:1** on
+it and white **13.99**, so the contrast note this replaces is answered rather
+than carried forward.
 
 ### 5 Minutes in Church History (Ligonier) — the pass's one new mark
 **Device:** Ligonier's tree, official vector, from their own masthead, filled
@@ -286,7 +294,8 @@ kept, and each carries its reason in a comment beside it:
 |---|---|---|
 | Enter the Bible, accent | `#FA4616` | Their own orange, promoted, because their yellow fits to mud. |
 | Naked Bible, accent | `#D9A441` | Their own gold, promoted, because a grey accent reads as disabled. |
-| Ask N.T. Wright, surface | `#0079A8` | Their `#0086BA` darkened until white clears 4.5:1 on it. |
+| Ask N.T. Wright, accent | `#0079A8` | Their `#0086BA` darkened until white clears 4.5:1 on it. Kept as the accent. |
+| Ask N.T. Wright, surface | `#093D4A` | Their cover art's own dominant, taken 2026-08-02. The plate was `#0079A8` and their teal "ASK" bubble measured **1.58:1** against it — a mark and its own ground at all but the same value, which is why the cell read as a blue square with something faint in it. On `#093D4A` the bubble measures **3.83:1** and white type **11.81**. Their colour either way; the change is which of their own surfaces it was taken from. |
 | 40 Minutes in the OT, pill ink | `#7D2C1B` | Their brick darkened so a light pill can carry ink. |
 | Every accent's fitted form | — | `--player-accent` clamps lightness per atmosphere. Hue and chroma stay theirs; contrast on OUR paper is ours. |
 
