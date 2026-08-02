@@ -24,6 +24,26 @@
     --gold: #c8a94e;
   }
 }
+/* Deterministic replay-only query hooks: normal visitors still follow the
+   operating system when neither data attribute is present. */
+:root[data-theme="light"] {
+  --paper: #faf7f1;
+  --paper-2: #f3eee5;
+  --ink: #2a251d;
+  --ink-2: #6b6355;
+  --ink-3: #a49a87;
+  --hair: rgba(42, 37, 29, 0.14);
+  --gold: #8a6d1f;
+}
+:root[data-theme="dark"] {
+  --paper: #191712;
+  --paper-2: #211e17;
+  --ink: #e8e2d4;
+  --ink-2: #a79d8a;
+  --ink-3: #6e6656;
+  --hair: rgba(232, 226, 212, 0.14);
+  --gold: #c8a94e;
+}
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
 html, body { height: 100%; }
@@ -371,6 +391,15 @@ em.rel.pulse { animation: pulse-word 1200ms var(--ease); }
     animation-iteration-count: 1 !important;
   }
 }
+:root[data-motion="reduce"] *,
+:root[data-motion="reduce"] *::before,
+:root[data-motion="reduce"] *::after {
+  scroll-behavior: auto !important;
+  transition-duration: 1ms !important;
+  animation-duration: 1ms !important;
+  animation-delay: 0ms !important;
+  animation-iteration-count: 1 !important;
+}
 
 /* ------------------------------------------------------------ the theater
    When a reading plays, the page becomes the stage: the list waits
@@ -531,7 +560,7 @@ body.in-theater { overflow: hidden; }
   align-items: center;
   gap: 14px;
 }
-.th-progress { flex: 1; height: 1.5px; background: var(--hair); border-radius: 1px; overflow: hidden; }
+.th-progress { flex: 1; height: 18px; background: var(--hair); border-radius: 1px; overflow: hidden; }
 .th-progress i { display: block; height: 100%; width: 0; background: color-mix(in oklab, var(--gold) 70%, transparent); transition: width 400ms linear; }
 .th-progress.dragging i { transition: none; }
 
@@ -568,7 +597,14 @@ body.in-theater { overflow: hidden; }
   transition: color 200ms var(--ease);
 }
 .th-jump:hover { color: var(--ink); }
-.th-progress { cursor: pointer; padding: 8px 0; background: none; overflow: visible; position: relative; }
+.th-progress {
+  cursor: pointer;
+  padding: 0;
+  background: none;
+  overflow: visible;
+  position: relative;
+  touch-action: none;
+}
 .th-progress i {
   pointer-events: none;
   position: absolute;
@@ -600,6 +636,18 @@ body.in-theater { overflow: hidden; }
 @media (pointer: coarse) {
   .play { width: 44px; height: 44px; }
   .th-jump { min-width: 44px; min-height: 44px; }
+  .th-progress { height: 44px; min-height: 44px; }
+}
+
+@media (max-width: 620px) {
+  /* The transcript and the three 44px controls are fixed overlays. The
+     scrolling stage reserves their full footprint instead of disappearing
+     beneath them at the end of a scene. */
+  #theater { padding-bottom: calc(184px + env(safe-area-inset-bottom)); }
+  #theater .caption {
+    bottom: calc(76px + env(safe-area-inset-bottom));
+    line-height: 1.45;
+  }
 }
 
 @media (max-width: 420px) {

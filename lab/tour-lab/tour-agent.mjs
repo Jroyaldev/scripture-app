@@ -200,7 +200,14 @@ const runId = (modelKey) =>
  * Run one tour. `emit` receives progress events for the SSE stream.
  * Always writes a run record, whether the run succeeded or failed.
  */
-export async function runTour({ prompt, modelKey, promptId = null, emit = () => {}, signal = null }) {
+export async function runTour({
+  prompt,
+  modelKey,
+  promptId = null,
+  emit = () => {},
+  signal = null,
+  replyGuard = null,
+}) {
   const spec = modelByKey(modelKey);
   if (!spec) throw new Error(`unknown model "${modelKey}"`);
   const client = clientFor(spec.key);
@@ -306,7 +313,10 @@ export async function runTour({ prompt, modelKey, promptId = null, emit = () => 
     try {
       reply = await client.chat({ messages, tools: TOOL_SCHEMAS, maxTokens, signal });
     } catch (err) {
-      return finish({ status: 'error', error: { code: err.code || 'CALL', message: err.message } });
+      return finish({
+        status: err?.name === 'AbortError' || err?.code === 'ABORTED' ? 'aborted' : 'error',
+        error: { code: err.code || 'CALL', message: err.message },
+      });
     }
 
     record.totals.modelCalls += 1;
@@ -316,6 +326,16 @@ export async function runTour({ prompt, modelKey, promptId = null, emit = () => 
     record.totals.cachedPromptTokens += reply.usage.cachedPromptTokens;
     record.totals.modelLatencyMs += reply.latencyMs;
     const calls = reply.message.tool_calls || [];
+    let validation = replyGuard ? 'runtime-accepted' : 'runtime-not-enforced';
+    let guardError = null;
+    if (replyGuard) {
+      try {
+        replyGuard(reply);
+      } catch (error) {
+        validation = 'runtime-refused';
+        guardError = error;
+      }
+    }
     record.calls.push({
       i: step,
       latencyMs: reply.latencyMs,
@@ -326,8 +346,30 @@ export async function runTour({ prompt, modelKey, promptId = null, emit = () => 
       toolCalls: calls.length,
       finishReason: reply.finishReason,
       providerCostUsd: reply.usage.providerCostUsd,
+      rawModel: reply.raw?.model ?? null,
+      provider: reply.raw?.provider ?? null,
+      model: {
+        key: spec.key,
+        requestedSlug: spec.requestedSlug,
+        resolvedSlug: record.model.resolvedSlug,
+        endpointHost: record.model.resolution?.endpointHost || null,
+        endpointStyle: record.model.resolution?.endpointStyle || null,
+        reasoning: {
+          effort: record.model.reasoning.effort,
+          source: record.model.reasoning.source,
+          applied: record.model.reasoning.applied,
+        },
+        provider: reply.raw?.provider ?? null,
+      },
+      validation,
     });
     emit('call', { i: step, latencyMs: reply.latencyMs, usage: reply.usage, toolCalls: calls.length, totals: record.totals });
+    if (guardError) {
+      return finish({
+        status: 'error',
+        error: { code: guardError.code || 'MAGIC_RUNTIME_REFUSED', message: guardError.message },
+      });
+    }
 
     // The assistant turn goes back verbatim so tool_call ids stay paired.
     messages.push({

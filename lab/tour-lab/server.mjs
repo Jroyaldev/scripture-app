@@ -15,19 +15,24 @@ import {
   MAGIC_DIRECTOR_SCHEMA_VERSION,
   MAGIC_MODEL_ROLES,
   assertMagicModel,
+  assertMagicReplyEvidence,
   assertMagicRuntime,
   directorCacheKey,
   normalizeDirectorScenes,
   resolveMagicSearchModels,
+  stableTextHash,
   validateDirectorPayload,
 } from './magic-contract.mjs';
 import {
   listDirectorEvidence,
+  listMagicRoleEvidence,
   listReplayFixtures,
   readDirectorEvidence,
   readReplayFixture,
   writeDirectorEvidence,
+  writeMagicRoleEvidence,
 } from './director-evidence.mjs';
+import { createSharedDirectorJobs } from './magic-jobs.mjs';
 
 const LAB_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PORT = Number(process.env.TOUR_LAB_PORT || 5599);
@@ -41,7 +46,7 @@ const send = (res, code, body, type = 'application/json; charset=utf-8') => {
 };
 const sendJson = (res, code, obj) => send(res, code, JSON.stringify(obj));
 
-const DIRECTOR_INFLIGHT = new Map();
+const DIRECTOR_JOBS = createSharedDirectorJobs({ maxCompleted: 24 });
 
 function requestAbortScope(req, res) {
   const controller = new AbortController();
@@ -81,46 +86,52 @@ async function preflightMagicRole(role) {
   return { client, runtime };
 }
 
-function assertMagicReplyRuntime(reply, runtime) {
-  const rawModel = reply?.raw?.model;
-  if (!rawModel || rawModel === runtime.resolvedSlug) return;
-  const error = new Error(`\/magic resolved ${runtime.resolvedSlug}, but provider returned ${rawModel}`);
-  error.code = 'MAGIC_RUNTIME_REFUSED';
-  throw error;
+function magicCallEvidence(role, reply, runtime, validation) {
+  const observed = assertMagicReplyEvidence(reply, runtime);
+  return {
+    role,
+    latencyMs: Math.max(0, Number(reply.latencyMs) || 0),
+    promptTokens: Math.max(0, Number(reply.usage?.promptTokens) || 0),
+    completionTokens: Math.max(0, Number(reply.usage?.completionTokens) || 0),
+    reasoningTokens: Math.max(0, Number(reply.usage?.reasoningTokens) || 0),
+    cachedPromptTokens: Math.max(0, Number(reply.usage?.cachedPromptTokens) || 0),
+    providerCostUsd: reply.usage?.providerCostUsd ?? null,
+    finishReason: reply.finishReason || null,
+    rawModel: observed.rawModel,
+    provider: observed.provider,
+    model: { ...runtime, provider: observed.provider },
+    validation,
+  };
+}
+
+function magicCallTotals(calls, wallMs) {
+  const costs = calls.map((call) => call.providerCostUsd);
+  return {
+    wallMs: Math.max(0, Number(wallMs) || 0),
+    passes: calls.length,
+    calls,
+    totalUsd: calls.length && costs.every((cost) => Number.isFinite(cost) && cost >= 0)
+      ? costs.reduce((sum, cost) => sum + cost, 0)
+      : null,
+    tokens: {
+      prompt: calls.reduce((sum, call) => sum + call.promptTokens, 0),
+      completion: calls.reduce((sum, call) => sum + call.completionTokens, 0),
+      reasoning: calls.reduce((sum, call) => sum + call.reasoningTokens, 0),
+      cachedPrompt: calls.reduce((sum, call) => sum + call.cachedPromptTokens, 0),
+    },
+  };
 }
 
 function acquireDirectorJob(requestKey, req, res, create) {
-  let job = DIRECTOR_INFLIGHT.get(requestKey);
-  if (job?.controller.signal.aborted) {
-    DIRECTOR_INFLIGHT.delete(requestKey);
-    job = null;
-  }
-  if (!job) {
-    const controller = new AbortController();
-    job = { controller, consumers: new Set(), settled: false, promise: null };
-    job.promise = Promise.resolve()
-      .then(() => create(controller.signal))
-      .finally(() => {
-        job.settled = true;
-        if (DIRECTOR_INFLIGHT.get(requestKey) === job) DIRECTOR_INFLIGHT.delete(requestKey);
-      });
-    DIRECTOR_INFLIGHT.set(requestKey, job);
-  }
-
-  const consumer = Symbol(requestKey);
-  job.consumers.add(consumer);
-  let released = false;
+  const acquired = DIRECTOR_JOBS.acquire(requestKey, create);
   const release = () => {
-    if (released) return;
-    released = true;
     req.off('aborted', release);
     res.off('close', release);
-    job.consumers.delete(consumer);
-    if (!job.settled && job.consumers.size === 0) job.controller.abort();
+    acquired.release();
   };
   req.once('aborted', release);
   res.once('close', release);
-  return { promise: job.promise, release };
+  return { ...acquired, release };
 }
 
 function ensureIndex() {
@@ -249,6 +260,10 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, { runs: listDirectorEvidence({ limit: 80 }) });
     }
 
+    if (p === '/api/magic-role-runs' && req.method === 'GET') {
+      return sendJson(res, 200, { runs: listMagicRoleEvidence({ limit: 80 }) });
+    }
+
     if (p.startsWith('/api/direct-run/') && req.method === 'GET') {
       const record = readDirectorEvidence(decodeURIComponent(p.slice('/api/direct-run/'.length)));
       return record ? sendJson(res, 200, record) : sendJson(res, 404, { error: 'no such director run' });
@@ -302,10 +317,11 @@ const server = http.createServer(async (req, res) => {
 
       const isMagic = body.surface === 'magic';
       let modelKeys;
+      let magicSearchRuntime = null;
       if (isMagic) {
         try {
           modelKeys = resolveMagicSearchModels(body);
-          await preflightMagicRole('search');
+          ({ runtime: magicSearchRuntime } = await preflightMagicRole('search'));
         } catch (error) {
           const status = error?.code === 'MAGIC_MODEL_REFUSED' ? 400 : 503;
           abortScope.release();
@@ -349,6 +365,9 @@ const server = http.createServer(async (req, res) => {
               promptId: body.promptId || null,
               emit: tagged,
               signal: abortScope.signal,
+              replyGuard: isMagic
+                ? (reply) => assertMagicReplyEvidence(reply, magicSearchRuntime)
+                : null,
             });
           } catch (err) {
             // Fail soft: the panel shows a sentence, never a stack trace.
@@ -398,6 +417,8 @@ const server = http.createServer(async (req, res) => {
       const steps = Array.isArray(body.steps) ? body.steps.slice(0, 8) : [];
       if (!steps.length) return sendJson(res, 400, { error: 'steps required' });
       const abortScope = requestAbortScope(req, res);
+      const wallStarted = Date.now();
+      const startedAt = new Date().toISOString();
       try {
         const { client, runtime } = await preflightMagicRole('whispers');
         const reply = await client.chat({
@@ -408,17 +429,32 @@ const server = http.createServer(async (req, res) => {
             content: `For each clip below, write ONE whisper: the single quiet line a knowledgeable friend leans over and says just as the clip begins. At most 12 words. Start with "Listen for", "Notice", or "Wait for". Point at something concrete the speaker actually says or does (draw it from the reason given). Plain words, no hype, no exclamation marks, never mention AI, tours, or clips.\n\n${steps.map((s, i) => `${i + 1}. [${s.source}] ${s.episodeTitle}\nreason: ${String(s.why || '').slice(0, 500)}`).join('\n\n')}\n\nAnswer with ONLY this JSON: {"whispers": ["...", ...]} — exactly ${steps.length} strings, in order.`,
           }],
         });
-        assertMagicReplyRuntime(reply, runtime);
         const m = String(reply.message.content || '').match(/\{[\s\S]*\}/);
-        const parsed = m ? JSON.parse(m[0]) : null;
-        const whispers = Array.isArray(parsed?.whispers)
+        let parsed = null;
+        try { parsed = m ? JSON.parse(m[0]) : null; } catch { /* invalid output degrades honestly */ }
+        const accepted = Array.isArray(parsed?.whispers)
+          && parsed.whispers.length === steps.length
+          && parsed.whispers.every((whisper) => typeof whisper === 'string' && whisper.trim());
+        const whispers = accepted
           ? parsed.whispers.slice(0, steps.length).map((w) => String(w).slice(0, 120))
           : [];
+        const call = magicCallEvidence('whispers', reply, runtime, accepted ? 'accepted' : 'invalid-output');
+        const metrics = magicCallTotals([call], Date.now() - wallStarted);
+        const evidenceFile = writeMagicRoleEvidence({
+          role: 'whispers',
+          startedAt,
+          request: { stepCount: steps.length, stepsHash: stableTextHash(JSON.stringify(steps)) },
+          model: call.model,
+          metrics,
+          result: { whispers },
+        });
         abortScope.release();
         return sendJson(res, 200, {
           whispers,
           usd: reply.usage?.providerCostUsd ?? null,
-          model: { ...runtime, provider: reply.raw?.provider || 'OpenRouter' },
+          model: call.model,
+          metrics,
+          evidenceFile: path.basename(evidenceFile),
         });
       } catch (err) {
         abortScope.release();
@@ -438,6 +474,8 @@ const server = http.createServer(async (req, res) => {
       const ask = String(body.prompt || '').slice(0, 400);
       if (!steps.length) return sendJson(res, 400, { error: 'tour required' });
       const abortScope = requestAbortScope(req, res);
+      const wallStarted = Date.now();
+      const startedAt = new Date().toISOString();
       try {
         const { client, runtime } = await preflightMagicRole('form');
         const reply = await client.chat({
@@ -463,11 +501,27 @@ Answer ONLY with JSON:
 Include only the keys the chosen form needs; stage directions are optional and most steps need none.`,
           }],
         });
-        assertMagicReplyRuntime(reply, runtime);
         const m = String(reply.message.content || '').match(/\{[\s\S]*\}/);
-        const plan = validateFormPlan(m ? JSON.parse(m[0]) : null, steps.length);
+        let rawPlan = null;
+        try { rawPlan = m ? JSON.parse(m[0]) : null; } catch { /* invalid output becomes standard */ }
+        const plan = validateFormPlan(rawPlan, steps.length);
+        const validation = rawPlan && typeof rawPlan === 'object'
+          ? (plan.form === rawPlan.form || rawPlan.form === 'standard' ? 'accepted' : 'repaired-to-standard')
+          : 'invalid-output';
+        const call = magicCallEvidence('form', reply, runtime, validation);
+        const metrics = magicCallTotals([call], Date.now() - wallStarted);
         plan.usd = reply.usage?.providerCostUsd ?? null;
-        plan.model = { ...runtime, provider: reply.raw?.provider || 'OpenRouter' };
+        plan.model = call.model;
+        plan.metrics = metrics;
+        const evidenceFile = writeMagicRoleEvidence({
+          role: 'form',
+          startedAt,
+          request: { stepCount: steps.length, askHash: stableTextHash(ask), stepsHash: stableTextHash(JSON.stringify(steps)) },
+          model: call.model,
+          metrics,
+          result: plan,
+        });
+        plan.evidenceFile = path.basename(evidenceFile);
         abortScope.release();
         return sendJson(res, 200, plan);
       } catch (err) {
@@ -602,14 +656,16 @@ Include only the keys the chosen form needs; stage directions are optional and m
         return { ref: `${pv.bookName} ${pv.chapter}:${r[3]}`, text: pv.verses[0].text };
       };
 
+      const semanticDrops = [];
+
       /* One validator for both passes: everything checked against the scene's
          real verse text and the pass's own stretch of tape. */
       /* Function words never carry a bracket: lighting "of" and "the" as
          they are said is noise wearing the loom's clothes. */
-      const STOPWORDS = new Set(['the', 'and', 'of', 'to', 'a', 'an', 'in', 'on', 'for', 'that', 'this', 'with', 'from',
+      const STOPWORDS = new Set(['the', 'and', 'of', 'to', 'a', 'an', 'in', 'on', 'at', 'for', 'that', 'this', 'with', 'from',
         'they', 'them', 'were', 'was', 'is', 'are', 'be', 'been', 'have', 'has', 'had', 'his', 'her', 'him', 'she', 'he',
         'it', 'its', 'not', 'but', 'all', 'any', 'who', 'you', 'your', 'their', 'there', 'when', 'then', 'will', 'shall']);
-      const validateArtifacts = (sc, verseNorm, cueNorm) => {
+      const validateArtifacts = (sc, verseNorm, cueNorm, pass = 'unknown') => {
         const cueOk = (c) => typeof c === 'string' && c.trim().length >= 8 && c.length <= 80 && cueNorm.includes(` ${norm(c)} `);
         /* A word the displayed translation phrases differently is not
            rejected — it is held for the repair exchange, where the model
@@ -712,6 +768,21 @@ Include only the keys the chosen form needs; stage directions are optional and m
             const t = a.text.trim();
             return { text: t.length > 70 ? t.slice(0, 70).replace(/\s+\S*$/, '') + '…' : t, cue: cueOk(a.cue) ? a.cue.trim() : null };
           });
+        const accepted = { groups, footnotes, allusions, terms, asides };
+        for (const [kind, rawKey] of [
+          ['group', 'groups'],
+          ['footnote', 'footnotes'],
+          ['allusion', 'allusions'],
+          ['term', 'terms'],
+          ['aside', 'asides'],
+        ]) {
+          const submitted = Array.isArray(sc?.[rawKey]) ? sc[rawKey].length : 0;
+          const kept = accepted[rawKey].length;
+          if (submitted > kept) semanticDrops.push({ reason: 'semantic-rejection', pass, kind, count: submitted - kept });
+        }
+        for (const [kind, value] of Object.entries({ compare, chain, caveat, highlight })) {
+          if (sc?.[kind] && !value) semanticDrops.push({ reason: 'semantic-rejection', pass, kind, count: 1 });
+        }
         return { groups, footnotes, allusions, terms, compare, chain, caveat, highlight, asides };
       };
 
@@ -722,13 +793,29 @@ Include only the keys the chosen form needs; stage directions are optional and m
         const { client, runtime } = await preflightMagicRole('director');
         signal.throwIfAborted();
         const calls = [];
+        let scenes = [];
+        const normalizationPasses = [];
+
+        const markLastCall = (outcome) => {
+          if (!calls.length) return;
+          calls.at(-1).validation = `${calls.at(-1).validation};${outcome}`;
+        };
+
+        const normalizePass = (role, { apply = false } = {}) => {
+          const snapshot = normalizeDirectorScenes(scenes, dur);
+          normalizationPasses.push({ role, ...snapshot.report });
+          if (apply) scenes = snapshot.scenes;
+          return snapshot;
+        };
 
         const finish = (rawScenes, note = null, { allowAborted = false } = {}) => {
           if (!allowAborted) signal.throwIfAborted();
           for (const scene of rawScenes) delete scene.verseNorm;
           const normalized = normalizeDirectorScenes(rawScenes, dur);
+          normalized.report.dropped = [...semanticDrops, ...normalized.report.dropped];
+          normalized.report.passes = normalizationPasses;
           const costs = calls.filter((call) => call.providerCostUsd != null).map((call) => call.providerCostUsd);
-          const provider = calls.find((call) => call.provider)?.provider || 'OpenRouter';
+          const provider = calls.find((call) => call.provider)?.provider || 'unreported';
           const payload = {
             schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
             requestKey,
@@ -782,9 +869,9 @@ Include only the keys the chosen form needs; stage directions are optional and m
               cachedPromptTokens: 0,
               providerCostUsd: null,
               finishReason: null,
-              rawModel: runtime.resolvedSlug,
-              provider: 'OpenRouter',
-              model: { ...runtime, provider: 'OpenRouter' },
+              rawModel: null,
+              provider: null,
+              model: { ...runtime, provider: 'unreported' },
               validation: 'call-error',
               error: { code: error?.code || 'CALL', message: error?.message || String(error) },
             });
@@ -803,9 +890,14 @@ Include only the keys the chosen form needs; stage directions are optional and m
               validation = 'invalid-json';
             }
           }
-          const rawModel = reply.raw?.model || runtime.resolvedSlug;
-          const provider = reply.raw?.provider || 'OpenRouter';
-          const runtimeMismatch = Boolean(reply.raw?.model) && reply.raw.model !== runtime.resolvedSlug;
+          let runtimeError = null;
+          try {
+            assertMagicReplyEvidence(reply, runtime);
+          } catch (error) {
+            runtimeError = error;
+          }
+          const rawModel = reply.raw?.model ?? null;
+          const provider = reply.raw?.provider ?? null;
           calls.push({
             role,
             latencyMs: Math.max(0, Number(reply.latencyMs) || Date.now() - callStarted),
@@ -815,23 +907,18 @@ Include only the keys the chosen form needs; stage directions are optional and m
             cachedPromptTokens: reply.usage?.cachedPromptTokens || 0,
             providerCostUsd: reply.usage?.providerCostUsd ?? null,
             finishReason: reply.finishReason || null,
-            rawModel,
-            provider,
-            model: { ...runtime, provider },
-            validation: runtimeMismatch ? 'runtime-mismatch' : validation,
-          });
-          if (runtimeMismatch) {
-            const error = new Error(`\/magic director resolved ${runtime.resolvedSlug}, but provider returned ${rawModel}`);
-            error.code = 'MAGIC_RUNTIME_REFUSED';
-            throw error;
-          }
+              rawModel,
+              provider,
+              model: { ...runtime, provider: provider || 'unreported' },
+              validation: runtimeError ? 'runtime-mismatch' : validation,
+            });
+          if (runtimeError) throw runtimeError;
           return parsed;
         };
 
         if (!tr) return finish([], 'unknown recording');
         if (tape.length < 200) return finish([], 'recording window has too little transcript');
 
-        let scenes = [];
         try {
           const raw = await callModel('initial', `You are directing a small visual stage a listener watches while a podcast clip plays. Here is the clip's full transcript:
 
@@ -857,22 +944,36 @@ Spread your directions across the WHOLE clip — the stage draws each artifact a
 Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{"words":["saw","took"],"label":"Eden echo","cue":"..."}],"footnotes":[],"allusions":[],"terms":[],"compare":null,"chain":null,"caveat":null,"highlight":null,"asides":[]}]}`);
 
         scenes = [];
-        for (const sc of (Array.isArray(raw?.scenes) ? raw.scenes : []).slice(0, 4)) {
+        const submittedScenes = Array.isArray(raw?.scenes) ? raw.scenes : [];
+        if (submittedScenes.length > 4) {
+          semanticDrops.push({ reason: 'cap', pass: 'initial', kind: 'scene', count: submittedScenes.length - 4 });
+        }
+        for (const sc of submittedScenes.slice(0, 4)) {
           const ref = String(sc?.verse || '').match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3}):(\d{1,3})(?:\s*[–-]\s*(\d{1,3}))?$/);
-          if (!ref) { console.log(`[direct] dropped scene, unparsable verse: "${sc?.verse}"`); continue; }
+          if (!ref) {
+            semanticDrops.push({ reason: 'unparsable-verse', pass: 'initial', kind: 'scene', count: 1 });
+            console.log(`[direct] dropped scene, unparsable verse: "${sc?.verse}"`);
+            continue;
+          }
           const fromV = Number(ref[3]);
           const toV = ref[4] ? Math.min(Number(ref[4]), fromV + 2) : fromV;
           const passage = readPassage({ book: ref[1], chapter: Number(ref[2]), fromVerse: fromV, toVerse: toV });
-          if (passage.error || !passage.verses?.length) { console.log(`[direct] dropped scene, passage lookup failed: "${sc?.verse}"`); continue; }
+          if (passage.error || !passage.verses?.length) {
+            semanticDrops.push({ reason: 'passage-lookup-failed', pass: 'initial', kind: 'scene', count: 1 });
+            console.log(`[direct] dropped scene, passage lookup failed: "${sc?.verse}"`);
+            continue;
+          }
           const verseNorm = ` ${norm(passage.verses.map((v) => v.text).join(' '))} `;
           scenes.push({
             ref: `${passage.bookName} ${passage.chapter}:${fromV}${toV > fromV ? '–' + toV : ''}`,
             verses: passage.verses,
             verseNorm,
             cue: (typeof sc.cue === 'string' && sc.cue.trim().length >= 8) ? sc.cue.trim() : null,
-            ...validateArtifacts(sc, verseNorm, tapeNorm),
+            ...validateArtifacts(sc, verseNorm, tapeNorm, 'initial'),
           });
         }
+        markLastCall(`semantic-scenes:${scenes.length}`);
+        normalizePass('initial');
 
         /* ---- the sceneless clip: presence without a verse ----
            A topical or story clip that walks through no passage still
@@ -888,7 +989,7 @@ ${tape.slice(0, 8000)}
 Direct 2-4 ASIDES — one quiet line each naming what the teacher is doing at that point ("telling the story of...", "answering why...", max 70 chars, present tense) — each with a cue phrase of 3-8 words COPIED VERBATIM from the transcript at that moment. Optionally ONE highlight: a sentence worth keeping about the subject, verbatim (12-140 chars).
 Answer ONLY with JSON: {"asides":[{"text":"...","cue":"..."}],"highlight":null}`, 5000);
             if (bare) {
-              const extra = validateArtifacts({ asides: bare.asides, highlight: bare.highlight }, '  ', tapeNorm);
+              const extra = validateArtifacts({ asides: bare.asides, highlight: bare.highlight }, '  ', tapeNorm, 'sceneless');
               if (extra.asides.length) {
                 scenes.push({
                   ref: null,
@@ -902,6 +1003,8 @@ Answer ONLY with JSON: {"asides":[{"text":"...","cue":"..."}],"highlight":null}`
                 });
               }
             }
+            markLastCall(`semantic-scenes:${scenes.length}`);
+            normalizePass('sceneless');
           } catch (error) {
             if (signal.aborted) throw error;
             /* an empty stage stays empty honestly */
@@ -928,6 +1031,7 @@ ${repairs.map((r, i) => `${i}. displayed text: "${r.sc.verses.map((v) => v.text)
 
 Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.length} entries, in order.`, 4000);
             const mapped = Array.isArray(mapRaw?.map) ? mapRaw.map : [];
+            let repaired = 0;
             repairs.forEach((r, i) => {
               const t = mapped[i];
               const tt = typeof t === 'string' ? t.trim() : '';
@@ -935,8 +1039,13 @@ Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.lengt
                 && !(!/\s/.test(tt) && STOPWORDS.has(norm(tt)))
                 && r.sc.verseNorm.includes(` ${norm(tt)} `)) {
                 r.apply(tt);
+                repaired += 1;
               }
             });
+            const missed = repairs.length - repaired;
+            if (missed) semanticDrops.push({ reason: 'repair-unresolved', pass: 'repair', kind: 'word', count: missed });
+            markLastCall(`semantic-repairs:${repaired}/${repairs.length}`);
+            normalizePass('repair');
           } catch (error) {
             if (signal.aborted) throw error;
             /* unrepaired words simply stay absent */
@@ -1026,6 +1135,7 @@ Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.lengt
             anchored.push(a.at);
           }
         });
+        normalizePass('house-timeline', { apply: true });
 
         /* ---- the second pass: buy beats for the starved stretch ---- */
         /* A fourteen-minute commentary clip cannot be rescued by one
@@ -1045,6 +1155,7 @@ Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.lengt
           const stretchSegs = segs.filter((s) => s.e - from >= gap.start + 2 && s.s - from <= gap.start + gap.len);
           const stretch = stretchSegs.map((s) => s.t).join(' ').slice(0, 6000);
           if (stretch.length > 300) {
+            const beforeFillCount = artifactsOf(host).length;
             const extraRaw = await callModel(`fill-${round + 1}`, `A visual stage is showing ${host.ref} while a podcast clip plays, and nothing new appears for ${Math.round(gap.len)} seconds. Here is the transcript of exactly that quiet stretch:
 
 ${stretch}
@@ -1053,7 +1164,7 @@ Direct 1-3 additional artifacts drawn FROM THIS STRETCH ONLY, for that same vers
 An "aside" is often the right direction for a stretch like this — one line naming the MOVEMENT the teacher is making, never the play-by-play: {"asides":[{"text":"setting the letter's context","cue":"..."}]} (max 70 chars, present tense). At most one aside; "explains the daytime gathering" is narration, not an aside.\nAnswer ONLY with JSON: {"groups":[...],"footnotes":[],"terms":[],"allusions":[],"asides":[],"caveat":null,"highlight":null}`, 6000);
             if (extraRaw) {
               const stretchNorm = ` ${norm(stretch)} `;
-              const extra = validateArtifacts(extraRaw, host.verseNorm, stretchNorm);
+              const extra = validateArtifacts(extraRaw, host.verseNorm, stretchNorm, `fill-${round + 1}`);
               const clampIn = (a) => {
                 const cueAt = locatePhrase(a.cue || a.quote);
                 const wordAt = Math.max(...(a.wordTimes || []).map((wordTime) => wordTime.at ?? -1));
@@ -1071,6 +1182,15 @@ An "aside" is often the right direction for a stretch like this — one line nam
               };
               const fillTapeOccurrences = new Map();
               for (const g of extra.groups.slice(0, 2)) {
+                const unresolvedWords = Array.isArray(g.dropped) ? g.dropped.length : 0;
+                delete g.dropped;
+                if (g.words.length < 2) {
+                  semanticDrops.push({ reason: 'fill-group-unresolved', pass: `fill-${round + 1}`, kind: 'group', count: 1 });
+                  continue;
+                }
+                if (unresolvedWords) {
+                  semanticDrops.push({ reason: 'fill-word-unresolved', pass: `fill-${round + 1}`, kind: 'word', count: unresolvedWords });
+                }
                 const verseOccurrences = displayedOccurrences(host, g.words);
                 g.occurrences = verseOccurrences;
                 g.wordTimes = g.words.map((word, wordIndex) => {
@@ -1087,6 +1207,11 @@ An "aside" is often the right direction for a stretch like this — one line nam
                 host.groups.push(clampIn(g));
               }
               for (const f of extra.footnotes.slice(0, 1)) {
+                if (f.missing) {
+                  semanticDrops.push({ reason: 'fill-footnote-unresolved', pass: `fill-${round + 1}`, kind: 'footnote', count: 1 });
+                  continue;
+                }
+                delete f.missing;
                 f.occurrence = displayedOccurrences(host, [f.word])[0];
                 host.footnotes.push(clampIn(f));
               }
@@ -1097,6 +1222,9 @@ An "aside" is often the right direction for a stretch like this — one line nam
               if (extra.caveat && !host.caveat) host.caveat = clampIn(extra.caveat);
               if (extra.highlight && !host.highlight) host.highlight = clampIn(extra.highlight);
             }
+            const added = Math.max(0, artifactsOf(host).length - beforeFillCount);
+            markLastCall(`semantic-artifacts:${added}`);
+            normalizePass(`fill-${round + 1}`, { apply: true });
           }
         }
 
@@ -1111,8 +1239,16 @@ An "aside" is often the right direction for a stretch like this — one line nam
             throw error;
           }
           if (error?.code === 'MAGIC_RUNTIME_REFUSED') {
-            const evidence = finish(scenes, error.message);
-            error.evidenceFile = evidence.evidenceFile;
+            const evidenceFile = writeDirectorEvidence({
+              status: 'refused',
+              startedAt,
+              requestKey,
+              request: directRequest,
+              runtime,
+              calls,
+              error: { code: error.code, message: error.message },
+            });
+            error.evidenceFile = path.basename(evidenceFile);
             throw error;
           }
           return finish(scenes, error?.message || String(error));

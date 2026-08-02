@@ -390,6 +390,12 @@ export class ModelClient {
         signal,
       });
     } catch (cause) {
+      if (cause?.name === 'AbortError' || signal?.aborted) {
+        const err = new Error(`${this.spec.label}: request aborted`);
+        err.name = 'AbortError';
+        err.code = 'ABORTED';
+        throw err;
+      }
       const err = new Error(`${this.spec.label}: network error reaching ${this.baseUrl} — ${cause.message}`);
       err.code = 'NETWORK';
       throw err;

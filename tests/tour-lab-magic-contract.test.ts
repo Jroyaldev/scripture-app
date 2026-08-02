@@ -17,22 +17,30 @@ import {
   MAGIC_MODEL_RUNTIME,
   MAGIC_REPLAY_SCHEMA_VERSION,
   assertMagicModel,
+  assertMagicReplyEvidence,
   assertMagicRuntime,
   directorCacheKey,
   normalizeDirectorScenes,
   redactEvidence,
   resolveMagicSearchModels,
   validateDirectorPayload,
+  validateMagicRoleEvidence,
   validateReplayFixture,
 } from "../lab/tour-lab/magic-contract.mjs";
 import {
   listDirectorEvidence,
+  listMagicRoleEvidence,
   listReplayFixtures,
   readDirectorEvidence,
   readReplayFixture,
   writeDirectorEvidence,
+  writeMagicRoleEvidence,
   writeReplayFixture,
 } from "../lab/tour-lab/director-evidence.mjs";
+import {
+  createSharedDirectorJobs,
+  retireOwnedDirectorEntry,
+} from "../lab/tour-lab/magic-jobs.mjs";
 
 const validModelEvidence = () => ({
   ...MAGIC_MODEL_RUNTIME,
@@ -46,6 +54,7 @@ const validModelEvidence = () => ({
 
 const validDirectorPayload = () => ({
   schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
+  requestKey: "valid-director-request",
   clip: { fromSec: 10, toSec: 70, durationSec: 60 },
   scenes: [],
   model: validModelEvidence(),
@@ -61,11 +70,21 @@ const validDirectorPayload = () => ({
       reasoningTokens: 3,
       cachedPromptTokens: 0,
       providerCostUsd: 0.001,
+      finishReason: "stop",
       rawModel: MAGIC_MODEL_RUNTIME.requestedSlug,
+      provider: "OpenAI",
       model: validModelEvidence(),
       validation: "accepted",
     }],
-    normalization: { sceneCount: 0, artifactCount: 0, dropped: [] },
+    tokens: { prompt: 20, completion: 8, reasoning: 3, cachedPrompt: 0 },
+    normalization: {
+      sceneCount: 0,
+      artifactCount: 0,
+      dropped: [],
+      shifted: 0,
+      clamped: 0,
+      invented: 0,
+    },
   },
 });
 
@@ -83,15 +102,21 @@ const validReplayFixture = () => {
     prompt: "Show the local fixture without a paid call",
     tour: {
       title: "Local Luna replay",
+      intro: "A saved local replay.",
+      closing: "The replay closes without a model call.",
+      totalSeconds: 60,
       steps: [{
         recordId: "fixture-record",
         startSec: 10,
         endSec: 70,
         why: "A local replay direction",
+        episodeTitle: "Fixture episode",
+        source: "Fixture source",
+        audioUrl: "https://example.com/fixture.mp3",
       }],
     },
     whispers: ["A local fixture whisper"],
-    form: { kind: "timeline" },
+    form: { form: "standard" },
     directions: { [key]: direction },
   };
 };
@@ -170,6 +195,22 @@ test("/magic admits one exact Luna medium role and runtime", () => {
     { ...validModelEvidence(), reasoning: { effort: "medium", applied: false } },
     /reasoning effort must be applied/,
   );
+
+  assert.deepEqual(
+    assertMagicReplyEvidence({ raw: { model: MAGIC_MODEL_RUNTIME.requestedSlug, provider: "OpenAI" } }, validModelEvidence()),
+    { rawModel: MAGIC_MODEL_RUNTIME.requestedSlug, provider: "OpenAI" },
+  );
+  for (const raw of [
+    { provider: "OpenAI" },
+    { model: MAGIC_MODEL_RUNTIME.requestedSlug },
+    { model: "openai/gpt-5.6-sol", provider: "OpenAI" },
+  ]) {
+    assert.throws(
+      () => assertMagicReplyEvidence({ raw }, validModelEvidence()),
+      (error: unknown) => error instanceof Error
+        && (error as Error & { code?: string }).code === "MAGIC_RUNTIME_REFUSED",
+    );
+  }
 });
 
 test("director cache identity binds the admitted model, schema, record, bounds, and why", () => {
@@ -196,6 +237,46 @@ test("director cache identity binds the admitted model, schema, record, bounds, 
     /permits only gpt-5\.6-luna-medium/,
     "an unapproved model cannot mint a lookalike cache identity",
   );
+});
+
+test("director jobs coalesce in flight, retain validated completions, and retire only owned entries", async () => {
+  const jobs = createSharedDirectorJobs({ maxCompleted: 2 });
+  let starts = 0;
+  let signal: AbortSignal | null = null;
+  let resolveWork: ((value: { value: number }) => void) | null = null;
+  const create = async (nextSignal: AbortSignal) => {
+    starts += 1;
+    signal = nextSignal;
+    return await new Promise<{ value: number }>((resolve) => { resolveWork = resolve; });
+  };
+
+  const first = jobs.acquire("same", create);
+  const second = jobs.acquire("same", () => { throw new Error("duplicate job started"); });
+  await Promise.resolve();
+  assert.equal(starts, 1);
+  assert.equal(first.cacheState, "miss");
+  assert.equal(second.cacheState, "inflight");
+  first.release();
+  assert.equal(signal?.aborted, false, "one remaining consumer keeps the paid job alive");
+  assert.ok(resolveWork);
+  resolveWork({ value: 7 });
+  assert.deepEqual(await first.promise, { value: 7 });
+  assert.deepEqual(await second.promise, { value: 7 });
+  second.release();
+
+  const replayed = jobs.acquire("same", () => { throw new Error("completed result was not cached"); });
+  assert.equal(replayed.cacheState, "completed");
+  assert.deepEqual(await replayed.promise, { value: 7 });
+  assert.equal(starts, 1);
+
+  const cache = new Map<string, object>();
+  const stale = {};
+  const fresh = {};
+  cache.set("same", fresh);
+  assert.equal(retireOwnedDirectorEntry(cache, "same", stale), false);
+  assert.equal(cache.get("same"), fresh, "a stale abort cannot delete the newer request");
+  assert.equal(retireOwnedDirectorEntry(cache, "same", fresh), true);
+  assert.equal(cache.has("same"), false);
 });
 
 test("final normalization reapplies combined caps, half-open ownership, silence, and finite clip bounds", () => {
@@ -389,6 +470,39 @@ test("final invariants survive scene allocation, duplicate boundaries, and post-
     }],
   }], 30);
   assert.deepEqual(wordTruth.scenes[0].groups[0].wordTimes.map((entry: { word: string }) => entry.word), ["verified"]);
+
+  const crossBoundary = normalizeDirectorScenes([
+    {
+      at: 0,
+      timingSource: "cue",
+      verses: [],
+      terms: [{ id: "left", term: "left", gloss: "left", at: 29.9, timingSource: "house" }],
+    },
+    {
+      at: 30,
+      timingSource: "cue",
+      verses: [],
+      terms: [{ id: "right", term: "right", gloss: "right", at: 30, timingSource: "house" }],
+    },
+  ], 60);
+  const crossTimes = crossBoundary.scenes.flatMap((scene: { terms: Array<{ at: number }> }) => scene.terms.map((term) => term.at));
+  if (crossTimes.length === 2) {
+    assert.ok(Math.abs(crossTimes[0] - crossTimes[1]) >= DIRECTOR_LIMITS.fieldMinGapSec);
+  } else {
+    assert.equal(crossTimes.length, 1, "an impossible cross-boundary house beat is dropped");
+  }
+
+  const crossAside = normalizeDirectorScenes([
+    { at: 0, timingSource: "cue", verses: [], groups: [{ id: "field", at: 29, timingSource: "cue" }] },
+    { at: 30, timingSource: "cue", verses: [], asides: [{ id: "aside", text: "a quiet movement", at: 31, timingSource: "cue" }] },
+  ], 60);
+  assert.equal(crossAside.scenes[1].asides.length, 0, "aside silence crosses scene boundaries");
+
+  const competingAsides = normalizeDirectorScenes([
+    { at: 0, timingSource: "cue", verses: [], asides: [{ id: "first", text: "first movement", at: 5, timingSource: "cue" }] },
+    { at: 20, timingSource: "cue", verses: [], asides: [{ id: "second", text: "second movement", at: 21, timingSource: "cue" }] },
+  ], 50);
+  assert.equal(competingAsides.scenes.flatMap((scene: { asides: unknown[] }) => scene.asides).length, 1);
 });
 
 test("director validation refuses malformed, over-cap, out-of-window, and per-call model drift", () => {
@@ -416,6 +530,46 @@ test("director validation refuses malformed, over-cap, out-of-window, and per-ca
   const negativeWall = validDirectorPayload();
   negativeWall.metrics.wallMs = -1;
   assert.equal(validateDirectorPayload(negativeWall).ok, false);
+
+  for (const field of ["finishReason", "rawModel", "provider"] as const) {
+    const missing = validDirectorPayload();
+    delete (missing.metrics.calls[0] as Record<string, unknown>)[field];
+    assert.equal(validateDirectorPayload(missing).ok, false, `missing ${field} must be refused`);
+  }
+
+  const badTokens = validDirectorPayload();
+  badTokens.metrics.tokens.prompt += 1;
+  assert.ok(validateDirectorPayload(badTokens).errors.some((error: string) => /metrics\.tokens/.test(error)));
+
+  const badCount = validDirectorPayload();
+  badCount.metrics.normalization.artifactCount = 999;
+  assert.ok(validateDirectorPayload(badCount).errors.some((error: string) => /normalization/.test(error)));
+
+  const malformedGroup = validDirectorPayload();
+  malformedGroup.scenes = [{
+    at: 0, timingSource: "cue", verses: [],
+    groups: [{ words: null, occurrences: [], at: 5, timingSource: "cue" }],
+    footnotes: [], terms: [], allusions: [], asides: [],
+    compare: null, chain: null, caveat: null, highlight: null,
+  }];
+  malformedGroup.metrics.normalization.sceneCount = 1;
+  malformedGroup.metrics.normalization.artifactCount = 1;
+  assert.ok(validateDirectorPayload(malformedGroup).errors.some((error: string) => /words must contain/.test(error)));
+
+  const malformedChain = structuredClone(malformedGroup);
+  malformedChain.scenes[0].groups = [];
+  malformedChain.scenes[0].chain = { at: 5, timingSource: "cue" };
+  assert.ok(validateDirectorPayload(malformedChain).errors.some((error: string) => /links must contain/.test(error)));
+
+  const wordOutside = structuredClone(malformedGroup);
+  wordOutside.scenes[0].groups = [{
+    words: ["faith", "hope"],
+    occurrences: [0, 0],
+    at: 5,
+    timingSource: "cue",
+    wordTimes: [{ word: "faith", occurrence: 0, at: 999, timingSource: "word" }],
+  }];
+  assert.ok(validateDirectorPayload(wordOutside).errors.some((error: string) => /wordTimes\[0\]\.at is outside/.test(error)));
 });
 
 test("director and replay validators refuse unsupported newer schemas", () => {
@@ -445,6 +599,7 @@ test("evidence is recursively redacted, append-only, and replay fixtures round-t
         bearer: "credential",
         accessToken: "credential",
         promptTokens: 42,
+        message: "request failed with Bearer abcdefghijklmnop",
       },
     }),
     {
@@ -454,6 +609,7 @@ test("evidence is recursively redacted, append-only, and replay fixtures round-t
         bearer: "[redacted]",
         accessToken: "[redacted]",
         promptTokens: 42,
+        message: "request failed with [redacted]",
       },
     },
   );
@@ -461,6 +617,7 @@ test("evidence is recursively redacted, append-only, and replay fixtures round-t
   const root = mkdtempSync(join(tmpdir(), "quire-magic-contract-"));
   const runsDir = join(root, "director-runs");
   const replayDir = join(root, "replays");
+  const roleDir = join(root, "role-runs");
   try {
     const record = {
       startedAt: "2026-08-02T12:34:56.789Z",
@@ -483,6 +640,20 @@ test("evidence is recursively redacted, append-only, and replay fixtures round-t
       "[redacted]",
     );
 
+    const roleMetrics = structuredClone(validDirectorPayload().metrics);
+    const roleRecord = {
+      role: "whispers",
+      startedAt: "2026-08-02T12:34:56.789Z",
+      request: { stepCount: 1 },
+      model: validModelEvidence(),
+      metrics: roleMetrics,
+      result: { whispers: ["Listen for the local fixture"] },
+    };
+    assert.equal(validateMagicRoleEvidence(roleRecord).ok, true);
+    writeMagicRoleEvidence(roleRecord, { dir: roleDir });
+    writeMagicRoleEvidence(roleRecord, { dir: roleDir });
+    assert.equal(listMagicRoleEvidence({ dir: roleDir }).length, 2);
+
     const fixture = { ...validReplayFixture(), secret: "must-not-land" };
     const fixtureFile = writeReplayFixture(fixture, { dir: replayDir });
     assert.equal(basename(fixtureFile), `${fixture.id}.json`);
@@ -503,6 +674,13 @@ test("evidence is recursively redacted, append-only, and replay fixtures round-t
       ),
       "a named replay fixture is append-only",
     );
+    const malformedForm = { ...validReplayFixture(), id: "bad-form", form: { form: "lexicon", terms: [{}] } };
+    assert.equal(validateReplayFixture(malformedForm).ok, false);
+    const unplayable = structuredClone(validReplayFixture());
+    delete unplayable.tour.steps[0].audioUrl;
+    assert.equal(validateReplayFixture(unplayable).ok, false);
+    const badWhisper = { ...validReplayFixture(), whispers: [42] };
+    assert.equal(validateReplayFixture(badWhisper).ok, false);
     assert.throws(
       () => writeReplayFixture({
         ...validReplayFixture(),
@@ -520,6 +698,12 @@ test("evidence is recursively redacted, append-only, and replay fixtures round-t
     const refused = readReplayFixture(newer.id, { dir: replayDir });
     assert.equal(refused.fixture, null);
     assert.ok(refused.errors.some((error: string) => /newer than supported/.test(error)));
+
+    const mismatch = { ...validReplayFixture(), id: "different-id" };
+    writeFileSync(join(replayDir, "mismatched-file.json"), `${JSON.stringify(mismatch)}\n`, { flag: "wx" });
+    const mismatchRead = readReplayFixture("mismatched-file", { dir: replayDir });
+    assert.equal(mismatchRead.fixture, null);
+    assert.ok(mismatchRead.errors.some((error: string) => /filename and fixture id/.test(error)));
   } finally {
     rmSync(root, { recursive: true, force: true });
   }

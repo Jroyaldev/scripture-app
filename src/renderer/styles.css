@@ -608,6 +608,40 @@
      atmospheres in the running engine and asserts the ink floor, so these
      numbers cannot drift away from the claim. */
   --ground-fit-l: 0.96;        /* @kind other */
+  /* ── THE TINT, AS A SYSTEM · 2026-08-02 ─────────────────────────────────
+     The card ground was `clamp(.011, c, .022)` — the brand's OWN chroma,
+     bounded. That is faithful and it is not a family: a saturated publisher
+     landed at .022 and a quiet one at .011, so the twelve cards differed in
+     COLOURFULNESS as well as in hue and a column of them read as unevenly
+     dyed.
+
+     Committing to the tint means the opposite rule. Chroma is the SYSTEM's,
+     hue is the publisher's: every card is tinted to the same degree and only
+     its hue says whose it is.
+
+     WHY .018 AND NOT MORE — it is the gamut, not taste. Measured across the
+     nine publishers that have a hue, the most chroma sRGB holds at L .96 is
+     .020, bound by The Listener's blue at hue 253; blue runs out of room first
+     at high lightness. The old ceiling of .022 was already past it for that
+     hue. So .018 is the largest uniform tint this family can actually wear.
+
+     AND THE COLOUR THE GROUND CANNOT HOLD GOES TO THE EDGE. At L .86 the same
+     family holds .070 — near four times as much — so the hairline carries the
+     hue at a strength the field never could, and the card reads as definitely
+     coloured without spending a point of text contrast. Light-mode meta lands
+     at 5.02–5.10 across all nine, where the old rule spread it 5.0 to 6.1. */
+  --tint-c: 0.018;             /* @kind other */
+  /* THE GAIN, AND WHY IT HAS A POLARITY. The cap alone is enough on a light
+     ground: .018 is at or under every brand's own chroma, so all nine that
+     have a hue meet it exactly and only the genuinely near-neutral three fall
+     short. On a DARK ground the family value is .046 — the gamut is far more
+     generous there — and two real brands sit under it, The Listener's at .019
+     and 5 Minutes at .029, so a bare cap left them visibly paler than the rest
+     of the set. The gain carries them up without lifting a brand that has no
+     colour at all, because anything times zero is still zero. */
+  --tint-gain: 1;              /* @kind other */
+  --tint-edge-l: 0.86;         /* @kind other */
+  --tint-edge-c: 0.070;        /* @kind other */
   --ground-fit-c-min: 0.011;   /* @kind other */
   --ground-fit-c-max: 0.022;   /* @kind other */
   --ground-fit-step: -0.055;   /* @kind other */
@@ -938,6 +972,15 @@
      Measured here, and it is the looser of the two: the app's secondary ink
      holds 5.88:1 over the worst of the eleven dark grounds. */
   --ground-fit-l: 0.262;
+  /* The dark polarity of the tint. A dark ground has far more room than a
+     light one — at L .262 this family holds .048 where at L .96 it holds .020
+     — and the old shared ceiling of .022 was spending less than half of it.
+     The dark cards were paler than they needed to be for no reason but a
+     number borrowed from the light side. Bound by Ask N.T. Wright at hue 219. */
+  --tint-c: 0.046;
+  --tint-gain: 2.5;
+  --tint-edge-l: 0.44;
+  --tint-edge-c: 0.070;
   --ground-fit-step: 0.055;
   /* The dark polarity of the INK fit — see the :root note for the arithmetic.
      Only the two numbers that have a polarity turn over; the chroma ceiling is
@@ -20975,15 +21018,34 @@ button.lang-phrase-diagram-node:focus-visible,
    voice — see the note beside that declaration — and the ground has already
    been computed by then. Two scopes, and the division is the point. */
 .resource-card[data-source] {
+  /* CAPPED, NOT FLOORED AND NOT MULTIPLIED. The floor is the rule that turns a
+     black-and-white brand pink — an undefined hue resolves to 0°, which is red
+     — and a multiplier turns out to be just as wrong at the other end: at ×3
+     the Naked Bible's charcoal, whose chroma is .009, was driven to the
+     family's full .018 and drew a card as blue as BibleProject's. Their brand
+     is a grey. Seen on the audit sheet, not reasoned about.
+
+     A bare cap is the honest rule and the simpler one. A publisher with real
+     colour meets the family value, so every one of them looks equally tinted;
+     a publisher whose surface is nearly neutral keeps a nearly neutral card,
+     in proportion to how little colour they actually have. Two of the twelve
+     sit under the cap and both of them should. */
   --resource-ground: oklch(from var(--resource-source)
     var(--ground-fit-l)
-    clamp(var(--ground-fit-c-min), c, var(--ground-fit-c-max))
+    min(calc(c * var(--tint-gain)), var(--tint-c))
     h);
   /* The card's own edge, in its own hue. A warm grey hairline around a cyan
      card is the app's border token showing through the homage; one step off
      the ground in the atmosphere's own direction is the card's own edge. */
-  --resource-ground-edge: oklch(from var(--resource-ground)
-    calc(l + var(--ground-fit-step)) c h);
+  /* THE EDGE CARRIES THE HUE. It was one lightness step off the ground — a
+     hairline the same colour as the thing it bounds, which is a shadow rather
+     than an edge. It is the brand's hue at four times the ground's chroma now,
+     which the gamut allows because it sits far from white. Multiplied and
+     capped, never floored: BEMA has no hue and keeps none. */
+  --resource-ground-edge: oklch(from var(--resource-source)
+    var(--tint-edge-l)
+    min(calc(c * 4), var(--tint-edge-c))
+    h);
   /* Hover is the same step at 42%, so the pointer moves the card toward its
      own edge rather than toward the app's grey. */
   --resource-ground-lift: oklch(from var(--resource-ground)
@@ -21214,7 +21276,7 @@ button.lang-phrase-diagram-node:focus-visible,
 .resource-card[data-face="cover"] {
   --resource-ground: oklch(from var(--record-tint)
     var(--ground-fit-l)
-    min(calc(c * 1.6), var(--ground-fit-c-max))
+    min(calc(c * 1.6), var(--tint-c))
     h);
 }
 

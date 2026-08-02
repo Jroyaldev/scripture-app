@@ -9,11 +9,13 @@ import {
   redactEvidence,
   stableTextHash,
   validateDirectorPayload,
+  validateMagicRoleEvidence,
   validateReplayFixture,
 } from './magic-contract.mjs';
 
 const LAB_DIR = path.dirname(fileURLToPath(import.meta.url));
 export const DIRECTOR_RUNS_DIR = path.join(LAB_DIR, 'director-runs');
+export const ROLE_RUNS_DIR = path.join(LAB_DIR, 'role-runs');
 export const REPLAYS_DIR = path.join(LAB_DIR, 'replays');
 
 const safeId = (value) => String(value || '').replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '');
@@ -35,8 +37,16 @@ function safeJsonFile(dir, name) {
 
 export function writeDirectorEvidence(record, { dir = DIRECTOR_RUNS_DIR } = {}) {
   const payload = redactEvidence({ ...record, schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION });
-  const check = validateDirectorPayload(payload.result);
-  if (!check.ok) throw new Error(`refusing invalid director evidence: ${check.errors.join('; ')}`);
+  if (payload.status === 'refused') {
+    if (typeof payload.requestKey !== 'string' || !payload.requestKey
+      || !Array.isArray(payload.calls) || !payload.calls.length
+      || typeof payload.error?.message !== 'string') {
+      throw new Error('refusing incomplete director refusal evidence');
+    }
+  } else {
+    const check = validateDirectorPayload(payload.result);
+    if (!check.ok) throw new Error(`refusing invalid director evidence: ${check.errors.join('; ')}`);
+  }
   fs.mkdirSync(dir, { recursive: true });
   const stamp = new Date(payload.startedAt || Date.now()).toISOString().replace(/[:.]/g, '-');
   const stem = `${stamp}-${stableTextHash(payload.requestKey || JSON.stringify(payload.request || {}))}`;
@@ -83,11 +93,58 @@ export function listDirectorEvidence({ dir = DIRECTOR_RUNS_DIR, limit = 80 } = {
     .filter(Boolean);
 }
 
+export function writeMagicRoleEvidence(record, { dir = ROLE_RUNS_DIR } = {}) {
+  const payload = redactEvidence({ ...record, schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION });
+  const check = validateMagicRoleEvidence(payload);
+  if (!check.ok) throw new Error(`refusing invalid role evidence: ${check.errors.join('; ')}`);
+  fs.mkdirSync(dir, { recursive: true });
+  const stamp = new Date(payload.startedAt || Date.now()).toISOString().replace(/[:.]/g, '-');
+  const stem = `${stamp}-${payload.role}-${stableTextHash(JSON.stringify(payload.request || {}))}`;
+  for (let attempt = 0; attempt < 100; attempt += 1) {
+    const suffix = attempt ? `-${attempt}` : '';
+    const file = path.join(dir, `${stem}${suffix}.json`);
+    try {
+      fs.writeFileSync(file, `${JSON.stringify(payload, null, 2)}\n`, { flag: 'wx' });
+      return file;
+    } catch (error) {
+      if (error?.code !== 'EEXIST') throw error;
+    }
+  }
+  throw new Error('could not allocate an append-only role evidence filename');
+}
+
+export function listMagicRoleEvidence({ dir = ROLE_RUNS_DIR, limit = 80 } = {}) {
+  if (!fs.existsSync(dir)) return [];
+  return fs.readdirSync(dir)
+    .filter((name) => name.endsWith('.json'))
+    .sort()
+    .reverse()
+    .slice(0, limit)
+    .map((name) => {
+      const file = safeJsonFile(dir, name);
+      if (!file) return null;
+      try {
+        const value = redactEvidence(JSON.parse(fs.readFileSync(file, 'utf8')));
+        return {
+          file: name,
+          startedAt: value.startedAt,
+          role: value.role,
+          model: value.model?.resolvedSlug,
+          wallMs: value.metrics?.wallMs,
+          totalUsd: value.metrics?.totalUsd,
+        };
+      } catch {
+        return null;
+      }
+    })
+    .filter(Boolean);
+}
+
 export function readDirectorEvidence(name, { dir = DIRECTOR_RUNS_DIR } = {}) {
   const file = safeJsonFile(dir, name);
   if (!file) return null;
   try {
-    return JSON.parse(fs.readFileSync(file, 'utf8'));
+    return redactEvidence(JSON.parse(fs.readFileSync(file, 'utf8')));
   } catch {
     return null;
   }
@@ -102,10 +159,11 @@ export function readReplayFixture(id, { dir = REPLAYS_DIR } = {}) {
   if (!file) return { fixture: null, errors: ['no such replay fixture'] };
   let fixture;
   try {
-    fixture = JSON.parse(fs.readFileSync(file, 'utf8'));
+    fixture = redactEvidence(JSON.parse(fs.readFileSync(file, 'utf8')));
   } catch {
     return { fixture: null, errors: ['replay fixture is not valid JSON'] };
   }
+  if (fixture?.id !== clean) return { fixture: null, errors: ['replay filename and fixture id do not match'] };
   const check = validateReplayFixture(fixture);
   return check.ok ? { fixture, errors: [] } : { fixture: null, errors: check.errors };
 }

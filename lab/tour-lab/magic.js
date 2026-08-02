@@ -19,12 +19,19 @@ import {
   validateDirectorPayload,
   validateReplayFixture,
 } from './magic-contract.mjs';
+import { retireOwnedDirectorEntry } from './magic-jobs.mjs';
 
 const $ = (s) => document.querySelector(s);
 const TH = () => $('#theater');
+const testParams = new URLSearchParams(window.location.search);
+const forcedTheme = testParams.get('theme');
+if (forcedTheme === 'light' || forcedTheme === 'dark') document.documentElement.dataset.theme = forcedTheme;
+const forcedMotion = testParams.get('motion');
+if (forcedMotion === 'reduce') document.documentElement.dataset.motion = 'reduce';
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
-const motionMs = (ms) => (reducedMotion.matches ? 0 : ms);
-const nextFrame = (fn) => reducedMotion.matches ? fn() : requestAnimationFrame(() => requestAnimationFrame(fn));
+const motionIsReduced = () => forcedMotion === 'reduce' || reducedMotion.matches;
+const motionMs = (ms) => (motionIsReduced() ? 0 : ms);
+const nextFrame = (fn) => motionIsReduced() ? fn() : requestAnimationFrame(() => requestAnimationFrame(fn));
 
 // ----------------------------------------------------------------- scenes
 
@@ -177,6 +184,13 @@ function runDelay(run, fn, ms) {
   return timer;
 }
 
+function returnToAsk(run, delay) {
+  runDelay(run, () => {
+    showScene('ask');
+    runDelay(run, () => $('#q').focus({ preventScroll: false }), motionMs(520));
+  }, delay);
+}
+
 async function begin(prompt) {
   const run = startRun({ mode: 'live' });
   showScene('making');
@@ -194,7 +208,7 @@ async function begin(prompt) {
   } catch (error) {
     if (error?.name === 'AbortError' || !runIsActive(run)) return;
     sayLine('I could not reach the listening room — try again in a moment.');
-    runDelay(run, () => showScene('ask'), 2600);
+    returnToAsk(run, 2600);
     return;
   }
 
@@ -241,7 +255,7 @@ async function begin(prompt) {
 
   if (!tour) {
     sayLine(sawTrouble ? 'that one is beyond me today — try asking another way.' : 'try asking another way.');
-    runDelay(run, () => showScene('ask'), 2600);
+    returnToAsk(run, 2600);
     return;
   }
 
@@ -305,7 +319,9 @@ function presentTour(tour, prompt, run, { replayFixture = null } = {}) {
   delete $('#tour').dataset.form;
   document.querySelector('.lexicon')?.remove();
   stageDirections = {};
-  $('#tour-title').textContent = tour.title;
+  const tourTitle = $('#tour-title');
+  tourTitle.textContent = tour.title;
+  tourTitle.tabIndex = -1;
   $('#tour-intro').textContent = tour.intro;
   $('#tour-closing').textContent = tour.closing;
   const mins = Math.round((tour.totalSeconds || 0) / 60);
@@ -353,6 +369,9 @@ function presentTour(tour, prompt, run, { replayFixture = null } = {}) {
   });
 
   showScene('tour');
+  runDelay(run, () => {
+    if (!current && $('#tour').classList.contains('on')) tourTitle.focus({ preventScroll: false });
+  }, motionMs(520));
   document.querySelectorAll('.step').forEach((el, i) => {
     runDelay(run, () => el.classList.add('in'), motionMs(350 + i * 240));
   });
@@ -425,7 +444,7 @@ function applyForm(plan) {
         const b = document.createElement('button');
         b.className = 'rendering';
         b.textContent = r.label;
-        b.addEventListener('click', () => items[r.steps[0]]?.scrollIntoView({ behavior: reducedMotion.matches ? 'auto' : 'smooth', block: 'center' }));
+        b.addEventListener('click', () => items[r.steps[0]]?.scrollIntoView({ behavior: motionIsReduced() ? 'auto' : 'smooth', block: 'center' }));
         row.appendChild(b);
         for (const idx of r.steps) {
           const li = items[idx];
@@ -543,7 +562,10 @@ function fetchDirector(step, index, run = activeRun) {
     })
     .catch((error) => {
       if (error?.name === 'AbortError') {
-        directorCache.delete(key);
+        // An older run can settle after a newer tour has already populated the
+        // same logical key. Only retire the entry this promise actually owns;
+        // otherwise the stale abort reopens the paid-call dedupe window.
+        retireOwnedDirectorEntry(directorCache, key, entry);
         throw error;
       }
       entry.status = 'resolved';
@@ -645,6 +667,59 @@ function playDelay(owner, fn, ms) {
   }, ms);
   owner.timers.add(timer);
   return timer;
+}
+
+function cancelPlayFrame(owner, ticket) {
+  if (!owner || !ticket) return;
+  if (ticket.outer != null) cancelAnimationFrame(ticket.outer);
+  if (ticket.inner != null) cancelAnimationFrame(ticket.inner);
+  owner.frameTickets.delete(ticket);
+  if (owner.hlFrame === ticket) owner.hlFrame = null;
+}
+
+function cancelAllPlayFrames(owner) {
+  if (!owner) return;
+  for (const ticket of [...owner.frameTickets]) cancelPlayFrame(owner, ticket);
+}
+
+/* Two-frame reveals are scoped to the exact playback, scene, and seek that
+   scheduled them. A stale spotlight can therefore never reappear after a
+   scene turn, seek reconstruction, or theater close. */
+function playNextFrame(owner, fn) {
+  if (!owner || current !== owner || owner.controller.signal.aborted) return null;
+  const scope = {
+    playToken: owner.playToken,
+    sceneGeneration: owner.sceneGeneration,
+    seekGeneration: owner.seekGeneration,
+  };
+  const valid = () => current === owner
+    && !owner.controller.signal.aborted
+    && owner.playToken === scope.playToken
+    && owner.sceneGeneration === scope.sceneGeneration
+    && owner.seekGeneration === scope.seekGeneration;
+  if (motionIsReduced()) {
+    if (valid()) fn();
+    return null;
+  }
+  const ticket = { outer: null, inner: null };
+  owner.frameTickets.add(ticket);
+  const finish = () => {
+    owner.frameTickets.delete(ticket);
+    if (owner.hlFrame === ticket) owner.hlFrame = null;
+    if (valid()) fn();
+  };
+  ticket.outer = requestAnimationFrame(() => {
+    ticket.outer = null;
+    if (!valid()) {
+      cancelPlayFrame(owner, ticket);
+      return;
+    }
+    ticket.inner = requestAnimationFrame(() => {
+      ticket.inner = null;
+      finish();
+    });
+  });
+  return ticket;
 }
 
 function activateScene(scene, idx, { force = false, immediate = false, onMounted = null } = {}) {
@@ -821,15 +896,18 @@ function renderEventNow(ev, { reconstruct = false, elapsedSince = 0 } = {}) {
       /* A spotlight that doesn't lower the room isn't one: the verse dims a
          step while the sentence holds, then the room comes back. */
       const bq = th.querySelector('.big-quote');
+      const owner = current;
+      cancelPlayFrame(owner, owner.hlFrame);
       bq.textContent = `“${ev.a.quote}”`;
       bq.classList.add('mounted');
       if (reconstruct) bq.classList.add('show');
-      else nextFrame(() => bq.classList.add('show'));
+      else owner.hlFrame = playNextFrame(owner, () => bq.classList.add('show'));
       th.querySelector('.th-body').classList.add('spot');
-      clearTimeout(current.hlTimer);
+      clearTimeout(owner.hlTimer);
+      owner.timers.delete(owner.hlTimer);
       const remainingMs = Math.max(0, 11000 - elapsedSince * 1000);
       if (remainingMs === 0) releaseHighlight({ immediate: true });
-      else current.hlTimer = playDelay(current, releaseHighlight, remainingMs);
+      else owner.hlTimer = playDelay(owner, releaseHighlight, remainingMs);
       break;
     }
   }
@@ -858,17 +936,19 @@ function lightBoxWords(segText) {
 function releaseHighlight({ immediate = false } = {}) {
   const th = TH();
   const bq = th.querySelector('.big-quote');
+  const owner = current;
+  cancelPlayFrame(owner, owner?.hlFrame);
   bq.classList.remove('show');
-  if (immediate || !current) {
+  if (immediate || !owner) {
     bq.classList.remove('mounted');
   } else {
-    playDelay(current, () => { if (!bq.classList.contains('show')) bq.classList.remove('mounted'); }, motionMs(950));
+    playDelay(owner, () => { if (!bq.classList.contains('show')) bq.classList.remove('mounted'); }, motionMs(950));
   }
   th.querySelector('.th-body').classList.remove('spot');
-  if (current) {
-    clearTimeout(current.hlTimer);
-    current.timers.delete(current.hlTimer);
-    current.hlTimer = null;
+  if (owner) {
+    clearTimeout(owner.hlTimer);
+    owner.timers.delete(owner.hlTimer);
+    owner.hlTimer = null;
   }
 }
 
@@ -939,13 +1019,52 @@ function wrapWord(root, word, occurrence = 0) {
   return null;
 }
 
+/* Geometry reads the laid-out text through a Range instead of wrapping it.
+   A short phrase can break across two lines, and getClientRects preserves
+   those fragments. Keeping this lookup read-only also means one group's
+   phrase never creates markup that prevents a later overlapping phrase
+   from being found. */
+function textRangeFor(root, phrase, occurrence = 0) {
+  if (!root || !phrase) return null;
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const nodes = [];
+  let text = '';
+  let node;
+  while ((node = walker.nextNode())) {
+    const parent = node.parentElement;
+    if (!parent || parent.closest('sup, .verses-ref, svg')) continue;
+    const start = text.length;
+    text += node.data;
+    nodes.push({ node, start, end: text.length });
+  }
+  const source = String(phrase).trim().split(/\s+/)
+    .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+    .join('\\s+');
+  if (!source) return null;
+  const re = new RegExp(`(?<![A-Za-z])${source}(?![A-Za-z])`, 'gi');
+  let match = null;
+  for (let i = 0; i <= occurrenceIndex(occurrence); i++) {
+    match = re.exec(text);
+    if (!match) return null;
+  }
+  const startOffset = match.index;
+  const endOffset = match.index + match[0].length;
+  const startNode = nodes.find((entry) => startOffset >= entry.start && startOffset < entry.end);
+  const endNode = nodes.find((entry) => endOffset > entry.start && endOffset <= entry.end);
+  if (!startNode || !endNode) return null;
+  const range = document.createRange();
+  range.setStart(startNode.node, startOffset - startNode.start);
+  range.setEnd(endNode.node, endOffset - endNode.start);
+  return range;
+}
+
 function drawMark(mark, { immediate = false } = {}) {
   const q = TH().querySelector('.verses');
   if (!q?.classList.contains('has')) return;
-  const spans = mark.words.map((w, index) =>
-    getOrWrap(q, w, mark.occurrences?.[index] ?? mark.wordTimes?.[index]?.occurrence ?? 0)
+  const targets = mark.words.map((word, index) =>
+    textRangeFor(q, word, mark.occurrences?.[index] ?? mark.wordTimes?.[index]?.occurrence ?? 0)
   ).filter(Boolean);
-  if (spans.length < 2) return;
+  if (targets.length < 2) return;
 
   const NS = 'http://www.w3.org/2000/svg';
   let svg = q.querySelector('svg.smarks');
@@ -958,10 +1077,15 @@ function drawMark(mark, { immediate = false } = {}) {
   for (const g of svg.querySelectorAll('g.markg')) g.classList.add('past');
 
   const qr = q.getBoundingClientRect();
-  const runs = spans.map((sp) => {
-    const r = sp.getBoundingClientRect();
-    return { x1: r.left - qr.left, x2: r.right - qr.left, y: r.bottom - qr.top + 1.5 };
-  }).sort((a, b) => a.y - b.y || a.x1 - b.x1);
+  const runs = targets.flatMap((target) => [...target.getClientRects()]
+    .filter((rect) => rect.width > 0 && rect.height > 0)
+    .map((rect) => ({
+      x1: rect.left - qr.left,
+      x2: rect.right - qr.left,
+      y: rect.bottom - qr.top + 1.5,
+    })))
+    .sort((a, b) => a.y - b.y || a.x1 - b.x1);
+  if (runs.length < 2) return;
   const first = runs[0];
   const last = runs[runs.length - 1];
 
@@ -1063,7 +1187,7 @@ function drawMark(mark, { immediate = false } = {}) {
   const len = path.getTotalLength();
   path.style.strokeDasharray = String(len);
   path.style.strokeDashoffset = String(len);
-  if (immediate || reducedMotion.matches) path.style.strokeDashoffset = '0';
+  if (immediate || motionIsReduced()) path.style.strokeDashoffset = '0';
   else requestAnimationFrame(() => { path.style.strokeDashoffset = '0'; });
 }
 
@@ -1189,6 +1313,8 @@ function startStepPlayback(li, step, index, direction) {
     run: activeRun,
     controller: new AbortController(),
     timers: new Set(),
+    frameTickets: new Set(),
+    hlFrame: null,
     segments: null,
     phrases: quotedPhrases(step.why),
     capKey: null,
@@ -1228,6 +1354,14 @@ function startStepPlayback(li, step, index, direction) {
   document.body.classList.add('in-theater');
   nextFrame(() => { if (current === owner) $('#th-stop').focus({ preventScroll: true }); });
 
+  player.onended = () => {
+    if (current === owner) stopAudio();
+  };
+  player.onerror = () => {
+    if (current !== owner) return;
+    honestNote(li, 'The audio stopped before this reading was finished.');
+    stopAudio();
+  };
   player.src = step.audioUrl;
   player.currentTime = step.startSec;
   player.volume = 0;
@@ -1515,11 +1649,14 @@ function stopAudio({ restoreFocus = true } = {}) {
   const { li, fadeRaf, hlTimer, returnFocus } = owner;
   cancelAnimationFrame(fadeRaf);
   clearTimeout(hlTimer);
+  cancelAllPlayFrames(owner);
   owner.controller.abort();
   for (const timer of owner.timers) clearTimeout(timer);
   owner.timers.clear();
   player.pause();
   player.ontimeupdate = null;
+  player.onended = null;
+  player.onerror = null;
   li.classList.remove('playing');
   releaseHighlight({ immediate: true });
   const th = TH();
@@ -1540,7 +1677,14 @@ function stopAudio({ restoreFocus = true } = {}) {
   $('#main').removeAttribute('aria-hidden');
   current = null;
   updateProgress(0);
-  if (restoreFocus && returnFocus?.isConnected) nextFrame(() => returnFocus.focus({ preventScroll: true }));
+  if (restoreFocus && returnFocus?.isConnected) {
+    const closingToken = owner.playToken;
+    nextFrame(() => {
+      if (!current && playCounter === closingToken && returnFocus.isConnected) {
+        returnFocus.focus({ preventScroll: true });
+      }
+    });
+  }
 }
 
 let layoutTimer = null;
@@ -1593,7 +1737,7 @@ async function loadReplay(id) {
   sayLine('opening a saved performance…');
   if (!/^[a-z0-9][a-z0-9-]{1,63}$/.test(id)) {
     sayLine('that saved performance name is not valid.');
-    runDelay(run, () => showScene('ask'), 1800);
+    returnToAsk(run, 1800);
     return;
   }
   try {
@@ -1609,7 +1753,7 @@ async function loadReplay(id) {
   } catch (error) {
     if (error?.name === 'AbortError' || !runIsActive(run)) return;
     sayLine('that saved performance could not be opened.');
-    runDelay(run, () => showScene('ask'), 2200);
+    returnToAsk(run, 2200);
   }
 }
 

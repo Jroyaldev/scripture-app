@@ -516,19 +516,47 @@ test("the card's ground is derived, not picked", () => {
      replaced by the atmosphere's own figure. A hand-picked hex per publisher
      per atmosphere is forty-four numbers nobody can check. */
   const styles = read("src/renderer/styles.css");
-  const ground = styles.slice(styles.indexOf(".resource-card[data-source] {"));
+  /* The RULE, not the rest of the file. Sliced open-ended this caught a
+     comment four hundred lines later that merely names the old floor token,
+     and reported the floor as still in force when it had been removed. */
+  const groundAt = styles.indexOf(".resource-card[data-source] {");
+  const ground = styles.slice(groundAt, styles.indexOf("\n}", groundAt));
   assert.match(ground, /var\(--ground-fit-l\)/, "the ground picks its own lightness");
-  assert.match(ground, /clamp\(var\(--ground-fit-c-min\), c, var\(--ground-fit-c-max\)\)/,
-    "the chroma is capped without a floor, or floored without a cap");
-  /* Hue is the publisher's, untouched — the whole of what makes it an homage
-     rather than a wash. */
-  assert.match(ground, /var\(--ground-fit-c-max\)\)\s*\n\s*h\);/,
+
+  /* ── RESTATED 2026-08-02, when the tint became a family ───────────────────
+     This asserted `clamp(--ground-fit-c-min, c, --ground-fit-c-max)` under the
+     label "capped without a floor, or floored without a cap" — and the
+     expression it was guarding had BOTH. The floor is the bug: an achromatic
+     brand has no hue, a floor invents chroma for it anyway, and an undefined
+     hue resolves to 0°, which is red. It is why the BEMA card was once pink.
+
+     And the cap-and-floor pair was wrong for the family besides. The brand's
+     own chroma, bounded at both ends, means a saturated publisher lands at the
+     ceiling and a quiet one at the floor — so the twelve cards differed in
+     COLOURFULNESS as well as hue, and a column of them read as unevenly dyed.
+
+     The rule now: chroma is the SYSTEM's value, capped, never floored, never
+     multiplied. Every publisher with real colour meets the same figure so the
+     family is even; a publisher whose surface is near neutral keeps a near
+     neutral card, in proportion. Hue stays the publisher's, untouched, which
+     is the whole of what makes it an homage rather than a wash. */
+  assert.match(ground, /min\(calc\(c \* var\(--tint-gain\)\), var\(--tint-c\)\)/,
+    "the ground's chroma is floored, or taken from the brand again");
+  assert.doesNotMatch(ground, /--ground-fit-c-min/,
+    "the chroma floor is back; that is how an achromatic brand gets painted red");
+  assert.match(ground, /var\(--tint-c\)\)\s*\n\s*h\);/,
     "the ground is moving the publisher's hue");
-  /* Both polarities declare the two numbers that have one. */
+  /* Both polarities declare every number that has one. Dark grounds hold far
+     more chroma than light ones — .046 against .018 — so the tint is one of
+     them and sharing a single figure would waste half the dark gamut. */
   assert.equal((styles.match(/--ground-fit-l:/g) ?? []).length, 2,
     "the ground fit has a light polarity and a dark one, and no more");
   assert.equal((styles.match(/--ground-fit-step:/g) ?? []).length, 2,
     "the edge step has a light polarity and a dark one, and no more");
+  for (const token of ["--tint-c", "--tint-gain", "--tint-edge-l", "--tint-edge-c"]) {
+    assert.equal((styles.match(new RegExp(`${token}:`, "g")) ?? []).length, 2,
+      `${token} must declare a light polarity and a dark one, and no more`);
+  }
   /* MEASURED, not adjusted by eye: the app's tertiary ink clears 4.5 against
      paper by a hair and does not clear it against a tinted card, so the card's
      quietest rank steps up one. qa-podcast-player sweeps the whole matrix in
