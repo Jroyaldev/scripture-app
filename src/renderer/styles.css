@@ -22643,8 +22643,24 @@ button.lang-phrase-diagram-node:focus-visible,
      softened by it: WE drew the horizontal reconstruction, Premier did not
      supply it, and the inventory says so. Premier's own colours survive the
      crop — the bubble is their teal and their white, on their blue plate. */
-  --resource-symbol: url("./assets/brand/ask-nt-wright-bubble-white.png");
-  --resource-symbol-ratio: 1.924;
+  /* ── THE BUBBLE, FROM THE COVER AND VECTORISED · 2026-08-02 ─────────────
+     What shipped was cut from their horizontal lockup: a TEAL bubble with
+     white type and the tail pointing DOWN. Their cover art — the artwork every
+     listener actually knows this show by — draws the same bubble the other way
+     up and the other way round: a WHITE bubble with teal type, tail pointing
+     UP. Both are theirs, so this was never a corrupted crop, and a fresh cut
+     from the lockup comes out pixel-identical to what we shipped. It was
+     simply the wrong one of their two treatments.
+
+     So the mark is now cut from the cover, and TRACED rather than left raster:
+     the extraction leaves a flood-filled edge, and this shape is a rounded
+     rectangle, a triangular tail and three letters — exactly what a curve fits
+     cleanly. Two separations traced apart, the silhouette and the letters, so
+     the type stays crisp instead of being the seam between two traced regions.
+     Both inks are measured off their own artwork: #FFFFFF and #2080A0.
+     Nothing redrawn. Recorded in docs/trusted-resource-brand-inventory. */
+  --resource-symbol: url("./assets/brand/ask-nt-wright-bubble.svg");
+  --resource-symbol-ratio: 1.404;
   /* Their published red, same file, same pass: #D8183C was a sample and
      #E51F3F is the value Premier's own artwork carries. White on it is
      4.57:1, so the pill keeps its ink. */
