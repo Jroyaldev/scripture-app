@@ -368,6 +368,21 @@ interface AppSettingsSchema {
   /** The speed the reader listens at. A module variable until now, which meant
    *  a reader who listens at 1.5× set it again on every single launch. */
   listeningRate: number;
+  /**
+   * THE SHOWS A READER READS FORWARDS, by publisher id.
+   *
+   * A series opens newest-first, which is what a podcast is: the thing you
+   * subscribe to and catch up on. BEMA is not that. It is a sequential
+   * curriculum through the whole Bible, six hundred sessions long, and opening
+   * it at the newest session is opening a textbook at its index — the reader
+   * has to reach the bottom of six hundred rows to find lesson one.
+   *
+   * Only DEVIATIONS are stored, and only as the word "oldest": newest-first is
+   * the default and stays unwritten. So this is a short list of the handful of
+   * shows a reader treats as a course rather than a feed, and a show that
+   * leaves the library leaves one dead key rather than a stale ordering.
+   */
+  listenSeriesOrder: Record<string, "oldest">;
   /** Raw until validated so a future-version object can remain byte-for-byte untouched. */
   studyWorkspace?: unknown;
   researchSession: {
@@ -716,6 +731,17 @@ function normalizeListeningRate(value: unknown): number {
   return typeof value === "number" && LISTENING_RATES.includes(value) ? value : 1;
 }
 
+/** Only "oldest" is storable; newest-first is the default and stays unwritten. */
+function normalizeListenSeriesOrder(value: unknown): AppSettingsSchema["listenSeriesOrder"] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const kept: Record<string, "oldest"> = {};
+  for (const [id, order] of Object.entries(value as Record<string, unknown>)) {
+    if (id.length === 0 || id.length > 256) continue;
+    if (order === "oldest") kept[id] = "oldest";
+  }
+  return kept;
+}
+
 function normalizeResearchSession(value: unknown): AppSettingsSchema["researchSession"] {
   if (!value || typeof value !== "object") return null;
   const candidate = value as Record<string, unknown>;
@@ -866,6 +892,7 @@ const store = new Store<AppSettingsSchema>({
     lastHeard: null,
     heardLedger: {},
     listeningRate: 1,
+    listenSeriesOrder: {},
     researchSession: null,
     researchWorkspace: null,
     keptContext: null,
@@ -3906,6 +3933,7 @@ function registerIpcHandlers(): void {
       lastHeard: normalizeLastHeard(settled.lastHeard),
       heardLedger: normalizeHeardLedger(settled.heardLedger),
       listeningRate: normalizeListeningRate(settled.listeningRate),
+      listenSeriesOrder: normalizeListenSeriesOrder(settled.listenSeriesOrder),
       researchSession: normalizeResearchSession(settled.researchSession),
       researchWorkspace: normalizeResearchWorkspace(settled.researchWorkspace),
       keptContext: normalizeKeptContext(settled.keptContext),
@@ -3928,6 +3956,7 @@ function registerIpcHandlers(): void {
        the failure this file is otherwise built to prevent. */
     const hasHeardLedger = Object.prototype.hasOwnProperty.call(partial, "heardLedger");
     const hasListeningRate = Object.prototype.hasOwnProperty.call(partial, "listeningRate");
+    const hasListenSeriesOrder = Object.prototype.hasOwnProperty.call(partial, "listenSeriesOrder");
     const hasResearchSession = Object.prototype.hasOwnProperty.call(partial, "researchSession");
     const hasResearchWorkspace = Object.prototype.hasOwnProperty.call(partial, "researchWorkspace");
     const hasKeptContext = Object.prototype.hasOwnProperty.call(partial, "keptContext");
@@ -3961,6 +3990,9 @@ function registerIpcHandlers(): void {
       ),
       listeningRate: normalizeListeningRate(
         hasListeningRate ? partial.listeningRate : store.store.listeningRate,
+      ),
+      listenSeriesOrder: normalizeListenSeriesOrder(
+        hasListenSeriesOrder ? partial.listenSeriesOrder : store.store.listenSeriesOrder,
       ),
       researchSession: normalizeResearchSession(
         hasResearchSession ? partial.researchSession : store.store.researchSession,

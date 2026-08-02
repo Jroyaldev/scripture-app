@@ -57,7 +57,17 @@
  * what you had not finished.
  */
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+
+import {
+  keepShelfScroll,
+  openListenRecord,
+  readListenRoom,
+  readSeriesOrder,
+  setListenQuery,
+  setSeriesOrder,
+  subscribeListenRoom,
+} from "../listen-view.js";
 
 import {
   playPodcastEpisode,
@@ -255,6 +265,102 @@ function Progress({ place }: { place?: PodcastPlace }): React.JSX.Element {
 }
 
 /**
+ * FIND ONE THING IN SIX HUNDRED, and choose which end to start from.
+ *
+ * A 676-episode show had exactly one way in: scroll. No filter, no way to run
+ * the years forwards, and the publisher's own numbering — "Session 41", the
+ * passage in the title — reachable only by eye. That is not a long list, it is
+ * an archive with the doors welded shut.
+ *
+ * WHY A FILTER AND NOT A SEARCH. It matches titles and says so by having no
+ * magnifier and no placeholder promising more. A search implies transcripts,
+ * descriptions, relevance; this narrows the rows on the page and reports how
+ * many are left. The narrow promise is the honest one, and titles are where a
+ * series keeps its real index anyway.
+ *
+ * The order button is a TOGGLE and not a menu, because there are two answers
+ * and a menu for two answers is a menu you open to find out it had two answers.
+ * Its label is the direction it is currently in rather than the one it would
+ * change to — a control that names its own effect reads as a state, and every
+ * reader has been burned by guessing which convention a sort button follows.
+ */
+function Sift({ count, forwards, noun, onOrder, query, total }: {
+  count: number; noun: string; query: string; total: number;
+  /* Absent on an album, and that is a statement rather than an omission: a
+     record's running order is the one its publisher sequenced, and offering to
+     reverse it would be offering to un-make the record. A series' order is a
+     calendar, which belongs to nobody. */
+  forwards?: boolean; onOrder?: () => void;
+}): React.JSX.Element {
+  const field = useRef<HTMLInputElement>(null);
+  /* "/" is the shortcut every list in every app has trained a reader to try,
+     and it costs nothing to honour — except while they are already typing
+     somewhere, which is the one case it must not steal. */
+  useEffect(() => {
+    const onKey = (event: KeyboardEvent): void => {
+      if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey) return;
+      const at = document.activeElement;
+      if (at instanceof HTMLInputElement || at instanceof HTMLTextAreaElement) return;
+      if (at instanceof HTMLElement && at.isContentEditable) return;
+      event.preventDefault();
+      field.current?.focus();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
+
+  return (
+    <div className="listen-sift">
+      <div className="listen-sift-field">
+        <input
+          aria-label={`Filter ${noun}s by title`}
+          className="listen-sift-input"
+          onChange={(event) => setListenQuery(event.target.value)}
+          onKeyDown={(event) => {
+            /* Escape empties the filter before it leaves the record — a reader
+               whose list is narrowed to nothing wants the list back, not the
+               shelf, and the room's Escape would have given them the shelf. */
+            if (event.key !== "Escape" || query.length === 0) return;
+            event.preventDefault();
+            event.stopPropagation();
+            setListenQuery("");
+          }}
+          placeholder="Filter by title"
+          ref={field}
+          type="search"
+          value={query}
+        />
+        {query.length > 0 && (
+          <button
+            aria-label="Clear the filter"
+            className="listen-sift-clear"
+            onClick={() => setListenQuery("")}
+            type="button"
+          >×</button>
+        )}
+      </div>
+      {/* The count is only worth saying when it is not the whole list; on an
+          unfiltered page it would be the number already in the hero. */}
+      {query.trim().length > 0 && (
+        <span className="listen-sift-count">
+          {count === 0 ? `No ${noun}s` : `${count} of ${total}`}
+        </span>
+      )}
+      {onOrder && (
+        <button
+          aria-label={`Sorted ${forwards ? "oldest first" : "newest first"}. Press to reverse.`}
+          className="listen-sift-order"
+          onClick={onOrder}
+          type="button"
+        >
+          {forwards ? "Oldest first" : "Newest first"}
+        </button>
+      )}
+    </div>
+  );
+}
+
+/**
  * The publisher's own words, all of them.
  *
  * THE DEFECT THIS REPLACES: a three-line clamp with no affordance, which cut
@@ -438,10 +544,16 @@ function usePassed(scroller: React.RefObject<HTMLDivElement | null>, open: strin
 }
 
 export function ListenPage(): React.JSX.Element {
-  const [openAlbum, setOpenAlbum] = useState<string | null>(null);
   const [resourceCatalogue, setResourceCatalogue] = useState<ResourceLibraryCatalogue | null>(null);
   const [audio, setAudio] = useState<Record<string, AudioCatalogueEpisode[]> | null>(null);
-  const [openSeries, setOpenSeries] = useState<string | null>(null);
+  /* WHERE THE READER WAS, held outside this component because the room unmounts
+     whenever they look at scripture — see listen-view for the whole argument.
+     With this in `useState`, glancing at the passage under discussion cost you
+     four hundred rows, both catalogue IPCs, and a skeleton flash. */
+  const room = useSyncExternalStore(subscribeListenRoom, readListenRoom);
+  const { openAlbum, openSeries, query } = room;
+  const setOpenAlbum = (name: string | null): void => openListenRecord({ album: name });
+  const setOpenSeries = (id: string | null): void => openListenRecord({ series: id });
   const now = usePodcastNowPlaying();
   /* Read straight from the player's own store rather than threaded down as a
      prop. A six-hundred-row series would otherwise pass one number through
@@ -500,10 +612,29 @@ export function ListenPage(): React.JSX.Element {
     return () => window.removeEventListener("keydown", onKey);
   }, [openAlbum, openSeries]);
 
-  /* Opening a record puts the reader at its top. Without this the second
-     album you open starts four hundred rows down, inside the scroll position
-     the first one left behind. */
-  useEffect(() => { scroller.current?.scrollTo({ top: 0 }); }, [openAlbum, openSeries]);
+  /* OPENING GOES TO THE TOP; GOING BACK GOES BACK.
+     This was one line that fired on both, so it solved half a problem and
+     caused the other half: opening the second album no longer started four
+     hundred rows down, and leaving any album dumped the reader at the top of a
+     shelf they had scrolled through to get there. The shelf's position is kept
+     as it is left and restored when it returns; a record still opens at its
+     own top, which is the only place a record makes sense to open. */
+  const opened = openAlbum ?? openSeries;
+  useEffect(() => {
+    const box = scroller.current;
+    if (!box) return;
+    if (opened) { box.scrollTo({ top: 0 }); return; }
+    /* After paint, or the shelf is still the record's height and the scroll is
+       clamped to a box that has not grown back yet. */
+    requestAnimationFrame(() => scroller.current?.scrollTo({ top: room.shelfScroll }));
+  }, [opened]);
+
+  /* Sampled as the reader scrolls rather than captured on the way out, because
+     by the time a press is handled the room is already re-rendering into a
+     record and the shelf's scrollTop is on its way to being meaningless. */
+  const rememberScroll = (): void => {
+    if (!opened) keepShelfScroll(scroller.current?.scrollTop ?? 0);
+  };
 
   /* An album's own groups, in the order its tracks arrive. EveryPsalm ships
      thirteen — the psalm genres their illustrator drew a cover for, plus the
@@ -521,6 +652,24 @@ export function ListenPage(): React.JSX.Element {
     }
     return order.map((key) => ({ name: key, cover: byGroup.get(key)![0]?.cover, tracks: byGroup.get(key)! }));
   }, [album]);
+
+  /* THE FILTER NARROWS THE ROWS AND LEAVES THE RECORD ALONE. Groups that lose
+     every track disappear rather than standing as empty headings — thirteen
+     group heads over one matching psalm is a page about its own structure.
+
+     The queue is still built from the WHOLE record below, not from this: a
+     reader who filters to "Psalm 40" and presses it wants the album to play on
+     afterwards, not to stop because their filter ran out. */
+  const shown = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    if (!needle) return groups;
+    return groups
+      .map((group) => ({
+        ...group,
+        tracks: group.tracks.filter((t) => t.title.toLowerCase().includes(needle)),
+      }))
+      .filter((group) => group.tracks.length > 0);
+  }, [groups, query]);
 
   /* Built from the AUDIO catalogue, so a publisher appears here when it has
      episodes rather than when it has cards — which is how BEMA and 30 Minutes
@@ -567,7 +716,7 @@ export function ListenPage(): React.JSX.Element {
   const resume = useMemo(() => {
     if (places.size === 0) return [];
     const found: Array<{
-      key: string; heardAt: number; place: PodcastPlace;
+      key: string; heardAt: number; place: PodcastPlace; spoken: boolean;
       title: string; where: string; art?: string; tint?: string;
       open: () => void; episode: PodcastEpisode;
     }> = [];
@@ -580,10 +729,16 @@ export function ListenPage(): React.JSX.Element {
         for (const entry of MUSIC.albums) {
           const track = entry.tracks.find((t) => trackId(entry, t) === recordId);
           if (!track) continue;
+          /* A SONG COMES BACK AS ITS RECORD. "Continue" means something
+             different for music: nobody returns to the middle of a hymn, they
+             return to the album they were working through. So the card wears
+             the record's name and the sleeve, with the track named underneath
+             as the place it will start — which is also why it carries no bar.
+             Pressing it resumes that track inside the album's own queue. */
           found.push({
-            key, heardAt: place.heardAt, place,
-            title: track.title, where: entry.name,
-            ...(track.cover ?? entry.cover ? { art: track.cover ?? entry.cover ?? undefined } : {}),
+            key, heardAt: place.heardAt, place, spoken: false,
+            title: entry.name, where: track.title,
+            ...(entry.cover ? { art: entry.cover } : {}),
             ...(entry.tint ? { tint: entry.tint } : {}),
             open: () => setOpenAlbum(entry.name),
             episode: asEpisode(entry, track),
@@ -597,7 +752,7 @@ export function ListenPage(): React.JSX.Element {
       if (!source || !ep) continue;
       const art = SERIES_ART[sourceId];
       found.push({
-        key, heardAt: place.heardAt, place,
+        key, heardAt: place.heardAt, place, spoken: true,
         title: ep.title, where: source.name,
         ...(art ? { art: art.cover, tint: art.tint } : {}),
         open: () => setOpenSeries(sourceId),
@@ -611,11 +766,35 @@ export function ListenPage(): React.JSX.Element {
     /* SEASONS, and they are the publisher's calendar rather than our
        invention: a podcast's own division of itself is the year it published
        in, which is the grouping every listening app falls back to when a show
-       declares no seasons of its own. Newest first, inside and out — a series
-       page nobody has read before opens on what is new. */
+       declares no seasons of its own.
+
+       WHICH WAY THE YEARS RUN is now the reader's, and stays theirs. Newest
+       first is what a podcast is — the thing you subscribe to and catch up on.
+       BEMA is not that: it is a sequential course through the whole Bible, and
+       opening it at its newest session is opening a textbook at the index. */
+    const forwards = readSeriesOrder(openedSeries.id) === "oldest";
+    /* The filter is TITLES, and a series' titles are where its real numbering
+       lives — BEMA's sessions, 30 Minutes' episode numbers, every passage a
+       show put in its own title. Matching them is why "Galatians" or "441"
+       finds something in six hundred rows without a search index. */
+    const needle = query.trim().toLowerCase();
+    /* THE ORDER ON SCREEN IS THE ORDER IT PLAYS, so the queue is built from the
+       reader's chosen direction — a queue built from the unsorted catalogue
+       would play something other than what they are looking at.
+
+       IT IS THE WHOLE RECORD AND NOT THE FILTERED ROWS. A reader who narrows
+       six hundred episodes to "Galatians" and presses one wants the show to
+       carry on afterwards, not to stop dead because their filter ran out. The
+       filter decides what is DRAWN; the record decides what plays. */
+    const ordered = [...openedSeries.episodes].sort((a, b) => {
+      const compared = (b.publishedAt ?? "").localeCompare(a.publishedAt ?? "");
+      return forwards ? -compared : compared;
+    });
+    const matching = needle
+      ? ordered.filter((ep) => ep.title.toLowerCase().includes(needle))
+      : ordered;
     const byYear = new Map<string, AudioCatalogueEpisode[]>();
-    for (const ep of [...openedSeries.episodes].sort((a, b) =>
-      (b.publishedAt ?? "").localeCompare(a.publishedAt ?? ""))) {
+    for (const ep of matching) {
       const when = ep.publishedAt ? new Date(ep.publishedAt).getFullYear() : null;
       const key = Number.isFinite(when) && when ? String(when) : "Undated";
       if (!byYear.has(key)) byYear.set(key, []);
@@ -623,10 +802,6 @@ export function ListenPage(): React.JSX.Element {
     }
     const art = SERIES_ART[openedSeries.id];
     const here = now.episode?.sourceId === openedSeries.id && sounding;
-    /* THE ORDER ON SCREEN IS THE ORDER IT PLAYS. The reader is looking at
-       newest-first grouped by year; a queue built from the unsorted catalogue
-       would play something else and be right about nothing. */
-    const ordered = [...byYear.values()].flat();
     const play = (from: number): void => {
       startPodcastQueue(
         openedSeries.name,
@@ -654,6 +829,14 @@ export function ListenPage(): React.JSX.Element {
             innerRef={mark}
             playing={here}
             tint={art?.tint}
+          />
+          <Sift
+            count={matching.length}
+            forwards={forwards}
+            noun="episode"
+            onOrder={() => setSeriesOrder(openedSeries.id, forwards ? "newest" : "oldest")}
+            query={query}
+            total={openedSeries.episodes.length}
           />
           {[...byYear.entries()].map(([when, eps]) => (
             <section className="listen-group" key={when}>
@@ -734,8 +917,20 @@ export function ListenPage(): React.JSX.Element {
             playing={here}
             tint={album.tint}
           />
+          {/* EveryPsalm is 222 rows — long enough to need a way in, and the one
+              record here where "Psalm 40" is a thing a reader arrives wanting.
+              No order control: see Sift for why a record's sequence is not
+              ours to reverse. */}
+          {album.tracks.length > 24 && (
+            <Sift
+              count={shown.reduce((n, group) => n + group.tracks.length, 0)}
+              noun="song"
+              query={query}
+              total={album.tracks.length}
+            />
+          )}
 
-          {groups.map((group) => (
+          {shown.map((group) => (
             <section className="listen-group" key={group.name || "all"}>
               {group.name && (
                 <div className="listen-group-head">
@@ -768,7 +963,16 @@ export function ListenPage(): React.JSX.Element {
                         <span className="listen-track-words">
                           <span className="listen-track-title">{track.title}</span>
                         </span>
-                        <Progress place={places.get(placeKey(MUSIC.source.id, trackId(album, track)))} />
+                        {/* NO PLACE MARK ON A SONG, deliberately. The bar and
+                            the tick answer "where was I in this?", which is a
+                            question about a forty-minute exposition and not
+                            about a three-minute psalm — nobody resumes a hymn
+                            halfway. A tick would also end up on all 222 rows of
+                            EveryPsalm eventually, which is noise wearing the
+                            costume of information. The row keeps its slot so
+                            the runtimes stay in one line with every other list
+                            in the room. */}
+                        <span className="listen-track-place" />
                         <span className="listen-track-extent">{track.duration}</span>
                       </button>
                     </li>
@@ -785,7 +989,7 @@ export function ListenPage(): React.JSX.Element {
   }
 
   return (
-    <div className="listen" ref={scroller}>
+    <div className="listen" onScroll={rememberScroll} ref={scroller}>
       <div className="listen-inner">
         <header className="listen-head">
           <h1 className="listen-title">Listen</h1>
@@ -800,7 +1004,7 @@ export function ListenPage(): React.JSX.Element {
             </div>
             <ul className="listen-resume-row">
               {resume.map((one) => (
-                <li className="listen-resume" key={one.key}>
+                <li className="listen-resume" data-kind={one.spoken ? "spoken" : "sung"} key={one.key}>
                   {/* TWO PRESSES, because there are two intentions and one of
                       them is destructive of the other. The face plays from the
                       place — the whole reason this shelf exists. The name under
@@ -824,7 +1028,7 @@ export function ListenPage(): React.JSX.Element {
                           ? <BarsGlyph />
                           : <PlayGlyph size={16} />}
                       </span>
-                      <Progress place={one.place} />
+                      {one.spoken && <Progress place={one.place} />}
                     </span>
                     <span className="listen-resume-title">{one.title}</span>
                   </button>

@@ -506,8 +506,16 @@ const memory = await evaluate(`(() => {
     named: cards.every((c) => (c.querySelector('.listen-resume-where')?.textContent || '').length > 0),
     bothPresses: cards.every((c) => !!c.querySelector('.listen-resume-face')
       && !!c.querySelector('.listen-resume-where')),
-    marked: cards.filter((c) => !!c.querySelector('.listen-track-progress')
-      || !!c.querySelector('.listen-track-done')).length,
+    /* A BAR IS A LONG-FORM IDEA. A forty-minute exposition has a "where was I";
+       a three-minute psalm does not, and nobody returns to the middle of a
+       hymn. So a spoken card carries its place and a sung one carries its
+       record's name instead — asserted both ways, because "no bar on music"
+       silently becoming "no bar anywhere" is the regression that would matter. */
+    spokenMarked: cards.filter((c) => c.dataset.kind === 'spoken'
+      && (!!c.querySelector('.listen-track-progress') || !!c.querySelector('.listen-track-done'))).length,
+    spoken: cards.filter((c) => c.dataset.kind === 'spoken').length,
+    sungBars: cards.filter((c) => c.dataset.kind === 'sung'
+      && !!c.querySelector('.listen-track-progress')).length,
   };
 })()`);
 gate(memory.shelf, "what was not finished is offered back", memory.heading);
@@ -517,8 +525,10 @@ gate(memory.titled && memory.named, "every card says what it is and where it is 
 /* Two presses, two intentions: the sleeve resumes, the name opens the record.
    Either one missing makes the other ambiguous. */
 gate(memory.bothPresses, "the sleeve resumes and the name opens the record");
-gate(memory.marked === memory.cards, "and each carries how far in it is",
-  `${memory.marked}/${memory.cards}`);
+gate(memory.spoken > 0 && memory.spokenMarked === memory.spoken,
+  "a spoken card carries how far in it is", `${memory.spokenMarked}/${memory.spoken}`);
+gate(memory.sungBars === 0,
+  "and a song is offered as its record rather than a position", `${memory.sungBars} bars`);
 await shot("continue-listening");
 
 /* And inside a record the tour listened INTO: the rows it heard carry marks,
@@ -560,6 +570,115 @@ gate(marks.heard > 0, "the rows that were heard say so", `${marks.heard}/${marks
 gate(marks.runtimesAligned, "and the runtime column ends in one line regardless",
   `edges ${marks.edges.join(", ")}`);
 await shot("record-progress-marks");
+
+/* ── A show six hundred long has a way in ──────────────────────────────────── */
+const sift = await evaluate(`(() => {
+  const before = [...document.querySelectorAll('.listen-track-title')].map((t) => t.textContent);
+  const input = document.querySelector('.listen-sift-input');
+  const order = document.querySelector('.listen-sift-order');
+  return {
+    hasFilter: !!input, hasOrder: !!order,
+    orderLabel: order?.textContent?.trim() ?? null,
+    rows: before.length,
+    firstBefore: before[0] ?? null,
+  };
+})()`);
+gate(sift.hasFilter && sift.hasOrder, "a long show gets a filter and a direction",
+  sift.orderLabel);
+
+/* React owns the value, so a raw `.value =` is discarded on the next render.
+   The native setter plus an input event is what actually reaches onChange. */
+const filtered = await evaluate(`(() => {
+  const input = document.querySelector('.listen-sift-input');
+  const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+  set.call(input, 'Galatians');
+  input.dispatchEvent(new Event('input', { bubbles: true }));
+  return new Promise((r) => setTimeout(() => {
+    const titles = [...document.querySelectorAll('.listen-track-title')].map((t) => t.textContent);
+    r({
+      rows: titles.length,
+      allMatch: titles.length > 0 && titles.every((t) => /galatians/i.test(t)),
+      count: document.querySelector('.listen-sift-count')?.textContent ?? null,
+      /* A year heading with nothing under it is a page about its own
+         structure rather than about its episodes. */
+      noEmptyHeads: [...document.querySelectorAll('.listen-group')]
+        .every((g) => g.querySelectorAll('.listen-track').length > 0),
+    });
+  }, 420));
+})()`);
+gate(filtered.rows > 0 && filtered.rows < sift.rows, "the filter narrows the show",
+  `${sift.rows} → ${filtered.rows}`);
+gate(filtered.allMatch, "to rows that actually match");
+gate(!!filtered.count, "and says how many are left", filtered.count);
+gate(filtered.noEmptyHeads, "leaving no empty year headings behind");
+await shot("series-filtered");
+
+/* Escape belongs to the filter first: a reader whose list is narrowed to
+   nothing wants the list back, not the shelf. */
+const escaped = await evaluate(`(() => {
+  const input = document.querySelector('.listen-sift-input');
+  input.focus();
+  input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  return new Promise((r) => setTimeout(() => r({
+    stillOnRecord: !!document.querySelector('.listen-sift-input'),
+    query: document.querySelector('.listen-sift-input')?.value ?? null,
+  }), 400));
+})()`);
+gate(escaped.stillOnRecord && escaped.query === "",
+  "Escape clears the filter before it leaves the record", JSON.stringify(escaped.query));
+
+const reversed = await evaluate(`(() => {
+  const first = () => document.querySelector('.listen-track-title')?.textContent ?? null;
+  const head = () => document.querySelector('.listen-group-name')?.textContent ?? null;
+  const was = { first: first(), head: head() };
+  document.querySelector('.listen-sift-order').click();
+  return new Promise((r) => setTimeout(() => r({
+    was,
+    now: { first: first(), head: head() },
+    label: document.querySelector('.listen-sift-order')?.textContent?.trim() ?? null,
+  }), 500));
+})()`);
+gate(reversed.now.head !== reversed.was.head && reversed.now.first !== reversed.was.first,
+  "and a curriculum can be read forwards",
+  `${reversed.was.head} → ${reversed.now.head}`);
+/* Asserted as a FLIP rather than against a fixed word, because the choice
+   persists: a second run of this tour starts from wherever the first one left
+   the show, and a gate expecting "Oldest first" would fail on the very
+   behaviour it is here to prove. */
+gate(reversed.label !== sift.orderLabel && /^(Newest|Oldest) first$/.test(reversed.label ?? ""),
+  "and the control names the state it is now in",
+  `${sift.orderLabel} → ${reversed.label}`);
+await shot("series-oldest-first");
+
+/* ── Going back is going back ─────────────────────────────────────────────── */
+const kept = await evaluate(`(() => {
+  const room = document.querySelector('.listen');
+  document.querySelector('.listen-back').click();
+  return new Promise((r) => setTimeout(() => {
+    const shelf = document.querySelector('.listen');
+    shelf.scrollTo({ top: 620 });
+    setTimeout(() => {
+      const left = shelf.scrollTop;
+      const face = [...document.querySelectorAll('.listen-card-face')]
+        .find((f) => /^Hymns II$/.test(f.querySelector('.listen-card-name')?.textContent || ''));
+      face?.click();
+      setTimeout(() => {
+        const atRecordTop = document.querySelector('.listen').scrollTop;
+        document.querySelector('.listen-back').click();
+        setTimeout(() => r({
+          left,
+          atRecordTop,
+          back: document.querySelector('.listen').scrollTop,
+        }), 700);
+      }, 600);
+    }, 500);
+  }, 600));
+})()`);
+gate(kept.atRecordTop === 0, "a record still opens at its own top", String(kept.atRecordTop));
+/* This was one effect firing on open AND close: it fixed opening and broke
+   returning, dumping the reader at the top of a shelf they had scrolled. */
+gate(Math.abs(kept.back - kept.left) < 40,
+  "and the shelf comes back where it was left", `left ${kept.left} → back ${kept.back}`);
 
 console.log(`\n${failures.length === 0 ? "PASS" : `FAIL (${failures.length})`} — captures in ${OUT_DIR}/`);
 process.exit(failures.length === 0 ? 0 : 1);

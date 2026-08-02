@@ -372,6 +372,8 @@ export interface AppSettings {
   }>;
   /** The speed the reader listens at, kept across launches. */
   listeningRate: number;
+  /** The shows a reader reads forwards. Only deviations from newest-first. */
+  listenSeriesOrder: Record<string, "oldest">;
   /** Revisioned desktop workspace. Legacy settings remain Electron-only migration inputs. */
   studyWorkspace?: StudyWorkspaceStateV2 | null;
   studyWorkspaceRefusal?: "newer-version";

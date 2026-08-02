@@ -24760,6 +24760,99 @@ button.lang-phrase-diagram-node:focus-visible,
   font-variant-numeric: tabular-nums;
 }
 
+/* ── Finding one thing in six hundred ────────────────────────────────────────
+   Quiet, and sitting between the hero and the first year heading where the
+   reader's eye already is on the way down. Deliberately not a toolbar: no
+   fill, no rule under it, nothing that would make a record's page look like an
+   application window. */
+.listen-sift {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0 18px;
+}
+
+.listen-sift-field { position: relative; display: flex; align-items: center; }
+
+.listen-sift-input {
+  width: clamp(150px, 22vw, 232px);
+  padding: 7px 26px 7px 11px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: var(--surface-sunken);
+  color: var(--text-primary);
+  font: 0.8125rem/1.4 var(--font-ui);
+}
+
+/* The engine's own clear affordance is a second, differently shaped control
+   sitting beside ours. One of them has to go, and it is not going to be the
+   one whose focus ring matches the rest of the app. */
+.listen-sift-input::-webkit-search-cancel-button { display: none; }
+
+.listen-sift-input::placeholder { color: var(--text-tertiary); }
+
+.listen-sift-input:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  border-color: transparent;
+}
+
+.listen-sift-clear {
+  position: absolute;
+  right: 4px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-tertiary);
+  font: 0.9375rem/1 var(--font-ui);
+  cursor: pointer;
+}
+
+.listen-sift-clear:hover { color: var(--text-primary); }
+
+.listen-sift-count {
+  color: var(--text-tertiary);
+  font: 0.75rem/1.4 var(--font-ui);
+  font-variant-numeric: tabular-nums;
+}
+
+/* At the far end, because it is the one control here that reorders the whole
+   page rather than narrowing it. */
+.listen-sift-order {
+  margin-left: auto;
+  padding: 7px 12px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-sm);
+  background: none;
+  color: var(--text-secondary);
+  font: 0.75rem/1.4 var(--font-ui);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.listen-sift-order:hover { border-color: var(--border-strong); color: var(--text-primary); }
+
+.listen-sift-order:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* SIX HUNDRED ROWS THAT ONLY PAINT WHEN LOOKED AT. `content-visibility` lets
+   the engine skip layout and paint for rows outside the viewport while keeping
+   them in the DOM — so find-in-page, tab order and the queue's own indexing all
+   still see the whole series, which is what makes this preferable to
+   virtualising the list. The intrinsic size is a row's real height, so the
+   scrollbar does not lie about how long the show is. */
+.listen-track {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 46px;
+}
+
 /* ── How far in the reader already is ─────────────────────────────────────────
    Two marks and no third. A tick for done, a bar for part-way, nothing at all
    for a row never started — because six hundred rows each wearing an empty
