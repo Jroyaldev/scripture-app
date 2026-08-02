@@ -286,14 +286,26 @@ class Transcriber:
         # the mp3's own sample rate and channel count stop mattering — this
         # catalogue carries both 128kbps stereo and 96kbps 32kHz mono.
         wav = pathlib.Path("/tmp") / f"{key}.wav"
-        os.system(
+        rc = os.system(
             f'ffmpeg -nostdin -loglevel error -y -i "{source}" '
             f'-ac 1 -ar 16000 -f wav "{wav}"'
         )
-        if not wav.exists():
+        if rc != 0 or not wav.exists():
             return {"id": episode["id"], "status": "decode-failed"}
 
         duration = episode.get("durationSeconds") or _probe_seconds(wav)
+        # A truncated decode used to sail through here silently — 66 episodes
+        # shipped at 52–90% coverage before anything compared the wav to the
+        # runtime it claims. If the decoded audio is short of the stated
+        # duration, that is a failure to report, not a shorter episode.
+        decoded = _probe_seconds(wav)
+        if decoded and duration and decoded < duration * 0.97:
+            free = shutil.disk_usage("/tmp").free // (1024 * 1024)
+            wav.unlink(missing_ok=True)
+            return {
+                "id": episode["id"], "status": "decode-truncated",
+                "decoded": round(decoded), "stated": round(duration), "tmpFreeMB": free,
+            }
         chunks = _cut(wav, key, duration)
         if not chunks:
             return {"id": episode["id"], "status": "chunk-failed"}
@@ -322,6 +334,15 @@ class Transcriber:
         outputs: list = []
         lost = 0
         for c in chunks:
+            os.system(
+                f'ffmpeg -nostdin -loglevel error -y -ss {c["start"]:.3f} '
+                f'-t {CHUNK_SECONDS} -i "{c["wav"]}" -ac 1 -ar 16000 -f wav "{c["path"]}"'
+            )
+            if not (c["path"].exists() and c["path"].stat().st_size > 0):
+                print(f"  window cut failed ({episode['id']} @ {c['start']:.0f}s)")
+                outputs.append(None)
+                lost += 1
+                continue
             try:
                 with self.torch.inference_mode():
                     outputs.extend(
@@ -332,11 +353,14 @@ class Transcriber:
                 outputs.append(None)
                 lost += 1
                 self.torch.cuda.empty_cache()
+            finally:
+                c["path"].unlink(missing_ok=True)
 
         result = _shape(episode, _merge(chunks, outputs))
 
-        for c in chunks:
-            c["path"].unlink(missing_ok=True)
+        # The windows clean themselves up as the loop runs now; the source wav
+        # is what must not outlive the episode in a reused container.
+        wav.unlink(missing_ok=True)
         # Between episodes, not merely at the end of the container's life.
         gc.collect()
         self.torch.cuda.empty_cache()
@@ -393,16 +417,20 @@ def _cut(wav: pathlib.Path, key: str, duration: float) -> list[dict]:
         starts.append(t)
         t += CHUNK_SECONDS - OVERLAP_SECONDS
 
+    # LAZY, since the truncation hunt of 2026-08-01: every window used to be
+    # written before the first was transcribed, so a 97-minute episode held
+    # the full wav plus ~60 window files in /tmp at once. The cutter now
+    # returns a recipe; the window file is written when the loop reaches it
+    # and deleted as soon as the model has heard it, so at most one window
+    # shares /tmp with the source wav. The source wav is kept until the loop
+    # finishes — it is what the windows are cut from.
     chunks = []
     for index, start in enumerate(starts):
-        path = pathlib.Path("/tmp") / f"{key}.{index:03d}.wav"
-        os.system(
-            f'ffmpeg -nostdin -loglevel error -y -ss {start:.3f} '
-            f'-t {CHUNK_SECONDS} -i "{wav}" -ac 1 -ar 16000 -f wav "{path}"'
-        )
-        if path.exists() and path.stat().st_size > 0:
-            chunks.append({"index": index, "start": start, "path": path})
-    wav.unlink(missing_ok=True)
+        chunks.append({
+            "index": index, "start": start,
+            "path": pathlib.Path("/tmp") / f"{key}.{index:03d}.wav",
+            "wav": wav,
+        })
     return chunks
 
 
