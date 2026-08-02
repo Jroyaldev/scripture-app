@@ -81,6 +81,14 @@ async function preflightMagicRole(role) {
   return { client, runtime };
 }
 
+function assertMagicReplyRuntime(reply, runtime) {
+  const rawModel = reply?.raw?.model;
+  if (!rawModel || rawModel === runtime.resolvedSlug) return;
+  const error = new Error(`\/magic resolved ${runtime.resolvedSlug}, but provider returned ${rawModel}`);
+  error.code = 'MAGIC_RUNTIME_REFUSED';
+  throw error;
+}
+
 function acquireDirectorJob(requestKey, req, res, create) {
   let job = DIRECTOR_INFLIGHT.get(requestKey);
   if (job?.controller.signal.aborted) {
@@ -290,6 +298,7 @@ const server = http.createServer(async (req, res) => {
         .map((k) => String(k || '').trim())
         .filter(Boolean);
       if (!prompt) return sendJson(res, 400, { error: 'prompt is required' });
+      const abortScope = requestAbortScope(req, res);
 
       const isMagic = body.surface === 'magic';
       let modelKeys;
@@ -299,14 +308,20 @@ const server = http.createServer(async (req, res) => {
           await preflightMagicRole('search');
         } catch (error) {
           const status = error?.code === 'MAGIC_MODEL_REFUSED' ? 400 : 503;
+          abortScope.release();
           return sendJson(res, status, { error: error?.message || String(error), code: error?.code || 'MAGIC_PREFLIGHT' });
         }
       } else {
         modelKeys = [...new Set(requestedKeys)];
       }
-      if (!modelKeys.length) return sendJson(res, 400, { error: 'at least one model is required' });
-
-      const abortScope = requestAbortScope(req, res);
+      if (!modelKeys.length) {
+        abortScope.release();
+        return sendJson(res, 400, { error: 'at least one model is required' });
+      }
+      if (abortScope.signal.aborted || res.destroyed) {
+        abortScope.release();
+        return;
+      }
 
       res.writeHead(200, {
         'content-type': 'text/event-stream; charset=utf-8',
@@ -393,6 +408,7 @@ const server = http.createServer(async (req, res) => {
             content: `For each clip below, write ONE whisper: the single quiet line a knowledgeable friend leans over and says just as the clip begins. At most 12 words. Start with "Listen for", "Notice", or "Wait for". Point at something concrete the speaker actually says or does (draw it from the reason given). Plain words, no hype, no exclamation marks, never mention AI, tours, or clips.\n\n${steps.map((s, i) => `${i + 1}. [${s.source}] ${s.episodeTitle}\nreason: ${String(s.why || '').slice(0, 500)}`).join('\n\n')}\n\nAnswer with ONLY this JSON: {"whispers": ["...", ...]} — exactly ${steps.length} strings, in order.`,
           }],
         });
+        assertMagicReplyRuntime(reply, runtime);
         const m = String(reply.message.content || '').match(/\{[\s\S]*\}/);
         const parsed = m ? JSON.parse(m[0]) : null;
         const whispers = Array.isArray(parsed?.whispers)
@@ -447,6 +463,7 @@ Answer ONLY with JSON:
 Include only the keys the chosen form needs; stage directions are optional and most steps need none.`,
           }],
         });
+        assertMagicReplyRuntime(reply, runtime);
         const m = String(reply.message.content || '').match(/\{[\s\S]*\}/);
         const plan = validateFormPlan(m ? JSON.parse(m[0]) : null, steps.length);
         plan.usd = reply.usage?.providerCostUsd ?? null;
@@ -706,8 +723,8 @@ Include only the keys the chosen form needs; stage directions are optional and m
         signal.throwIfAborted();
         const calls = [];
 
-        const finish = (rawScenes, note = null) => {
-          signal.throwIfAborted();
+        const finish = (rawScenes, note = null, { allowAborted = false } = {}) => {
+          if (!allowAborted) signal.throwIfAborted();
           for (const scene of rawScenes) delete scene.verseNorm;
           const normalized = normalizeDirectorScenes(rawScenes, dur);
           const costs = calls.filter((call) => call.providerCostUsd != null).map((call) => call.providerCostUsd);
@@ -715,13 +732,16 @@ Include only the keys the chosen form needs; stage directions are optional and m
           const payload = {
             schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
             requestKey,
+            clip: { fromSec: from, toSec: to, durationSec: dur },
             scenes: normalized.scenes,
             model: { ...runtime, provider },
             metrics: {
               wallMs: Date.now() - wallStarted,
               passes: calls.length,
               calls,
-              totalUsd: costs.length ? costs.reduce((sum, cost) => sum + cost, 0) : null,
+              totalUsd: calls.length && costs.length === calls.length
+                ? costs.reduce((sum, cost) => sum + cost, 0)
+                : null,
               tokens: {
                 prompt: calls.reduce((sum, call) => sum + call.promptTokens, 0),
                 completion: calls.reduce((sum, call) => sum + call.completionTokens, 0),
@@ -764,6 +784,7 @@ Include only the keys the chosen form needs; stage directions are optional and m
               finishReason: null,
               rawModel: runtime.resolvedSlug,
               provider: 'OpenRouter',
+              model: { ...runtime, provider: 'OpenRouter' },
               validation: 'call-error',
               error: { code: error?.code || 'CALL', message: error?.message || String(error) },
             });
@@ -783,6 +804,7 @@ Include only the keys the chosen form needs; stage directions are optional and m
             }
           }
           const rawModel = reply.raw?.model || runtime.resolvedSlug;
+          const provider = reply.raw?.provider || 'OpenRouter';
           const runtimeMismatch = Boolean(reply.raw?.model) && reply.raw.model !== runtime.resolvedSlug;
           calls.push({
             role,
@@ -794,7 +816,8 @@ Include only the keys the chosen form needs; stage directions are optional and m
             providerCostUsd: reply.usage?.providerCostUsd ?? null,
             finishReason: reply.finishReason || null,
             rawModel,
-            provider: reply.raw?.provider || 'OpenRouter',
+            provider,
+            model: { ...runtime, provider },
             validation: runtimeMismatch ? 'runtime-mismatch' : validation,
           });
           if (runtimeMismatch) {
@@ -948,6 +971,7 @@ Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.lengt
           const tapeOccurrences = new Map();
           for (const g of sc.groups) {
             const verseOccurrences = displayedOccurrences(sc, g.words);
+            g.occurrences = verseOccurrences;
             g.wordTimes = g.words.map((word, wordIndex) => {
               const wordKey = norm(word);
               const tapeOccurrence = tapeOccurrences.get(wordKey) || 0;
@@ -1048,6 +1072,7 @@ An "aside" is often the right direction for a stretch like this — one line nam
               const fillTapeOccurrences = new Map();
               for (const g of extra.groups.slice(0, 2)) {
                 const verseOccurrences = displayedOccurrences(host, g.words);
+                g.occurrences = verseOccurrences;
                 g.wordTimes = g.words.map((word, wordIndex) => {
                   const wordKey = norm(word);
                   const tapeOccurrence = fillTapeOccurrences.get(wordKey) || 0;
@@ -1078,7 +1103,13 @@ An "aside" is often the right direction for a stretch like this — one line nam
         }
           return finish(scenes);
         } catch (error) {
-          if (signal.aborted) throw error;
+          if (signal.aborted) {
+            if (calls.length) {
+              const evidence = finish(scenes, 'director job aborted after its last consumer left', { allowAborted: true });
+              error.evidenceFile = evidence.evidenceFile;
+            }
+            throw error;
+          }
           if (error?.code === 'MAGIC_RUNTIME_REFUSED') {
             const evidence = finish(scenes, error.message);
             error.evidenceFile = evidence.evidenceFile;

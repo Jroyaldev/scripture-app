@@ -6,7 +6,6 @@ import { fileURLToPath } from 'node:url';
 
 import {
   MAGIC_DIRECTOR_SCHEMA_VERSION,
-  MAGIC_REPLAY_SCHEMA_VERSION,
   redactEvidence,
   stableTextHash,
   validateDirectorPayload,
@@ -18,6 +17,21 @@ export const DIRECTOR_RUNS_DIR = path.join(LAB_DIR, 'director-runs');
 export const REPLAYS_DIR = path.join(LAB_DIR, 'replays');
 
 const safeId = (value) => String(value || '').replace(/[^a-zA-Z0-9._-]+/g, '-').replace(/^-+|-+$/g, '');
+
+function safeJsonFile(dir, name) {
+  const clean = String(name || '');
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9._-]*\.json$/.test(clean) || clean === '..' || clean.includes('..\/')) return null;
+  const root = path.resolve(dir);
+  const file = path.resolve(root, clean);
+  if (path.dirname(file) !== root || !fs.existsSync(file)) return null;
+  try {
+    const stat = fs.lstatSync(file);
+    if (!stat.isFile() || stat.isSymbolicLink()) return null;
+  } catch {
+    return null;
+  }
+  return file;
+}
 
 export function writeDirectorEvidence(record, { dir = DIRECTOR_RUNS_DIR } = {}) {
   const payload = redactEvidence({ ...record, schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION });
@@ -48,7 +62,9 @@ export function listDirectorEvidence({ dir = DIRECTOR_RUNS_DIR, limit = 80 } = {
     .slice(0, limit)
     .map((name) => {
       try {
-        const value = JSON.parse(fs.readFileSync(path.join(dir, name), 'utf8'));
+        const file = safeJsonFile(dir, name);
+        if (!file) return null;
+        const value = JSON.parse(fs.readFileSync(file, 'utf8'));
         return {
           file: name,
           startedAt: value.startedAt,
@@ -68,16 +84,22 @@ export function listDirectorEvidence({ dir = DIRECTOR_RUNS_DIR, limit = 80 } = {
 }
 
 export function readDirectorEvidence(name, { dir = DIRECTOR_RUNS_DIR } = {}) {
-  const file = path.join(dir, path.basename(String(name || '')));
-  if (!fs.existsSync(file)) return null;
-  return JSON.parse(fs.readFileSync(file, 'utf8'));
+  const file = safeJsonFile(dir, name);
+  if (!file) return null;
+  try {
+    return JSON.parse(fs.readFileSync(file, 'utf8'));
+  } catch {
+    return null;
+  }
 }
 
 export function readReplayFixture(id, { dir = REPLAYS_DIR } = {}) {
   const clean = safeId(id);
-  if (!clean || clean !== id) return { fixture: null, errors: ['invalid replay id'] };
-  const file = path.join(dir, `${clean}.json`);
-  if (!fs.existsSync(file)) return { fixture: null, errors: ['no such replay fixture'] };
+  if (!clean || clean !== id || !/^[a-z0-9][a-z0-9-]{1,63}$/.test(clean)) {
+    return { fixture: null, errors: ['invalid replay id'] };
+  }
+  const file = safeJsonFile(dir, `${clean}.json`);
+  if (!file) return { fixture: null, errors: ['no such replay fixture'] };
   let fixture;
   try {
     fixture = JSON.parse(fs.readFileSync(file, 'utf8'));
@@ -108,7 +130,7 @@ export function listReplayFixtures({ dir = REPLAYS_DIR } = {}) {
 }
 
 export function writeReplayFixture(fixture, { dir = REPLAYS_DIR } = {}) {
-  const payload = redactEvidence({ ...fixture, schemaVersion: MAGIC_REPLAY_SCHEMA_VERSION });
+  const payload = redactEvidence({ ...fixture });
   const check = validateReplayFixture(payload);
   if (!check.ok) throw new Error(`refusing invalid replay fixture: ${check.errors.join('; ')}`);
   fs.mkdirSync(dir, { recursive: true });

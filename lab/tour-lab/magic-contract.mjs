@@ -104,12 +104,12 @@ export function assertMagicRuntime(runtime) {
 }
 
 export function stableTextHash(value) {
-  let hash = 0x811c9dc5;
+  let hash = 0xcbf29ce484222325n;
   for (const ch of String(value ?? '')) {
-    hash ^= ch.codePointAt(0);
-    hash = Math.imul(hash, 0x01000193) >>> 0;
+    hash ^= BigInt(ch.codePointAt(0));
+    hash = BigInt.asUintN(64, hash * 0x100000001b3n);
   }
-  return hash.toString(16).padStart(8, '0');
+  return hash.toString(16).padStart(16, '0');
 }
 
 export function directorCacheKey({
@@ -121,8 +121,8 @@ export function directorCacheKey({
   why = '',
 }) {
   assertMagicModel(modelKey);
-  const from = Math.max(0, Math.round(Number(fromSec) || 0));
-  const to = Math.max(from, Math.round(Number(toSec) || from));
+  const from = Math.max(0, tenth(Number(fromSec) || 0));
+  const to = Math.max(from, tenth(Number(toSec) || from));
   return [schemaVersion, modelKey, String(recordId || ''), from, to, stableTextHash(String(why).trim())].join('|');
 }
 
@@ -131,6 +131,7 @@ function cloneArtifact(value) {
   return {
     ...value,
     ...(Array.isArray(value.words) ? { words: [...value.words] } : {}),
+    ...(Array.isArray(value.occurrences) ? { occurrences: [...value.occurrences] } : {}),
     ...(Array.isArray(value.wordTimes) ? { wordTimes: value.wordTimes.filter(isObject).map((x) => ({ ...x })) } : {}),
     ...(Array.isArray(value.links) ? { links: value.links.filter(isObject).map((x) => ({ ...x })) } : {}),
   };
@@ -150,7 +151,9 @@ function sourceOf(artifact) {
 
 function descriptorsFor(scene) {
   const out = [];
-  const addList = (kind, list) => list.forEach((artifact) => out.push({ kind, artifact }));
+  const addList = (kind, list) => {
+    if (Array.isArray(list)) list.filter(isObject).forEach((artifact) => out.push({ kind, artifact }));
+  };
   addList('group', scene.groups);
   addList('footnote', scene.footnotes);
   addList('term', scene.terms);
@@ -164,7 +167,7 @@ function descriptorsFor(scene) {
 
 function removeArtifacts(scene, removed) {
   for (const key of ['groups', 'footnotes', 'terms', 'allusions', 'asides']) {
-    scene[key] = scene[key].filter((artifact) => !removed.has(artifact));
+    scene[key] = (Array.isArray(scene[key]) ? scene[key] : []).filter((artifact) => !removed.has(artifact));
   }
   for (const key of ['compare', 'chain', 'caveat', 'highlight']) {
     if (scene[key] && removed.has(scene[key])) scene[key] = null;
@@ -188,9 +191,19 @@ function chooseHouseSlot(wanted, occupied, start, end, minimumGap) {
 }
 
 function normalizeEventList(list, kind, start, end, report) {
+  if (end < start) {
+    const count = Array.isArray(list) ? list.length : 0;
+    if (count) report.dropped.push({ reason: 'zero-width-scene', kind, count });
+    return [];
+  }
   const midpoint = tenth((start + end) / 2);
   const out = [];
-  for (const artifact of list) {
+  for (const candidate of (Array.isArray(list) ? list : [])) {
+    const artifact = cloneArtifact(candidate);
+    if (!artifact) {
+      report.dropped.push({ reason: 'invalid-artifact', kind, count: 1 });
+      continue;
+    }
     let source = sourceOf(artifact);
     artifact.timingSource = source;
     if (!finite(artifact.at)) {
@@ -210,7 +223,9 @@ function normalizeEventList(list, kind, start, end, report) {
     artifact.at = nextAt;
     if (Array.isArray(artifact.wordTimes)) {
       artifact.wordTimes = artifact.wordTimes
-        .filter((wordTime) => finite(wordTime.at) && Number(wordTime.at) >= start && Number(wordTime.at) <= end)
+        .filter((wordTime) => wordTime.timingSource === 'word'
+          && typeof wordTime.word === 'string' && wordTime.word.trim()
+          && finite(wordTime.at) && Number(wordTime.at) >= start && Number(wordTime.at) <= end)
         .map((wordTime) => ({
           ...wordTime,
           at: tenth(Number(wordTime.at)),
@@ -230,7 +245,6 @@ export function normalizeDirectorScenes(rawScenes, durationSec) {
   const report = { schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION, dropped: [], shifted: 0, clamped: 0, invented: 0 };
   const scenes = (Array.isArray(rawScenes) ? rawScenes : [])
     .filter(isObject)
-    .slice(0, DIRECTOR_LIMITS.maxScenes)
     .map((scene, index) => ({
       ...scene,
       at: finite(scene.at) ? tenth(Number(scene.at)) : tenth((duration * index) / Math.max(1, rawScenes.length)),
@@ -245,10 +259,6 @@ export function normalizeDirectorScenes(rawScenes, durationSec) {
     }))
     .sort((a, b) => a.at - b.at);
 
-  if (Array.isArray(rawScenes) && rawScenes.length > DIRECTOR_LIMITS.maxScenes) {
-    report.dropped.push({ reason: 'cap', kind: 'scene', count: rawScenes.length - DIRECTOR_LIMITS.maxScenes });
-  }
-
   for (let index = scenes.length - 1; index >= 0; index -= 1) {
     const scene = scenes[index];
     if (scene.timingSource !== 'house' && (scene.at < 0 || scene.at > duration)) {
@@ -257,19 +267,35 @@ export function normalizeDirectorScenes(rawScenes, durationSec) {
     }
   }
 
-  scenes.forEach((scene, index) => {
-    const nextAt = tenth(clamp(index === 0 && scene.timingSource === 'house' ? 0 : scene.at, 0, duration));
-    if (nextAt !== scene.at) report.clamped += 1;
-    scene.at = nextAt;
-    if (index > 0 && scene.timingSource === 'house') {
-      const wanted = Math.min(duration, scenes[index - 1].at + DIRECTOR_LIMITS.sceneMinGapSec);
-      if (scene.at < wanted) {
-        scene.at = tenth(wanted);
-        report.shifted += 1;
-      }
+  const anchoredSceneTimes = scenes
+    .filter((scene) => scene.timingSource !== 'house')
+    .map((scene) => scene.at)
+    .sort((a, b) => a - b);
+  const allocatedSceneTimes = [...anchoredSceneTimes];
+  const removedScenes = new Set();
+  let firstHouse = true;
+  for (const scene of scenes.filter((candidate) => candidate.timingSource === 'house').sort((a, b) => a.at - b.at)) {
+    const wanted = firstHouse ? 0 : tenth(clamp(scene.at, 0, duration));
+    firstHouse = false;
+    const slot = chooseHouseSlot(wanted, allocatedSceneTimes, 0, duration, DIRECTOR_LIMITS.sceneMinGapSec);
+    if (slot == null) {
+      removedScenes.add(scene);
+      report.dropped.push({ reason: 'no-house-slot', kind: 'scene', at: scene.at });
+      continue;
     }
-  });
+    if (slot !== scene.at) report.shifted += 1;
+    scene.at = slot;
+    allocatedSceneTimes.push(slot);
+    allocatedSceneTimes.sort((a, b) => a - b);
+  }
+  for (let index = scenes.length - 1; index >= 0; index -= 1) {
+    if (removedScenes.has(scenes[index])) scenes.splice(index, 1);
+  }
   scenes.sort((a, b) => a.at - b.at);
+  if (scenes.length > DIRECTOR_LIMITS.maxScenes) {
+    report.dropped.push({ reason: 'cap', kind: 'scene', count: scenes.length - DIRECTOR_LIMITS.maxScenes });
+    scenes.splice(DIRECTOR_LIMITS.maxScenes);
+  }
 
   scenes.forEach((scene, index) => {
     const raw = scene._rawArtifacts;
@@ -279,37 +305,21 @@ export function normalizeDirectorScenes(rawScenes, durationSec) {
     // Scene windows are half-open. A beat at exactly the next scene's start
     // belongs to that next scene, never to the verse that is leaving.
     const end = index + 1 < scenes.length
-      ? Math.max(start, tenth(nextStart - 0.1))
+      ? tenth(nextStart - 0.1)
       : Math.max(start, nextStart);
-    scene.groups = capArtifacts(raw.groups, DIRECTOR_LIMITS.maxGroups, 'group', report);
-    scene.footnotes = capArtifacts(raw.footnotes, DIRECTOR_LIMITS.maxFootnotes, 'footnote', report);
-    scene.terms = capArtifacts(raw.terms, DIRECTOR_LIMITS.maxTerms, 'term', report);
-    scene.allusions = capArtifacts(raw.allusions, DIRECTOR_LIMITS.maxAllusions, 'allusion', report);
+    scene.groups = capArtifacts(normalizeEventList(raw.groups, 'group', start, end, report), DIRECTOR_LIMITS.maxGroups, 'group', report);
+    scene.footnotes = capArtifacts(normalizeEventList(raw.footnotes, 'footnote', start, end, report), DIRECTOR_LIMITS.maxFootnotes, 'footnote', report);
+    scene.terms = capArtifacts(normalizeEventList(raw.terms, 'term', start, end, report), DIRECTOR_LIMITS.maxTerms, 'term', report);
+    scene.allusions = capArtifacts(normalizeEventList(raw.allusions, 'allusion', start, end, report), DIRECTOR_LIMITS.maxAllusions, 'allusion', report);
     scene.asides = capArtifacts(
-      raw.asides,
+      normalizeEventList(raw.asides, 'aside', start, end, report),
       scene.verses.length ? DIRECTOR_LIMITS.maxVerseAsides : DIRECTOR_LIMITS.maxBareAsides,
-      'aside',
-      report
+      'aside', report
     );
-
-    scene.groups = normalizeEventList(scene.groups, 'group', start, end, report);
-    scene.footnotes = normalizeEventList(scene.footnotes, 'footnote', start, end, report);
-    scene.terms = normalizeEventList(scene.terms, 'term', start, end, report);
-    scene.allusions = normalizeEventList(scene.allusions, 'allusion', start, end, report);
-    scene.asides = normalizeEventList(scene.asides, 'aside', start, end, report);
     for (const key of ['compare', 'chain', 'caveat', 'highlight']) {
       if (!scene[key]) continue;
       scene[key] = normalizeEventList([scene[key]], key, start, end, report)[0] || null;
     }
-
-    const nonAsideTimes = descriptorsFor(scene)
-      .filter(({ kind }) => kind !== 'aside')
-      .map(({ artifact }) => artifact.at);
-    scene.asides = scene.asides.filter((aside) => {
-      const quiet = nonAsideTimes.every((at) => Math.abs(at - aside.at) >= DIRECTOR_LIMITS.asideSilenceSec);
-      if (!quiet) report.dropped.push({ reason: 'aside-not-silent', kind: 'aside', at: aside.at });
-      return quiet;
-    });
 
     const descriptors = descriptorsFor(scene);
     const occupied = descriptors
@@ -317,8 +327,14 @@ export function normalizeDirectorScenes(rawScenes, durationSec) {
       .map(({ artifact }) => artifact.at)
       .sort((a, b) => a - b);
     const removed = new Set();
-    for (const { kind, artifact } of descriptors.filter(({ artifact }) => sourceOf(artifact) === 'house').sort((a, b) => a.artifact.at - b.artifact.at)) {
-      const slot = chooseHouseSlot(artifact.at, occupied, start, end, DIRECTOR_LIMITS.fieldMinGapSec);
+    const house = descriptors
+      .filter(({ artifact }) => sourceOf(artifact) === 'house')
+      .sort((a, b) => Number(a.kind === 'aside') - Number(b.kind === 'aside') || a.artifact.at - b.artifact.at);
+    for (const { kind, artifact } of house) {
+      const slot = chooseHouseSlot(
+        artifact.at, occupied, start, end,
+        kind === 'aside' ? DIRECTOR_LIMITS.asideSilenceSec : DIRECTOR_LIMITS.fieldMinGapSec
+      );
       if (slot == null) {
         removed.add(artifact);
         report.dropped.push({ reason: 'no-house-slot', kind, at: artifact.at });
@@ -330,6 +346,16 @@ export function normalizeDirectorScenes(rawScenes, durationSec) {
       occupied.sort((a, b) => a - b);
     }
     removeArtifacts(scene, removed);
+
+    // Aside economy is a final invariant, after every house move.
+    const nonAsideTimes = descriptorsFor(scene)
+      .filter(({ kind }) => kind !== 'aside')
+      .map(({ artifact }) => artifact.at);
+    scene.asides = scene.asides.filter((aside) => {
+      const quiet = nonAsideTimes.every((at) => Math.abs(at - aside.at) >= DIRECTOR_LIMITS.asideSilenceSec);
+      if (!quiet) report.dropped.push({ reason: 'aside-not-silent', kind: 'aside', at: aside.at });
+      return quiet;
+    });
   });
 
   report.sceneCount = scenes.length;
@@ -350,18 +376,75 @@ function validateCallEvidence(call, index, errors) {
     errors.push(`metrics.calls[${index}].providerCostUsd must be null or non-negative and finite`);
   }
   if (typeof call.validation !== 'string' || !call.validation) errors.push(`metrics.calls[${index}].validation is required`);
+  if (!isObject(call.model)) {
+    errors.push(`metrics.calls[${index}].model is required`);
+  } else {
+    try { assertMagicRuntime(call.model); } catch (error) {
+      errors.push(...(error.reasons || [error.message]).map((reason) => `metrics.calls[${index}]: ${reason}`));
+    }
+    if (typeof call.model.provider !== 'string' || !call.model.provider.trim()) {
+      errors.push(`metrics.calls[${index}].model.provider is required`);
+    }
+  }
+  if (call.rawModel != null && call.rawModel !== MAGIC_MODEL_RUNTIME.requestedSlug) {
+    errors.push(`metrics.calls[${index}].rawModel must be ${MAGIC_MODEL_RUNTIME.requestedSlug}`);
+  }
 }
 
-function validateFiniteTimeline(scenes, errors) {
+function validateFiniteTimeline(scenes, clip, errors) {
+  if (scenes.length > DIRECTOR_LIMITS.maxScenes) errors.push(`scenes exceeds cap ${DIRECTOR_LIMITS.maxScenes}`);
+  const duration = Number(clip?.durationSec);
+  let priorAt = -Infinity;
   for (const [sceneIndex, scene] of scenes.entries()) {
     if (!isObject(scene) || !finite(scene.at)) {
       errors.push(`scenes[${sceneIndex}].at must be finite`);
       continue;
     }
+    const start = Number(scene.at);
+    const nextStart = sceneIndex + 1 < scenes.length && finite(scenes[sceneIndex + 1]?.at)
+      ? Number(scenes[sceneIndex + 1].at)
+      : duration;
+    if (start < 0 || start > duration) errors.push(`scenes[${sceneIndex}].at must be inside the clip`);
+    if (start < priorAt) errors.push('scenes must be ordered by at');
+    priorAt = start;
+    if (!TIMING_SOURCES.has(scene.timingSource)) errors.push(`scenes[${sceneIndex}].timingSource is invalid`);
+    for (const [key, max] of [
+      ['groups', DIRECTOR_LIMITS.maxGroups],
+      ['footnotes', DIRECTOR_LIMITS.maxFootnotes],
+      ['terms', DIRECTOR_LIMITS.maxTerms],
+      ['allusions', DIRECTOR_LIMITS.maxAllusions],
+      ['asides', Array.isArray(scene.verses) && scene.verses.length ? DIRECTOR_LIMITS.maxVerseAsides : DIRECTOR_LIMITS.maxBareAsides],
+    ]) {
+      if (!Array.isArray(scene[key])) errors.push(`scenes[${sceneIndex}].${key} must be an array`);
+      else if (scene[key].length > max) errors.push(`scenes[${sceneIndex}].${key} exceeds cap ${max}`);
+    }
+    if (!Array.isArray(scene.verses)) errors.push(`scenes[${sceneIndex}].verses must be an array`);
+    for (const key of ['compare', 'chain', 'caveat', 'highlight']) {
+      if (scene[key] != null && !isObject(scene[key])) errors.push(`scenes[${sceneIndex}].${key} must be an object or null`);
+    }
     for (const { kind, artifact } of descriptorsFor(scene)) {
-      if (!finite(artifact.at)) errors.push(`scenes[${sceneIndex}].${kind}.at must be finite`);
+      if (!finite(artifact.at)) {
+        errors.push(`scenes[${sceneIndex}].${kind}.at must be finite`);
+        continue;
+      }
+      const at = Number(artifact.at);
+      if (at < start || at > duration || (sceneIndex + 1 < scenes.length && at >= nextStart)) {
+        errors.push(`scenes[${sceneIndex}].${kind}.at is outside its scene`);
+      }
+      if (!TIMING_SOURCES.has(artifact.timingSource)) errors.push(`scenes[${sceneIndex}].${kind}.timingSource is invalid`);
+      if (kind === 'footnote' && (!Number.isInteger(artifact.occurrence) || artifact.occurrence < 0)) {
+        errors.push(`scenes[${sceneIndex}].footnote.occurrence must be zero-based`);
+      }
+      if (kind === 'group' && Array.isArray(artifact.occurrences)
+        && artifact.occurrences.some((occurrence) => !Number.isInteger(occurrence) || occurrence < 0)) {
+        errors.push(`scenes[${sceneIndex}].group.occurrences must be zero-based`);
+      }
       for (const [wordIndex, wordTime] of (Array.isArray(artifact.wordTimes) ? artifact.wordTimes : []).entries()) {
         if (!finite(wordTime.at)) errors.push(`scenes[${sceneIndex}].${kind}.wordTimes[${wordIndex}].at must be finite`);
+        if (wordTime.timingSource !== 'word') errors.push(`scenes[${sceneIndex}].${kind}.wordTimes[${wordIndex}] is not word-verified`);
+        if (!Number.isInteger(wordTime.occurrence) || wordTime.occurrence < 0) {
+          errors.push(`scenes[${sceneIndex}].${kind}.wordTimes[${wordIndex}].occurrence must be zero-based`);
+        }
       }
     }
   }
@@ -377,8 +460,14 @@ export function validateDirectorPayload(payload) {
         : `director schema ${String(payload.schemaVersion)} is not supported`
     );
   }
+  if (!isObject(payload.clip)
+    || !finite(payload.clip.fromSec) || !finite(payload.clip.toSec) || !finite(payload.clip.durationSec)
+    || Number(payload.clip.fromSec) < 0 || Number(payload.clip.toSec) <= Number(payload.clip.fromSec)
+    || Number(payload.clip.durationSec) !== Number(payload.clip.toSec) - Number(payload.clip.fromSec)) {
+    errors.push('clip must carry finite, increasing, internally consistent bounds');
+  }
   if (!Array.isArray(payload.scenes)) errors.push('scenes must be an array');
-  else validateFiniteTimeline(payload.scenes, errors);
+  else if (isObject(payload.clip) && finite(payload.clip.durationSec)) validateFiniteTimeline(payload.scenes, payload.clip, errors);
   if (!isObject(payload.model)) {
     errors.push('model evidence is required');
   } else {
@@ -387,16 +476,25 @@ export function validateDirectorPayload(payload) {
       errors.push('model.provider is required');
     }
   }
-  if (!isObject(payload.metrics) || !finite(payload.metrics.wallMs)) {
-    errors.push('metrics.wallMs must be finite');
+  if (!isObject(payload.metrics) || !finite(payload.metrics.wallMs) || Number(payload.metrics.wallMs) < 0) {
+    errors.push('metrics.wallMs must be non-negative and finite');
   } else {
     if (!Array.isArray(payload.metrics.calls)) errors.push('metrics.calls must be an array');
-    else payload.metrics.calls.forEach((call, index) => validateCallEvidence(call, index, errors));
-    if (!finite(payload.metrics.passes) || Number(payload.metrics.passes) < 0) errors.push('metrics.passes must be non-negative and finite');
+    else {
+      payload.metrics.calls.forEach((call, index) => validateCallEvidence(call, index, errors));
+      if (Number(payload.metrics.passes) !== payload.metrics.calls.length) errors.push('metrics.passes must equal metrics.calls.length');
+    }
+    if (!Number.isInteger(Number(payload.metrics.passes)) || Number(payload.metrics.passes) < 0) errors.push('metrics.passes must be a non-negative integer');
     if (payload.metrics.totalUsd != null && (!finite(payload.metrics.totalUsd) || Number(payload.metrics.totalUsd) < 0)) {
       errors.push('metrics.totalUsd must be null or non-negative and finite');
     }
-    if (!isObject(payload.metrics.normalization)) errors.push('metrics.normalization is required');
+    if (!isObject(payload.metrics.normalization)
+      || !Array.isArray(payload.metrics.normalization.dropped)
+      || Number(payload.metrics.normalization.sceneCount) !== (Array.isArray(payload.scenes) ? payload.scenes.length : -1)
+      || !finite(payload.metrics.normalization.artifactCount)
+      || Number(payload.metrics.normalization.artifactCount) < 0) {
+      errors.push('metrics.normalization must report dropped items and final counts');
+    }
   }
   return { ok: errors.length === 0, errors };
 }
@@ -433,6 +531,7 @@ export function validateReplayFixture(input) {
     for (const [key, payload] of Object.entries(input.directions)) {
       const check = validateDirectorPayload(payload);
       if (!check.ok) errors.push(...check.errors.map((error) => `directions[${key}]: ${error}`));
+      if (payload?.requestKey !== key) errors.push(`directions[${key}].requestKey does not match its cache key`);
     }
     for (const [index, step] of (Array.isArray(input.tour?.steps) ? input.tour.steps : []).entries()) {
       try {
@@ -442,7 +541,16 @@ export function validateReplayFixture(input) {
           toSec: step?.endSec,
           why: step?.why,
         });
-        if (!Object.hasOwn(input.directions, key)) errors.push(`directions is missing tour step ${index}`);
+        if (!Object.hasOwn(input.directions, key)) {
+          errors.push(`directions is missing tour step ${index}`);
+        } else {
+          const payload = input.directions[key];
+          const from = Number(step.startSec);
+          const to = Number(step.endSec);
+          if (Number(payload?.clip?.fromSec) !== from || Number(payload?.clip?.toSec) !== to) {
+            errors.push(`directions for tour step ${index} has different clip bounds`);
+          }
+        }
       } catch (error) {
         errors.push(`tour step ${index} cannot form a director cache key: ${error.message}`);
       }

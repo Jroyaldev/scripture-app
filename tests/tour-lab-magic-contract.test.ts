@@ -46,6 +46,7 @@ const validModelEvidence = () => ({
 
 const validDirectorPayload = () => ({
   schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
+  clip: { fromSec: 10, toSec: 70, durationSec: 60 },
   scenes: [],
   model: validModelEvidence(),
   metrics: {
@@ -60,6 +61,8 @@ const validDirectorPayload = () => ({
       reasoningTokens: 3,
       cachedPromptTokens: 0,
       providerCostUsd: 0.001,
+      rawModel: MAGIC_MODEL_RUNTIME.requestedSlug,
+      model: validModelEvidence(),
       validation: "accepted",
     }],
     normalization: { sceneCount: 0, artifactCount: 0, dropped: [] },
@@ -73,6 +76,7 @@ const validReplayFixture = () => {
     toSec: 70,
     why: "A local replay direction",
   });
+  const direction = { ...validDirectorPayload(), requestKey: key };
   return {
     schemaVersion: MAGIC_REPLAY_SCHEMA_VERSION,
     id: "luna-local-replay",
@@ -88,7 +92,7 @@ const validReplayFixture = () => {
     },
     whispers: ["A local fixture whisper"],
     form: { kind: "timeline" },
-    directions: { [key]: validDirectorPayload() },
+    directions: { [key]: direction },
   };
 };
 
@@ -179,12 +183,13 @@ test("director cache identity binds the admitted model, schema, record, bounds, 
   };
   const base = directorCacheKey(input);
 
-  assert.match(base, /^1\|gpt-5\.6-luna-medium\|record-a\|12\|78\|[0-9a-f]{8}$/);
+  assert.match(base, /^1\|gpt-5\.6-luna-medium\|record-a\|12\|78\|[0-9a-f]{16}$/);
   assert.equal(directorCacheKey({ ...input }), base, "identical logical requests must deduplicate");
   assert.notEqual(directorCacheKey({ ...input, schemaVersion: 2 }), base);
   assert.notEqual(directorCacheKey({ ...input, recordId: "record-b" }), base);
   assert.notEqual(directorCacheKey({ ...input, fromSec: 13 }), base);
   assert.notEqual(directorCacheKey({ ...input, toSec: 79 }), base);
+  assert.notEqual(directorCacheKey({ ...input, fromSec: 12.4 }), base);
   assert.notEqual(directorCacheKey({ ...input, why: "A different reason" }), base);
   assert.throws(
     () => directorCacheKey({ ...input, modelKey: "gpt-5.6-sol-high" }),
@@ -300,9 +305,9 @@ test("normalization moves only house time, preserves cue and word truth, and def
         at: 10.1,
         timingSource: "word",
         wordTimes: [
-          { word: "faith", at: 10.1 },
-          { word: "faith", at: 10.2, occurrence: -1 },
-          { word: "faith", at: 10.3, occurrence: 2 },
+          { word: "faith", at: 10.1, timingSource: "word" },
+          { word: "faith", at: 10.2, occurrence: -1, timingSource: "word" },
+          { word: "faith", at: 10.3, occurrence: 2, timingSource: "word" },
         ],
       },
       { id: "house", at: 10.2, timingSource: "house" },
@@ -330,6 +335,87 @@ test("normalization moves only house time, preserves cue and word truth, and def
     ],
   }], 100);
   assert.deepEqual(silent.scenes[0].asides.map((aside: { id: string }) => aside.id), ["quiet"]);
+});
+
+test("final invariants survive scene allocation, duplicate boundaries, and post-shift aside checks", () => {
+  const allocated = normalizeDirectorScenes([
+    { id: "cue-a", at: 0, timingSource: "cue", verses: [] },
+    { id: "house", at: 5, timingSource: "house", verses: [] },
+    { id: "cue-b", at: 10, timingSource: "cue", verses: [] },
+  ], 40);
+  const house = allocated.scenes.find((scene: { id?: string }) => scene.id === "house");
+  assert.ok(house);
+  assert.ok(allocated.scenes
+    .filter((scene: { id?: string }) => scene.id !== "house")
+    .every((scene: { at: number }) => Math.abs(scene.at - house.at) >= DIRECTOR_LIMITS.sceneMinGapSec));
+
+  const duplicate = normalizeDirectorScenes([
+    {
+      id: "leaving",
+      at: 10,
+      timingSource: "cue",
+      verses: [],
+      groups: [{ id: "must-drop", at: 10, timingSource: "cue" }],
+    },
+    { id: "arriving", at: 10, timingSource: "cue", verses: [] },
+  ], 30);
+  assert.equal(duplicate.scenes[0].groups.length, 0);
+  assert.ok(duplicate.report.dropped.some((drop: { reason: string }) => drop.reason === "zero-width-scene"));
+
+  const aside = normalizeDirectorScenes([{
+    at: 0,
+    timingSource: "cue",
+    verses: [],
+    groups: [
+      { id: "anchor", at: 0, timingSource: "cue" },
+      { id: "moved-house", at: 0, timingSource: "house" },
+    ],
+    asides: [{ id: "aside", at: 25, timingSource: "cue" }],
+  }], 60);
+  assert.equal(aside.scenes[0].asides.length, 0);
+  assert.ok(aside.report.dropped.some((drop: { reason: string }) => drop.reason === "aside-not-silent"));
+
+  const wordTruth = normalizeDirectorScenes([{
+    at: 0,
+    timingSource: "cue",
+    verses: [],
+    groups: [{
+      at: 20,
+      timingSource: "word",
+      wordTimes: [
+        { word: "unverified", at: 18, occurrence: 0 },
+        { word: "verified", at: 19, occurrence: 1, timingSource: "word" },
+      ],
+    }],
+  }], 30);
+  assert.deepEqual(wordTruth.scenes[0].groups[0].wordTimes.map((entry: { word: string }) => entry.word), ["verified"]);
+});
+
+test("director validation refuses malformed, over-cap, out-of-window, and per-call model drift", () => {
+  const malformed = { ...validDirectorPayload(), scenes: [{ at: 0 }] };
+  assert.doesNotThrow(() => validateDirectorPayload(malformed));
+  assert.equal(validateDirectorPayload(malformed).ok, false);
+
+  const impossible = validDirectorPayload();
+  impossible.scenes = Array.from({ length: DIRECTOR_LIMITS.maxScenes + 1 }, (_, index) => ({
+    at: index * 2,
+    timingSource: "cue",
+    verses: [],
+    groups: Array.from({ length: DIRECTOR_LIMITS.maxGroups + 1 }, () => ({ at: 59, timingSource: "cue" })),
+    footnotes: [], terms: [], allusions: [], asides: [],
+    compare: null, chain: null, caveat: null, highlight: null,
+  }));
+  const impossibleCheck = validateDirectorPayload(impossible);
+  assert.equal(impossibleCheck.ok, false);
+  assert.ok(impossibleCheck.errors.some((error: string) => /exceeds cap|outside its scene/.test(error)));
+
+  const noCallRuntime = validDirectorPayload();
+  delete (noCallRuntime.metrics.calls[0] as { model?: object }).model;
+  assert.equal(validateDirectorPayload(noCallRuntime).ok, false);
+
+  const negativeWall = validDirectorPayload();
+  negativeWall.metrics.wallMs = -1;
+  assert.equal(validateDirectorPayload(negativeWall).ok, false);
 });
 
 test("director and replay validators refuse unsupported newer schemas", () => {
@@ -417,6 +503,16 @@ test("evidence is recursively redacted, append-only, and replay fixtures round-t
       ),
       "a named replay fixture is append-only",
     );
+    assert.throws(
+      () => writeReplayFixture({
+        ...validReplayFixture(),
+        id: "future-write",
+        schemaVersion: MAGIC_REPLAY_SCHEMA_VERSION + 1,
+      }, { dir: replayDir }),
+      /newer than supported/,
+      "the writer must refuse rather than downgrade a future fixture",
+    );
+    assert.equal(readDirectorEvidence("..", { dir: runsDir }), null);
 
     const newer = { ...validReplayFixture(), id: "future-replay", schemaVersion: MAGIC_REPLAY_SCHEMA_VERSION + 1 };
     mkdirSync(replayDir, { recursive: true });

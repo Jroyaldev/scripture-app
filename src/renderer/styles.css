@@ -23002,8 +23002,22 @@ button.lang-phrase-diagram-node:focus-visible,
   border-radius: var(--radius-sm);
   background: var(--resource-source);
   color: var(--resource-ink);
-  /* The keyline, and what it is for, is written where the card's head is. */
-  box-shadow: 0 0 0 1px var(--resource-ground-edge, var(--border-subtle));
+  /* ── THE KEYLINE IS THE PLATE'S OWN INK NOW · 2026-08-02 ─────────────────
+     It was `--resource-ground-edge`, one step off the CARD's ground — which
+     works only while the plate and the ground are different values, and they
+     are not always. Measured across the twelve: in light, The Listener's
+     Commentary and Radically Christian declare a near-white source, so plate
+     and card land at L 0.96 and L 0.96 — a delta of ZERO — and the plate
+     dissolves into the card it sits on. The keyline that should have saved it
+     was derived from the ground, so it dissolved too. In dark the fault turns
+     over and takes four publishers instead of two: Spoken Gospel 0.03, Naked
+     Bible 0.06, Ask N.T. Wright 0.07, BEMA 0.10.
+
+     The ink is the one colour guaranteed to differ from the source, because
+     that is what it was picked for — the publisher's own contrasting partner.
+     A line drawn in it separates the plate from any ground the atmosphere
+     puts underneath, in both polarities, with no branch. */
+  box-shadow: 0 0 0 1px color-mix(in oklab, var(--resource-ink) 55%, transparent);
 }
 
 /* The artwork inside it, on the shelf's own optical scale at the card's K.

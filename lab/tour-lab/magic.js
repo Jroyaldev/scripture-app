@@ -709,7 +709,7 @@ function renderEvent(ev) {
   renderEventNow(ev);
 }
 
-function renderEventNow(ev, { reconstruct = false } = {}) {
+function renderEventNow(ev, { reconstruct = false, elapsedSince = 0 } = {}) {
   if (!current || current.mountedScene !== ev.scene) return;
   const th = TH();
   switch (ev.kind) {
@@ -721,11 +721,11 @@ function renderEventNow(ev, { reconstruct = false } = {}) {
       break;
     }
     case 'group':
-      drawMark(ev.a);
+      drawMark(ev.a, { immediate: reconstruct });
       break;
     case 'term': {
       const el = document.createElement('p');
-      el.className = 'term-chip appear';
+      el.className = `term-chip${reconstruct ? '' : ' appear'}`;
       el.innerHTML = `<i>${escapeHtml(ev.a.term)}</i> — ${escapeHtml(ev.a.gloss)}`;
       th.querySelector('.terms').appendChild(el);
       break;
@@ -733,7 +733,7 @@ function renderEventNow(ev, { reconstruct = false } = {}) {
     case 'allusion': {
       for (const prev of th.querySelectorAll('.allusion')) prev.classList.add('past');
       const el = document.createElement('div');
-      el.className = 'allusion appear';
+      el.className = `allusion${reconstruct ? '' : ' appear'}`;
       el.innerHTML = `<span class="box-ref">${escapeHtml(ev.a.ref)}</span>${wrapBoxWords(ev.a.text)}`
         + (ev.a.note ? `<span class="box-note">${escapeHtml(ev.a.note)}</span>` : '');
       th.querySelector('.allusions').appendChild(el);
@@ -743,7 +743,7 @@ function renderEventNow(ev, { reconstruct = false } = {}) {
       /* One quiet line naming what the teacher is doing — presence for the
          stretches where no verse language is in play. Only ever one. */
       const box = th.querySelector('.asides');
-      box.innerHTML = `<p class="aside appear">${escapeHtml(ev.a.text)}</p>`;
+      box.innerHTML = `<p class="aside${reconstruct ? '' : ' appear'}">${escapeHtml(ev.a.text)}</p>`;
       break;
     }
     case 'footnote': {
@@ -754,7 +754,7 @@ function renderEventNow(ev, { reconstruct = false } = {}) {
       const span = getOrWrap(q, ev.a.word, ev.a.occurrence);
       if (span && !span.querySelector('.fnmark')) span.insertAdjacentHTML('beforeend', `<sup class="fnmark">${glyph}</sup>`);
       const el = document.createElement('p');
-      el.className = 'footnote appear';
+      el.className = `footnote${reconstruct ? '' : ' appear'}`;
       el.innerHTML = `<sup>${glyph}</sup> <b>${escapeHtml(ev.a.word)}</b> — ${escapeHtml(ev.a.note)}`;
       th.querySelector('.footnotes').appendChild(el);
       break;
@@ -774,7 +774,7 @@ function renderEventNow(ev, { reconstruct = false } = {}) {
         ? sharedWords(own, own).filter((w) => !sharedWords(other, other).includes(w)).slice(0, 5)
         : common;
       const el = document.createElement('div');
-      el.className = 'compare-grid appear';
+      el.className = `compare-grid${reconstruct ? '' : ' appear'}`;
       if (sides.length === 1) el.classList.add('single');
       el.innerHTML = sides.map(([side, otherText]) =>
         `<div class="cmp"><span class="box-ref">${escapeHtml(side.ref)}</span>${markRelevant(side.text, marksFor(side.text, otherText))}</div>`
@@ -812,7 +812,7 @@ function renderEventNow(ev, { reconstruct = false } = {}) {
     }
     case 'caveat': {
       const el = document.createElement('p');
-      el.className = 'caveat appear';
+      el.className = `caveat${reconstruct ? '' : ' appear'}`;
       el.innerHTML = `<span class="box-ref">what it does not say</span>${escapeHtml(ev.a.text)}`;
       th.querySelector('.caveats').appendChild(el);
       break;
@@ -823,10 +823,13 @@ function renderEventNow(ev, { reconstruct = false } = {}) {
       const bq = th.querySelector('.big-quote');
       bq.textContent = `“${ev.a.quote}”`;
       bq.classList.add('mounted');
-      nextFrame(() => bq.classList.add('show'));
+      if (reconstruct) bq.classList.add('show');
+      else nextFrame(() => bq.classList.add('show'));
       th.querySelector('.th-body').classList.add('spot');
       clearTimeout(current.hlTimer);
-      current.hlTimer = playDelay(current, releaseHighlight, 11000);
+      const remainingMs = Math.max(0, 11000 - elapsedSince * 1000);
+      if (remainingMs === 0) releaseHighlight({ immediate: true });
+      else current.hlTimer = playDelay(current, releaseHighlight, remainingMs);
       break;
     }
   }
@@ -936,11 +939,11 @@ function wrapWord(root, word, occurrence = 0) {
   return null;
 }
 
-function drawMark(mark) {
+function drawMark(mark, { immediate = false } = {}) {
   const q = TH().querySelector('.verses');
   if (!q?.classList.contains('has')) return;
   const spans = mark.words.map((w, index) =>
-    getOrWrap(q, w, mark.wordTimes?.[index]?.occurrence ?? mark.occurrences?.[index] ?? 0)
+    getOrWrap(q, w, mark.occurrences?.[index] ?? mark.wordTimes?.[index]?.occurrence ?? 0)
   ).filter(Boolean);
   if (spans.length < 2) return;
 
@@ -1060,7 +1063,7 @@ function drawMark(mark) {
   const len = path.getTotalLength();
   path.style.strokeDasharray = String(len);
   path.style.strokeDashoffset = String(len);
-  if (reducedMotion.matches) path.style.strokeDashoffset = '0';
+  if (immediate || reducedMotion.matches) path.style.strokeDashoffset = '0';
   else requestAnimationFrame(() => { path.style.strokeDashoffset = '0'; });
 }
 
@@ -1203,6 +1206,7 @@ function startStepPlayback(li, step, index, direction) {
     returnFocus: playButton,
   };
   const owner = current;
+  for (const mark of stageDirections[index]?.marks || []) mark.drawn = false;
   li.classList.add('playing');
 
   const th = TH();
@@ -1293,11 +1297,30 @@ function rebuildStageAt(t, { reason = 'seek', immediate = false } = {}) {
   const generation = ++owner.seekGeneration;
   owner.rebuilding = true;
   owner.eventQueue = [];
-  let k = 0;
+  let k = -1;
   for (let i = 0; i < scenes.length; i++) if ((scenes[i].at ?? 0) <= rel) k = i;
-  const scene = scenes[k];
   owner.fired = owner.timeline.findIndex((event) => event.at > rel);
   if (owner.fired === -1) owner.fired = owner.timeline.length;
+  if (k < 0) {
+    owner.sceneGeneration += 1;
+    owner.sceneIdx = -1;
+    owner.sceneReady = false;
+    owner.mountedScene = null;
+    owner.eventQueue = [];
+    const th = TH();
+    for (const sel of TH_BOXES) th.querySelector(sel).innerHTML = '';
+    const q = th.querySelector('.verses');
+    q.classList.remove('has');
+    q.innerHTML = '';
+    th.querySelector('.th-body').classList.remove('turning', 'spot', 'bare');
+    th.querySelector('.th-body').setAttribute('aria-busy', 'false');
+    releaseHighlight({ immediate: true });
+    owner.rebuilding = false;
+    owner.capKey = null;
+    updateCaption(t);
+    return;
+  }
+  const scene = scenes[k];
   activateScene(scene, k, {
     force: true,
     immediate: immediate || reason === 'resize',
@@ -1306,8 +1329,8 @@ function rebuildStageAt(t, { reason = 'seek', immediate = false } = {}) {
       for (const ev of owner.timeline) {
         if (ev.scene !== scene || ev.kind === 'scene' || ev.at > rel) continue;
         /* A spent spotlight stays spent. */
-        if (ev.kind === 'highlight' && rel > ev.at + 11) continue;
-        renderEventNow(ev, { reconstruct: true });
+        if (ev.kind === 'highlight' && rel >= ev.at + 11) continue;
+        renderEventNow(ev, { reconstruct: true, elapsedSince: Math.max(0, rel - ev.at) });
       }
       owner.rebuilding = false;
       owner.capKey = null;
@@ -1326,7 +1349,7 @@ function resetFallbackStage(t) {
   for (const mark of q.querySelectorAll('.fnmark')) mark.remove();
   const frac = (t - current.step.startSec) / (current.step.endSec - current.step.startSec);
   if (frac > 0.7) {
-    for (const mark of dir?.marks || []) { mark.drawn = true; drawMark(mark); }
+    for (const mark of dir?.marks || []) { mark.drawn = true; drawMark(mark, { immediate: true }); }
   }
 }
 
@@ -1370,12 +1393,13 @@ function updateProgress(t) {
     return;
   }
   const duration = Math.max(1, current.step.endSec - current.step.startSec);
-  const elapsed = Math.max(0, Math.min(duration, t - current.step.startSec));
-  bar.querySelector('i').style.width = `${(elapsed / duration) * 100}%`;
+  const maxElapsed = Math.max(0, duration - 1);
+  const elapsed = Math.max(0, Math.min(maxElapsed, t - current.step.startSec));
+  bar.querySelector('i').style.width = `${maxElapsed ? (elapsed / maxElapsed) * 100 : 0}%`;
   bar.setAttribute('aria-valuemin', '0');
-  bar.setAttribute('aria-valuemax', String(Math.round(duration)));
+  bar.setAttribute('aria-valuemax', String(Math.round(maxElapsed)));
   bar.setAttribute('aria-valuenow', String(Math.round(elapsed)));
-  bar.setAttribute('aria-valuetext', `${clockText(elapsed)} of ${clockText(duration)}`);
+  bar.setAttribute('aria-valuetext', `${clockText(elapsed)} of ${clockText(maxElapsed)}`);
 }
 
 (() => {
@@ -1383,7 +1407,8 @@ function updateProgress(t) {
   const toTime = (e) => {
     const r = bar.getBoundingClientRect();
     const frac = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width));
-    return current.step.startSec + frac * (current.step.endSec - current.step.startSec);
+    const playable = Math.max(0, current.step.endSec - current.step.startSec - 1);
+    return current.step.startSec + frac * playable;
   };
   let dragging = false;
   const preview = (e) => { if (current) updateProgress(toTime(e)); };
@@ -1535,7 +1560,7 @@ function scheduleStageRedraw() {
     const q = TH().querySelector('.verses');
     q.querySelector('svg.smarks')?.remove();
     for (const mark of stageDirections[owner.index]?.marks || []) {
-      if (mark.drawn) drawMark(mark);
+      if (mark.drawn) drawMark(mark, { immediate: true });
     }
   }, motionMs(140));
 }
