@@ -898,6 +898,31 @@ export function ListenPage({ backbone, bookNames }: {
   const [showHidden, setShowHidden] = useState(false);
   const [ask, setAsk] = useState<PlaylistAsk | null>(null);
   const askProps = usePlaylistAsk(setAsk);
+  /**
+   * THE MENU, BUILT ONCE AND PLACED IN ALL FOUR ROOMS.
+   *
+   * THE DEFECT THIS REPLACES was invisible in review and total in use. This
+   * component was mounted in exactly one place — the shelf's return — while the
+   * rows that can ASK for it live on the album and series pages, whose branches
+   * return long before the shelf's does. So right-clicking a track set the
+   * state, re-rendered the page, and drew nothing at all. The one documented
+   * way into a playlist was dead, and both empty states told the reader to use
+   * it.
+   *
+   * The room has four mutually exclusive returns and the menu belongs to all of
+   * them, so it is constructed once here and placed four times rather than
+   * written out four times. Four copies of a JSX line is four chances for three
+   * of them to keep a prop the fourth loses.
+   *
+   * Not by restructuring the returns into one, which was considered: the four
+   * branches are ~600 lines of deeply indented JSX and collapsing them would
+   * re-indent the lot, burying this fix inside a diff nobody could read.
+   *
+   * A contract counts these placements, because that is the shape of failure —
+   * the code was never wrong, it was only absent from three of the four places
+   * it had to be.
+   */
+  const menu = <AddToPlaylist ask={ask} onClose={() => setAsk(null)} />;
   const { showToast } = useToast();
   const now = usePodcastNowPlaying();
   /* Read straight from the player's own store rather than threaded down as a
@@ -965,17 +990,29 @@ export function ListenPage({ backbone, bookNames }: {
   /* Escape leaves whichever record is open. It used to leave only an album,
      because the handler was hung on `album` and the series page had been
      written afterwards — the kind of asymmetry nobody sees until they are in
-     the other page pressing the key that worked a moment ago. */
+     the other page pressing the key that worked a moment ago.
+
+     IT YIELDS TO WHATEVER IS OPEN ON TOP OF THE RECORD. This is a `window`
+     listener and so is the popover's, and ours is registered first — so ours
+     runs first, and the popover's `stopImmediatePropagation` arrives too late
+     to matter. That was harmless only while the menu could never open: press
+     Escape inside the add-to-playlist menu and the menu would close AND the
+     reader would be thrown back to the shelf, having asked for neither.
+
+     So the record's own Escape stands down while something smaller is open.
+     `ask` is that today; a rename in progress will be the next, and it belongs
+     in this same guard rather than in a second listener that has to be ordered
+     against this one. */
   useEffect(() => {
     if (!opened) return undefined;
     const onKey = (event: KeyboardEvent): void => {
-      if (event.key !== "Escape") return;
+      if (event.key !== "Escape" || ask) return;
       event.preventDefault();
       openListenRecord({});
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [opened]);
+  }, [opened, ask]);
 
   /* OPENING GOES TO THE TOP; GOING BACK GOES BACK.
      This was one line that fired on both, so it solved half a problem and
@@ -1327,6 +1364,7 @@ export function ListenPage({ backbone, bookNames }: {
           )}
           <Colophon />
         </div>
+        {menu}
       </div>
     );
   }
@@ -1463,6 +1501,7 @@ export function ListenPage({ backbone, bookNames }: {
           ))}
           <Colophon />
         </div>
+        {menu}
       </div>
     );
   }
@@ -1634,6 +1673,7 @@ export function ListenPage({ backbone, bookNames }: {
 
           <Colophon who={MUSIC.source.name} />
         </div>
+        {menu}
       </div>
     );
   }
@@ -1643,15 +1683,23 @@ export function ListenPage({ backbone, bookNames }: {
       className="listen"
       onScroll={rememberScroll}
       ref={scroller}
-      /* THE ROOM BREATHES WHAT YOU WERE HEARING. Every record page has a field
-         of its own colour and the shelf had bare canvas, which made the one
-         screen a reader always starts from the plainest in the room. It takes
-         the colour of the most recent unfinished record rather than inventing
-         one — so the room is quietly coloured by the reader's own listening,
-         and falls back to plain canvas when there is none. */
-      style={resume[0]?.tint ? { "--record-tint": resume[0].tint } as React.CSSProperties : undefined}
+      /* THE SHELF KEEPS ITS BARE CANVAS, and this is a reversal worth writing
+         down. It briefly wore a faint field of the last-played record's colour,
+         on the reasoning that every record page has one and the shelf was the
+         plainest screen in the room. The maintainer looked at it and named the
+         cost immediately: the SIDEBAR stopped looking translucent.
+
+         That is not a sidebar bug. The rail is transparent with a 26px backdrop
+         blur, and what it blurs is the app SHELL behind it — not this pane,
+         which begins 56px to its right. So a field that colours only this pane
+         runs up to the rail and stops dead, turning a strip that had been
+         invisible into a dark band with a hard edge down the window.
+
+         Every record page has the same seam and keeps it, because that page is
+         ABOUT one record and its colour is the subject. The shelf is about
+         everything, and it was buying a tint nobody asked for with the one piece
+         of chrome that is supposed to disappear. */
     >
-      {resume[0]?.tint && <div className="listen-ambient is-faint" />}
       <div className="listen-inner">
         <header className="listen-head">
           <h1 className="listen-title">Listen</h1>
@@ -1872,7 +1920,7 @@ export function ListenPage({ backbone, bookNames }: {
 
         <Colophon />
       </div>
-      <AddToPlaylist ask={ask} onClose={() => setAsk(null)} />
+      {menu}
     </div>
   );
 }

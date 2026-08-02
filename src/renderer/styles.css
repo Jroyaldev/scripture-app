@@ -24986,6 +24986,22 @@ button.lang-phrase-diagram-node:focus-visible,
 .listen-track-row[data-dead] .listen-track-face { cursor: default; }
 
 /* ── The menu that puts a thing on a list ─────────────────────────────────── */
+
+/* The panel had none, so the head sat flush against its top border and the last
+   item against the bottom — the popover's own rounding cutting into the first
+   and last rows. Every sibling menu on this surface takes the same 4px; see
+   `.scripture-workspace-menu-popover`. */
+.playlist-menu .popover-panel,
+.popover-panel.playlist-menu { padding: 4px; }
+
+/* Scrolls itself once the panel is capped, so a reader with twenty lists can
+   still reach the twentieth. */
+.playlist-menu-body {
+  max-height: inherit;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
 .playlist-menu-head {
   margin: 0 0 6px;
   padding: 0 10px;
@@ -25234,10 +25250,13 @@ button.lang-phrase-diagram-node:focus-visible,
   font: 0.75rem/1 var(--font-mono);
 }
 
-/* The shelf's own field, at half strength. A record page is ABOUT one record
-   and can wear its colour; the shelf is about everything, so it only breathes
-   the colour of what the reader was last hearing. */
-.listen-ambient.is-faint { opacity: 0.45; }
+/* WITHDRAWN. The shelf briefly wore a half-strength field of the last-played
+   record's colour; it made the translucent sidebar read as an opaque dark band,
+   because the rail blurs the app shell behind it while this field began 56px to
+   its right and stopped dead against the seam. The rule is gone rather than
+   tuned — there is no opacity at which a hard edge down the window is the
+   intended look. See the shelf's own return in ListenPage for the whole
+   argument. */
 
 /* ── Finding one thing in six hundred ────────────────────────────────────────
    Quiet, and sitting between the hero and the first year heading where the

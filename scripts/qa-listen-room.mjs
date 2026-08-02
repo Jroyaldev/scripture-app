@@ -750,6 +750,54 @@ gate(oneHalf.rows === 51 && oneHalf.groups.every((g) => /Instrumental/.test(g)),
 gate(oneHalf.chapters === 0, "with no heading over the only thing on screen");
 await shot("everypsalm-halves");
 
+/* ── The menu opens where the rows are ────────────────────────────────────────
+   THE BUG THIS GATE EXISTS FOR shipped invisibly: the add-to-playlist menu was
+   mounted only in the shelf's return, while the rows that ask for it are on the
+   album and series pages, whose branches return first. Right-clicking a track
+   set the state, re-rendered, and drew nothing — and both empty states told the
+   reader that right-clicking was how you did it.
+
+   Run from an album page, which is one of the three that had no menu. */
+const asked = await evaluate(`(() => {
+  const row = document.querySelector('.listen-track-face');
+  row.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true }));
+  return new Promise((r) => setTimeout(() => {
+    const panel = document.querySelector('.playlist-menu');
+    return r({
+      open: !!panel,
+      head: document.querySelector('.playlist-menu-head')?.textContent ?? null,
+      /* The panel must be able to scroll its own list — without a bound, a
+         reader past ~15 lists could not reach the tail. */
+      scrolls: (() => {
+        const body = document.querySelector('.playlist-menu-body');
+        return body ? getComputedStyle(body).overflowY : null;
+      })(),
+      /* A wrong ARIA role is worse than none: role="menu" declared an <input> a
+         menu item and promised arrow-key roving that was never written. */
+      roles: document.querySelectorAll('.playlist-menu [role="menu"], .playlist-menu [role="menuitem"]').length,
+    });
+  }, 450));
+})()`);
+gate(asked.open, "right-clicking a track opens the menu on a record page", asked.head);
+gate(asked.scrolls === "auto" || asked.scrolls === "scroll",
+  "and the list can scroll to its own tail", asked.scrolls);
+gate(asked.roles === 0, "with no role it does not honour", `${asked.roles} stale roles`);
+await shot("add-to-playlist-menu");
+
+/* Escape belongs to the menu first. Both handlers are on `window` and the
+   room's registers first, so without the guard one press would close the menu
+   AND throw the reader back to the shelf. */
+const escaped2 = await evaluate(`(() => {
+  window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  return new Promise((r) => setTimeout(() => r({
+    menu: !!document.querySelector('.playlist-menu'),
+    stillOnRecord: !!document.querySelector('.listen-hero-name'),
+  }), 450));
+})()`);
+gate(!escaped2.menu && escaped2.stillOnRecord,
+  "and Escape closes the menu without leaving the record",
+  `menu ${escaped2.menu}, record ${escaped2.stillOnRecord}`);
+
 const family = await evaluate(`(() => {
   const back = document.querySelector('.listen-back');
   back?.click();

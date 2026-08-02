@@ -247,6 +247,40 @@ test("a playlist fills the queue and is never a machine of its own", () => {
   assert.ok(!/startPodcastQueue\(|playPodcastEpisode\(/.test(store));
 });
 
+test("the add-to-playlist menu is placed in every room that can ask for it", () => {
+  /* THE FAILURE THIS EXISTS FOR was not wrong code — it was correct code absent
+     from three of the four places it had to be. `<AddToPlaylist>` was mounted
+     once, in the shelf's return, while the rows that can ASK for it live on the
+     album and series pages, whose branches return long before the shelf's does.
+     Right-clicking a track set the state, re-rendered, and drew nothing. Both
+     empty states instructed the reader to use that gesture. Nothing failed;
+     nothing happened.
+
+     Built once and placed four times, so the count is the assertion. A fifth
+     return added later without a placement fails here rather than silently
+     shipping another dead room. */
+  const room = code("src/renderer/components/ListenPage.tsx");
+  assert.equal(
+    (room.match(/<AddToPlaylist /g) ?? []).length, 1,
+    "one construction — four copies is three chances to drift",
+  );
+  assert.equal(
+    (room.match(/\{menu\}/g) ?? []).length, 4,
+    "placed in the playlist, series, album and shelf returns",
+  );
+
+  /* And the guard that makes it survivable. Both Escape handlers are on
+     `window` and the room's registers first, so without this the popover's
+     stopImmediatePropagation lands too late and one press closes the menu AND
+     leaves the record. */
+  const escape = room.slice(room.indexOf("if (!opened) return undefined;"));
+  assert.match(
+    escape.slice(0, 400),
+    /event\.key !== "Escape" \|\| ask/,
+    "the record's Escape must stand down while something smaller is open",
+  );
+});
+
 test("the plate fallback survives having no live example", () => {
   /* THE HAZARD THIS EXISTS FOR. The hero draws a publisher's own mark on their
      own colour when a source carries no cover art, and the room's tour used to

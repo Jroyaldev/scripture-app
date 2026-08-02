@@ -109,10 +109,24 @@ export function AddToPlaylist({ ask, onClose }: {
       anchorRect={ask.rect}
       ariaLabel={`Add ${ask.label} to a playlist`}
       className="playlist-menu"
+      /* A READER MAY HAVE MORE LISTS THAN FIT. The panel is `overflow: hidden`
+         and this list has no scroller of its own, so past roughly fifteen
+         playlists the tail was simply cut off and unreachable — the newest
+         lists first, since they sort last. A bounded height gives the panel
+         something to scroll. */
+      maxHeight={360}
       onClose={onClose}
       width={252}
     >
-      <div role="menu">
+      {/* NOT `role="menu"`, which is what this was. That role promises two
+          things this does not do: it declares every child a menu item, which is
+          false the moment the "new playlist" field opens (an `input` is not a
+          legal child of a menu), and it promises arrow-key roving that was
+          never implemented. A wrong role is worse than none — it tells a
+          screen-reader reader to expect behaviour that is not there. The
+          buttons carry their own semantics, and the panel is already named by
+          the popover's own label. */}
+      <div className="playlist-menu-body">
         <p className="playlist-menu-head">Add to playlist</p>
         {lists.length === 0 && !making && (
           <p className="playlist-menu-none">No playlists yet.</p>
@@ -127,7 +141,6 @@ export function AddToPlaylist({ ask, onClose }: {
               data-held={held ? "" : undefined}
               key={list.id}
               onClick={() => put(list.id, list.name)}
-              role="menuitem"
               type="button"
             >
               <span className="playlist-menu-name">{list.name}</span>
@@ -160,7 +173,6 @@ export function AddToPlaylist({ ask, onClose }: {
           <button
             className="playlist-menu-item is-new"
             onClick={() => setMaking(true)}
-            role="menuitem"
             type="button"
           >New playlist…</button>
         )}
