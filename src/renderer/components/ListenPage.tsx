@@ -59,36 +59,30 @@
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
-import catalogue from "../../../data/music/poor-bishop-hooper.json";
-import seriesArt from "../../../data/music/series-art.json";
 import {
+  playPodcastEpisode,
+  placeKey,
   startPodcastQueue,
+  usePodcastLedger,
   usePodcastNowPlaying,
   type PodcastEpisode,
-  type PodcastPassage,
+  type PodcastPlace,
 } from "./PodcastPlayer";
 import type { ResourceLibraryCatalogue } from "./ResourceLibraryMatrix";
 import { sameEpisode, type AudioCatalogueEpisode } from "../../core/resources/audio-catalogue";
-
-interface MusicTrack {
-  title: string; url: string; duration: string;
-  psalm?: number; stanza?: number; group?: string; cover?: string; download?: string;
-}
-interface MusicAlbum {
-  name: string; cover: string | null; tracks: MusicTrack[];
-  released?: string; about?: string; tint?: string; slug?: string | null;
-  credits?: Record<string, string>;
-}
-interface MusicCatalogue {
-  source: { id: string; name: string; homepageUrl: string; listenUrl: string };
-  albums: MusicAlbum[];
-}
-
-const MUSIC = catalogue as unknown as MusicCatalogue;
-/** Cover and the one colour it is, computed at author time by
- *  scripts/compute-cover-tints.py so no page has to look at an image to
- *  know what colour it should be. */
-const SERIES_ART = seriesArt as Record<string, { cover: string; tint: string }>;
+/* The shapes and the shaping both live beside this now rather than in it, so
+   the boot-time rebuild of a resumed record produces byte-identical ids. Two
+   shapers drifting by one character would mean a resumed album playing while
+   every row in this room showed nothing playing. */
+import {
+  MUSIC,
+  SERIES_ART,
+  asEpisode,
+  seriesEpisode,
+  trackId,
+  type MusicAlbum,
+  type MusicTrack,
+} from "./listen-episodes";
 
 /** What the shows the manifest registry does not carry call themselves. */
 const NAMES: Record<string, string> = {
@@ -152,57 +146,6 @@ function seriesLine(episodes: readonly AudioCatalogueEpisode[]): string {
   return [span, count, runtime > 0 ? extent(runtime) : null].filter(Boolean).join(" · ");
 }
 
-/** The whole track IS the psalm; there is no interior position to point at. */
-function trackPassage(track: MusicTrack): PodcastPassage | null {
-  if (track.psalm === undefined) return null;
-  return { book: "PSA", chapter: track.psalm, verse: null, endVerse: null, basis: "record" };
-}
-
-function trackId(album: MusicAlbum, track: MusicTrack): string {
-  return `${MUSIC.source.id}:${album.name}:${track.title}`;
-}
-
-function asEpisode(album: MusicAlbum, track: MusicTrack): PodcastEpisode {
-  const id = trackId(album, track);
-  return {
-    id, sourceId: MUSIC.source.id, recordId: id,
-    sourceName: MUSIC.source.name,
-    title: track.title,
-    officialUrl: MUSIC.source.listenUrl,
-    audioUrl: track.url,
-    passage: trackPassage(track),
-    /* Named for what it is: a song announced as a "podcast" is the sort of
-       small lie a reader notices. And `kind` is what the dock reads to decide
-       which transport to wear, so the word does real work now. */
-    kind: "song",
-    /* The sleeve travels with the song. A group cover where the publisher drew
-       one, the record's otherwise. */
-    ...(track.cover ?? album.cover ? { artUrl: track.cover ?? album.cover ?? undefined } : {}),
-    ...(album.tint ? { tint: album.tint } : {}),
-  };
-}
-
-/** A series episode, shaped for the one transport the app has. */
-function seriesEpisode(
-  sourceId: string,
-  name: string,
-  ep: AudioCatalogueEpisode,
-  art?: { cover: string; tint: string },
-): PodcastEpisode {
-  return {
-    id: `${sourceId}:${ep.recordId}`,
-    sourceId,
-    recordId: ep.recordId,
-    sourceName: name,
-    title: ep.title,
-    officialUrl: ep.officialUrl ?? "",
-    audioUrl: ep.audioUrl,
-    passage: null,
-    kind: "podcast",
-    ...(art ? { artUrl: art.cover, tint: art.tint } : {}),
-  };
-}
-
 /** "42:10" from the publisher's stated seconds; blank when they stated none. */
 function clock(secondsTotal: number | null): string {
   if (!secondsTotal || secondsTotal <= 0) return "";
@@ -256,6 +199,57 @@ function Cover({ src, tint, alt, className = "" }: {
   return (
     <span className={`listen-cover ${className}`} style={tint ? { background: tint } : undefined}>
       {src ? <img alt={alt} decoding="async" loading="lazy" src={src} /> : null}
+    </span>
+  );
+}
+
+/**
+ * How far into a row the reader already is.
+ *
+ * A listening room that cannot say what has been heard makes the reader keep
+ * that list themselves, which is the one thing a library is for. Two states,
+ * because there are only two worth a mark: BEEN HERE, drawn as the fraction
+ * played, and DONE, drawn as a tick — a bar sitting at 99% is a puzzle where a
+ * tick is an answer.
+ *
+ * Nothing is drawn for a row never started. Six hundred untouched rows each
+ * wearing an empty tray is noise pretending to be information, and it would
+ * bury the handful of rows that do carry a mark.
+ *
+ * The duration is the LEDGER'S, not the catalogue's: it is what the file
+ * actually reported while playing, so the fraction is against the audio the
+ * reader heard rather than against a feed's rounded claim about it.
+ */
+function Progress({ place }: { place?: PodcastPlace }): React.JSX.Element {
+  /* THE SLOT IS ALWAYS DRAWN, even when it is empty, and that is deliberate.
+     Returning nothing for an unheard row would let the duration column slide
+     left on every row without a mark — a list whose right edge moves row to
+     row reads as broken long before anybody works out why. An empty cell of a
+     known width costs one span and keeps the column true. */
+  const whole = place?.durationSeconds;
+  const part = place && whole && whole > 0
+    ? Math.min(1, Math.max(0.02, place.positionSeconds / whole))
+    : null;
+  return (
+    <span className="listen-track-place">
+      {place && place.positionSeconds > 0 && place.finished ? (
+        <>
+          <svg aria-hidden="true" className="listen-track-done" viewBox="0 0 16 16" width="13" height="13">
+            <path d="M3.5 8.5l3 3 6-6.5" fill="none" stroke="currentColor" strokeWidth="1.75"
+              strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+          <span className="listen-sr">Played</span>
+        </>
+      ) : place && place.positionSeconds > 0 && part !== null && whole ? (
+        <>
+          <span aria-hidden="true" className="listen-track-progress">
+            <span className="listen-track-progress-run" style={{ transform: `scaleX(${part})` }} />
+          </span>
+          <span className="listen-sr">
+            {Math.max(0, Math.round((whole - place.positionSeconds) / 60))} minutes left
+          </span>
+        </>
+      ) : null}
     </span>
   );
 }
@@ -449,6 +443,11 @@ export function ListenPage(): React.JSX.Element {
   const [audio, setAudio] = useState<Record<string, AudioCatalogueEpisode[]> | null>(null);
   const [openSeries, setOpenSeries] = useState<string | null>(null);
   const now = usePodcastNowPlaying();
+  /* Read straight from the player's own store rather than threaded down as a
+     prop. A six-hundred-row series would otherwise pass one number through
+     every list in the room, and the store already updates as you listen — a
+     row's mark moves under the reader without a refetch. */
+  const places = usePodcastLedger();
   const scroller = useRef<HTMLDivElement>(null);
   const [passed, mark] = usePassed(scroller, openAlbum ?? openSeries ?? "");
 
@@ -550,6 +549,64 @@ export function ListenPage(): React.JSX.Element {
   const playingHere = (sourceId: string, recordId: string): boolean =>
     sameEpisode(now.episode, sourceId, recordId);
 
+  /**
+   * WHAT WAS NOT FINISHED, newest first.
+   *
+   * The room opened on the whole library every time, which is the right answer
+   * to "what is here?" and the wrong one to "where was I?" — and the second is
+   * the question a listener actually arrives with, most days.
+   *
+   * Three rules keep it honest. It joins against the CATALOGUE rather than
+   * printing what the ledger stored, so a row is only ever offered if the thing
+   * still exists and the reader has not muted it; a place with no episode
+   * behind it just does not draw. It ignores anything under a minute, because a
+   * track sampled for ten seconds is not something to be invited back into. And
+   * it ends at six: this is a doorway, not a history, and a history is what the
+   * shelves below already are.
+   */
+  const resume = useMemo(() => {
+    if (places.size === 0) return [];
+    const found: Array<{
+      key: string; heardAt: number; place: PodcastPlace;
+      title: string; where: string; art?: string; tint?: string;
+      open: () => void; episode: PodcastEpisode;
+    }> = [];
+    for (const [key, place] of places) {
+      if (place.finished || place.positionSeconds < 60) continue;
+      const cut = key.indexOf(":");
+      const sourceId = key.slice(0, cut);
+      const recordId = key.slice(cut + 1);
+      if (sourceId === MUSIC.source.id) {
+        for (const entry of MUSIC.albums) {
+          const track = entry.tracks.find((t) => trackId(entry, t) === recordId);
+          if (!track) continue;
+          found.push({
+            key, heardAt: place.heardAt, place,
+            title: track.title, where: entry.name,
+            ...(track.cover ?? entry.cover ? { art: track.cover ?? entry.cover ?? undefined } : {}),
+            ...(entry.tint ? { tint: entry.tint } : {}),
+            open: () => setOpenAlbum(entry.name),
+            episode: asEpisode(entry, track),
+          });
+          break;
+        }
+        continue;
+      }
+      const source = series.find((one) => one.id === sourceId);
+      const ep = source?.episodes.find((one) => one.recordId === recordId);
+      if (!source || !ep) continue;
+      const art = SERIES_ART[sourceId];
+      found.push({
+        key, heardAt: place.heardAt, place,
+        title: ep.title, where: source.name,
+        ...(art ? { art: art.cover, tint: art.tint } : {}),
+        open: () => setOpenSeries(sourceId),
+        episode: seriesEpisode(sourceId, source.name, ep, art),
+      });
+    }
+    return found.sort((a, b) => b.heardAt - a.heardAt).slice(0, 6);
+  }, [places, series]);
+
   if (openedSeries) {
     /* SEASONS, and they are the publisher's calendar rather than our
        invention: a podcast's own division of itself is the year it published
@@ -575,6 +632,10 @@ export function ListenPage(): React.JSX.Element {
         openedSeries.name,
         ordered.map((ep) => seriesEpisode(openedSeries.id, openedSeries.name, ep, art)),
         from,
+        /* The RECIPE travels with the record, not the list. It is what a
+           relaunch rebuilds this same order from, so a reader who quits inside
+           a series comes back to the series rather than to one episode of it. */
+        { of: openedSeries.name, kind: "series", sourceId: openedSeries.id },
       );
     };
     const start = (): void => play(0);
@@ -625,6 +686,7 @@ export function ListenPage(): React.JSX.Element {
                           <span className="listen-track-title">{ep.title}</span>
                           {stamp(ep.publishedAt) && <span className="listen-track-when">{stamp(ep.publishedAt)}</span>}
                         </span>
+                        <Progress place={places.get(placeKey(openedSeries.id, ep.recordId))} />
                         <span className="listen-track-extent">{clock(ep.durationSeconds)}</span>
                       </button>
                     </li>
@@ -646,7 +708,12 @@ export function ListenPage(): React.JSX.Element {
        publisher's. */
     const ordered = groups.flatMap((group) => group.tracks);
     const play = (from: number): void => {
-      startPodcastQueue(album.name, ordered.map((track) => asEpisode(album, track)), from);
+      startPodcastQueue(
+        album.name,
+        ordered.map((track) => asEpisode(album, track)),
+        from,
+        { of: album.name, kind: "album", sourceId: MUSIC.source.id, album: album.name },
+      );
     };
     const start = (): void => play(0);
     return (
@@ -701,6 +768,7 @@ export function ListenPage(): React.JSX.Element {
                         <span className="listen-track-words">
                           <span className="listen-track-title">{track.title}</span>
                         </span>
+                        <Progress place={places.get(placeKey(MUSIC.source.id, trackId(album, track)))} />
                         <span className="listen-track-extent">{track.duration}</span>
                       </button>
                     </li>
@@ -723,6 +791,51 @@ export function ListenPage(): React.JSX.Element {
           <h1 className="listen-title">Listen</h1>
           <p className="listen-lede">Everything in your library that has a runtime — sung and spoken.</p>
         </header>
+
+        {resume.length > 0 && (
+          <section aria-label="Continue listening" className="listen-shelf is-resume">
+            <div className="listen-shelf-head">
+              <h2 className="listen-shelf-name">Continue listening</h2>
+              <p className="listen-shelf-by">Where you left off</p>
+            </div>
+            <ul className="listen-resume-row">
+              {resume.map((one) => (
+                <li className="listen-resume" key={one.key}>
+                  {/* TWO PRESSES, because there are two intentions and one of
+                      them is destructive of the other. The face plays from the
+                      place — the whole reason this shelf exists. The name under
+                      it opens the record, for a reader who wants the list
+                      rather than the audio. Rolling both into one press would
+                      make every "where was I?" also a commitment to start. */}
+                  <button
+                    aria-label={`Resume ${one.title} — ${one.where}`}
+                    className="listen-resume-face"
+                    onClick={() => playPodcastEpisode({
+                      ...one.episode,
+                      startAt: one.place.positionSeconds,
+                    })}
+                    style={one.tint ? { "--record-tint": one.tint } as React.CSSProperties : undefined}
+                    type="button"
+                  >
+                    <span className="listen-resume-art">
+                      <Cover alt="" src={one.art} tint={one.tint} />
+                      <span aria-hidden="true" className="listen-resume-play">
+                        {playingHere(one.episode.sourceId, one.episode.recordId) && sounding
+                          ? <BarsGlyph />
+                          : <PlayGlyph size={16} />}
+                      </span>
+                      <Progress place={one.place} />
+                    </span>
+                    <span className="listen-resume-title">{one.title}</span>
+                  </button>
+                  <button className="listen-resume-where" onClick={one.open} type="button">
+                    {one.where}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         <section aria-label="Music" className="listen-shelf">
           <div className="listen-shelf-head">

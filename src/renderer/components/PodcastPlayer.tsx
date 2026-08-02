@@ -8,6 +8,7 @@ import type { PassageReference, ReferenceRelation, ReferenceSet } from "../../co
 import { passingIn, subjectsOf } from "../../core/references.js";
 import { relationSaid, relationSpoken } from "../../core/relation-words.js";
 import { transcriptBasis } from "../../core/transcripts.js";
+import { sameEpisode } from "../../core/resources/audio-catalogue.js";
 import { safeCall } from "../utils/safeCall.js";
 import { useToast } from "./Toast.js";
 
@@ -503,15 +504,27 @@ export interface PodcastQueue {
   episodes: PodcastEpisode[];
   /** Which track is running. */
   at: number;
+  /** How to rebuild this list after a relaunch. Absent for a list with no
+   *  shelf behind it — a playlist resolved from entries, say. */
+  recipe?: PodcastQueueRecipe;
 }
 
 let queue: PodcastQueue | null = null;
+/** The running record's recipe, carried into every place written while it
+ *  plays, so a resume can offer the RECORD rather than one track of it. */
+let queueRecipe: PodcastQueueRecipe | null = null;
 /** Set around a machine-initiated launch, exactly as `walking` is. */
 let queueing = false;
 const queueWatchers = new Set<() => void>();
 
 function announceQueue(next: PodcastQueue | null): void {
   queue = next;
+  /* The recipe dies with the record it describes, wherever that happens — a
+     reader pressing something else, the last track ending, a walk taking over.
+     Kept here rather than at each of those sites so a fourth one cannot be
+     added without it, and a place written afterwards cannot claim to be inside
+     a record that is no longer playing. */
+  if (!next) queueRecipe = null;
   for (const watcher of queueWatchers) watcher();
 }
 
@@ -538,10 +551,16 @@ export function jumpPodcastQueue(index: number): void {
 }
 
 /** Begin a record. `from` is the track pressed; the rest follow it. */
-export function startPodcastQueue(of: string, episodes: PodcastEpisode[], from = 0): void {
+export function startPodcastQueue(
+  of: string,
+  episodes: PodcastEpisode[],
+  from = 0,
+  recipe?: PodcastQueueRecipe,
+): void {
   if (episodes.length === 0) return;
   if (walk) announceWalk(null);
-  announceQueue({ of, episodes, at: -1 });
+  announceQueue({ of, episodes, at: -1, ...(recipe ? { recipe } : {}) });
+  queueRecipe = recipe ?? null;
   enterTrack(Math.min(Math.max(from, 0), episodes.length - 1));
 }
 
@@ -719,6 +738,19 @@ export function playPodcastEpisode(episode: PodcastEpisode): void {
      this surface goes through, so there is one answer to "the file is not
      ready yet" instead of two that can drift apart. */
   pendingSeek = episode.startAt != null && episode.startAt > 0 ? episode.startAt : null;
+  /* THE OUTGOING TRACK'S PLACE, captured here and nowhere else.
+     This is the one instant where the episode leaving and the position it
+     reached are both still true at the same time. A line later `element.src`
+     starts the media load algorithm, `nowPlaying` becomes the new episode, and
+     the `pause` the algorithm queues arrives to find the two no longer
+     matching — which is how a position gets filed under the wrong title.
+     Forced past the cadence because a track change is exactly when the
+     fifteen-second throttle is most likely to swallow the write. */
+  if (nowPlaying.episode && Number.isFinite(element.currentTime)) {
+    void rememberHeard(element.currentTime, { force: true });
+  }
+  heardSuppressed = true;
+  heardWrittenAt = 0;
   /* Same reason as the resume: a fade armed against the LAST episode must not
      be able to pause this one. */
   endEase();
@@ -846,11 +878,13 @@ export function setPodcastRate(rate: number): void {
  * saying they are done with it: the connection closes with the dock rather than
  * idling open on a server that is not ours.
  *
- * It also forgets where they were, and that is the same sentence. The player
- * keeps a place for reading across a restart and now keeps one for listening
- * too — but the reader closing the dock is the one act on this surface that
- * says "done", so it is the one act that clears it. Quitting mid-episode
- * remembers; pressing the cross does not.
+ * IT NO LONGER FORGETS WHERE THEY WERE, and that is a correction. The cross
+ * used to clear the place, on the reasoning that it is the one act here meaning
+ * "done" — which was true about the OFFER and was never true about the record.
+ * It only read as one act because the offer was the only memory there was. Now
+ * that every episode keeps its own place, the cross puts the card away and the
+ * library remembers: close the dock on a two-hour episode at ninety minutes and
+ * its row still says so.
  */
 export function stopPodcast(): void {
   pendingSeek = null;
@@ -891,15 +925,117 @@ export function stopPodcast(): void {
 export interface PodcastHeard {
   episode: PodcastEpisode;
   positionSeconds: number;
+  /** How to rebuild the record this was playing inside, when it was in one. */
+  queue?: PodcastQueueRecipe;
+}
+
+/* ── The ledger ─────────────────────────────────────────────────────────────
+   ONE PLACE PER EPISODE, where there used to be one place in total.
+
+   `heard` above is the resume OFFER: a single card in the dock, the one record
+   a reader is invited back into. That is deliberately one thing, and it is why
+   it could not also be the memory — a reader who left BEMA halfway to start a
+   psalm lost BEMA's place at the moment the psalm began, and no list in the
+   room could mark a row as heard because nothing knew.
+
+   So the offer stays one, and the LIBRARY RECORD is this: a position per
+   episode, keyed the way `sameEpisode` matches, mirrored here so the room can
+   ask without an IPC per row. Identities and numbers only — every title and
+   every cover a row draws beside a position is joined from the catalogue the
+   room already holds.
+
+   The two are written together, in one settings call, because they change
+   together and a write that carried only one of them would let the offer and
+   the ledger disagree about the same episode. */
+export interface PodcastPlace {
+  positionSeconds: number;
+  durationSeconds?: number;
+  heardAt: number;
+  finished: boolean;
+}
+
+/** How to rebuild a record from the local catalogue. Never the episode list. */
+export interface PodcastQueueRecipe {
+  of: string;
+  kind: "album" | "series";
+  sourceId: string;
+  album?: string;
+}
+
+/** The identity every surface agrees on. Also the ledger's key. */
+export function placeKey(sourceId: string, recordId: string): string {
+  return `${sourceId}:${recordId}`;
+}
+
+let ledger = new Map<string, PodcastPlace>();
+const ledgerWatchers = new Set<() => void>();
+/** Rebuilt on every announce so `useSyncExternalStore` sees a new reference. */
+let ledgerSnapshot: ReadonlyMap<string, PodcastPlace> = ledger;
+
+function announceLedger(): void {
+  ledgerSnapshot = new Map(ledger);
+  for (const watcher of ledgerWatchers) watcher();
+}
+
+/**
+ * Every place, live. Rows read it directly rather than being handed one each,
+ * because a six-hundred-row series would otherwise thread a prop through every
+ * list in the room to say one number.
+ */
+export function usePodcastLedger(): ReadonlyMap<string, PodcastPlace> {
+  return useSyncExternalStore(
+    (watcher) => { ledgerWatchers.add(watcher); return () => { ledgerWatchers.delete(watcher); }; },
+    () => ledgerSnapshot,
+  );
+}
+
+/** What the settings store had on launch. Nothing here starts audio. */
+export function adoptListeningMemory(memory: {
+  ledger?: Record<string, PodcastPlace>;
+  rate?: number;
+}): void {
+  if (memory.ledger) {
+    ledger = new Map(Object.entries(memory.ledger));
+    announceLedger();
+  }
+  /* The element is the authority on its own rate and the dock's label follows
+     `ratechange`, so there is nothing to announce here — setting the module
+     value is enough. It reaches the element either when it registers or at the
+     next `src`, both of which call `applyPodcastRate`. */
+  if (typeof memory.rate === "number"
+    && (PODCAST_RATES as readonly number[]).includes(memory.rate)) {
+    podcastRate = memory.rate;
+    applyPodcastRate();
+  }
 }
 
 let heard: PodcastHeard | null = null;
 const heardWatchers = new Set<() => void>();
-/** Set by the dock once, so this module owns no IPC of its own. */
-let writeHeard: ((next: PodcastHeard | null) => void) | null = null;
+/** Set by the dock once, so this module owns no IPC of its own. Returns the
+ *  write's own promise, which is what makes a flush on quit possible. */
+let writeHeard:
+  | ((next: PodcastHeard | null, ledger: Record<string, PodcastPlace>) => Promise<void> | void)
+  | null = null;
 let heardWrittenAt = 0;
 /** Every fifteen seconds of listening, which is a file write per quarter minute. */
 const HEARD_CADENCE_MS = 15_000;
+/** Within this of the end, a listener has heard it. Credits, outro, goodbye. */
+const FINISHED_WITHIN = 30;
+/**
+ * Shut across an episode change, and this is not belt-and-braces.
+ *
+ * Setting `element.src` starts the media load algorithm, which QUEUES a `pause`
+ * event — it lands after the synchronous work around it, so the handler ran
+ * with the OLD element state and, by then, the NEW episode announced. With one
+ * global slot that misfiling cost a few seconds against the wrong title. With a
+ * ledger it would write the outgoing track's position into the incoming
+ * track's entry and then hold that lie behind the fifteen-second throttle.
+ *
+ * The outgoing place is captured deliberately, before the src changes, where
+ * identity and position are read in the same instant. Everything the load
+ * algorithm fires afterwards writes nothing until the new file reports itself.
+ */
+let heardSuppressed = false;
 
 function announceHeard(next: PodcastHeard | null): void {
   heard = next;
@@ -919,32 +1055,143 @@ export function offerPodcastHeard(next: PodcastHeard | null): void {
   announceHeard(next);
 }
 
-export function registerHeardWriter(write: (next: PodcastHeard | null) => void): void {
+export function registerHeardWriter(
+  write: (next: PodcastHeard | null, ledger: Record<string, PodcastPlace>) => Promise<void> | void,
+): void {
   writeHeard = write;
 }
 
-function rememberHeard(position: number, { force = false } = {}): void {
+/**
+ * Put the current place beyond the throttle, and wait for it to land.
+ *
+ * The cadence is fifteen seconds while playing, which is right for a file
+ * write and wrong for a quit: an app closed mid-episode lost up to a quarter
+ * minute, and the reader's next launch offered them a place they had already
+ * listened past. Called from the close handler for both a window close and a
+ * quit, and deliberately unable to veto either — losing fifteen seconds is not
+ * worth trapping somebody in an app they asked to leave.
+ */
+export async function flushPodcastListening(): Promise<void> {
+  const element = transport;
+  if (!element || !nowPlaying.episode) return;
+  const at = pendingSeek ?? element.currentTime;
+  if (!Number.isFinite(at)) return;
+  await rememberHeard(at, { force: true });
+}
+
+/**
+ * Write the place — the offer and the ledger entry, in one settings call.
+ *
+ * `finished` is not decided here from the position alone, because a reader who
+ * drags the scrubber to the last seconds and leaves has not heard the episode;
+ * the `ended` event says that, and passes `done`. What the position decides is
+ * the softer case the element cannot report: an episode abandoned inside its
+ * outro is, for the purpose of a list marking, done with.
+ */
+function rememberHeard(
+  position: number,
+  { force = false, done = false } = {},
+): Promise<void> | void {
   const episode = nowPlaying.episode;
   if (!episode || !Number.isFinite(position)) return;
+  /* Deliberately ahead of the `force` check rather than behind it. The write
+     this exists to stop — the `pause` the media load algorithm queues — is
+     itself a forced one, so a suppression that forced writes could pass would
+     stop nothing at all. The one write that must survive the shutter is the
+     outgoing capture, and that happens before the shutter closes. */
+  if (heardSuppressed) return;
   const now = performance.now();
   if (!force && now - heardWrittenAt < HEARD_CADENCE_MS) return;
   heardWrittenAt = now;
-  const next: PodcastHeard = { episode, positionSeconds: Math.max(0, Math.floor(position)) };
+  const at = Math.max(0, Math.floor(position));
+  const next: PodcastHeard = {
+    episode,
+    positionSeconds: at,
+    ...(queueRecipe ? { queue: queueRecipe } : {}),
+  };
   announceHeard(next);
-  writeHeard?.(next);
+
+  const duration = transport?.duration;
+  const known = typeof duration === "number" && Number.isFinite(duration) && duration > 0
+    ? Math.floor(duration)
+    : ledger.get(placeKey(episode.sourceId, episode.recordId))?.durationSeconds;
+  ledger.set(placeKey(episode.sourceId, episode.recordId), {
+    positionSeconds: at,
+    ...(known ? { durationSeconds: known } : {}),
+    heardAt: Date.now(),
+    finished: done || (known != null && known - at < FINISHED_WITHIN),
+  });
+  announceLedger();
+  return writeHeard?.(next, Object.fromEntries(ledger));
 }
 
+/**
+ * Put the OFFER away, and keep the library record.
+ *
+ * These were one act until the ledger existed, and the cross meant both. It
+ * should only ever have meant the first: a reader closing the dock is saying
+ * they are done listening NOW — the connection closes, and nothing pesters them
+ * with a resume card on the next launch. It was never them asking the app to
+ * forget that forty minutes of an episode had been heard. That only happened
+ * because the offer was the sole memory there was.
+ */
 function forgetHeard(): void {
   heardWrittenAt = 0;
   announceHeard(null);
-  writeHeard?.(null);
+  writeHeard?.(null, Object.fromEntries(ledger));
 }
 
-/** Take up the offer. The passage claim and the position come back with it. */
+/**
+ * Take up the offer. The passage claim and the position come back with it —
+ * and so does the RECORD, when the offer was made inside one.
+ *
+ * The list is not stored and is not fetched; it is handed in by whoever rebuilt
+ * it from the local catalogue at boot (see `offerPodcastRecord`). If nothing
+ * rebuilt it — the album was renamed, the feed lost the episode, the catalogue
+ * had not loaded yet — this degrades to exactly what it always did and plays
+ * the one episode. A resume that cannot restore the queue is still a resume.
+ *
+ * Still an offer, still one press, and still nothing asked of a publisher until
+ * that press: the rebuild reads bundled JSON and the library's own files.
+ */
 export function resumePodcastHeard(): void {
   const held = heard;
   if (!held) return;
+  const record = offeredRecord;
+  if (record && record.episodes.length > 0) {
+    const at = record.episodes.findIndex(
+      (ep) => sameEpisode(held.episode, ep.sourceId, ep.recordId),
+    );
+    if (at >= 0) {
+      startPodcastQueue(
+        record.of,
+        record.episodes.map((ep, index) => (
+          index === at ? { ...ep, startAt: held.positionSeconds } : ep
+        )),
+        at,
+        record.recipe,
+      );
+      return;
+    }
+  }
   playPodcastEpisode({ ...held.episode, startAt: held.positionSeconds });
+}
+
+/**
+ * The rebuilt record behind the offer, if one could be rebuilt.
+ *
+ * Held beside the offer rather than inside it because the offer is what gets
+ * written to settings and this is emphatically not: it is a list of episodes,
+ * reconstructed at boot from local data, thrown away on the next launch and
+ * rebuilt from the recipe again.
+ */
+let offeredRecord: { of: string; episodes: PodcastEpisode[]; recipe: PodcastQueueRecipe } | null = null;
+
+export function offerPodcastRecord(
+  record: { of: string; episodes: PodcastEpisode[]; recipe: PodcastQueueRecipe } | null,
+): void {
+  if (nowPlaying.episode) return;
+  offeredRecord = record;
 }
 
 /** Put the offer away. Nothing is fetched, nothing was fetched. */
@@ -952,8 +1199,26 @@ export function forgetPodcastHeard(): void {
   forgetHeard();
 }
 
+/**
+ * The new file has spoken for itself, so places may be written against it again.
+ *
+ * Hung on four events rather than the obvious one because the shutter must not
+ * be able to stick: `loadedmetadata` is the ordinary release, `playing` covers
+ * a file that reports readiness in the other order, `timeupdate` is proof the
+ * thing is actually running, and `error` matters most of all — a file that
+ * never loads would otherwise leave the ledger deaf for the rest of the
+ * session, which is a worse bug than the one being prevented.
+ */
+function fileIsReal(): void {
+  heardSuppressed = false;
+}
+
 function registerTransport(element: HTMLAudioElement | null): void {
   transport = element;
+  /* A rate adopted from settings before the element existed has nowhere to go
+     until now. Without this it would wait for the first `src` change, which is
+     correct but late — the element should be born at the reader's speed. */
+  if (element) applyPodcastRate();
 }
 
 /**
@@ -2579,19 +2844,29 @@ export function PodcastPlayer({
           applyPendingSeek();
           announceElapsed(event.currentTarget.currentTime, event.currentTarget.duration || 0);
         }}
-        onEnded={() => {
+        onEnded={(event) => {
+          /* HEARD TO THE END, in the element's own words — which is a better
+             authority than any position test, because a reader who drags the
+             scrubber into the last seconds and leaves has not heard it.
+             Written BEFORE the queue advances: advancing re-points the element,
+             and an ending filed after that is filed against the next track. */
+          void rememberHeard(event.currentTarget.currentTime, { force: true, done: true });
           /* A record plays on; a walk ends where its last treatment does. */
           if (queuePastEnd()) return;
           walkPastEnd(Number.POSITIVE_INFINITY);
           elementReports("paused");
         }}
-        onError={() => { if (nowPlaying.episode) announceNowPlaying({ episode: nowPlaying.episode, status: "failed" }); }}
+        onError={() => {
+          fileIsReal();
+          if (nowPlaying.episode) announceNowPlaying({ episode: nowPlaying.episode, status: "failed" });
+        }}
         /* The held seek is spent BEFORE anything is announced. This used to
            announce a flat 0 and let the seek land afterwards, which is a frame
            of 0:00 and a moment of lineIndex 0 for an episode a reader opened
            at eleven minutes in — the top of the file flashing past on the way
            to the place they actually asked for. */
         onLoadedMetadata={(event) => {
+          fileIsReal();
           applyPendingSeek();
           announceElapsed(event.currentTarget.currentTime, event.currentTarget.duration || 0);
         }}
@@ -2599,8 +2874,11 @@ export function PodcastPlayer({
            here rather than waited out — a reader who pauses and quits within
            fifteen seconds would otherwise come back to where they were a
            quarter of a minute earlier. */
-        onPause={(event) => { rememberHeard(event.currentTarget.currentTime, { force: true }); elementReports("paused"); }}
-        onPlaying={() => elementReports("playing")}
+        onPause={(event) => {
+          void rememberHeard(event.currentTarget.currentTime, { force: true });
+          elementReports("paused");
+        }}
+        onPlaying={() => { fileIsReal(); elementReports("playing"); }}
         /* The element is the authority on its own rate, so the dock reads it
            here instead of remembering what it asked for. */
         onRateChange={(event) => setRate(event.currentTarget.playbackRate)}
@@ -2608,7 +2886,8 @@ export function PodcastPlayer({
           const time = event.currentTarget.currentTime;
           announceElapsed(time, event.currentTarget.duration || 0);
           if (!event.currentTarget.paused) {
-            rememberHeard(time);
+            fileIsReal();
+            void rememberHeard(time);
             walkPastEnd(time);
           }
         }}

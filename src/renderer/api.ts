@@ -349,7 +349,29 @@ export interface AppSettings {
       basis: "record" | "moment";
     } | null;
     positionSeconds: number;
+    /** How to rebuild the record that was playing — see the schema in main. */
+    queue?: {
+      of: string;
+      kind: "album" | "series";
+      sourceId: string;
+      album?: string;
+    };
   } | null;
+  /**
+   * Every episode's place, keyed `sourceId:recordId`.
+   *
+   * Identities and numbers only — no titles, no urls. Everything shown beside a
+   * position is joined from the catalogue the room already holds, so nothing
+   * here can go stale as a name or be handed to a fetch.
+   */
+  heardLedger: Record<string, {
+    positionSeconds: number;
+    durationSeconds?: number;
+    heardAt: number;
+    finished: boolean;
+  }>;
+  /** The speed the reader listens at, kept across launches. */
+  listeningRate: number;
   /** Revisioned desktop workspace. Legacy settings remain Electron-only migration inputs. */
   studyWorkspace?: StudyWorkspaceStateV2 | null;
   studyWorkspaceRefusal?: "newer-version";

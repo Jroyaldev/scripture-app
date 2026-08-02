@@ -126,8 +126,15 @@ await evaluate(`(() => {
   if (back) back.click();
   return true;
 })()`);
+const SHELVES = `[...document.querySelectorAll('.listen-shelf-name')].map((n) => n.textContent)`;
+/* NAMED RATHER THAN COUNTED. This was `.length === 2` until the room grew a
+   "Continue listening" shelf, which appears only once there is something to
+   continue — so the count was 2 before the tour played anything and 3
+   afterwards, and the same gate passed early and timed out later. A count was
+   never what these waits meant: what they mean is that the LIBRARY is back on
+   screen, which is Music and Series being present. */
 await waitFor(
-  `document.querySelectorAll('.listen-shelf').length === 2
+  `${SHELVES}.includes('Music') && ${SHELVES}.includes('Series')
    && document.querySelectorAll('.listen-card.is-ghost').length === 0`,
   "both shelves, with the skeleton replaced",
 );
@@ -278,7 +285,7 @@ await shot("album-compact-bar");
 
 /* ── A series, which must be the album's sibling and not its poor relation ── */
 await evaluate(`document.querySelector('.listen-back').click()`);
-await waitFor(`document.querySelectorAll('.listen-shelf').length === 2`, "the shelf again");
+await waitFor(`${SHELVES}.includes('Music') && ${SHELVES}.includes('Series')`, "the shelf again");
 await evaluate(`(() => {
   const face = [...document.querySelectorAll('.listen-card-face')]
     .find((f) => /BEMA/i.test(f.querySelector('.listen-card-name')?.textContent || ''));
@@ -314,7 +321,7 @@ await shot("series");
    setting is a control for spoiling it. This is the gate on that, and on the
    thing a record does that a single episode never did: play on. */
 await evaluate(`document.querySelector('.listen-back')?.click()`);
-await waitFor(`document.querySelectorAll('.listen-shelf').length === 2`, "the shelf");
+await waitFor(`${SHELVES}.includes('Music') && ${SHELVES}.includes('Series')`, "the shelf");
 await evaluate(`(() => {
   const face = [...document.querySelectorAll('.listen-card-face')]
     .find((f) => /^Hymns I$/.test(f.querySelector('.listen-card-name')?.textContent || ''));
@@ -477,6 +484,82 @@ const left = await evaluate(`(() => {
   return new Promise((r) => setTimeout(() => r(!!document.querySelector('.listen-shelf')), 400));
 })()`);
 gate(left, "Escape leaves a series, the way it already left an album");
+
+/* ── The room remembers ───────────────────────────────────────────────────────
+   The tour has played several tracks by now, so there is real listening behind
+   these gates rather than a fixture. What is checked is what a reader would
+   check: that the rows they heard say so, and that the room offers them back.
+
+   The bar's WIDTH is deliberately not asserted. It is a fraction of a duration
+   the file reported, and pinning it would pin how far the tour happened to
+   get. */
+await waitFor(`${SHELVES}.includes('Music') && ${SHELVES}.includes('Series')`, "the shelf once more");
+
+const memory = await evaluate(`(() => {
+  const resume = document.querySelector('.listen-shelf.is-resume');
+  const cards = [...document.querySelectorAll('.listen-resume')];
+  return {
+    shelf: !!resume,
+    heading: resume?.querySelector('.listen-shelf-name')?.textContent ?? null,
+    cards: cards.length,
+    titled: cards.every((c) => (c.querySelector('.listen-resume-title')?.textContent || '').length > 0),
+    named: cards.every((c) => (c.querySelector('.listen-resume-where')?.textContent || '').length > 0),
+    bothPresses: cards.every((c) => !!c.querySelector('.listen-resume-face')
+      && !!c.querySelector('.listen-resume-where')),
+    marked: cards.filter((c) => !!c.querySelector('.listen-track-progress')
+      || !!c.querySelector('.listen-track-done')).length,
+  };
+})()`);
+gate(memory.shelf, "what was not finished is offered back", memory.heading);
+gate(memory.cards > 0 && memory.cards <= 6,
+  "a doorway rather than a history — six at most", String(memory.cards));
+gate(memory.titled && memory.named, "every card says what it is and where it is from");
+/* Two presses, two intentions: the sleeve resumes, the name opens the record.
+   Either one missing makes the other ambiguous. */
+gate(memory.bothPresses, "the sleeve resumes and the name opens the record");
+gate(memory.marked === memory.cards, "and each carries how far in it is",
+  `${memory.marked}/${memory.cards}`);
+await shot("continue-listening");
+
+/* And inside a record the tour listened INTO: the rows it heard carry marks,
+   and the column those marks sit in does not move the runtimes around.
+
+   Deliberately the series and not Hymns I. The record test above rewinds to
+   0:00 to prove that previous is dimmed at the top of a record, which leaves
+   every one of its rows at position zero — correctly unmarked, and useless as
+   evidence that marking works. The series is where the tour actually left
+   listening behind. */
+await evaluate(`(() => {
+  const face = [...document.querySelectorAll('.listen-card-face')]
+    .find((f) => /5 Minutes/i.test(f.querySelector('.listen-card-name')?.textContent || ''));
+  face?.click();
+  return true;
+})()`);
+await waitFor(`document.querySelectorAll('.listen-track-face').length > 0`, "the record again");
+const marks = await evaluate(`(() => {
+  const rows = [...document.querySelectorAll('.listen-track-face')];
+  /* THE RIGHT EDGE, not the left. The runtime is the last cell of a grid whose
+     track is sized to its content, so "1:02:33" is wider than "5:00" and their
+     left edges legitimately differ. What must never move is where the column
+     ENDS — and that is also the thing the empty mark slot protects: without a
+     slot on every row, a row with no mark would drop its runtime into the mark
+     column and the whole right edge would break. */
+  const edges = rows.map((r) => Math.round(
+    r.querySelector('.listen-track-extent').getBoundingClientRect().right));
+  return {
+    rows: rows.length,
+    everyRowHasASlot: rows.every((r) => !!r.querySelector('.listen-track-place')),
+    heard: rows.filter((r) => r.querySelector('.listen-track-progress')
+      || r.querySelector('.listen-track-done')).length,
+    runtimesAligned: new Set(edges).size === 1,
+    edges: [...new Set(edges)].slice(0, 4),
+  };
+})()`);
+gate(marks.everyRowHasASlot, "every row keeps a place for its mark", `${marks.rows} rows`);
+gate(marks.heard > 0, "the rows that were heard say so", `${marks.heard}/${marks.rows}`);
+gate(marks.runtimesAligned, "and the runtime column ends in one line regardless",
+  `edges ${marks.edges.join(", ")}`);
+await shot("record-progress-marks");
 
 console.log(`\n${failures.length === 0 ? "PASS" : `FAIL (${failures.length})`} — captures in ${OUT_DIR}/`);
 process.exit(failures.length === 0 ? 0 : 1);

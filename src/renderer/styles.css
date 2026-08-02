@@ -24678,7 +24678,10 @@ button.lang-phrase-diagram-node:focus-visible,
    is what every listening app does and costs the row no width. */
 .listen-track-face {
   display: grid;
-  grid-template-columns: 1.75rem minmax(0, 1fr) auto;
+  /* Four columns: the number-or-play mark, the words, the place, the runtime.
+     The place column is fixed rather than `auto` so the runtimes stay in one
+     line down the list whether or not a row has been listened to. */
+  grid-template-columns: 1.75rem minmax(0, 1fr) 26px auto;
   align-items: center;
   gap: 14px;
   width: 100%;
@@ -24755,6 +24758,168 @@ button.lang-phrase-diagram-node:focus-visible,
   color: var(--text-tertiary);
   font: 0.75rem/1.5 var(--font-mono);
   font-variant-numeric: tabular-nums;
+}
+
+/* ── How far in the reader already is ─────────────────────────────────────────
+   Two marks and no third. A tick for done, a bar for part-way, nothing at all
+   for a row never started — because six hundred rows each wearing an empty
+   tray is noise pretending to be information, and it would bury the handful
+   that actually carry a mark. */
+.listen-track-place {
+  display: grid;
+  place-items: center;
+  width: 26px;
+}
+
+.listen-track-done { color: var(--record-accent); }
+
+/* Deliberately shorter than the column is wide, so the bar reads as a measure
+   rather than as a rule between two cells. */
+.listen-track-progress {
+  position: relative;
+  overflow: hidden;
+  width: 22px;
+  height: 3px;
+  border-radius: var(--radius-mark);
+  background: color-mix(in oklab, var(--text-tertiary) 30%, transparent);
+}
+
+.listen-track-progress-run {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: var(--record-accent);
+  transform-origin: left;
+}
+
+/* Said to a screen reader and to nobody else. "Played" and "22 minutes left"
+   are what the tick and the bar MEAN, and neither shape says it out loud. */
+.listen-sr {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* ── Where you left off ───────────────────────────────────────────────────────
+   A row of records rather than a grid, and shallower than the shelves below:
+   this is a doorway, not a fourth library. It scrolls sideways past six on a
+   narrow window instead of wrapping, so it can never push Music below the
+   fold — the room still has to answer "what is here?" first. */
+/* THE SAME COLUMNS THE LIBRARY BELOW STANDS IN, and both halves of that matter.
+
+   `auto-fill` rather than `auto-fit`, and this is the whole bug: the first
+   build used `grid-auto-flow: column` with `minmax(132px, 1fr)`, so ONE
+   unfinished episode took the entire row — and since a sleeve is square, one
+   record became a full-screen album cover with the library pushed off the
+   bottom of the window. `auto-fill` lays out every column that fits whether or
+   not there is a card for it, so a single record occupies a single cell.
+
+   And it shares `.listen-grid`'s track exactly, so the doorway lines up with
+   the shelves under it column for column instead of sitting in a rhythm of its
+   own. What separates it from a library is its heading and its brevity, not a
+   second card size. */
+.listen-resume-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 30px 22px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.listen-resume { display: flex; min-width: 0; flex-direction: column; gap: 2px; }
+
+.listen-resume-face {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 8px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.listen-resume-face:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-sm);
+}
+
+.listen-resume-art { position: relative; display: block; }
+
+.listen-resume-art .listen-cover {
+  aspect-ratio: 1;
+  width: 100%;
+  border-radius: var(--radius-md);
+}
+
+/* The bar sits ON the sleeve here rather than in a column of its own: a
+   doorway card has no list to keep aligned with, and the artwork is the thing
+   the eye lands on, so the measure belongs against it. */
+.listen-resume-art .listen-track-place {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  left: 6px;
+  width: auto;
+  place-items: end stretch;
+}
+
+.listen-resume-art .listen-track-progress {
+  width: 100%;
+  background: color-mix(in oklab, var(--bg-canvas) 55%, transparent);
+}
+
+.listen-resume-play {
+  position: absolute;
+  right: 8px;
+  bottom: 14px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  opacity: 0;
+  background: color-mix(in oklab, var(--bg-canvas) 82%, transparent);
+  color: var(--record-accent);
+  backdrop-filter: blur(6px);
+  transition: opacity 140ms ease;
+}
+
+.listen-resume-face:hover .listen-resume-play,
+.listen-resume-face:focus-visible .listen-resume-play { opacity: 1; }
+
+.listen-resume-title {
+  display: -webkit-box;
+  overflow: hidden;
+  color: var(--text-primary);
+  font: 0.8125rem/1.4 var(--font-reading);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.listen-resume-where {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.4 var(--font-ui);
+  text-align: left;
+  cursor: pointer;
+}
+
+.listen-resume-where:hover { color: var(--text-secondary); text-decoration: underline; }
+
+.listen-resume-where:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-sm);
 }
 
 /* ── The mark that says a thing is sounding ───────────────────────────────── */

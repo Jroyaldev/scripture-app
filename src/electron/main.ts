@@ -318,7 +318,56 @@ interface AppSettingsSchema {
       basis: "record" | "moment";
     } | null;
     positionSeconds: number;
+    /**
+     * THE RECORD THAT WAS PLAYING, as a recipe rather than a list.
+     *
+     * A queue is a whole album or a whole series — up to 676 episodes — and
+     * writing that array every fifteen seconds to remember an index would be
+     * absurd. It is also the wrong thing to keep: an episode list on disk goes
+     * stale the moment a feed updates, and then the room and the resume
+     * disagree about what "next" is. So what is stored is how to REBUILD it —
+     * which shelf, which source, which album — and the anchor track is
+     * `recordId` above. The list is rebuilt from the local catalogue at boot,
+     * which asks no publisher anything.
+     */
+    queue?: {
+      of: string;
+      kind: "album" | "series";
+      sourceId: string;
+      album?: string;
+    };
   } | null;
+  /**
+   * EVERY EPISODE'S PLACE, not just the last one.
+   *
+   * `lastHeard` above answers "where was I?" for exactly one record, because it
+   * is the resume OFFER — one card, one press. That made a listener who moved
+   * between two shows lose the first one's place the moment they started the
+   * second, and it left every list in the room unable to say whether a row had
+   * been heard at all.
+   *
+   * This is the library record: a place per episode, keyed `sourceId:recordId`
+   * — the same identity `sameEpisode()` matches on, so a song and a podcast
+   * episode file the same way. It holds NO titles and NO urls. Everything
+   * displayable is joined from the catalogue the room already has in hand,
+   * which means nothing here can become a stale name, and nothing here can
+   * become an `<img src>` or a fetch. That is why its normaliser is ten lines
+   * where `lastHeard`'s is fifty.
+   *
+   * It is bounded in the normaliser rather than at the call site (500 entries,
+   * 180 days), so a file that somehow grew heals itself on the next write
+   * instead of needing a migration.
+   */
+  heardLedger: Record<string, {
+    positionSeconds: number;
+    /** For the fraction a progress bar draws. Absent until the file reports it. */
+    durationSeconds?: number;
+    heardAt: number;
+    finished: boolean;
+  }>;
+  /** The speed the reader listens at. A module variable until now, which meant
+   *  a reader who listens at 1.5× set it again on every single launch. */
+  listeningRate: number;
   /** Raw until validated so a future-version object can remain byte-for-byte untouched. */
   studyWorkspace?: unknown;
   researchSession: {
@@ -554,6 +603,30 @@ function normalizeLastHeard(value: unknown): AppSettingsSchema["lastHeard"] {
     }
   }
 
+  /* THE RECIPE IS VALIDATED AS A UNIT, and a bad one costs only itself. A
+     record that cannot be rebuilt should still resume as a single episode —
+     failing the whole `lastHeard` here would turn "we could not reconstruct
+     the album" into "you have never listened to anything". */
+  let queue: NonNullable<AppSettingsSchema["lastHeard"]>["queue"];
+  const rawQueue = candidate["queue"];
+  if (rawQueue && typeof rawQueue === "object") {
+    const q = rawQueue as Record<string, unknown>;
+    const named = typeof q["of"] === "string" && (q["of"] as string).length > 0
+      && (q["of"] as string).length <= 512;
+    const source = typeof q["sourceId"] === "string" && (q["sourceId"] as string).length > 0;
+    const album = q["album"];
+    const albumFine = album === undefined
+      || (typeof album === "string" && album.length > 0 && album.length <= 512);
+    if (named && source && albumFine && (q["kind"] === "album" || q["kind"] === "series")) {
+      queue = {
+        of: q["of"] as string,
+        kind: q["kind"],
+        sourceId: q["sourceId"] as string,
+        ...(typeof album === "string" ? { album } : {}),
+      };
+    }
+  }
+
   return {
     sourceId: candidate["sourceId"] as string,
     recordId: candidate["recordId"] as string,
@@ -573,7 +646,74 @@ function normalizeLastHeard(value: unknown): AppSettingsSchema["lastHeard"] {
     ...(reviewedTint(candidate["tint"]) ? { tint: reviewedTint(candidate["tint"])! } : {}),
     passage,
     positionSeconds: Math.floor(position),
+    ...(queue ? { queue } : {}),
   };
+}
+
+/**
+ * How many places to keep, and for how long.
+ *
+ * Neither number is load-bearing — the catalogue holds under four thousand
+ * episodes, so even keeping all of them would be a file of a few hundred
+ * kilobytes. They exist so the file cannot grow without bound across years of
+ * use, and they are enforced HERE rather than where entries are written so a
+ * store that somehow grew past them heals on the next write rather than
+ * needing anybody to notice.
+ */
+const LEDGER_ENTRIES = 500;
+const LEDGER_DAYS = 180;
+
+/**
+ * A place per episode, dropping what does not prove out ENTRY BY ENTRY.
+ *
+ * `normalizeLastHeard` above fails the whole record closed, and is right to: it
+ * is one resume, and half a resume is worse than none. This is a map of
+ * hundreds, where the same rule would mean a single malformed entry silently
+ * erasing every position a reader had. So a bad entry is dropped and its
+ * neighbours are kept.
+ *
+ * The key is validated too, because it is `sourceId:recordId` and both halves
+ * end up in comparisons against catalogue ids.
+ */
+function normalizeHeardLedger(value: unknown): AppSettingsSchema["heardLedger"] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const now = Date.now();
+  const floor = now - LEDGER_DAYS * 86_400_000;
+  const kept: Array<[string, AppSettingsSchema["heardLedger"][string]]> = [];
+  for (const [key, raw] of Object.entries(value as Record<string, unknown>)) {
+    if (!/^[^\s:]+:.+$/.test(key) || key.length > 512) continue;
+    if (!raw || typeof raw !== "object") continue;
+    const entry = raw as Record<string, unknown>;
+    const position = entry["positionSeconds"];
+    if (typeof position !== "number" || !Number.isFinite(position) || position < 0) continue;
+    const heardAt = entry["heardAt"];
+    // A stamp from the future is a clock that moved, not a place worth keeping.
+    if (!Number.isInteger(heardAt) || (heardAt as number) <= 0) continue;
+    if ((heardAt as number) > now + 86_400_000) continue;
+    if ((heardAt as number) < floor) continue;
+    const duration = entry["durationSeconds"];
+    const hasDuration = typeof duration === "number" && Number.isFinite(duration) && duration > 0;
+    kept.push([key, {
+      positionSeconds: Math.floor(position),
+      ...(hasDuration ? { durationSeconds: Math.floor(duration as number) } : {}),
+      heardAt: heardAt as number,
+      finished: entry["finished"] === true,
+    }]);
+  }
+  kept.sort((a, b) => b[1].heardAt - a[1].heardAt);
+  return Object.fromEntries(kept.slice(0, LEDGER_ENTRIES));
+}
+
+/**
+ * The speeds the transport actually offers, and nothing between them.
+ *
+ * Membership rather than a range, because the dock steps through a fixed list
+ * and a stored 1.37 would be a rate no button in the app could return from.
+ */
+const LISTENING_RATES = [1, 1.2, 1.5, 1.75, 2];
+
+function normalizeListeningRate(value: unknown): number {
+  return typeof value === "number" && LISTENING_RATES.includes(value) ? value : 1;
 }
 
 function normalizeResearchSession(value: unknown): AppSettingsSchema["researchSession"] {
@@ -724,6 +864,8 @@ const store = new Store<AppSettingsSchema>({
     recentPassages: [],
     lastRead: null,
     lastHeard: null,
+    heardLedger: {},
+    listeningRate: 1,
     researchSession: null,
     researchWorkspace: null,
     keptContext: null,
@@ -752,6 +894,25 @@ if (legacySettingsAdoption.status === "adopt") {
       material: normalizeMaterial(undefined, legacyTheme),
     }),
   };
+}
+/* THE ONE PLACE THE READER ALREADY HAD becomes the ledger's first entry.
+   Without this, a reader who upgrades mid-episode sees their resume card intact
+   and every list in the room claiming they have never heard anything — the two
+   memories disagreeing on the first launch, which is exactly the impression a
+   new feature should not make. Guarded on the ledger being EMPTY rather than on
+   a version flag, so it cannot overwrite real listening later. */
+{
+  const seed = normalizeLastHeard(store.get("lastHeard"));
+  const ledger = store.get("heardLedger") ?? {};
+  if (seed && Object.keys(ledger).length === 0) {
+    store.set("heardLedger", {
+      [`${seed.sourceId}:${seed.recordId}`]: {
+        positionSeconds: seed.positionSeconds,
+        heardAt: Date.now(),
+        finished: false,
+      },
+    });
+  }
 }
 /* The two earlier keys become mute rules. A muted publisher is already a rule
    of the same shape; a muted kind was global, and the honest translation is one
@@ -3743,6 +3904,8 @@ function registerIpcHandlers(): void {
       shelfFace: normalizeShelfFace(settled.shelfFace),
       lastRead: normalizeLastRead(settled.lastRead),
       lastHeard: normalizeLastHeard(settled.lastHeard),
+      heardLedger: normalizeHeardLedger(settled.heardLedger),
+      listeningRate: normalizeListeningRate(settled.listeningRate),
       researchSession: normalizeResearchSession(settled.researchSession),
       researchWorkspace: normalizeResearchWorkspace(settled.researchWorkspace),
       keptContext: normalizeKeptContext(settled.keptContext),
@@ -3758,6 +3921,13 @@ function registerIpcHandlers(): void {
   ipcMain.handle("settings:set", (_event, partial: Partial<AppSettingsSchema>) => {
     const hasLastRead = Object.prototype.hasOwnProperty.call(partial, "lastRead");
     const hasLastHeard = Object.prototype.hasOwnProperty.call(partial, "lastHeard");
+    /* EVERY NEW KEY NEEDS ITS LINE IN BOTH PLACES. `sanitizedPartial` is spread
+       RAW below and only the keys named after it are normalised — so a key that
+       is added to the schema and forgotten here is written to disk exactly as
+       the renderer sent it, unvalidated, and read back the same way. That is
+       the failure this file is otherwise built to prevent. */
+    const hasHeardLedger = Object.prototype.hasOwnProperty.call(partial, "heardLedger");
+    const hasListeningRate = Object.prototype.hasOwnProperty.call(partial, "listeningRate");
     const hasResearchSession = Object.prototype.hasOwnProperty.call(partial, "researchSession");
     const hasResearchWorkspace = Object.prototype.hasOwnProperty.call(partial, "researchWorkspace");
     const hasKeptContext = Object.prototype.hasOwnProperty.call(partial, "keptContext");
@@ -3786,6 +3956,12 @@ function registerIpcHandlers(): void {
       shelfFace: normalizeShelfFace(partial.shelfFace ?? store.store.shelfFace),
       lastRead: normalizeLastRead(hasLastRead ? partial.lastRead : store.store.lastRead),
       lastHeard: normalizeLastHeard(hasLastHeard ? partial.lastHeard : store.store.lastHeard),
+      heardLedger: normalizeHeardLedger(
+        hasHeardLedger ? partial.heardLedger : store.store.heardLedger,
+      ),
+      listeningRate: normalizeListeningRate(
+        hasListeningRate ? partial.listeningRate : store.store.listeningRate,
+      ),
       researchSession: normalizeResearchSession(
         hasResearchSession ? partial.researchSession : store.store.researchSession,
       ),

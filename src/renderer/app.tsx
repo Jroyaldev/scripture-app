@@ -27,7 +27,24 @@ import { ToastProvider, type ShowToast } from "./components/Toast.js";
 import { Popover } from "./components/Popover.js";
 import { WelcomeScreen } from "./components/WelcomeScreen.js";
 import { PericopeMark } from "./components/PericopeMark.js";
-import { PodcastPlayer, offerPodcastHeard, registerHeardWriter } from "./components/PodcastPlayer.js";
+import {
+  PodcastPlayer,
+  adoptListeningMemory,
+  flushPodcastListening,
+  offerPodcastHeard,
+  offerPodcastRecord,
+  registerHeardWriter,
+  type PodcastEpisode,
+  type PodcastQueueRecipe,
+} from "./components/PodcastPlayer.js";
+import {
+  MUSIC,
+  SERIES_ART,
+  albumOrder,
+  asEpisode,
+  seriesEpisode,
+  seriesOrder,
+} from "./components/listen-episodes.js";
 import { ShortcutsOverlay } from "./components/ShortcutsOverlay.js";
 import { WorkspaceDecisionDialog } from "./components/WorkspaceDecisionDialog.js";
 import type { ReadingPrefs } from "./components/ReadingComfort.js";
@@ -310,6 +327,47 @@ function NavItem({
       ) : null}
     </button>
   );
+}
+
+/**
+ * Rebuild the record a resume was left inside, from local data only.
+ *
+ * The settings store keeps a RECIPE — which shelf, which source, which album —
+ * and never the episode list, because a list of 676 episodes on disk goes stale
+ * the moment a feed updates and then the room and the resume disagree about
+ * what "next" means. This turns the recipe back into a list, in the same order
+ * the room draws, so pressing resume continues the record rather than orphaning
+ * the reader on one track of it.
+ *
+ * Every failure here is ordinary and silent. An album renamed, a feed that
+ * dropped the episode, a library that has not mounted — each ends with no
+ * record offered, and the resume falls back to the single episode it always
+ * was. That is why nothing throws and nothing is reported: the reader loses a
+ * convenience, not their place.
+ */
+async function rebuildHeardRecord(
+  held: { sourceId: string; recordId: string },
+  recipe: PodcastQueueRecipe,
+): Promise<void> {
+  let episodes: PodcastEpisode[] = [];
+  if (recipe.kind === "album") {
+    const album = MUSIC.albums.find((entry) => entry.name === recipe.album);
+    if (!album) return;
+    episodes = albumOrder(album).map((track) => asEpisode(album, track));
+  } else {
+    const answer = await safeCall(() => window.api.audio.catalogue([recipe.sourceId]));
+    if (!answer.ok || !answer.value.ok) return;
+    const found = answer.value.series.find((one) => one.sourceId === recipe.sourceId);
+    if (!found) return;
+    const art = SERIES_ART[recipe.sourceId];
+    episodes = seriesOrder(found.episodes)
+      .map((ep) => seriesEpisode(recipe.sourceId, recipe.of, ep, art));
+  }
+  /* Proof rather than hope: the anchor has to still be IN the rebuilt list, or
+     the record has changed enough that resuming into it would start somewhere
+     the reader never was. */
+  if (!episodes.some((ep) => ep.sourceId === held.sourceId && ep.recordId === held.recordId)) return;
+  offerPodcastRecord({ of: recipe.of, episodes, recipe });
 }
 
 export function App(): React.JSX.Element {
@@ -817,27 +875,46 @@ export function App(): React.JSX.Element {
               ...(held.tint ? { tint: held.tint } : {}),
             },
             positionSeconds: held.positionSeconds,
+            ...(held.queue ? { queue: held.queue } : {}),
           }
           : null);
-        registerHeardWriter((next) => {
-          void safeCall(() => window.api.settings.set({
-            lastHeard: next
-              ? {
-                sourceId: next.episode.sourceId,
-                recordId: next.episode.recordId,
-                sourceName: next.episode.sourceName,
-                title: next.episode.title,
-                officialUrl: next.episode.officialUrl,
-                audioUrl: next.episode.audioUrl,
-                kind: next.episode.kind,
-                ...(next.episode.artUrl ? { artUrl: next.episode.artUrl } : {}),
-                ...(next.episode.tint ? { tint: next.episode.tint } : {}),
-                passage: next.episode.passage,
-                positionSeconds: next.positionSeconds,
-              }
-              : null,
-          }));
+        /* EVERY PLACE, and the speed they listen at. Neither starts audio:
+           the ledger only lets lists say how far in a reader is, and the rate
+           reaches the element without touching a file. */
+        adoptListeningMemory({
+          ledger: res.value.heardLedger,
+          rate: res.value.listeningRate,
         });
+        /* The record behind the offer, rebuilt from LOCAL data only — the
+           bundled music catalogue and the library's own episode files. A
+           publisher hears nothing about this until the reader presses resume,
+           which is the same boundary the offer itself observes. Failure here
+           is not an error: a record that cannot be rebuilt simply resumes as
+           the single episode it always did. */
+        if (held?.queue) void rebuildHeardRecord(held, held.queue);
+        registerHeardWriter((next, ledger) => safeCall(() => window.api.settings.set({
+          lastHeard: next
+            ? {
+              sourceId: next.episode.sourceId,
+              recordId: next.episode.recordId,
+              sourceName: next.episode.sourceName,
+              title: next.episode.title,
+              officialUrl: next.episode.officialUrl,
+              audioUrl: next.episode.audioUrl,
+              kind: next.episode.kind,
+              ...(next.episode.artUrl ? { artUrl: next.episode.artUrl } : {}),
+              ...(next.episode.tint ? { tint: next.episode.tint } : {}),
+              passage: next.episode.passage,
+              positionSeconds: next.positionSeconds,
+              /* Field by field on BOTH ends, and this is the third field to
+                 need saying so. The rebuild-rather-than-copy shape is right;
+                 it is also why a new field vanishes silently unless it is
+                 written here as well as read above. */
+              ...(next.queue ? { queue: next.queue } : {}),
+            }
+            : null,
+          heardLedger: ledger,
+        })).then(() => undefined));
       }
       // A setting changed while the IPC read was in flight has already run
       // its persist effect once and returned early. This state transition
@@ -934,6 +1011,18 @@ export function App(): React.JSX.Element {
     void (async () => {
       let proceed = false;
       try {
+        /* THE PLACE IN THE AUDIO, PUT DOWN BEFORE ANYTHING ELSE. Listening is
+           written on a fifteen-second cadence, which is the right rate for a
+           file and the wrong one for a quit: an app closed mid-episode lost up
+           to a quarter minute and offered the reader a place they had already
+           heard past.
+
+           Its own try/catch, deliberately, and outside the transition below.
+           The workspace flush may VETO a close — it is unsaved work — but a
+           listening position is fifteen seconds of convenience, and trapping
+           somebody in an app they asked to leave over that would be absurd.
+           Whatever happens here, the close carries on. */
+        try { await flushPodcastListening(); } catch { /* a place, not a veto */ }
         proceed = await runWorkspaceTransition("window-close", async () => {
           const workspaceClose = decideStudyWorkspaceClose(
             studyWorkspaceRef.current,
