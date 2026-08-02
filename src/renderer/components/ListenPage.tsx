@@ -54,7 +54,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import catalogue from "../../../data/music/poor-bishop-hooper.json";
 import seriesArt from "../../../data/music/series-art.json";
 import {
-  playPodcastEpisode,
+  startPodcastQueue,
   usePodcastNowPlaying,
   type PodcastEpisode,
   type PodcastPassage,
@@ -164,13 +164,23 @@ function asEpisode(album: MusicAlbum, track: MusicTrack): PodcastEpisode {
     audioUrl: track.url,
     passage: trackPassage(track),
     /* Named for what it is: a song announced as a "podcast" is the sort of
-       small lie a reader notices. */
+       small lie a reader notices. And `kind` is what the dock reads to decide
+       which transport to wear, so the word does real work now. */
     kind: "song",
+    /* The sleeve travels with the song. A group cover where the publisher drew
+       one, the record's otherwise. */
+    ...(track.cover ?? album.cover ? { artUrl: track.cover ?? album.cover ?? undefined } : {}),
+    ...(album.tint ? { tint: album.tint } : {}),
   };
 }
 
 /** A series episode, shaped for the one transport the app has. */
-function seriesEpisode(sourceId: string, name: string, ep: AudioCatalogueEpisode): PodcastEpisode {
+function seriesEpisode(
+  sourceId: string,
+  name: string,
+  ep: AudioCatalogueEpisode,
+  art?: { cover: string; tint: string },
+): PodcastEpisode {
   return {
     id: `${sourceId}:${ep.recordId}`,
     sourceId,
@@ -181,6 +191,7 @@ function seriesEpisode(sourceId: string, name: string, ep: AudioCatalogueEpisode
     audioUrl: ep.audioUrl,
     passage: null,
     kind: "podcast",
+    ...(art ? { artUrl: art.cover, tint: art.tint } : {}),
   };
 }
 
@@ -529,10 +540,18 @@ export function ListenPage(): React.JSX.Element {
     }
     const art = SERIES_ART[openedSeries.id];
     const here = now.episode?.sourceId === openedSeries.id && sounding;
-    const start = (): void => {
-      const first = openedSeries.episodes[0];
-      if (first) playPodcastEpisode(seriesEpisode(openedSeries.id, openedSeries.name, first));
+    /* THE ORDER ON SCREEN IS THE ORDER IT PLAYS. The reader is looking at
+       newest-first grouped by year; a queue built from the unsorted catalogue
+       would play something else and be right about nothing. */
+    const ordered = [...byYear.values()].flat();
+    const play = (from: number): void => {
+      startPodcastQueue(
+        openedSeries.name,
+        ordered.map((ep) => seriesEpisode(openedSeries.id, openedSeries.name, ep, art)),
+        from,
+      );
     };
+    const start = (): void => play(0);
     return (
       <div className="listen" ref={scroller} style={art ? { "--record-tint": art.tint } as React.CSSProperties : undefined}>
         <div className="listen-ambient" />
@@ -565,7 +584,7 @@ export function ListenPage(): React.JSX.Element {
                         aria-label={`Play ${ep.title} — ${openedSeries.name}`}
                         className="listen-track-face"
                         data-on={on ? "" : undefined}
-                        onClick={() => playPodcastEpisode(seriesEpisode(openedSeries.id, openedSeries.name, ep))}
+                        onClick={() => play(ordered.indexOf(ep))}
                         type="button"
                       >
                         <span className="listen-track-mark">
@@ -599,7 +618,14 @@ export function ListenPage(): React.JSX.Element {
 
   if (album) {
     const here = album.tracks.some((t) => playingHere(MUSIC.source.id, trackId(album, t))) && sounding;
-    const start = (): void => { const first = album.tracks[0]; if (first) playPodcastEpisode(asEpisode(album, first)); };
+    /* Flattened from the GROUPS rather than from `album.tracks`, for the same
+       reason: the groups are what is on screen and their order is the
+       publisher's. */
+    const ordered = groups.flatMap((group) => group.tracks);
+    const play = (from: number): void => {
+      startPodcastQueue(album.name, ordered.map((track) => asEpisode(album, track)), from);
+    };
+    const start = (): void => play(0);
     return (
       <div className="listen" ref={scroller} style={album.tint ? { "--record-tint": album.tint } as React.CSSProperties : undefined}>
         <div className="listen-ambient" />
@@ -638,7 +664,7 @@ export function ListenPage(): React.JSX.Element {
                         aria-label={`Play ${track.title} — ${album.name}, ${MUSIC.source.name}`}
                         className="listen-track-face"
                         data-on={on ? "" : undefined}
-                        onClick={() => playPodcastEpisode(asEpisode(album, track))}
+                        onClick={() => play(ordered.indexOf(track))}
                         type="button"
                       >
                         <span className="listen-track-mark">

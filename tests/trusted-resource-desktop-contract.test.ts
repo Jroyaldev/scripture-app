@@ -77,5 +77,9 @@ test("the Resources room shows a publisher's whole answer, and still only links 
   const player = read("src/renderer/components/PodcastPlayer.tsx");
   assert.match(player, /<audio/, "the transport must be exactly where the guard below looks");
   assert.match(player, /preload="none"/, "audio must not be fetched before a reader presses play");
-  assert.doesNotMatch(player, /autoPlay|<img|<iframe|<video/);
+  /* See the sleeve note in trusted-resource-permissions: one image, the
+     record's own, inside a dock that only exists after a press. */
+  assert.doesNotMatch(player, /autoPlay|<iframe|<video/);
+  assert.equal((player.match(/<img/g) ?? []).length, 1,
+    "the player may draw the record's sleeve and nothing else");
 });

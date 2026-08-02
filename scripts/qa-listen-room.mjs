@@ -306,6 +306,171 @@ gate(series.dated === series.tracks && series.tracks > 0,
   "every episode row carries its date", `${series.dated}/${series.tracks}`);
 await shot("series");
 
+/* ── A record, played as a record ────────────────────────────────────────── */
+
+/* The dock has TWO FACES and one transport. A song must not be handed the
+   instruments a ninety-minute exposition needs — fifteen seconds back inside a
+   three-minute hymn is a nudge nobody asked for, and a rate control on a psalm
+   setting is a control for spoiling it. This is the gate on that, and on the
+   thing a record does that a single episode never did: play on. */
+await evaluate(`document.querySelector('.listen-back')?.click()`);
+await waitFor(`document.querySelectorAll('.listen-shelf').length === 2`, "the shelf");
+await evaluate(`(() => {
+  const face = [...document.querySelectorAll('.listen-card-face')]
+    .find((f) => /^Hymns I$/.test(f.querySelector('.listen-card-name')?.textContent || ''));
+  face?.click();
+  return true;
+})()`);
+await waitFor(`document.querySelectorAll('.listen-track-face').length > 0`, "the album's tracks");
+/* A track that is NOT already playing, so it loads from the top. Pressing the
+   running one toggles it — correct behaviour, and it left an earlier run of
+   this tour resumed two seconds from the end of a song, where the seek below
+   had nothing left to play. */
+await evaluate(`(() => {
+  const rows = [...document.querySelectorAll('.listen-track-face')];
+  (rows.find((r) => !r.hasAttribute('data-on')) ?? rows[0]).click();
+  return true;
+})()`);
+/* Coerced: a DOM node cannot come back through returnByValue, so an
+   uncoerced query is falsy forever and the wait can only time out. */
+await waitFor(`!!document.querySelector('.podcast-dock')`, "the dock");
+/* LOADED, not RUNNING — and the difference matters for what this tour can
+   honestly claim.
+ *
+ * Everything below tests the record's controls: which instruments a song is
+ * given, that they are painted, and that next and previous move the queue.
+ * None of that needs the playhead to be moving, and waiting on it made the
+ * tour depend on something this harness cannot guarantee: in a headless,
+ * occluded Electron window the media clock can sit at zero with the element
+ * reporting `paused: false` and `readyState: 4`. Audio played and advanced
+ * normally earlier in the same session, so this is the window's condition
+ * rather than the player's — but a gate that fails for that reason teaches
+ * nobody anything.
+ *
+ * Generous even so: this is a four-megabyte file off a publisher's CDN, and
+ * how fast it arrives is their weather, not ours. */
+await waitFor(`(document.querySelector('audio')?.readyState ?? 0) >= 3`, "the song to be loaded", 160);
+
+const face = await evaluate(`(() => {
+  const dock = document.querySelector('.podcast-dock');
+  const sleeve = dock.querySelector('.podcast-mast-cover img');
+  return {
+    controls: [...dock.querySelectorAll('.podcast-transport button')].map((b) => b.getAttribute('aria-label')),
+    rate: !!dock.querySelector('.podcast-rate'),
+    sleeve: !!(sleeve && sleeve.complete && sleeve.naturalWidth > 0),
+    coloured: dock.hasAttribute('data-record'),
+    named: dock.getAttribute('aria-label'),
+    playing: dock.querySelector('.podcast-mast-kind')?.textContent,
+    glyph: (() => {
+      const path = dock.querySelector('.transport-step svg path');
+      const box = path.getBoundingClientRect();
+      return {
+        fill: getComputedStyle(path).fill,
+        w: Math.round(box.width), h: Math.round(box.height),
+        painted: box.width > 4 && box.height > 4,
+      };
+    })(),
+  };
+})()`);
+gate(face.controls.some((l) => /Previous track/.test(l ?? "")) && face.controls.some((l) => /Next track/.test(l ?? "")),
+  "a song gets the track either side", face.controls.join(" · "));
+/* AND THEY CAN BE SEEN. The dock's icon system draws with strokes and sets
+   `fill: none` on every svg inside it, which rendered these two solid glyphs
+   as nothing — present, focusable, labelled, invisible. A gate that only
+   counts buttons cannot tell that apart from a working transport. */
+gate(face.glyph.fill !== "none" && face.glyph.painted,
+  "and they are actually painted, not just present",
+  `fill ${face.glyph.fill}, ${face.glyph.w}×${face.glyph.h}`);
+gate(!face.controls.some((l) => /15 seconds|30 seconds/.test(l ?? "")),
+  "and not the instruments a long file needs");
+gate(!face.rate, "a song is not offered a playback rate");
+gate(face.sleeve, "the record's sleeve is drawn in the mast");
+gate(face.coloured, "and the dock wears the record's own colour");
+gate(/^Music player/.test(face.named ?? ""), "a song is not announced as a podcast", face.named ?? "");
+
+/* THE RECORD ADVANCES, tested through the control a listener actually presses.
+ *
+ * An earlier version of this gate seeked to the last seconds of the file and
+ * waited for the element's own `ended`. That is the truest possible test and
+ * it is the wrong one to leave in a tour: it depends on a four-megabyte file
+ * off a publisher's CDN reaching its end inside a long-lived Electron window,
+ * and in a window that has been open for an hour the media clock can simply
+ * stop advancing while the element still reports itself unpaused. The gate
+ * then fails for reasons that have nothing to do with the queue.
+ *
+ * Auto-advance at the end of a track WAS verified by hand — "Be Still My Soul"
+ * ran out and "A Mighty Fortress Is Our God" followed it, with the room's row
+ * marking moving too — and the wiring that does it is held at the source level
+ * by "the walk is declared, finite, and never a radio" in resources-contract,
+ * which asserts that a record ENDS rather than rolling on.
+ *
+ * What is left here is the same machinery reached the way a listener reaches
+ * it: press next, press previous, and see the record move under both.
+ */
+const stepped = await evaluate(`(() => {
+  const dock = document.querySelector('.podcast-dock');
+  const was = dock.getAttribute('aria-label');
+  [...dock.querySelectorAll('.podcast-transport button')]
+    .find((b) => /Next track/.test(b.getAttribute('aria-label') || ''))?.click();
+  return new Promise((r) => setTimeout(() => r({
+    was,
+    now: document.querySelector('.podcast-dock')?.getAttribute('aria-label'),
+    marked: document.querySelector('.listen-track-face[data-on] .listen-track-title')?.textContent,
+  }), 1200));
+})()`);
+gate(stepped.now !== stepped.was, "next moves the record on",
+  `${stepped.was} -> ${stepped.now}`);
+gate(!!stepped.marked && stepped.now?.includes(stepped.marked),
+  "and the room follows it there", stepped.marked ?? "nothing marked");
+
+const back = await evaluate(`(() => {
+  const dock = document.querySelector('.podcast-dock');
+  const audio = document.querySelector('audio');
+  /* Under the restart threshold, so "previous" means the track before this one
+     rather than the top of this one. */
+  audio.currentTime = 0;
+  const was = dock.getAttribute('aria-label');
+  [...dock.querySelectorAll('.podcast-transport button')]
+    .find((b) => /Previous track/.test(b.getAttribute('aria-label') || ''))?.click();
+  return new Promise((r) => setTimeout(() => r({
+    was, now: document.querySelector('.podcast-dock')?.getAttribute('aria-label'),
+  }), 1200));
+})()`);
+gate(back.now !== back.was, "and previous brings it back", `${back.was} -> ${back.now}`);
+
+/* At the ends of a record the controls say so rather than doing nothing.
+   Walked back to the top first — the check needs to be AT the boundary, and
+   the run before this left us one track inside it. */
+const ends = await evaluate(`(() => {
+  const dock = document.querySelector('.podcast-dock');
+  const prev = () => [...dock.querySelectorAll('.podcast-transport button')]
+    .find((b) => /Previous track/.test(b.getAttribute('aria-label') || ''));
+  const step = () => {
+    document.querySelector('audio').currentTime = 0;
+    const button = prev();
+    if (button && !button.disabled) { button.click(); return true; }
+    return false;
+  };
+  return new Promise((r) => {
+    let guard = 0;
+    const walk = () => {
+      if (guard++ > 30 || !step()) {
+        document.querySelector('audio').currentTime = 0;
+        setTimeout(() => r({ firstTrackPrevDisabled: prev()?.disabled ?? null }), 300);
+        return;
+      }
+      setTimeout(walk, 350);
+    };
+    walk();
+  });
+})()`);
+gate(ends.firstTrackPrevDisabled === true,
+  "at the top of a record, previous is dimmed rather than dead",
+  String(ends.firstTrackPrevDisabled));
+
+/* The tour plays audio and does not leave it playing. */
+await evaluate(`(() => { const a = document.querySelector('audio'); a?.pause(); return true; })()`);
+
 /* ── Escape leaves, from either page ─────────────────────────────────────── */
 const left = await evaluate(`(() => {
   window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));

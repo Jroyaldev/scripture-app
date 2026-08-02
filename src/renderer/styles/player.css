@@ -46,6 +46,13 @@
    this surface in a publisher's colour is a regression, not an enhancement. */
 
 .podcast-dock {
+  /* THE DOCK WEARS THE RECORD'S COLOUR when the record brought one — the same
+     derivation the Listen room uses, and the same rule that keeps it safe:
+     chroma is MULTIPLIED, never floored, so artwork with no hue stays grey
+     instead of resolving to 0° and painting a black-and-white brand pink.
+     Absent a tint it falls back to the app's own seal, which is what every
+     podcast reached from the margin gets. */
+  --record-tint: var(--accent-seal);
   /* Above every instrument inside the shell, below every decision outside it:
      the marking dock sits at 10, the marking palette at 120, and popovers,
      toasts and dialogs are all portaled past the shell entirely. A player is
@@ -288,6 +295,25 @@
 /* `min-width: 0` because this is a grid item, and a grid item's automatic
    minimum size is its min-content — the row would rather push through the dock
    than let its longest child shrink. */
+
+/* THE DOCK WEARS THE RECORD'S COLOUR when the record brought one.
+ *
+ * Through the SAME lightness clamp the publisher's accent goes through, not a
+ * value of its own — because `--player-accent-ink` is the floating paper, and
+ * the band flips between atmospheres for exactly that reason: on porcelain the
+ * accent must be darker than paper, on onyx lighter. A fixed lightness would
+ * have put dark ink on a dark disc in onyx. See the --accent-fit-* note.
+ *
+ * Chroma is MULTIPLIED, never floored — the rule that keeps a black-and-white
+ * record grey instead of resolving an undefined hue to 0° and painting it
+ * pink, which is what happened to the BEMA card once already.
+ */
+.podcast-dock[data-record] {
+  --player-accent: oklch(from var(--record-tint)
+    clamp(var(--accent-fit-floor), l, var(--accent-fit-ceiling))
+    min(calc(c * 2.4), 0.15) h);
+}
+
 .podcast-mast {
   display: flex;
   align-items: center;
@@ -552,6 +578,72 @@
 
 .transport-play[data-glyph="play"] .transport-glyph-play,
 .transport-play[data-glyph="pause"] .transport-glyph-pause { opacity: 1; }
+
+/* ── A record's own controls ────────────────────────────────────────────────
+   Previous and next, at the skip buttons' exact size and in their exact place,
+   because the transport must not resize or reflow between a spoken record and
+   a sung one. One dock, two faces: what changes is the instrument, never the
+   geometry a hand has already learned. */
+.transport-step {
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    color var(--transition-fast),
+    transform var(--transition-fast);
+}
+
+/* THE DOCK'S ICON SYSTEM DRAWS WITH STROKES, so `.podcast-dock svg` sets
+   `fill: none` and every glyph inside inherits it — including one that carries
+   `fill="currentColor"` as an attribute on the <svg>, because a CSS
+   declaration beats a presentation attribute. These two shapes are solid, so
+   they have to say so in CSS or they render as nothing at all: present in the
+   DOM, focusable, correctly labelled, and invisible. */
+.transport-step svg { fill: currentColor; stroke: none; }
+
+.transport-step:hover { background: var(--player-hover); color: var(--text-primary); }
+.transport-step:active { transform: scale(0.94); background: var(--player-press); }
+
+/* Dimmed at the ends of a record rather than removed. A transport whose
+   controls come and go is one a hand has to re-learn on every track. */
+.transport-step:disabled { cursor: default; opacity: 0.32; }
+.transport-step:disabled:hover { background: none; color: var(--text-tertiary); }
+
+.transport-step:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* ── The sleeve, where the plate goes ───────────────────────────────────────
+   Same height as .podcast-mast-plate and square, so the masthead's width
+   budget is unchanged and nothing beside it moves. A record is known by its
+   cover before it is known by its label. */
+.podcast-mast-cover {
+  position: relative;
+  display: inline-block;
+  flex: 0 0 auto;
+  width: 26px;
+  height: 26px;
+  overflow: hidden;
+  border-radius: var(--radius-pebble);
+  background: var(--record-tint, var(--player-hover));
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.24);
+}
+
+.podcast-mast-cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
 
 .transport-skip {
   --transport-size: 28px;

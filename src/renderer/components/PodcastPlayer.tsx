@@ -127,6 +127,18 @@ export interface PodcastEpisode {
   startAt?: number;
   /** The moment the reader pressed, when they pressed one. */
   moment?: PodcastMomentClaim;
+  /**
+   * The record's cover, and the one colour it is.
+   *
+   * Optional because a podcast reached from the margin has neither and does
+   * not need them: the mast draws the publisher's plate, which is what a
+   * spoken record is identified by. A SONG is identified by its sleeve — the
+   * artwork is the object, not decoration around it — so when the Listen room
+   * hands one over it hands the cover with it, and the dock wears the record's
+   * colour while it plays.
+   */
+  artUrl?: string;
+  tint?: string;
 }
 
 /**
@@ -471,6 +483,108 @@ function walkPastEnd(at: number): void {
   enterStop(held.at + 1);
 }
 
+/* ── The queue ───────────────────────────────────────────────────────────────
+   A RECORD, played in the order its publisher put it in.
+
+   THIS IS NOT THE WALK, and the two must not be merged however similar the
+   plumbing looks. A walk is passage-shaped: bounded spans inside episodes,
+   declared before the reader presses anything, ending when the passage has
+   been heard out. A queue is record-shaped: whole tracks, in the order they
+   were released, running until the record is over. The walk's own note says
+   it must never become a playlist. This is the playlist, kept separate so
+   that stays true.
+
+   They are mutually exclusive because both answer "what plays next", and two
+   answers is how a reader ends up somewhere neither of them chose. Starting
+   one leaves the other. */
+export interface PodcastQueue {
+  /** What is being played through — "EveryPsalm". Printed, never parsed. */
+  of: string;
+  episodes: PodcastEpisode[];
+  /** Which track is running. */
+  at: number;
+}
+
+let queue: PodcastQueue | null = null;
+/** Set around a machine-initiated launch, exactly as `walking` is. */
+let queueing = false;
+const queueWatchers = new Set<() => void>();
+
+function announceQueue(next: PodcastQueue | null): void {
+  queue = next;
+  for (const watcher of queueWatchers) watcher();
+}
+
+export function usePodcastQueue(): PodcastQueue | null {
+  return useSyncExternalStore(
+    (watcher) => { queueWatchers.add(watcher); return () => { queueWatchers.delete(watcher); }; },
+    () => queue,
+  );
+}
+
+function enterTrack(index: number): void {
+  const held = queue;
+  const episode = held?.episodes[index];
+  if (!held || !episode) return;
+  announceQueue({ ...held, at: index });
+  queueing = true;
+  try { playPodcastEpisode(episode); } finally { queueing = false; }
+}
+
+/** Begin a record. `from` is the track pressed; the rest follow it. */
+export function startPodcastQueue(of: string, episodes: PodcastEpisode[], from = 0): void {
+  if (episodes.length === 0) return;
+  if (walk) announceWalk(null);
+  announceQueue({ of, episodes, at: -1 });
+  enterTrack(Math.min(Math.max(from, 0), episodes.length - 1));
+}
+
+/** Leave the record where it stands. The audio keeps playing; nothing follows. */
+export function leavePodcastQueue(): void {
+  if (queue) announceQueue(null);
+}
+
+/** Is there a track that way? Read by the dock to dim a control it cannot use. */
+export function queueHas(by: 1 | -1): boolean {
+  const held = queue;
+  if (!held) return false;
+  if (by === -1) return held.at > 0 || (transport?.currentTime ?? 0) > RESTART_WITHIN;
+  return held.at + 1 < held.episodes.length;
+}
+
+/** A few seconds in, "previous" means this track again — every music player
+ *  in the world behaves this way and a reader's hand already knows it. */
+const RESTART_WITHIN = 3;
+
+export function stepPodcastQueue(by: 1 | -1): void {
+  const held = queue;
+  if (!held) return;
+  if (by === -1 && (transport?.currentTime ?? 0) > RESTART_WITHIN) {
+    seekPodcast(0);
+    return;
+  }
+  const next = held.at + by;
+  if (next < 0 || next >= held.episodes.length) return;
+  enterTrack(next);
+}
+
+/**
+ * The record plays on. Called from the element's own `ended`.
+ *
+ * Returns whether it took the ending — the walk gets first refusal on nothing,
+ * because the two never run together, but the caller still has to know whether
+ * to report a pause. A record whose last track has ended is over: the queue is
+ * put away and the dock becomes a dock again, which is the same ending the
+ * walk gives itself.
+ */
+function queuePastEnd(): boolean {
+  const held = queue;
+  if (!held) return false;
+  if (held.at + 1 >= held.episodes.length) { announceQueue(null); return false; }
+  enterTrack(held.at + 1);
+  return true;
+}
+
 /**
  * What became of a seek.
  *
@@ -568,6 +682,10 @@ export function playPodcastEpisode(episode: PodcastEpisode): void {
      something else — the reader would have to find and press stop to escape a
      queue they had already left. */
   if (!walking && walk) announceWalk(null);
+  /* And the same for a record: choosing something else ends the one that was
+     playing, or the reader would have to find stop to escape a list they had
+     already left. */
+  if (!queueing && queue) announceQueue(null);
   /* WHO CHANGED THE EPISODE. Read by the dock's reset effect, which throws
      away the lens over an episode when a new one arrives — the query, the
      mode, the view, and the open sheet itself.
@@ -578,7 +696,10 @@ export function playPodcastEpisode(episode: PodcastEpisode): void {
      of a treatment used to wipe a search mid-read and SHUT the sheet under a
      reader who was in it — silently, with no action of theirs to associate the
      loss with. Machine-initiated launches leave the reader's lens alone. */
-  launchedBy = walking ? "walk" : "reader";
+  /* Machine-initiated either way. A queue advancing at the end of a track did
+     not involve the reader's hands, so it must not wipe the lens they left
+     open — the same reasoning the walk carries above. */
+  launchedBy = walking || queueing ? "walk" : "reader";
   if (nowPlaying.episode?.id === episode.id) {
     if (episode.startAt == null) {
       togglePodcast();
@@ -1045,6 +1166,38 @@ function SkipButton({
 }
 
 /**
+ * Previous and next, for a record.
+ *
+ * A song does not want the podcast transport. Fifteen seconds back inside a
+ * three-minute hymn is a nudge nobody asked for, and 1.5× on a psalm setting
+ * is a novelty rather than a feature — those two controls and the rate exist
+ * because a ninety-minute exposition needs them. What a record needs is the
+ * track either side of this one, which is what these are.
+ *
+ * Disabled rather than hidden at the ends of a record: a transport whose
+ * controls come and go is one a hand has to re-learn every track.
+ */
+function StepButton({ back, disabled, label, onPress }: {
+  back: boolean; disabled: boolean; label: string; onPress: () => void;
+}): React.JSX.Element {
+  return (
+    <button
+      aria-label={label}
+      className="transport-step"
+      disabled={disabled}
+      onClick={onPress}
+      type="button"
+    >
+      <svg viewBox="0 0 24 24" width="17" height="17" aria-hidden="true" fill="currentColor">
+        {back
+          ? <path d="M7 5.5h2v13H7zm11 0v13l-9-6.5z" />
+          : <path d="M15 5.5h2v13h-2zm-9 0l9 6.5-9 6.5z" />}
+      </svg>
+    </button>
+  );
+}
+
+/**
  * What the transcript is doing, as one state rather than a boolean with
  * patches on it.
  *
@@ -1147,6 +1300,9 @@ export function PodcastPlayer({
   const { at, of } = useSyncExternalStore(subscribeElapsed, () => elapsed);
   const walk = usePodcastWalk();
   const walkActive = walk != null;
+  const queued = usePodcastQueue();
+  /* The system's own next/previous belong to whichever list is running. */
+  const stepping = walkActive || queued != null;
   const heard = usePodcastHeard();
   /* The offer stands only when nothing is playing: an episode in the dock IS
      where the reader is, and two players in one corner is never what anyone
@@ -2195,6 +2351,10 @@ export function PodcastPlayer({
      to be one of ours; and a rate that is not one of ours cycles to the first,
      which is 1 — one press always returns to normal. */
   const rateLabel = Number(rate.toFixed(2));
+  /* Which face the transport wears. `kind` is the record's own word for
+     itself, set where the episode is made, so nothing here has to guess from
+     a duration or a URL. */
+  const isSong = episode?.kind === "song";
   const cycleRate = (): void => {
     const at = PODCAST_RATES.findIndex((value) => value === rateLabel);
     setPodcastRate(PODCAST_RATES[(at + 1) % PODCAST_RATES.length] ?? 1);
@@ -2302,15 +2462,19 @@ export function PodcastPlayer({
       ["seekto", (details) => {
         if (details.seekTime != null) latest.current.seek(details.seekTime, { hear: false, show: false });
       }],
-      /* Registered only while a walk is running. An engine that is handed a
-         `nexttrack` handler draws the button whether or not there is a next
-         track, and a system control that does nothing is worse than one that
-         is not there. Outside a walk there is no next: this dock plays one
-         episode a reader chose and never queues another behind it. */
-      ...(walkActive
+      /* Registered only while a list is running. An engine handed a `nexttrack`
+         handler draws the button whether or not there is a next track, and a
+         system control that does nothing is worse than one that is not there.
+         With neither a walk nor a record there is no next: this dock plays the
+         one episode a reader chose and queues nothing behind it.
+
+         RESTATED 2026-08-02 — a record queue is the second thing that has a
+         next, and the lock screen must step whichever list is actually
+         running rather than only the walk. */
+      ...(stepping
         ? ([
-          ["previoustrack", () => stepPodcastWalk(-1)],
-          ["nexttrack", () => stepPodcastWalk(1)],
+          ["previoustrack", () => (walkActive ? stepPodcastWalk(-1) : stepPodcastQueue(-1))],
+          ["nexttrack", () => (walkActive ? stepPodcastWalk(1) : stepPodcastQueue(1))],
         ] as [MediaSessionAction, MediaSessionActionHandler][])
         : []),
     ];
@@ -2325,7 +2489,7 @@ export function PodcastPlayer({
         try { session.setActionHandler(action, null); } catch { /* as above */ }
       }
     };
-  }, [episodeId, episodeSource, episodeTitle, walkActive]);
+  }, [episodeId, episodeSource, episodeTitle, walkActive, stepping]);
 
   useEffect(() => {
     const session = navigator.mediaSession;
@@ -2354,7 +2518,12 @@ export function PodcastPlayer({
           applyPendingSeek();
           announceElapsed(event.currentTarget.currentTime, event.currentTarget.duration || 0);
         }}
-        onEnded={() => { walkPastEnd(Number.POSITIVE_INFINITY); elementReports("paused"); }}
+        onEnded={() => {
+          /* A record plays on; a walk ends where its last treatment does. */
+          if (queuePastEnd()) return;
+          walkPastEnd(Number.POSITIVE_INFINITY);
+          elementReports("paused");
+        }}
         onError={() => { if (nowPlaying.episode) announceNowPlaying({ episode: nowPlaying.episode, status: "failed" }); }}
         /* The held seek is spent BEFORE anything is announced. This used to
            announce a flat 0 and let the seek land afterwards, which is a frame
@@ -2388,7 +2557,9 @@ export function PodcastPlayer({
       />
       {episode && (
         <section
-          aria-label={`Podcast player — ${episode.title}`}
+          /* A song announced as a "podcast" is the sort of small lie a reader
+             notices, and a screen reader says out loud. */
+          aria-label={`${isSong ? "Music" : "Podcast"} player — ${episode.title}`}
           className="podcast-dock"
           ref={dockBoxRef}
           data-expanded={expanded}
@@ -2397,8 +2568,18 @@ export function PodcastPlayer({
           onPointerLeave={(event) => armPeek(false, event.pointerType)}
           data-floating-layer="player"
           data-source={episode.sourceId}
+          /* Present only when the record brought a colour of its own, which is
+             what lets the sheet swap the publisher's accent for the record's
+             without having to test whether a custom property was set. */
+          data-record={episode.tint ? "" : undefined}
           data-status={status}
-          style={{ "--podcast-played": `${(played * 100).toFixed(3)}%` } as React.CSSProperties}
+          style={{
+            "--podcast-played": `${(played * 100).toFixed(3)}%`,
+            /* The dock takes the colour of what is playing, by the same
+               derivation the Listen room uses — chroma multiplied, never
+               floored, so a black-and-white record stays grey. */
+            ...(episode.tint ? { "--record-tint": episode.tint } : {}),
+          } as React.CSSProperties}
         >
           {/* Said once, on a change, and never on a timeupdate — a position
               announced every second is a screen reader nobody can use. */}
@@ -2422,9 +2603,21 @@ export function PodcastPlayer({
                 inside a custom property resolves against the stylesheet that
                 substitutes it. The name is in the accessibility tree in both
                 forms; the mark rule indents the glyphs, not the text. */}
-            <span className="podcast-mast-plate">
-              <span className="podcast-mast-mark podcast-mast-name">{episode.sourceName}</span>
-            </span>
+            {episode.artUrl ? (
+              /* The sleeve, at plate size and in the plate's place. A record
+                 is known by its cover before it is known by its label, and a
+                 dock that draws the publisher's mark over a song is naming the
+                 shop rather than the record. The source name stays in the
+                 accessibility tree, where the plate had put it. */
+              <span className="podcast-mast-cover">
+                <img alt="" decoding="async" src={episode.artUrl} />
+                <span className="sr-only">{episode.sourceName}</span>
+              </span>
+            ) : (
+              <span className="podcast-mast-plate">
+                <span className="podcast-mast-mark podcast-mast-name">{episode.sourceName}</span>
+              </span>
+            )}
             <span className="podcast-mast-kind">{episode.kind}</span>
             {/* The one control on this dock that reaches the reading canvas,
                 and until 2026-07-30 it was hidden by `!expanded` — removed
@@ -2960,7 +3153,16 @@ export function PodcastPlayer({
 
           <div className="podcast-dock-body">
             <div className="podcast-transport" role="group" aria-label="Playback">
-              <SkipButton label="Back 15 seconds" onPress={() => skipBy(-15)} seconds={-15} />
+              {/* THE TWO FACES OF ONE TRANSPORT. There is still exactly one
+                  audio element and one dock; what changes is which controls it
+                  offers, decided by the record's own `kind`. A spoken record
+                  gets the instruments a long file needs; a sung one gets the
+                  track either side. Nothing else about the dock moves — the
+                  position, the size, and the play button stay exactly where a
+                  hand already found them. */}
+              {isSong
+                ? <StepButton back disabled={!queueHas(-1)} label="Previous track" onPress={() => stepPodcastQueue(-1)} />
+                : <SkipButton label="Back 15 seconds" onPress={() => skipBy(-15)} seconds={-15} />}
               <TransportPlayButton
                 /* While reaching, the press is a cancellation rather than a
                    toggle — the element is already un-paused and waiting on
@@ -2972,7 +3174,9 @@ export function PodcastPlayer({
                 paused={paused}
                 pressed={!paused}
               />
-              <SkipButton label="Forward 30 seconds" onPress={() => skipBy(30)} seconds={30} />
+              {isSong
+                ? <StepButton back={false} disabled={!queueHas(1)} label="Next track" onPress={() => stepPodcastQueue(1)} />
+                : <SkipButton label="Forward 30 seconds" onPress={() => skipBy(30)} seconds={30} />}
             </div>
             <div className="podcast-dock-lines">
               {expanded && chapter ? (
@@ -3056,14 +3260,17 @@ export function PodcastPlayer({
               ) : (
                 <p className="podcast-dock-clock">
                   <span>{formatClock(position)}</span>
-                  <button
-                    aria-label={`Playback speed ${rateLabel}×. Press to change.`}
-                    className="podcast-rate"
-                    onClick={cycleRate}
-                    type="button"
-                  >
-                    {rateLabel}×
-                  </button>
+                  {/* A rate control on a song is a control for spoiling it. */}
+                  {!isSong && (
+                    <button
+                      aria-label={`Playback speed ${rateLabel}×. Press to change.`}
+                      className="podcast-rate"
+                      onClick={cycleRate}
+                      type="button"
+                    >
+                      {rateLabel}×
+                    </button>
+                  )}
                   <span className="podcast-dock-clock-rest">
                     {of > 0 ? `−${formatClock(of - position)}` : "—:—"}
                   </span>

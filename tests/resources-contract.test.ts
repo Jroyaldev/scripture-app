@@ -97,7 +97,13 @@ test("a chapter's material is offered in exactly one room", () => {
   const renderer = resolve(root, "src/renderer");
   const callers = readdirSync(renderer, { recursive: true, encoding: "utf8" })
     .filter((entry) => entry.endsWith(".tsx"))
-    .filter((entry) => /playPodcastEpisode\(/.test(readFileSync(resolve(renderer, entry), "utf8")))
+    /* Either verb starts an episode: one track, or a record that begins with
+       one. `startPodcastQueue` funnels straight into `playPodcastEpisode`, so
+       this is still one launch path — but a surface that calls only the queue
+       must not fall off this list, which is exactly what happened when the
+       Listen room stopped playing single tracks. */
+    .filter((entry) => /playPodcastEpisode\(|startPodcastQueue\(/
+      .test(readFileSync(resolve(renderer, entry), "utf8")))
     .sort();
   /* THREE, since 2026-08-02, and the third is the point of this assertion
      rather than an exception to it. What the rule protects is that a launch
@@ -787,17 +793,42 @@ test("the walk is declared, finite, and never a radio", () => {
   /* Anything the reader starts by hand ends it. */
   assert.match(player, /if \(!walking && walk\) announceWalk\(null\);/);
 
-  /* The system's next/previous exist only while it is running. */
-  assert.match(player, /\.\.\.\(walkActive\n\s*\? \(\[\n\s*\["previoustrack"/);
-  assert.match(player, /\}, \[episodeId, episodeSource, episodeTitle, walkActive\]\);/);
+  /* The system's next/previous exist only while a LIST is running — a walk, or
+     (since 2026-08-02) a record queue. With neither, the lock screen must not
+     draw a next-track button, because a system control that does nothing is
+     worse than one that is not there. */
+  assert.match(player, /const stepping = walkActive \|\| queued != null;/);
+  assert.match(player, /\.\.\.\(stepping\n\s*\? \(\[\n\s*\["previoustrack"/);
+  assert.match(player, /\}, \[episodeId, episodeSource, episodeTitle, walkActive, stepping\]\);/);
+  /* And it steps whichever list is actually running, not always the walk. */
+  assert.match(player, /walkActive \? stepPodcastWalk\(1\) : stepPodcastQueue\(1\)/);
 
   /* AND IT DOES NOT TAKE THE READER'S WORK WITH IT. Added 2026-07-30: the
      episode-change reset threw away the query, the mode, the view and the open
      sheet — right for a press, and silent theft for a walk advancing at the
      end of a treatment while the reader was reading in it. */
-  assert.match(player, /launchedBy = walking \? "walk" : "reader";/);
+  /* RESTATED 2026-08-02, when the record queue arrived. The property this
+     guards is "machine-initiated launches leave the reader's lens alone", and
+     there are two machines now: a walk advancing past a treatment, and a
+     record advancing past a track. Neither involved the reader's hands. */
+  assert.match(player, /launchedBy = walking \|\| queueing \? "walk" : "reader";/);
   assert.match(player, /if \(podcastLaunchedBy\(\) === "walk"\) return;/,
     "a machine-initiated launch must leave the reader's lens alone");
+
+  /* AND THE QUEUE IS NOT THE WALK. A record playing through is the playlist
+     the walk's own note swore it would never become, which is precisely why it
+     is a separate thing with separate rules rather than a flag on the walk.
+     The two never run at once — both answer "what plays next", and two answers
+     is how a reader lands somewhere neither of them chose. */
+  assert.match(player, /export interface PodcastQueue \{/);
+  assert.match(player, /if \(walk\) announceWalk\(null\);/,
+    "starting a record must leave a walk");
+  assert.match(player, /if \(!queueing && queue\) announceQueue\(null\);/,
+    "and a press by hand must leave the record");
+  /* Finite, like the walk: a record that has played its last track is over. */
+  assert.match(player, /if \(held\.at \+ 1 >= held\.episodes\.length\) \{ announceQueue\(null\); return false; \}/,
+    "the record must END rather than roll on into something unchosen");
+  assert.doesNotMatch(player, /setInterval|setTimeout\([^)]*queue/i);
 });
 
 test("the study column has two residents, and exactly one is unfolded", () => {

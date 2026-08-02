@@ -97,7 +97,29 @@ test("reviewed manifests and cards retain the common link-only permission bounda
   const player = read("src/renderer/components/PodcastPlayer.tsx");
   assert.match(player, /<audio/);
   assert.match(player, /preload="none"/);
-  assert.doesNotMatch(player, /autoPlay|<img|<iframe|<video|fetch\(/);
+  /* ONE IMAGE, AND THE BOUNDARY IS UNCHANGED — restated 2026-08-02, with the
+     maintainer's authorisation, and narrower than deleting the clause.
+
+     What this rule protects is stated above it: nothing reaches a publisher's
+     server until the reader presses play. `preload="none"` is what makes that
+     true of the audio. The dock's sleeve does not weaken it, because the dock
+     does not exist until an episode does — `{episode && (` gates the whole
+     section — so the cover is fetched from a host that is at that moment
+     already streaming the reader audio. It tells that publisher nothing they
+     are not being told louder by the stream itself.
+
+     That is a stronger footing than the Listen room's covers, which draw when
+     the ROOM draws and are the one place this app does spend privacy on
+     artwork. Here the press has already happened.
+
+     So: exactly one image, and it must be the record's own sleeve, gated on
+     the record having brought one. A second `<img` in this file is a new
+     question and should fail here until someone answers it. */
+  assert.doesNotMatch(player, /autoPlay|<iframe|<video|fetch\(/);
+  assert.equal((player.match(/<img/g) ?? []).length, 1,
+    "the player may draw the record's sleeve and nothing else");
+  assert.match(player, /episode\.artUrl \? \(/,
+    "and only when the record brought one");
 
   const renderer = resolve(root, "src/renderer");
   const elements = readdirSync(renderer, { recursive: true, encoding: "utf8" })
