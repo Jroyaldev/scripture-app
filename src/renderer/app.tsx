@@ -20,6 +20,7 @@ import type {
 } from "./components/LivingMargin.js";
 import { WritingSheet, type WritingDraft } from "./components/WritingSheet.js";
 import { SearchView } from "./components/SearchView.js";
+import { ListenPage } from "./components/ListenPage.js";
 import { SettingsPage } from "./components/SettingsPage.js";
 import { ErrorBoundary } from "./components/ErrorBoundary.js";
 import { ToastProvider, type ShowToast } from "./components/Toast.js";
@@ -99,7 +100,7 @@ import "./styles.css";
 /** The narrow shell's breakpoint, matching styles.css's @media (max-width: 979px). */
 const NARROW_SHELL = "(max-width: 979px)";
 
-type View = "scripture" | "write" | "search" | "notes" | "settings";
+type View = "scripture" | "write" | "search" | "notes" | "listen" | "settings";
 type AuthoredMutationState = "idle" | "in-flight" | "recovery";
 type LoadState =
   | { status: "loading" }
@@ -197,6 +198,19 @@ function NotesIcon(): React.JSX.Element {
   return (
     <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="M4 4h12M4 9h12M4 14h7.5" />
+    </svg>
+  );
+}
+
+/* Two notes on one beam. Drawn on the rail's own 20-grid with the same 1.5
+   stroke every other icon uses, so it reads as a sibling rather than a guest
+   — the heads are filled the way Settings fills its dots. */
+function ListenIcon(): React.JSX.Element {
+  return (
+    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7.5 14.5V5l8-1.5V13" />
+      <circle cx="5.5" cy="14.5" r="2" fill="currentColor" stroke="none" />
+      <circle cx="13.5" cy="13" r="2" fill="currentColor" stroke="none" />
     </svg>
   );
 }
@@ -2277,13 +2291,17 @@ export function App(): React.JSX.Element {
                 <NavItem active={view === "write"} onClick={() => { void changeView("write"); }} disabled={authoredMutationState !== "idle"} label="Write" icon={<WriteIcon />} shortcut="2" />
                 <NavItem active={view === "notes"} onClick={() => { void changeView("notes"); }} disabled={authoredMutationState !== "idle"} label="Notes" icon={<NotesIcon />} shortcut="3" />
                 <NavItem active={view === "search"} onClick={() => { void changeView("search"); }} disabled={authoredMutationState !== "idle"} label="Search" icon={<SearchIcon />} shortcut="4" />
+                {/* Six rows now. Listen sits above Settings because it is a
+                    place to go rather than a place to adjust, which is the
+                    order the four above it already state. */}
+                <NavItem active={view === "listen"} onClick={() => { void changeView("listen"); }} disabled={authoredMutationState !== "idle"} label="Listen" icon={<ListenIcon />} shortcut="5" />
                 {/* Five rows, one uninterrupted run on the 32+2 rhythm. The
                     divider that used to sit here was a line doing a job the
                     system does with interval, and it cost 29px that landed on
                     no row boundary — the one thing the rail's grid cannot
                     absorb. Settings reads as the last row because it is last,
                     which is how the other four read as an order too. */}
-                <NavItem active={view === "settings"} onClick={() => { void changeView("settings"); }} disabled={authoredMutationState !== "idle"} label="Settings" icon={<SettingsIcon />} shortcut="5" />
+                <NavItem active={view === "settings"} onClick={() => { void changeView("settings"); }} disabled={authoredMutationState !== "idle"} label="Settings" icon={<SettingsIcon />} shortcut="6" />
               </div>
               {authoredMutationState !== "idle" && (
                 <p className="rail-held" role="status">
@@ -2439,6 +2457,9 @@ export function App(): React.JSX.Element {
                 initialNoteId={workspaceIntent.noteId}
                 intentNonce={workspaceIntent.nonce}
               />
+            )}
+            {view === "listen" && (
+              <ListenPage />
             )}
             {view === "settings" && (
               <SettingsPage

@@ -98,8 +98,19 @@ test("a chapter's material is offered in exactly one room", () => {
     .filter((entry) => entry.endsWith(".tsx"))
     .filter((entry) => /playPodcastEpisode\(/.test(readFileSync(resolve(renderer, entry), "utf8")))
     .sort();
-  assert.deepEqual(callers, ["components/PodcastPlayer.tsx", "components/Resources.tsx"],
-    "an episode may be started from the room and from the transport, and nowhere else");
+  /* THREE, since 2026-08-02, and the third is the point of this assertion
+     rather than an exception to it. What the rule protects is that a launch
+     goes through ONE function — `playPodcastEpisode` — so the walk is ended,
+     the lens is reset, and exactly one audio element ever holds a file. The
+     Listen room adds a way IN (a song, from a page organised by material
+     rather than by passage) without adding a second transport: it shapes a
+     track into the same episode and hands it to the same function. A fourth
+     name appearing here is still the thing to stop; a second `new Audio` is
+     what it was always really about, and the audio-element test above holds
+     that separately. */
+  assert.deepEqual(callers,
+    ["components/ListenPage.tsx", "components/PodcastPlayer.tsx", "components/Resources.tsx"],
+    "an episode may be started from the room, the Listen page and the transport, and nowhere else");
 });
 
 test("every card obeys one face, and the face refuses a fifth thing", () => {

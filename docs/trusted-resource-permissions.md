@@ -683,6 +683,41 @@ Passage evidence differs by publisher, and the manifest records which was used:
   passage — Q&As, interviews, tributes — and those are omitted rather than
   guessed at.
 
+## Music — Poor Bishop Hooper, added 2026-08-02
+
+The first source in the app that is sung rather than spoken, and the first
+whose material did not arrive through a podcast feed. That difference is the
+whole of what this entry has to record, because it is the difference the
+maintainer's standing position has to be applied to deliberately rather than
+by analogy.
+
+**What a podcast feed is, and why it carried the eight before this.** An RSS
+enclosure is a publisher's own distribution mechanism, published in a format
+whose entire purpose is that third-party clients fetch and play it. Carrying
+those shows is doing the thing the format exists for.
+
+**Poor Bishop Hooper publish no such feed.** Their catalogue is a page on
+their own site — 352 tracks across 14 albums, including all 150 psalms as
+EveryPsalm — with a player their site draws and a download button per track.
+The audio streams from `cdn.prod.website-files.com`, which is where their own
+site serves it from, so playback here reaches for exactly the file their own
+listen page reaches for and no copy is made. Their site carries a plain "all
+rights reserved" and no licence.
+
+**So the footing is the maintainer's standing one, stated rather than
+assumed**: the app is not publicly listed, permission is sought before any
+public listing, and takedowns are honoured on request. What is different from
+the eight podcasts is that no published feed invites third-party playback, so
+this source rests on that position alone. It is recorded here so that a later
+reader finds a decision rather than a habit — and so that "ask Poor Bishop
+Hooper" is a line someone can act on.
+
+**Artwork is NOT taken**, which keeps the Deferred list below true. Their
+album covers are referenced nowhere; the Listen room draws type and the app's
+own instruments instead, and the catalogue's `cover` field is captured but
+unused. Their download links are recorded and likewise undrawn — a download
+is a different act from a stream, and this app does not perform it.
+
 ## Deferred work
 
 - marks for any source beyond those approved above;

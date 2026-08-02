@@ -23714,6 +23714,240 @@ button.lang-phrase-diagram-node:focus-visible,
   transition: none !important;
 }
 
+/* ── LISTEN · the room organised by material · 2026-08-02 ──────────────────
+   The one page in the app that is not passage-shaped. Its whole job is to
+   answer "what is here?", which every other way into the player refuses to
+   answer because they are all built to answer "what teaches THIS?".
+
+   TYPE-LED, NOT ART-LED, and that is a permission fact before it is a taste
+   one: publisher artwork and cover thumbnails sit under DEFERRED in
+   docs/trusted-resource-permissions, so a grid of scraped covers is not ours
+   to draw. What is left is the app's own instrument — a name in the reading
+   face, one line of what it holds — which is what the rest of the app already
+   uses and is the reason this room looks like the app rather than like a
+   store. The plates on the series shelf are the exception and are the brand
+   system's own, already permitted and already drawn everywhere else. */
+/* `.main-content` is a flex ROW, so a page that only sets max-width shrinks to
+   its content instead of centring in the shell — the room drew 498px wide and
+   its grid collapsed to one column. The page is the flex item and fills; the
+   column inside it is what carries the measure. */
+.listen {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-y: auto;
+}
+
+.listen-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 40px 32px 96px;
+}
+
+.listen-head { margin-bottom: 36px; }
+
+.listen-title {
+  margin: 0;
+  color: var(--text-primary);
+  font: var(--fw-medium) 1.75rem/1.2 var(--font-reading);
+  letter-spacing: -0.012em;
+}
+
+.listen-lede {
+  margin: 8px 0 0;
+  color: var(--text-secondary);
+  font: 0.875rem/1.6 var(--font-reading);
+}
+
+.listen-shelf { margin-bottom: 40px; }
+
+/* The shelf says what it is and whose it is on one line, because a heading
+   that has to be read twice is a heading doing two jobs. */
+.listen-shelf-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.listen-shelf-name {
+  margin: 0;
+  color: var(--text-primary);
+  font: var(--fw-medium) 1rem/1.3 var(--font-reading);
+}
+
+.listen-shelf-by {
+  margin: 0;
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.5 var(--font-ui);
+}
+
+/* auto-fill rather than a fixed count: this page has the window's whole width
+   and a track list underneath it, so a column count that moves with the width
+   is right here where it was wrong in the 332px margin. */
+.listen-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(212px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.listen-card-face {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 14px 15px 15px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: background var(--transition-fast), border-color var(--transition-fast);
+}
+
+.listen-card-face.is-series { cursor: default; }
+
+.listen-card-face:hover:not(.is-series) {
+  border-color: var(--border-medium);
+  background: var(--surface-hover);
+}
+
+.listen-card-face:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.listen-card-name {
+  color: var(--text-primary);
+  font: var(--fw-medium) 0.9375rem/1.35 var(--font-reading);
+  letter-spacing: -0.004em;
+}
+
+.listen-card-foot {
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.5 var(--font-ui);
+}
+
+/* The series plate, at the card's own scale — the same object the resources
+   room draws, so a publisher is recognised in both rooms by one shape. */
+.listen-card-plate[data-source] {
+  display: grid;
+  place-items: center;
+  width: 56px;
+  height: 28px;
+  margin-bottom: 2px;
+  padding: 4px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--resource-source);
+  color: var(--resource-ink);
+}
+
+.listen-card-plate .taught-here-mark {
+  --card-art-h: clamp(8px, calc(14.6px / pow(var(--resource-symbol-ratio), 0.34)), 17px);
+  display: block;
+  width: min(100%, calc(var(--card-art-h) * var(--resource-symbol-ratio)));
+  height: var(--card-art-h);
+  background: var(--resource-symbol) center / contain no-repeat;
+  text-indent: -200vw;
+}
+
+/* ── An album, opened ────────────────────────────────────────────────────── */
+.listen-album-head { margin-bottom: 18px; }
+
+.listen-back {
+  margin: 0 0 12px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text-tertiary);
+  font: 0.75rem/1.5 var(--font-ui);
+  cursor: pointer;
+}
+
+.listen-back:hover { color: var(--text-primary); }
+
+.listen-album-name {
+  margin: 0;
+  color: var(--text-primary);
+  font: var(--fw-medium) 1.375rem/1.25 var(--font-reading);
+  letter-spacing: -0.008em;
+}
+
+.listen-album-foot {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font: 0.75rem/1.5 var(--font-ui);
+}
+
+.listen-tracks { margin: 0; padding: 0; list-style: none; }
+
+/* A row, not a card: two hundred and twenty-two psalms in cards is a scroll
+   nobody finishes, and a track has one fact worth a line of its own. */
+.listen-track-face {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: var(--radius-sm);
+  background: none;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.listen-track-face:hover { background: var(--surface-hover); }
+
+/* The house offset, not an inset one: Rev 04 §4 bans an inset ring because it
+   lands on the element's own fill. A row is flush with its neighbours, so the
+   ring sits in the list's own gap rather than inside the row. */
+.listen-track-face:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.listen-track-no {
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.5 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.listen-track-title {
+  overflow: hidden;
+  color: var(--text-primary);
+  font: 0.875rem/1.5 var(--font-reading);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Drawn only under the pointer: a play mark on all 222 rows is a column of
+   arrows, and the row is the control whether or not one is showing. */
+.listen-track-play { color: var(--player-accent, var(--accent-seal)); opacity: 0; }
+.listen-track-face:hover .listen-track-play,
+.listen-track-face:focus-visible .listen-track-play { opacity: 1; }
+
+.listen-track-extent {
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.5 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.listen-colophon {
+  margin: 40px 0 0;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-subtle);
+  color: var(--text-tertiary);
+  font: 0.625rem/1.5 var(--font-ui);
+}
+
 /* Hover is a promise that something will happen. Nothing will. */
 .is-disabled-instrument:hover {
   color: var(--text-tertiary);
