@@ -1,6 +1,6 @@
 {
  "schema": "pericope.music-catalogue",
- "version": 1,
+ "version": 2,
  "source": {
   "id": "poor-bishop-hooper",
   "name": "Poor Bishop Hooper",
@@ -85,7 +85,9 @@
      "duration": "8:41",
      "download": "https://drive.google.com/uc?export=download&id=1ksR2ftnAmgw409tnh5xlGUqZjGqVUb4r"
     }
-   ]
+   ],
+   "tint": "#000000",
+   "slug": null
   },
   {
    "name": "Hymns IV",
@@ -115,7 +117,15 @@
      "duration": "2:14",
      "download": "https://drive.google.com/uc?export=download&id=1SLNarGQgQoEKpcRa57xZItXlpzqNiPIP"
     }
-   ]
+   ],
+   "released": "December 8, 2025",
+   "about": "These four traditional hymns for Advent were released in December of 2025. They makeup the fourth installment of our ongoing Hymns project. Though to many these might be lesser known Christmas songs, they are some of our favorites. We recorded them simply (just upright bass, guitar, an occasional mandolin, and vocals), in hopes that the words and melodies will shine, turning our attention to the 'Savior of the Nations' during the Advent season.",
+   "credits": {
+    "Music": "Arranged and Recorded by Poor Bishop Hooper",
+    "Artwork": "Colin Kettler"
+   },
+   "tint": "#4b4e61",
+   "slug": "hymns-iv"
   },
   {
    "name": "The Serpent & The Seed",
@@ -331,7 +341,15 @@
      "duration": "2:09",
      "download": "https://drive.google.com/uc?export=download&id=1VsWNOMTcoOc9uXQAmA2dHm09AgwewoIW"
     }
-   ]
+   ],
+   "released": "September 2025",
+   "about": "is a mobile adventure game with a difference: an imaginative retelling of the world's greatest story. The creator of the game, Andy Geers, reached out to us in 2021 about writing a song for one of the theatrical moments in the game. What started as a conversation about one song soon became us committing to creating the entire score. We wrote 8 lyrical works and 27 instrumentals that accompany the player throughout the experience - encompassing the Biblical narrative from creation to Revelation. The instrumentals are unique in that they're loop-based. Since players have the opportunity to go through the game at their own pace, the music must in turn lend itself to repetition for varying lengths. Despite the abnormal (for us) parameters, we wanted to release these songs as an album because we know they bring beauty to the earth and give glory to God, even apart from the gameplay. You can learn more about the game and its makers at",
+   "credits": {
+    "Music": "Written and Recorded by Poor Bishop Hooper",
+    "Artwork": "Greg Clifton and Sophie Killingley"
+   },
+   "tint": "#258aa4",
+   "slug": "the-serpent-the-seed"
   },
   {
    "name": "As Foretold: Part 1",
@@ -379,7 +397,15 @@
      "duration": "4:26",
      "download": "https://drive.google.com/uc?export=download&id=1INNQsvZXbUUi9qJtC5XQ1LlKZ_FbF-Wr"
     }
-   ]
+   ],
+   "released": "December 2024",
+   "about": "is a three-album series focusing on the life of Christ. For its framework, we looked exclusively at the prophetic fulfillment passages from the Gospel of Matthew. The result is a scripture heavy journey through Jesus\u2019 life.",
+   "credits": {
+    "Music": "Poor Bishop Hooper",
+    "Artwork": "Jeremy Luther"
+   },
+   "tint": "#b2a49c",
+   "slug": "as-foretold-part-1"
   },
   {
    "name": "As Foretold: Part 2",
@@ -463,7 +489,15 @@
      "duration": "3:07",
      "download": "https://drive.google.com/uc?export=download&id=1PL8HZ80ad5amNWyy5cUOIAQw5G6oMbxL"
     }
-   ]
+   ],
+   "released": "December 2024",
+   "about": "is a three-album series focusing on the life of Christ. For its framework, we looked exclusively at the prophetic fulfillment passages from the Gospel of Matthew. The result is a scripture heavy journey through Jesus\u2019 life.",
+   "credits": {
+    "Music": "Poor Bishop Hooper",
+    "Artwork": "Jeremy Luther"
+   },
+   "tint": "#b2a99a",
+   "slug": "as-foretold-part-2"
   },
   {
    "name": "As Foretold: Part 3",
@@ -529,7 +563,15 @@
      "duration": "3:37",
      "download": "https://drive.google.com/uc?export=download&id=1zntAZl6R0F94jiV-4KZY9EKvKS1o_yOC"
     }
-   ]
+   ],
+   "released": "December 2024",
+   "about": "is a three-album series focusing on the life of Christ. For its framework, we looked exclusively at the prophetic fulfillment passages from the Gospel of Matthew. The result is a scripture heavy journey through Jesus\u2019 life.",
+   "credits": {
+    "Music": "Poor Bishop Hooper",
+    "Artwork": "Jeremy Luther"
+   },
+   "tint": "#232442",
+   "slug": "as-foretold-part-3"
   },
   {
    "name": "Miscellaneous",
@@ -565,7 +607,15 @@
      "duration": "5:24",
      "download": "https://drive.google.com/uc?export=download&id=15bdfcsrpRPZy6iUq61CWtbMvyhFif7VJ"
     }
-   ]
+   ],
+   "released": "2024 -",
+   "about": "Whether it's recording a night of worship, writing a trio of Lord's Prayer songs for our friends at The Bible Project, or creating a song from Romans 8 for a family going through a difficult season, we occasionally write and record miscellaneous works. Here's a home for all those albums, singles, and EPs.",
+   "credits": {
+    "Music": "Poor Bishop Hooper",
+    "Artwork": "assorted artists"
+   },
+   "tint": "#032543",
+   "slug": "miscellaneous"
   },
   {
    "name": "Hymns III",
@@ -601,7 +651,15 @@
      "duration": "3:41",
      "download": "https://drive.google.com/uc?export=download&id=153eY4b2unUppbVhdGzc6iuvjaqLPjTIO"
     }
-   ]
+   ],
+   "released": "July 2021 - Present",
+   "about": "These five traditional hymns were released in August of 2023, and all focused on the beauty of God\u2019s creation. Having sung these standards in church growing up, these lyrical and melodic masterpieces continue to bring amazement and worship to our hearts amidst each changing season.",
+   "credits": {
+    "Music": "Poor Bishop Hooper",
+    "Artwork": "Colin Kettler"
+   },
+   "tint": "#544838",
+   "slug": "hymns-iii"
   },
   {
    "name": "EveryPsalm",
@@ -612,6 +670,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990a67325ba3520ab127a9_Psalm001.txt",
      "duration": "4:45",
      "psalm": 1,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1KTDh8a-NUSuDIR9EyUQ1BWoZ93WLarJq"
     },
     {
@@ -619,6 +679,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990a67db8046a5081b6ab2_Psalm002.txt",
      "duration": "5:12",
      "psalm": 2,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1GwsJNi8tA1cvFxtj0B_JyBPEFvdvyDks"
     },
     {
@@ -626,6 +688,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990a67defaf0b40fd01500_Psalm003.txt",
      "duration": "4:23",
      "psalm": 3,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1No8zB0MHFKf97DwkMCcTLoTBXtoUYwFc"
     },
     {
@@ -633,6 +697,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990a67e3c1ef9943bc8880_Psalm004.txt",
      "duration": "4:53",
      "psalm": 4,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1Vgz9GE-LmkqMcojHeabMWTGsfM6cuLZ_"
     },
     {
@@ -640,6 +706,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990a67599be9e475ac5f0a_Psalm005.txt",
      "duration": "3:22",
      "psalm": 5,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1ixChQFWWwsgiuYjuAwm0ZpLocxfZysWg"
     },
     {
@@ -647,6 +715,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990a67b7ba2bec60b6f5b7_Psalm006.txt",
      "duration": "3:12",
      "psalm": 6,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1NmSNI_IgkKvsmccXqMzU9aAbvSAW7AmA"
     },
     {
@@ -654,6 +724,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990a671e47cf0b5edb5d9a_Psalm007.txt",
      "duration": "4:57",
      "psalm": 7,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1IkfgCw12YGGqLkQYHaPs86YTRu6_2vP8"
     },
     {
@@ -661,6 +733,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990a67395d01809fcb8eb0_Psalm008.txt",
      "duration": "3:35",
      "psalm": 8,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1bJ6HOJoN3MrmyuB_3rl6kQCosFO5gcHY"
     },
     {
@@ -668,6 +742,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990a67a29176322f3dc28a_Psalm009.txt",
      "duration": "3:23",
      "psalm": 9,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1KhqKmLNLH1A8p0ARG7Y2cRNZv7V12V5J"
     },
     {
@@ -675,6 +751,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990a67bd254fa62c580063_Psalm010.txt",
      "duration": "2:55",
      "psalm": 10,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1_IFcC3OJQGLSg95ekHwuL3CFHF18THsw"
     },
     {
@@ -682,6 +760,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990fc379c9ba34e0320721_Psalm011.txt",
      "duration": "3:59",
      "psalm": 11,
+     "group": "Confidence",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ee6bf79d4e317775459_ConfidenceSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1hcOrR9z_g-JC7ohAi8S7aIg0Jc3Yr7x7"
     },
     {
@@ -689,6 +769,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990fc31e47cf0b5ee0aa68_Psalm012.txt",
      "duration": "5:48",
      "psalm": 12,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=10Rs753FpeQmlePb1LxzuXrGruPMtAoRq"
     },
     {
@@ -696,6 +778,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990fc31829414a0926eeb7_Psalm013.txt",
      "duration": "4:30",
      "psalm": 13,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1CcRsKy2wjywv_I4Hh1ncZoFcTyIpuPa7"
     },
     {
@@ -703,6 +787,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990fc3b7ba2bec60bcfa56_Psalm014.txt",
      "duration": "3:31",
      "psalm": 14,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1VQSx6PrKkyci3CpcBmWRAzqV9oQLfHIG"
     },
     {
@@ -710,6 +796,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990fc324298c707f67c6f8_Psalm015.txt",
      "duration": "3:04",
      "psalm": 15,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1yHJLWhos1ziFkJlsfntWkwMkygYjWfm1"
     },
     {
@@ -717,6 +805,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990fc3e891772eddf422d4_Psalm016.txt",
      "duration": "3:45",
      "psalm": 16,
+     "group": "Thanksgiving",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ff748e9ec6942c26d24_ThanksgivingSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1BV1XY_yH40uORHZ7AbKIGZuo2JFQBQT0"
     },
     {
@@ -724,6 +814,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990fc32ee3b92526f9dd16_Psalm017.txt",
      "duration": "4:13",
      "psalm": 17,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1K1oGRqOCL78mlbISO0kEW47XcUkpCFnb"
     },
     {
@@ -731,6 +823,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990fc35453aebf85c5a2bf_Psalm018.txt",
      "duration": "4:25",
      "psalm": 18,
+     "group": "Thanksgiving",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ff748e9ec6942c26d24_ThanksgivingSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=10WR6DtbR0wx4U-EW74kkhctTzwnmYPMS"
     },
     {
@@ -738,6 +832,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990fc34695b60d2d002d20_Psalm019.txt",
      "duration": "4:32",
      "psalm": 19,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=13yVplbmp-nZu6068v8Wuc2ikhcg_Nepu"
     },
     {
@@ -745,6 +841,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67990fc33cc402f28e37e80e_Psalm020.txt",
      "duration": "4:08",
      "psalm": 20,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1AqJlK7Hj9Jz-wOt3qpEBozjrghks0OQS"
     },
     {
@@ -752,6 +850,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/6799134432a22de18ec65a6e_Psalm021.txt",
      "duration": "1:48",
      "psalm": 21,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=18xiOiQ8vixBSCfjXJglD0CapjSfYWkO-"
     },
     {
@@ -759,6 +859,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67991344b7c5bf853c1b6c12_Psalm022.txt",
      "duration": "7:09",
      "psalm": 22,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1ZbcLUc_moHtuuEg-JXNNDQzuSZbRSXjK"
     },
     {
@@ -766,6 +868,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679913440077b62d9f5163e4_Psalm023.txt",
      "duration": "4:50",
      "psalm": 23,
+     "group": "Confidence",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ee6bf79d4e317775459_ConfidenceSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1_mIuSv_7Yv-z4obFZ7nuW1hxcww3ngNr"
     },
     {
@@ -773,6 +877,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67991344d4578b62b6f998b5_Psalm024.txt",
      "duration": "4:44",
      "psalm": 24,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1YGT6-zofp4PSkofxv_GkcBbnWJfb8WeE"
     },
     {
@@ -780,6 +886,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679913442abc06c77379fcb5_Psalm025.txt",
      "duration": "2:27",
      "psalm": 25,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1JgX3vCBPFX5bWW2su2ulEfAC8koEbvqu"
     },
     {
@@ -787,6 +895,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679913443c213fc78348543a_Psalm026.txt",
      "duration": "3:52",
      "psalm": 26,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1nWCfpakLtORCZNlxEKnXLzbda0Poz4UK"
     },
     {
@@ -794,6 +904,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67991344707f8c2411e2dd1f_Psalm027.txt",
      "duration": "5:19",
      "psalm": 27,
+     "group": "Confidence",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ee6bf79d4e317775459_ConfidenceSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1rHOIWrUvSB03Gm7FHrjBd9plZGsIJLIC"
     },
     {
@@ -801,6 +913,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67991344c63896cdf78dab4f_Psalm028.txt",
      "duration": "3:08",
      "psalm": 28,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1f9Nmb2TWwEv5SMrViIcXGLt220ymyT8f"
     },
     {
@@ -808,6 +922,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679913445c57b8f3b55d2fb3_Psalm029.txt",
      "duration": "4:07",
      "psalm": 29,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1TTxtC7wsVPUISSNEKSzAFBr6RdO-wB4_"
     },
     {
@@ -815,6 +931,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/6799134480d3140046e7d30c_Psalm030.txt",
      "duration": "4:06",
      "psalm": 30,
+     "group": "Thanksgiving",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ff748e9ec6942c26d24_ThanksgivingSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1A3q8GakQUYKeKmzrax4UdH2ydfacTFYu"
     },
     {
@@ -822,6 +940,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679915e20f374cc4136f9c72_Psalm031.txt",
      "duration": "4:04",
      "psalm": 31,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=127CXHg0ut69-iY93crFmyKFathrfysWO"
     },
     {
@@ -829,6 +949,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679915e32abc06c7737d849a_Psalm032.txt",
      "duration": "4:39",
      "psalm": 32,
+     "group": "Thanksgiving",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ff748e9ec6942c26d24_ThanksgivingSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1WITNxjweFtxU2PnezUvHh7EsTFPNVhiY"
     },
     {
@@ -836,6 +958,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679915e242ec04074906334f_Psalm033.txt",
      "duration": "2:44",
      "psalm": 33,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1jGmRrpyXqNJg_nbgrRncM1832BNR0WLU"
     },
     {
@@ -843,6 +967,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679915e3dd45fb4b42d270ea_Psalm034.txt",
      "duration": "5:17",
      "psalm": 34,
+     "group": "Thanksgiving",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ff748e9ec6942c26d24_ThanksgivingSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1S8jEQ-_ON62eQAL2ymy0dbn1HOCQCdBa"
     },
     {
@@ -850,6 +976,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679915e34b008412b783bd30_Psalm035.txt",
      "duration": "3:46",
      "psalm": 35,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=16ygQ6XBuPpJf1MeUQr5rkNCNQJ6lJ0jz"
     },
     {
@@ -857,6 +985,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679915e39cf6bea016eac273_Psalm036.txt",
      "duration": "3:37",
      "psalm": 36,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1jUEQXrNRTFHxDKrFls_ae4Jv5PdjRC_F"
     },
     {
@@ -864,6 +994,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679915e2cb1fbd0a0736c9d2_Psalm037.txt",
      "duration": "3:40",
      "psalm": 37,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1c4MK17_02vx7QIcIhthKRCKJjD31CAxQ"
     },
     {
@@ -871,6 +1003,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679915e39a4dfc84d43de6f0_Psalm038.txt",
      "duration": "3:33",
      "psalm": 38,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1gXr3Vqh1-1L_TpiOXpC8G5ZoxQ5f4vZW"
     },
     {
@@ -878,6 +1012,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679915e216d37c6969d27a50_Psalm039.txt",
      "duration": "4:31",
      "psalm": 39,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1zhIy7XhhqdB6dtO6MuONPg2rtig4-cEh"
     },
     {
@@ -885,6 +1021,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679915e2c4c031b670c5106d_Psalm040.txt",
      "duration": "5:07",
      "psalm": 40,
+     "group": "Thanksgiving",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ff748e9ec6942c26d24_ThanksgivingSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1kN27TyzqzfRhWWp2XJVs1x6uZReOiAgf"
     },
     {
@@ -892,6 +1030,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679918a922185018ac4acc2c_Psalm041.txt",
      "duration": "3:47",
      "psalm": 41,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1O8JE-rJ7KHhDreOEJP2lSx2nfZugNlog"
     },
     {
@@ -899,6 +1039,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679918a9830a1bf7b8c5a079_Psalm042.txt",
      "duration": "4:32",
      "psalm": 42,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1katVJa_yu5RCP6YPQzc86kEO1DTNFT6Z"
     },
     {
@@ -906,6 +1048,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679918a9c3ff09b503d4ddf6_Psalm043.txt",
      "duration": "6:42",
      "psalm": 43,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1t2gNqoVklTeYCKsyUrsdKddx21xacsaW"
     },
     {
@@ -913,6 +1057,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679918a9d52ab70ff1ceba8f_Psalm044.txt",
      "duration": "5:49",
      "psalm": 44,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=104cygYJvQajpgdSYnviLLFOIhvA18loH"
     },
     {
@@ -920,6 +1066,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679918a942ec04074908e101_Psalm045.txt",
      "duration": "3:49",
      "psalm": 45,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=146uJ1hzwMO8TGnQqQtbGfQWO39DNAyKV"
     },
     {
@@ -927,6 +1075,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679918a914d505518116c19c_Psalm046.txt",
      "duration": "5:49",
      "psalm": 46,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1wNgwNQSDlFVE-1rxD4CDlSE85DFmKRgC"
     },
     {
@@ -934,6 +1084,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679918ad0077b62d9f5724cc_Psalm047.txt",
      "duration": "4:14",
      "psalm": 47,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1JwCKGwVwtiP1tD6WvMhIsILFNIEUdqW3"
     },
     {
@@ -941,6 +1093,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679918a97f3209d1c4b19974_Psalm048.txt",
      "duration": "7:17",
      "psalm": 48,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1-AMFxi3IdMKlBSGjwXxTDbajOXpIoVSz"
     },
     {
@@ -948,6 +1102,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679918a9025e5107fca8f60c_Psalm049.txt",
      "duration": "4:37",
      "psalm": 49,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1OBJzxNSXTMeFVaUlINbfa9CS_Ly-C_ul"
     },
     {
@@ -955,6 +1111,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679918a9d52ab70ff1ceba42_Psalm050.txt",
      "duration": "4:03",
      "psalm": 50,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1r6o8MPW9m3fUy7fqzhd-nQQ6D5AOHcGQ"
     },
     {
@@ -962,6 +1120,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67998ec7b9830683d5d5d28a_Psalm051.txt",
      "duration": "5:08",
      "psalm": 51,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1CFlaBqSy0oLEw-HZiCb-Mv34-EJeVYwN"
     },
     {
@@ -969,6 +1129,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67998ec7023951baba72ef18_Psalm052.txt",
      "duration": "4:21",
      "psalm": 52,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1uFFuy88heskbw7_829RlYEqsvveJ5bph"
     },
     {
@@ -976,6 +1138,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67998ec7409823d66ec6e2ea_Psalm053.txt",
      "duration": "3:22",
      "psalm": 53,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=12ALQiWGKo-infPN0_FGMXdEIEET3_KAQ"
     },
     {
@@ -983,6 +1147,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67998ec76be357e4306f7923_Psalm054.txt",
      "duration": "3:44",
      "psalm": 54,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1cJgj4nJXnnWC9txUOc4xoy3kNg8IWdK1"
     },
     {
@@ -990,6 +1156,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67998ec79dac8826f2d0097a_Psalm055.txt",
      "duration": "4:43",
      "psalm": 55,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1FshnYDQpG0LRf40YFfOHNb48Lv0qPWWR"
     },
     {
@@ -997,6 +1165,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67998ec71b59263bbcd8619a_Psalm056.txt",
      "duration": "3:47",
      "psalm": 56,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1aQAsuc4OSiZUOMiyNq0zb5LKOjS94bym"
     },
     {
@@ -1004,6 +1174,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67998ec75d14ebcea2f62f28_Psalm057.txt",
      "duration": "5:12",
      "psalm": 57,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=18WeINRsHi1Zl2jg4OaygJwrslRsOIrox"
     },
     {
@@ -1011,6 +1183,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67998ec7c8630005ac693414_Psalm058.txt",
      "duration": "3:19",
      "psalm": 58,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1K0vwUIkf_kpIH4CYpILRNnYJiGTOFr1_"
     },
     {
@@ -1018,6 +1192,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67998ec75d14ebcea2f62f03_Psalm059.txt",
      "duration": "4:35",
      "psalm": 59,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1eKhfO9-1jppctbxHzMTHRV3-aGmFGsrA"
     },
     {
@@ -1025,6 +1201,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67998ec72ad6b854bd8fe95e_Psalm060.txt",
      "duration": "3:42",
      "psalm": 60,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1q2cWOcxDIAya104GTMRdFD-cygyURAP5"
     },
     {
@@ -1032,6 +1210,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/6799913341e1f85439c46712_Psalm061.txt",
      "duration": "3:41",
      "psalm": 61,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1FTm3ExVce14bzRUAR_VZhcmAWYzHE_6a"
     },
     {
@@ -1039,6 +1219,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679991338e0294f53ea677a3_Psalm062.txt",
      "duration": "3:56",
      "psalm": 62,
+     "group": "Confidence",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ee6bf79d4e317775459_ConfidenceSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=15DKjaUvDZCjv4C34x5fTuKAgi06O8JZK"
     },
     {
@@ -1046,6 +1228,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67999133881fcaf35576b68c_Psalm063.txt",
      "duration": "3:28",
      "psalm": 63,
+     "group": "Confidence",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ee6bf79d4e317775459_ConfidenceSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1Lxtc0reYRLNUSOWqgVw-VMXY8lWBeHqf"
     },
     {
@@ -1053,6 +1237,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67999133588467d730ef7647_Psalm064.txt",
      "duration": "4:35",
      "psalm": 64,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1sA_xJE0d0pdvnIiuA6c-rAHCpCupfuVh"
     },
     {
@@ -1060,6 +1246,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679991330ba67a5e62de5d97_Psalm065.txt",
      "duration": "3:35",
      "psalm": 65,
+     "group": "Thanksgiving",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ff748e9ec6942c26d24_ThanksgivingSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1pb3Chi2cjIFB1F09-lnXVaSgQVYyVYZI"
     },
     {
@@ -1067,6 +1255,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67999133e17652244e8e0631_Psalm066.txt",
      "duration": "4:53",
      "psalm": 66,
+     "group": "Thanksgiving",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ff748e9ec6942c26d24_ThanksgivingSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1GlFyEKulCbxJISjAhc3hd7_0BLaK7OGH"
     },
     {
@@ -1074,6 +1264,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/6799913281fa5263de63878b_Psalm067.txt",
      "duration": "3:19",
      "psalm": 67,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=12GJmcESRGZY4qlm4jW4uI7gxKLN0cVoO"
     },
     {
@@ -1081,6 +1273,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/6799913341e1f85439c46725_Psalm068.txt",
      "duration": "4:12",
      "psalm": 68,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1oJIJgx4Q12Ql3qqtZ5ZThhvneo8Qht5L"
     },
     {
@@ -1088,6 +1282,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/6799913372a0ddcb19c908af_Psalm069.txt",
      "duration": "3:50",
      "psalm": 69,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1glLroeZXiFszKrAP_hzBYy2eqUIDAGDc"
     },
     {
@@ -1095,6 +1291,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679991325e5e38693ce8bd7e_Psalm070.txt",
      "duration": "3:16",
      "psalm": 70,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1laW0qN2_SjvTk_Qr0FJS1Kwt3nP6Efxx"
     },
     {
@@ -1102,6 +1300,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/6799945541e1f85439c6c99f_Psalm071.txt",
      "duration": "3:32",
      "psalm": 71,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1o8MWyzI1_mLwsOZuIeOdFjXL6Mk68r12"
     },
     {
@@ -1109,6 +1309,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/6799945662068c7a5650c19d_Psalm072.txt",
      "duration": "4:56",
      "psalm": 72,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1disSGS7WQ98V-37jzLaIY2GjQwfr8Uyc"
     },
     {
@@ -1116,6 +1318,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/6799945513a35502ad4c5fac_Psalm073.txt",
      "duration": "3:00",
      "psalm": 73,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1sr4RigWpSDQqJ0JeikSkYSeWaeMglwcR"
     },
     {
@@ -1123,6 +1327,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/6799945613a35502ad4c5fcf_Psalm074.txt",
      "duration": "5:10",
      "psalm": 74,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1B7YPLK6hX2gXxavxFS5EoIhUj9gK_pZF"
     },
     {
@@ -1130,6 +1336,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679994550687c1dfd324bf34_Psalm075.txt",
      "duration": "3:47",
      "psalm": 75,
+     "group": "Thanksgiving",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ff748e9ec6942c26d24_ThanksgivingSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1jGhfXUH5MM0dIi8WZZbXBZ0BbtXwq5tn"
     },
     {
@@ -1137,6 +1345,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67999456984ba265ab49a3be_Psalm076.txt",
      "duration": "4:32",
      "psalm": 76,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=10j9gwugAGuW1x1kQbqNfI5uHAJu39Zt2"
     },
     {
@@ -1144,6 +1354,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67999455d948eb83f823021b_Psalm077.txt",
      "duration": "3:34",
      "psalm": 77,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1ez_WAr3dWfdAKlgYGpqn3WcKPB1Yb2t7"
     },
     {
@@ -1151,6 +1363,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679994569a73ea34f59f0792_Psalm078.txt",
      "duration": "5:44",
      "psalm": 78,
+     "group": "Remembrance",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e77c997668433e9e64e147_RememberanceSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=11QX-xgK2iCeWLaumlxP3LlPg5ebdbjPX"
     },
     {
@@ -1158,6 +1372,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/67999455446c63c41a5c9a9a_Psalm079.txt",
      "duration": "3:54",
      "psalm": 79,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1nSBOfaAihd4O9Hrb6u9xu82v0zxsNUJ2"
     },
     {
@@ -1165,6 +1381,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679994550687c1dfd324bf1a_Psalm080.txt",
      "duration": "3:01",
      "psalm": 80,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1E0PNS2dfpnoVGDLTyMXj7V6hjEJRxrK6"
     },
     {
@@ -1172,6 +1390,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679996de0ba67a5e62e2c972_Psalm081.txt",
      "duration": "2:54",
      "psalm": 81,
+     "group": "Remembrance",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e77c997668433e9e64e147_RememberanceSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1phHpMOSzkys94bniRDL6g2qmW073hioi"
     },
     {
@@ -1179,6 +1399,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679996dfc8630005ac6f3435_Psalm082.txt",
      "duration": "4:40",
      "psalm": 82,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=19FRQXLpZ6Q14G4lxxa_JQdhmn6v8AVHc"
     },
     {
@@ -1186,6 +1408,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679996df62068c7a5652bbd2_Psalm083.txt",
      "duration": "4:54",
      "psalm": 83,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1lUpGnEFU9EG_ZRnqRH32RiPGNmL2QzUe"
     },
     {
@@ -1193,6 +1417,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679996df6be357e43075f4c4_Psalm084.txt",
      "duration": "4:16",
      "psalm": 84,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=12tt5bFFPXivp2dq4U0n_t2U3OdF-UGMj"
     },
     {
@@ -1200,6 +1426,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679996df41e1f85439c8bbfb_Psalm085.txt",
      "duration": "4:46",
      "psalm": 85,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1cpzXEa1bFcAUNvrxhrz5DPAgTvevXT--"
     },
     {
@@ -1207,6 +1435,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679996de145728f8b63081da_Psalm086.txt",
      "duration": "2:23",
      "psalm": 86,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1YkWGdxvlfmYxXAA63pnKlRpkNX-S59Ga"
     },
     {
@@ -1214,6 +1444,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679996dee5e775262de7547e_Psalm087.txt",
      "duration": "3:16",
      "psalm": 87,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1mLUS3na7q66A49M6dA6tFKiLi_cTvOJ6"
     },
     {
@@ -1221,6 +1453,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679996dfb9830683d5dc12fc_Psalm088.txt",
      "duration": "5:29",
      "psalm": 88,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=15Lw65ue3eHGT-7EnGVWTqmKzdrbKtAqY"
     },
     {
@@ -1228,6 +1462,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679996dfe17652244e926bd3_Psalm089.txt",
      "duration": "3:55",
      "psalm": 89,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1McUXQ43KidruzJFXYDvvBK92yMP4xyTP"
     },
     {
@@ -1235,6 +1471,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679996df1465732169512de3_Psalm090.txt",
      "duration": "4:16",
      "psalm": 90,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1Si86WLKKtjP6ifDcwunrSU0mhdTTJKYX"
     },
     {
@@ -1242,6 +1480,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679998ccf5466e2970386f5b_Psalm091.txt",
      "duration": "4:58",
      "psalm": 91,
+     "group": "Confidence",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ee6bf79d4e317775459_ConfidenceSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=14m4zrQPUkNFRYCeOkfcg0LQ22RLyUtkN"
     },
     {
@@ -1249,6 +1489,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679998cc62068c7a56540d40_Psalm092.txt",
      "duration": "2:29",
      "psalm": 92,
+     "group": "Thanksgiving",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ff748e9ec6942c26d24_ThanksgivingSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=16YY3WQL73lCiGqDOKZvVQPgl9RspcqjM"
     },
     {
@@ -1256,6 +1498,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679998ccab77b90db0f9e034_Psalm093.txt",
      "duration": "3:22",
      "psalm": 93,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1-JmTEtHs1QxLj6dtu5x9MXUAjasemJRh"
     },
     {
@@ -1263,6 +1507,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679998cc1d0aa5b4f8206541_Psalm094.txt",
      "duration": "5:00",
      "psalm": 94,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1uVgQ_ezO-yO11dLReZYAGvwbABDq-NsX"
     },
     {
@@ -1270,6 +1516,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679998cc14657321695286cc_Psalm095.txt",
      "duration": "5:48",
      "psalm": 95,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1IrEUwP_39OLB137RdvhInmTWlYPoWCXE"
     },
     {
@@ -1277,6 +1525,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679998cc81fa5263de691285_Psalm096.txt",
      "duration": "3:47",
      "psalm": 96,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1sjXZ78kX0VtHDf_Ep3BKIlggyUTb0ztY"
     },
     {
@@ -1284,6 +1534,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679998cc2ad6b854bd974994_Psalm097.txt",
      "duration": "4:27",
      "psalm": 97,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=19xJbTDb7xEmx6qoN7l-ru_RT2t6eTZWI"
     },
     {
@@ -1291,6 +1543,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679998cc429e859bfd7d99b0_Psalm098.txt",
      "duration": "3:14",
      "psalm": 98,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1YgYkMDXeQR6eqvm_0zNIfwjoNaBlJ_Fb"
     },
     {
@@ -1298,6 +1552,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679998ccc814aca27d68f635_Psalm099.txt",
      "duration": "3:10",
      "psalm": 99,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1AG34nj3AoY1MUjFxa2HRLzMq84FudiCu"
     },
     {
@@ -1305,6 +1561,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679998cc5eef031996438bf7_Psalm100.txt",
      "duration": "2:14",
      "psalm": 100,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=103POEFsL1AkB9cbqdXCXmv1Y7xwgeOtF"
     },
     {
@@ -1312,6 +1570,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c23bd8ef0b179237910a9_Psalm101.txt",
      "duration": "2:37",
      "psalm": 101,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=17JEQ2JczWm39fIYlm6Nmjy65T80iveli"
     },
     {
@@ -1319,6 +1579,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c23bd238f198321cca24d_Psalm102.txt",
      "duration": "5:22",
      "psalm": 102,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1gje5OxN6SseVNx5Aev3EpPtZxvNScyLj"
     },
     {
@@ -1326,6 +1588,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c23bd7b06ea6a8780c68e_Psalm103.txt",
      "duration": "4:19",
      "psalm": 103,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1s0gkI0h-AAJXUOByioaZL2Juj3CjyCHq"
     },
     {
@@ -1333,6 +1597,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c23bd322c8a8bec151887_Psalm104.txt",
      "duration": "3:37",
      "psalm": 104,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1vsSSlq15FKUltCQeKJ9htD5h3JoQEqIQ"
     },
     {
@@ -1340,6 +1606,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c23bde474494ced48e87d_Psalm105.txt",
      "duration": "5:27",
      "psalm": 105,
+     "group": "Remembrance",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e77c997668433e9e64e147_RememberanceSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1lc-5U4ayYj08mcoPkzOLv0TiBCAeYxyR"
     },
     {
@@ -1347,6 +1615,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c23bd4e9c2e629f7ef7e8_Psalm106.txt",
      "duration": "4:04",
      "psalm": 106,
+     "group": "Remembrance",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e77c997668433e9e64e147_RememberanceSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1FK2KsWCAlCTDZGAE_7LiD6TbhHl5dbXM"
     },
     {
@@ -1354,6 +1624,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c23bd194800c9203e1894_Psalm107.txt",
      "duration": "4:44",
      "psalm": 107,
+     "group": "Thanksgiving",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ff748e9ec6942c26d24_ThanksgivingSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1p-UE1L_AGa4Lpre1lB2dtmfmq1toIwRg"
     },
     {
@@ -1361,6 +1633,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c23bd7d9046f26e9a1ddd_Psalm108.txt",
      "duration": "4:37",
      "psalm": 108,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1wJZaRSUpJCqQ6DazDKUnKvr6z-BXOdT4"
     },
     {
@@ -1368,6 +1642,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c23bd0c78ee91901bd39e_Psalm109.txt",
      "duration": "4:27",
      "psalm": 109,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=16oWUA8Rh3NXD5eN2bdCL0hrYJlRYPh4A"
     },
     {
@@ -1375,6 +1651,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c23bdc989b886a9fd5276_Psalm110.txt",
      "duration": "4:11",
      "psalm": 110,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1v_fqGX1pkLffvIqazmQ8CkY6rXVdjUcm"
     },
     {
@@ -1382,6 +1660,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c26b4ec2f4b60fb84b810_Psalm111.txt",
      "duration": "3:28",
      "psalm": 111,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=16dhQMk1MkL9cvdfhdpgUN5WZ20AY-Aph"
     },
     {
@@ -1389,6 +1669,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c26b47f96c23ec67d1dfa_Psalm112.txt",
      "duration": "3:10",
      "psalm": 112,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1ZmtoDHEEiQZpjuJx9lY4UPyV3GXmTyr2"
     },
     {
@@ -1396,6 +1678,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c26b44983352cd7f04444_Psalm113.txt",
      "duration": "3:40",
      "psalm": 113,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1vJ7prmqf42U8s9zvl2mljPmxHJlo0_uG"
     },
     {
@@ -1403,6 +1687,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c26b472fa812ea18bb539_Psalm114.txt",
      "duration": "3:15",
      "psalm": 114,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1jU5Bti5FgCivBoVwBQZ2yN3nGmJryr9r"
     },
     {
@@ -1410,6 +1696,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c26b4c4ff7c2643eb9308_Psalm115.txt",
      "duration": "4:22",
      "psalm": 115,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1uwyJ9AanKqkSLU0IhjhkzIXr9HcQSrIM"
     },
     {
@@ -1417,6 +1705,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c26b47b06ea6a878373af_Psalm116.txt",
      "duration": "4:02",
      "psalm": 116,
+     "group": "Thanksgiving",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ff748e9ec6942c26d24_ThanksgivingSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1rziXRyY3RG-hCjG0VjbPcSbUXuEZxNi2"
     },
     {
@@ -1424,6 +1714,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c26b47d9046f26e9ca274_Psalm117.txt",
      "duration": "2:25",
      "psalm": 117,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=10HeMNYn0AWRl-x9APQa6Fy2PstiU5HTD"
     },
     {
@@ -1431,6 +1723,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c26b4406c4123d22ee630_Psalm118.txt",
      "duration": "3:16",
      "psalm": 118,
+     "group": "Thanksgiving",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ff748e9ec6942c26d24_ThanksgivingSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1X8bReUt6qLN6Pa488c6VwWSqwr5dw1CX"
     },
     {
@@ -1439,6 +1733,8 @@
      "duration": "3:23",
      "psalm": 119,
      "stanza": 1,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1_KxlM150T47RKmElAedfox1gT6--7tnY"
     },
     {
@@ -1447,6 +1743,8 @@
      "duration": "2:42",
      "psalm": 119,
      "stanza": 2,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1PdjTREaK8-pX0nJTMGpmhVhEcoN2f5Ik"
     },
     {
@@ -1455,6 +1753,8 @@
      "duration": "3:07",
      "psalm": 119,
      "stanza": 3,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1h3nvbc680wlMErKH7Ox1Mcc4kG2JHW40"
     },
     {
@@ -1463,6 +1763,8 @@
      "duration": "2:28",
      "psalm": 119,
      "stanza": 4,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1jrR4bv2cbqqScIsEb1uRS_XXheEBVDD7"
     },
     {
@@ -1471,6 +1773,8 @@
      "duration": "2:32",
      "psalm": 119,
      "stanza": 5,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=10FgT-aLIrmpKlrXNex6J4MIiVbAgFDQY"
     },
     {
@@ -1479,6 +1783,8 @@
      "duration": "2:21",
      "psalm": 119,
      "stanza": 6,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1z9HUE-dScfFcrowyZ5KJdC3InaJKn8y_"
     },
     {
@@ -1487,6 +1793,8 @@
      "duration": "3:06",
      "psalm": 119,
      "stanza": 7,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1Lmt1ljeh7x6V5IulXSSmpfJQcSs4i1G2"
     },
     {
@@ -1495,6 +1803,8 @@
      "duration": "3:01",
      "psalm": 119,
      "stanza": 8,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1hycG1L4KmwftdndASR-I7BlmEAXbFrDJ"
     },
     {
@@ -1503,6 +1813,8 @@
      "duration": "3:01",
      "psalm": 119,
      "stanza": 9,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=18F76Yp2Do3kQF6B-01V8_P8rGF4XDLgR"
     },
     {
@@ -1511,6 +1823,8 @@
      "duration": "3:35",
      "psalm": 119,
      "stanza": 10,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1Hm4VirPstezZFTxQlEIy_sumAaGFYmV-"
     },
     {
@@ -1519,6 +1833,8 @@
      "duration": "2:35",
      "psalm": 119,
      "stanza": 11,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1swEvhEeBdOiy0dVGpD1BofSuy3J5QW8D"
     },
     {
@@ -1527,6 +1843,8 @@
      "duration": "3:58",
      "psalm": 119,
      "stanza": 12,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1g11Go0PJdq-9v3aRji4GhR4d4z0_5bLm"
     },
     {
@@ -1535,6 +1853,8 @@
      "duration": "2:36",
      "psalm": 119,
      "stanza": 13,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1hfz0816nVuL8wQtHAnQ8R96a6MuJlG8H"
     },
     {
@@ -1543,6 +1863,8 @@
      "duration": "3:55",
      "psalm": 119,
      "stanza": 14,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1ATzFDnGowZpyrrN_iRdlEu2aesk6eloY"
     },
     {
@@ -1551,6 +1873,8 @@
      "duration": "4:00",
      "psalm": 119,
      "stanza": 15,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=18L3wD2U8XgJUon-ZqXiguji3xBbBHHav"
     },
     {
@@ -1559,6 +1883,8 @@
      "duration": "3:05",
      "psalm": 119,
      "stanza": 16,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1Smywqy2jlou7SxnUTT1_0cOv64UsFVs1"
     },
     {
@@ -1567,6 +1893,8 @@
      "duration": "3:42",
      "psalm": 119,
      "stanza": 17,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=18H4U73JPZAEprK9FgrnAmRZNwIiyiDQ5"
     },
     {
@@ -1575,6 +1903,8 @@
      "duration": "2:28",
      "psalm": 119,
      "stanza": 18,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1AP6TUrLskanPRG2qtbInyETi2Xt02Sgl"
     },
     {
@@ -1583,6 +1913,8 @@
      "duration": "2:51",
      "psalm": 119,
      "stanza": 19,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1irm7WYEor7LER2Lcbisf40s50-vSumqb"
     },
     {
@@ -1591,12 +1923,16 @@
      "duration": "3:01",
      "psalm": 119,
      "stanza": 20,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1ciIVimKGLzGBG3DuDth0xraV4Ezwh9eb"
     },
     {
      "title": "Psalm 119 - Sin And Shin",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c2d31c466e9c9e34a6291_Psalm119%20-%20Sin%20and%20Shin.txt",
      "duration": "4:08",
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1v_4269sLOIUIevdW2bjFIWMZfN7NGM43"
     },
     {
@@ -1605,6 +1941,8 @@
      "duration": "2:58",
      "psalm": 119,
      "stanza": 22,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1bph_V8xyQ-bwSO3ce2tm1HT5pNtVdAmv"
     },
     {
@@ -1612,6 +1950,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c3233182e4e103d09cd83_Psalm120.txt",
      "duration": "4:24",
      "psalm": 120,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1GdN6VTxaxCYwdqAw_FCnaMCov1g7ZRpP"
     },
     {
@@ -1619,6 +1959,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c3233850946f4c299803e_Psalm121.txt",
      "duration": "2:58",
      "psalm": 121,
+     "group": "Confidence",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ee6bf79d4e317775459_ConfidenceSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=11-s5t6R_3RDFlZE2Y6P_Z4Jzuy3SnOvQ"
     },
     {
@@ -1626,6 +1968,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c3234a8383780b27d0054_Psalm122.txt",
      "duration": "5:52",
      "psalm": 122,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1iYfqd1YbGfcUz0OGsjhT_HE0lZACvE5q"
     },
     {
@@ -1633,6 +1977,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c3233c466e9c9e34ebd11_Psalm123.txt",
      "duration": "3:26",
      "psalm": 123,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1vS4lV3NigKuOxF1hKsYJvc8DpNtUBx-j"
     },
     {
@@ -1640,6 +1986,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c32330c78ee9190276f82_Psalm124.txt",
      "duration": "2:58",
      "psalm": 124,
+     "group": "Thanksgiving",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ff748e9ec6942c26d24_ThanksgivingSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1MdGckOzcQ5nuTNRoowyB9dKDVUvZ-wPc"
     },
     {
@@ -1647,6 +1995,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c32334983352cd7f96f69_Psalm125.txt",
      "duration": "4:41",
      "psalm": 125,
+     "group": "Confidence",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ee6bf79d4e317775459_ConfidenceSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1jajd6jZGIZj_sA4jg8L5ABTH9o5fTWFK"
     },
     {
@@ -1654,6 +2004,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c32334983352cd7f96f5c_Psalm126.txt",
      "duration": "4:55",
      "psalm": 126,
+     "group": "Remembrance",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e77c997668433e9e64e147_RememberanceSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1Urz4ve-8YUVXVO259UJvxzz-472GO_Hr"
     },
     {
@@ -1661,6 +2013,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c32338ef0b179238531cf_Psalm127.txt",
      "duration": "3:40",
      "psalm": 127,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1JglKRsr0du1-H1zNE-Lavoaus85_FZkE"
     },
     {
@@ -1668,6 +2022,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c3233e8b1d5c63ff90de1_Psalm128.txt",
      "duration": "4:25",
      "psalm": 128,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1cm9EvbnZhvXLwAdX1Zqd7RS7F8cj-ift"
     },
     {
@@ -1675,6 +2031,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c3233c989b886a907c82f_Psalm129.txt",
      "duration": "3:35",
      "psalm": 129,
+     "group": "Thanksgiving",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ff748e9ec6942c26d24_ThanksgivingSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=18dOuxZUId2nKAqfCmIGJvK4asqdMkdTH"
     },
     {
@@ -1682,6 +2040,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c34a20c78ee9190293acd_Psalm130.txt",
      "duration": "2:40",
      "psalm": 130,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1rEJUY7QJzMh7HQkjluP0vbhibuWGnE_4"
     },
     {
@@ -1689,6 +2049,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c34a2c4ff7c2643f70488_Psalm131.txt",
      "duration": "3:49",
      "psalm": 131,
+     "group": "Confidence",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ee6bf79d4e317775459_ConfidenceSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=16B0NHEuxgX73gM_Rj5w4OhZOBvMEokSy"
     },
     {
@@ -1696,6 +2058,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c34a2c989b886a909d97d_Psalm132.txt",
      "duration": "4:28",
      "psalm": 132,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1QyzbEKWje048SHt53qJkf0PDfHf-Kzq9"
     },
     {
@@ -1703,6 +2067,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c34a217066b1851fcb5b1_Psalm133.txt",
      "duration": "3:02",
      "psalm": 133,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1v0P2AbPiDhrJi3O830udt9dOJfYljLQV"
     },
     {
@@ -1710,6 +2076,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c34a2e47df5b2a267b5e9_Psalm134.txt",
      "duration": "2:36",
      "psalm": 134,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1M0C-QbOTrwhH9JrWrOVlT2jq4ey-4-Cc"
     },
     {
@@ -1717,6 +2085,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c34a2c466e9c9e350946a_Psalm135.txt",
      "duration": "4:05",
      "psalm": 135,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1f5EnldWf5tWdBneFP3vb-H9YnBq-knKP"
     },
     {
@@ -1724,6 +2094,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c34a2cfabaf8dd0feffec_Psalm136.txt",
      "duration": "3:26",
      "psalm": 136,
+     "group": "Thanksgiving",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ff748e9ec6942c26d24_ThanksgivingSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1ubmdJyYdoorDticVCZcYFkmnJK6gvhCn"
     },
     {
@@ -1731,6 +2103,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c34a24983352cd7fb43ee_Psalm137.txt",
      "duration": "3:04",
      "psalm": 137,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1EdcBBbyloT1gBRcUysSWn2inySgIxnTX"
     },
     {
@@ -1738,6 +2112,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c34a27d9046f26ea774d9_Psalm138.txt",
      "duration": "4:32",
      "psalm": 138,
+     "group": "Thanksgiving",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76ff748e9ec6942c26d24_ThanksgivingSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1wkoizDaHvy34VmQxluT-M_pwWdBd9hDG"
     },
     {
@@ -1745,6 +2121,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c34a230413d122054f914_Psalm139.txt",
      "duration": "5:42",
      "psalm": 139,
+     "group": "Wisdom",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c2edec94cde3f35f1e0_WisdomSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1DZ1QFQDIljx7RkGYEQCOGeXPNbgc4VXc"
     },
     {
@@ -1752,6 +2130,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c36f91f44d535f9d85855_Psalm140.txt",
      "duration": "3:01",
      "psalm": 140,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1HaHgwVZZ03RmQMuYu83SsrvcPBjVCY5w"
     },
     {
@@ -1759,6 +2139,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c36f928d0cf7e15f97868_Psalm141.txt",
      "duration": "2:41",
      "psalm": 141,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1Rlk_mYb0ijQxxvSO979CLgWnX4Gr3Jvy"
     },
     {
@@ -1766,6 +2148,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c36fa30413d122056dc17_Psalm142.txt",
      "duration": "4:26",
      "psalm": 142,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1a-MwJXGY-JKj9L4m84o2ar2ubMkhc9h2"
     },
     {
@@ -1773,6 +2157,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c36fa7b261bac11f396c8_Psalm143.txt",
      "duration": "4:27",
      "psalm": 143,
+     "group": "Lament",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76d7b7668433e9e5d6b41_LamentSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1bQmRoIWCjtKSZ_MwRyNvIqnXbRDLazZI"
     },
     {
@@ -1780,6 +2166,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c36fa4709cf3f04840379_Psalm144.txt",
      "duration": "4:41",
      "psalm": 144,
+     "group": "Kingship",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76c4c21167415b8883150_KingshipSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=14V4fDVfLqcmpDEgCgKZIwpI2kspLTxEm"
     },
     {
@@ -1787,6 +2175,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c36fa6679cc6cd0b21d3a_Psalm145.txt",
      "duration": "4:56",
      "psalm": 145,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1018jgPi6C1qaLOQzRrG0Pct8is3NCR9w"
     },
     {
@@ -1794,6 +2184,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c36f930413d122056db13_Psalm146.txt",
      "duration": "2:39",
      "psalm": 146,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1alCKZkLbQg-RI0m4mNs_ZVeD68AVoLX1"
     },
     {
@@ -1801,6 +2193,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c36fa1f44d535f9d858ad_Psalm147.txt",
      "duration": "3:43",
      "psalm": 147,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1E3w9Z_NCW6NT5K7T_aY0EJs32XTnRmXg"
     },
     {
@@ -1808,6 +2202,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c36fa194800c9204d9ae5_Psalm148.txt",
      "duration": "5:01",
      "psalm": 148,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1lSTL_TmDI_H7uJYLTv2HFp-48np3cYhc"
     },
     {
@@ -1815,6 +2211,8 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c36f98ef0b17923891b22_Psalm149.txt",
      "duration": "2:48",
      "psalm": 149,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1aHsunCADwvJyQd2nrsvqloyRYsXMtD9b"
     },
     {
@@ -1822,315 +2220,475 @@
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c36fa194800c9204d9a74_Psalm150.txt",
      "duration": "4:00",
      "psalm": 150,
+     "group": "Praise",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/67e76e661f2edf6c027508d9_PriaseSpotify.jpg",
      "download": "https://drive.google.com/uc?export=download&id=1x6I1gmCaZH70BHKZDbwiQtlxR5CwBv2Y"
     },
     {
      "title": "Psalm 2 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c432ae979ac4ba80dd759_Psalm%202%20Instrumental.txt",
      "duration": "5:12",
+     "psalm": 2,
+     "group": "Book 1 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682786a31aa9f79e7fc3db79_book-1.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1ygXdl5uCzsq6yPdfLfCJTFR1kUDfIY1g"
     },
     {
      "title": "Psalm 7 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c432be979ac4ba80dd867_Psalm%207%20Instrumental.txt",
      "duration": "4:58",
+     "psalm": 7,
+     "group": "Book 1 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682786a31aa9f79e7fc3db79_book-1.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1mOLKdX0-3xNDqBpwNDQ-I664Nlya0_I3"
     },
     {
      "title": "Psalm 14 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c432b934bba3b70e83480_Psalm%2014%20Instrumental.txt",
      "duration": "3:32",
+     "psalm": 14,
+     "group": "Book 1 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682786a31aa9f79e7fc3db79_book-1.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1REAEHFqSxU-nF2YfHfxk-QYany450rm4"
     },
     {
      "title": "Psalm 19 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c432b9f35c46498df60d6_Psalm%2019%20Instrumental.txt",
      "duration": "4:32",
+     "psalm": 19,
+     "group": "Book 1 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682786a31aa9f79e7fc3db79_book-1.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1d7LURh_A1I9Wq7HabbbsZWJfDHDs8eaV"
     },
     {
      "title": "Psalm 20 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c432b29ee86487330a23b_Psalm%2020%20Instrumental.txt",
      "duration": "4:08",
+     "psalm": 20,
+     "group": "Book 1 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682786a31aa9f79e7fc3db79_book-1.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1ZfE88AIawq-KRZN3cfeHcebtPwqNo-N6"
     },
     {
      "title": "Psalm 25 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c432b219feb60fb4158f9_Psalm%2025%20Instrumental.txt",
      "duration": "2:27",
+     "psalm": 25,
+     "group": "Book 1 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682786a31aa9f79e7fc3db79_book-1.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=13sCCf_GbCNaO9JIqL4r5OEWMDN2JnFpp"
     },
     {
      "title": "Psalm 29 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c432b407a54b627741f9c_Psalm%2029%20Instrumental.txt",
      "duration": "4:05",
+     "psalm": 29,
+     "group": "Book 1 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682786a31aa9f79e7fc3db79_book-1.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1ezHvo0Q1JlNox-pIXQDZcQ14Pqff_bM0"
     },
     {
      "title": "Psalm 31 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c432b407a54b627741fc5_Psalm%2031%20Instrumental.txt",
      "duration": "4:04",
+     "psalm": 31,
+     "group": "Book 1 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682786a31aa9f79e7fc3db79_book-1.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1unQkHMwA-8xmF-O-I3IONTk0q49S4_AV"
     },
     {
      "title": "Psalm 36 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c432be979ac4ba80dd85e_Psalm%2036%20Instrumental.txt",
      "duration": "3:37",
+     "psalm": 36,
+     "group": "Book 1 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682786a31aa9f79e7fc3db79_book-1.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1W8_uZrYTZ3yvIfWuPrIySVjOSpEYBsBF"
     },
     {
      "title": "Psalm 40 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c432b7d9046f26eb29088_Psalm%2040%20Instrumental.txt",
      "duration": "5:08",
+     "psalm": 40,
+     "group": "Book 1 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682786a31aa9f79e7fc3db79_book-1.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1tFXLwurjk_BfTEve2iXpmUBlS3tmii55"
     },
     {
      "title": "Psalm 41 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c464da9a2314e6b089203_Psalm%2041%20Instrumental.txt",
      "duration": "3:47",
+     "psalm": 41,
+     "group": "Book 1 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682786a31aa9f79e7fc3db79_book-1.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1uUtTrSH4euXuurPoF5jHSiZqlRl1GGZb"
     },
     {
      "title": "Psalm 43 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c464d6bc1c2287eede34a_Psalm%2042%20Instrumental.txt",
      "duration": "6:42",
+     "psalm": 43,
+     "group": "Book 2 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682789b97c1db2fd2ffc1a74_book-2.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1nCS-NlyR7Jgvc_TqqafIWWZcsRqTSyF9"
     },
     {
      "title": "Psalm 48 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c464d407a54b6277615d9_Psalm%2048%20Instrumental.txt",
      "duration": "7:16",
+     "psalm": 48,
+     "group": "Book 2 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682789b97c1db2fd2ffc1a74_book-2.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1hmx9XD4Gm6Oxs4UhB85ZG10ZbElNNoWh"
     },
     {
      "title": "Psalm 49 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c464d238f198321e86f53_Psalm%2049%20Instrumental.txt",
      "duration": "4:34",
+     "psalm": 49,
+     "group": "Book 2 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682789b97c1db2fd2ffc1a74_book-2.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1xP4IkcKXvUXlwWH0PzbjKdTq5SF8iWQl"
     },
     {
      "title": "Psalm 50 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c464d8198ca36a32dbc30_Psalm%2050%20Instrumental.txt",
      "duration": "4:03",
+     "psalm": 50,
+     "group": "Book 2 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682789b97c1db2fd2ffc1a74_book-2.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1K5RXD2gxGQTa93QfXeBOhX_DWmVdax6M"
     },
     {
      "title": "Psalm 53 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c464da9a2314e6b08922b_Psalm%2053%20Instrumental.txt",
      "duration": "3:22",
+     "psalm": 53,
+     "group": "Book 2 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682789b97c1db2fd2ffc1a74_book-2.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1xWoHkMz5wRE0HTt2_IIIIjXvZzen7RGg"
     },
     {
      "title": "Psalm 64 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c464d7b261bac11ff8b4b_Psalm%2064%20Instrumental.txt",
      "duration": "4:35",
+     "psalm": 64,
+     "group": "Book 2 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682789b97c1db2fd2ffc1a74_book-2.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1NfIQwpgJFIHYgrNxV8Rlpk-JQ7T2fO4M"
     },
     {
      "title": "Psalm 65 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c464dc989b886a91783c5_Psalm%2065%20Instrumental.txt",
      "duration": "3:35",
+     "psalm": 65,
+     "group": "Book 2 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682789b97c1db2fd2ffc1a74_book-2.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1Pc2zb5uofWdf3OWZoLWIvrEtnSUiTq0y"
     },
     {
      "title": "Psalm 68 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c464d77e9c706de3fdc85_Psalm%2068%20Instrumental.txt",
      "duration": "4:12",
+     "psalm": 68,
+     "group": "Book 2 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682789b97c1db2fd2ffc1a74_book-2.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1AhZRHeBkQFSc2XwzYGGZq_3u41boOn9N"
     },
     {
      "title": "Psalm 73 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c464d0c78ee919036c586_Psalm%2073%20Instrumental.txt",
      "duration": "3:00",
+     "psalm": 73,
+     "group": "Book 3 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a1706d09a6c49ff288d_book-3.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1JD694J8zJMm7iSmQF6br1DIGnWeFW3UC"
     },
     {
      "title": "Psalm 72 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/6838ab12cfc8ff2660f52690_Psalm%2072%20Instrumental.txt",
      "duration": "4:56",
+     "psalm": 72,
+     "group": "Book 2 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/682789b97c1db2fd2ffc1a74_book-2.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=18NdsnH-AOc1-5B4yoaFs9VmKA3teLI6H"
     },
     {
      "title": "Psalm 75 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c61cac466e9c9e3733871_Psalm%2075%20Instrumental.txt",
      "duration": "3:47",
+     "psalm": 75,
+     "group": "Book 3 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a1706d09a6c49ff288d_book-3.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=19XYfxbcGVMu8CoCHh28gLfKQi2tJIHm5"
     },
     {
      "title": "Psalm 76 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c61cb1f44d535f9f98003_Psalm%2076%20Instrumental.txt",
      "duration": "4:32",
+     "psalm": 76,
+     "group": "Book 3 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a1706d09a6c49ff288d_book-3.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1c7nlDrRK1Yo1uxnu1KwX1d7G-s-RCYPF"
     },
     {
      "title": "Psalm 77 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c61cac8a9859eed8b90e2_Psalm%2077%20Instrumental.txt",
      "duration": "3:34",
+     "psalm": 77,
+     "group": "Book 3 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a1706d09a6c49ff288d_book-3.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1z53nwFj66kg3uGwGrNRKC8KqfkAkdz_R"
     },
     {
      "title": "Psalm 78 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c61ca001cc3a4c1037f69_Psalm%2078%20Instrumental.txt",
      "duration": "5:44",
+     "psalm": 78,
+     "group": "Book 3 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a1706d09a6c49ff288d_book-3.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1UBN79YgpA6rr5EOLlQyPsJ6hApCDh090"
     },
     {
      "title": "Psalm 82 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c61ca4e9c2e629fadfd14_Psalm%2082%20Instrumental.txt",
      "duration": "4:40",
+     "psalm": 82,
+     "group": "Book 3 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a1706d09a6c49ff288d_book-3.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=13_M6lIxkQW32zTOYaGR9Jz8AmXZgqVnA"
     },
     {
      "title": "Psalm 83 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c61caec2f4b60fbb448c6_Psalm%2083%20Instrumental.txt",
      "duration": "4:54",
+     "psalm": 83,
+     "group": "Other",
+     "cover": "https://cdn.prod.website-files.com/plugins/Basic/assets/placeholder.60f9b1840c.svg",
      "download": "https://drive.google.com/uc?export=download&id=15uu5dcVc72EbjxORHxAjd9UPVGU6heGx"
     },
     {
      "title": "Psalm 85 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c61ca29ee864873482afd_Psalm%2085%20Instrumental.txt",
      "duration": "4:47",
+     "psalm": 85,
+     "group": "Book 3 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a1706d09a6c49ff288d_book-3.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1Oq2XWt21AN-BGtiksdeIijBrg9R96qsI"
     },
     {
      "title": "Psalm 87 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c61ca4e9c2e629fadfcd5_Psalm%2087%20Instrumental.txt",
      "duration": "3:16",
+     "psalm": 87,
+     "group": "Book 3 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a1706d09a6c49ff288d_book-3.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1pwomYzkAU7yd2zm1EQmfbWakUWAyLJYr"
     },
     {
      "title": "Psalm 88 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c61caec294722ca06d37b_Psalm%2088%20Instrumental.txt",
      "duration": "5:29",
+     "psalm": 88,
+     "group": "Book 3 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a1706d09a6c49ff288d_book-3.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1wLlGwIc5vl_K7g_4kS0dJ7vyp2nHb3Mb"
     },
     {
      "title": "Psalm 90 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c61caaa33d87055adf31d_Psalm%2090%20Instrumental.txt",
      "duration": "3:56",
+     "psalm": 90,
+     "group": "Book 4 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a6cdca20fc6bc8e5f27_book-4.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1X0MbfNA-E_3iNgI8RjuDzfbOx9390zuH"
     },
     {
      "title": "Psalm 91 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c650d7d9046f26ed07e6d_Psalm%2091%20Instrumental.txt",
      "duration": "4:58",
+     "psalm": 91,
+     "group": "Book 4 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a6cdca20fc6bc8e5f27_book-4.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1D9bkMlVgrdg0qluS-YwIMjVdxnlM3Wiu"
     },
     {
      "title": "Psalm 93 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c650f48e62cb3587e1d00_Psalm%2093%20Instrumental.txt",
      "duration": "3:22",
+     "psalm": 93,
+     "group": "Book 4 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a6cdca20fc6bc8e5f27_book-4.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1TPQ-nxI7SgucmrN_UgYnvIwjdmYC-3Qj"
     },
     {
      "title": "Psalm 94 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c650daa33d87055b1156d_Psalm%2094%20Instrumental.txt",
      "duration": "5:00",
+     "psalm": 94,
+     "group": "Book 4 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a6cdca20fc6bc8e5f27_book-4.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1QObpfKIlYCq120ieRARdV7Xx_5rHr2a0"
     },
     {
      "title": "Psalm 95 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c650d850946f4c2c2b7db_Psalm%2095%20Instrumental.txt",
      "duration": "5:48",
+     "psalm": 95,
+     "group": "Book 4 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a6cdca20fc6bc8e5f27_book-4.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1xoAx1eLGXxYW89cBoonFKZ7Sul0Revu0"
     },
     {
      "title": "Psalm 97 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c650d934bba3b70036a8d_Psalm%2097%20Instrumental.txt",
      "duration": "4:27",
+     "psalm": 97,
+     "group": "Book 4 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a6cdca20fc6bc8e5f27_book-4.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1xcm4ekfUUdkDeTqb-7LTu5Vk78zznQK3"
     },
     {
      "title": "Psalm 102 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c650d29ee8648734b8356_Psalm%20102%20Instrumental.txt",
      "duration": "5:21",
+     "psalm": 102,
+     "group": "Book 4 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a6cdca20fc6bc8e5f27_book-4.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1X0uhs5JK9HhYH-jdRwrvXQPSbSfYNf9J"
     },
     {
      "title": "Psalm 105 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c650dffd30a9b3ce2a9dc_Psalm%20105%20Instrumental.txt",
      "duration": "5:26",
+     "psalm": 105,
+     "group": "Book 4 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a6cdca20fc6bc8e5f27_book-4.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1vpFYCTcrxG7-iA9YDgEJQdBVUEvBkhR8"
     },
     {
      "title": "Psalm 106 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c650d17f427325c915b82_Psalm%20106%20Instrumental.txt",
      "duration": "4:03",
+     "psalm": 106,
+     "group": "Book 4 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278a6cdca20fc6bc8e5f27_book-4.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1XP5SjObTnSq-nOHvR8Zx_31meN1jBEYk"
     },
     {
      "title": "Psalm 110 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c650d9393f1b85758fc78_Psalm%20110%20Instrumental.txt",
      "duration": "4:11",
+     "psalm": 110,
+     "group": "Book 5 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278ab831f181df56b3fb93_book-5.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=15V2sN9nNjowLE2ejMyuc-QEaluPaPnsc"
     },
     {
      "title": "Psalm 111 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c650d52874557b6658e7b_Psalm%20111%20Instrumental.txt",
      "duration": "3:04",
+     "psalm": 111,
+     "group": "Book 5 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278ab831f181df56b3fb93_book-5.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=14aDIpoCTZZXm3eizne_iwX7KnfHUXeRQ"
     },
     {
      "title": "Psalm 113 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c68c87b261bac111bb74b_Psalm%20113%20Instrumental.txt",
      "duration": "3:40",
+     "psalm": 113,
+     "group": "Book 5 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278ab831f181df56b3fb93_book-5.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1RuihODYAeXsiYT9NBFC_uyWFS48RQed2"
     },
     {
      "title": "Psalm 119 - Aleph (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c68c8bd94aef22a723ed7_Psalm%20119%20-%20Aleph%20Instrumental.txt",
      "duration": "3:15",
+     "group": "Book 5 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278ab831f181df56b3fb93_book-5.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1luidKvDzclKwWdIUwz7jfdXSCeDvO5CS"
     },
     {
      "title": "Psalm 119 - Gimel (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c68c8e474494ced80ba94_Psalm%20119%20-%20Gimel%20Instrumental.txt",
      "duration": "3:07",
+     "group": "Book 5 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278ab831f181df56b3fb93_book-5.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1yZ959DzYRCCgjARhIxRIsh-ukeuUHgul"
     },
     {
      "title": "Psalm 119 - Lamedh (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c68c8ffd30a9b3ce5f92c_Psalm%20119%20-%20Lamedh%20Instrumental.txt",
      "duration": "3:59",
+     "group": "Book 5 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278ab831f181df56b3fb93_book-5.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1R7lyQscwHurtY9preqs3RatFnRmgqIyE"
     },
     {
      "title": "Psalm 122 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c68c823179ab4c8eb7498_Psalm%20122%20Instrumental.txt",
      "duration": "5:52",
+     "psalm": 122,
+     "group": "Book 5 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278ab831f181df56b3fb93_book-5.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1_11O-Fm3cuYrmcjzhbGhFZsUVuJZ0joS"
     },
     {
      "title": "Psalm 125 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c68c829ee8648734f6d38_Psalm%20125%20Instrumental.txt",
      "duration": "4:41",
+     "psalm": 125,
+     "group": "Book 5 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278ab831f181df56b3fb93_book-5.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1W6qf6MkqTOs8aQQGwYGtuZxCkm1b0vKF"
     },
     {
      "title": "Psalm 126 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c68c877e9c706de5b77d9_Psalm%20126%20Instrumental.txt",
      "duration": "4:55",
+     "psalm": 126,
+     "group": "Book 5 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278ab831f181df56b3fb93_book-5.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=18s4Eyq9gOtLaavkar4PJ9G24K6H_MnTl"
     },
     {
      "title": "Psalm 128 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c68c8a9a2314e6b24fffc_Psalm%20128%20Instrumental.txt",
      "duration": "4:25",
+     "psalm": 128,
+     "group": "Book 5 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278ab831f181df56b3fb93_book-5.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1cHfvA8nrdu-F2o71TgVLqGpzNJiTun32"
     },
     {
      "title": "Psalm 137 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c68c87d9046f26ed3ad06_Psalm%20137%20Instrumental.txt",
      "duration": "3:04",
+     "psalm": 137,
+     "group": "Book 5 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278ab831f181df56b3fb93_book-5.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1LqQqXAakeIRcQYgJVqFpwCthNRWnp3GL"
     },
     {
      "title": "Psalm 138 (instrumental)",
      "url": "https://cdn.prod.website-files.com/661ee0e3c67e08f0cd7e211e/679c68c84983352cd7256efd_Psalm%20138%20Instrumental.txt",
      "duration": "4:32",
+     "psalm": 138,
+     "group": "Book 5 \u00b7 Instrumental",
+     "cover": "https://cdn.prod.website-files.com/661eed2ebc8a900272f8d208/68278ab831f181df56b3fb93_book-5.jpeg",
      "download": "https://drive.google.com/uc?export=download&id=1HlfT_A4b_Vr1RFOg5nn0F8fPaDWxeFKK"
     }
-   ]
+   ],
+   "released": "January 2020 - November 2022",
+   "about": "is a collection of psalm-based songs. Starting at Psalm 1 and ending at Psalm 150, we released a meditative song each week for nearly three years. All the music is freely available to listen, download, or stream. The Psalter speaks to the entirety of the human experience - from feelings of triumph to loss, from communion with God to utter loneliness. The poetic nature of the Psalms lay the groundwork for its captivating beauty. Our goal in this project is to help listeners engage with the scriptures in new ways, and to bring God\u2019s relevant and applicable word to both the normal and extraordinary times of life.",
+   "credits": {
+    "Music": "Poor Bishop Hooper",
+    "Artwork": "Lauren Stevens"
+   },
+   "tint": "#855444",
+   "slug": "everypsalm"
   },
   {
    "name": "Hymns II",
@@ -2166,7 +2724,15 @@
      "duration": "3:03",
      "download": "https://drive.google.com/uc?export=download&id=1n9eA4ysvd8aqlKus56b5pV87kFCGdPIY"
     }
-   ]
+   ],
+   "released": "July 2021 - Present",
+   "about": "These five traditional hymns for Advent were released in November of 2021 as the second installment of our ongoing Hymns project. The album was born out of our appreciation for these Christmas masterpieces, as these songs have consistently helped turn our hearts to gratitude and worship each Advent season.",
+   "credits": {
+    "Music": "Poor Bishop Hooper",
+    "Artwork": "Colin Kettler"
+   },
+   "tint": "#833434",
+   "slug": "hymns-ii"
   },
   {
    "name": "Hymns I",
@@ -2196,7 +2762,15 @@
      "duration": "3:20",
      "download": "https://drive.google.com/uc?export=download&id=1pdI401rjC7ib4vuEjxbq2SF2RynOpeGI"
     }
-   ]
+   ],
+   "released": "July 2021 - Present",
+   "about": "We\u2019ve always had a deep appreciation for traditional church music. We both grew up in church contexts where hymn singing was the primary form of musical worship, and it has felt natural for us to record some of our favorite sacred pieces over the years. These four traditional hymns were recorded for the",
+   "credits": {
+    "Music": "Poor Bishop Hooper",
+    "Artwork": "Colin Kettler"
+   },
+   "tint": "#676245",
+   "slug": "hymns-i"
   },
   {
    "name": "Firstborn",
@@ -2238,7 +2812,15 @@
      "duration": "5:26",
      "download": "https://drive.google.com/uc?export=download&id=18ZynO1Fl9m49Gj1ULgae5IfSXBPKhrbt"
     }
-   ]
+   ],
+   "released": "December 2018",
+   "about": "For centuries the church has been celebrating Advent both with thankfulness for the first coming of Christ as a child, and anticipation for His return.",
+   "credits": {
+    "Music": "Poor Bishop Hooper",
+    "Artwork": "Jeremy Luther"
+   },
+   "tint": "#6e90a8",
+   "slug": "firstborn"
   },
   {
    "name": "Golgotha",
@@ -2328,7 +2910,15 @@
      "duration": "3:01",
      "download": "https://drive.google.com/uc?export=download&id=1aCtNEGDDA6LEOygsDTQyif-YuFNfH0V_"
     }
-   ]
+   ],
+   "released": "April 2017",
+   "about": "to help the curious better understand the truth and importance of Jesus\u2019 crucifixion. Complementing the beautiful visual history that surrounds the \"Stations of the Cross\" tradition, we wrote all fourteen scripture-based original songs in just a few days at a camp in southeast Kansas. The result is a collection of music that invites the mind and heart to experience the Savior\u2019s suffering in new ways. With original music at its core,",
+   "credits": {
+    "Music": "Poor Bishop Hooper",
+    "Artwork": "Jeremy Luther"
+   },
+   "tint": "#f9faf5",
+   "slug": "golgotha"
   },
   {
    "name": "Foreign Made",
@@ -2400,7 +2990,15 @@
      "duration": "2:45",
      "download": "https://drive.google.com/uc?export=download&id=1guCxMVTAUDoTp5FLGmm-nGka0S07Icqd"
     }
-   ]
+   ],
+   "released": "May 2014",
+   "about": "was our first release, and is based entirely on the parables of Jesus. Eleven original songs come to life throughout the record telling unique stories from start to finish. The anecdotes together become a powerful picture of Jesus\u2019 teachings. Its soundscape ranges from dark, contemplative melodies, to driving, string-band built ballads, all built to bring the lyrics into forefront prominence.",
+   "credits": {
+    "Music": "Written and performed by Poor Bishop Hooper",
+    "Artwork": "Charlie Roberts"
+   },
+   "tint": "#c8b7b8",
+   "slug": "foreign-made"
   }
  ]
 }

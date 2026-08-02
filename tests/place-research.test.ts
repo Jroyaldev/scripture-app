@@ -220,11 +220,43 @@ test("place map construction remains pure core TypeScript", () => {
   assert.doesNotMatch(source, /electron/i);
 });
 
-test("renderer permits packaged entity media without permitting remote images", () => {
+/**
+ * RESTATED 2026-08-02, and the restatement is narrower than it looks.
+ *
+ * This asserted that `img-src` names NO https host at all — entity media is
+ * packaged precisely so that opening a place never tells a remote server the
+ * reader opened it, and that property is worth more than a photograph.
+ *
+ * The maintainer opened one door: the Listen room draws publisher cover art,
+ * because a listening room without the record is a spreadsheet of runtimes.
+ * That door has a real cost and it is stated here rather than in a commit
+ * message — a cover is fetched when the room DRAWS, not when the reader
+ * chooses, so a publisher's CDN learns that this reader opened Listen. Audio
+ * has always cost that too, but only on a press.
+ *
+ * So the contract becomes an ALLOWLIST rather than a prohibition: the seven
+ * hosts these publishers serve covers from, and nothing else. A wildcard, or
+ * a host nobody reviewed, fails here — which is the same shape the media-src
+ * policy has always had, and the same shape ALLOWED_RESEARCH_LINK_HOSTS has.
+ */
+test("renderer permits packaged entity media and only reviewed image hosts", () => {
+  const reviewed = [
+    "cdn.prod.website-files.com", "megaphone.imgix.net", "static.libsyn.com",
+    "pbcdn1.podbean.com", "media24.fireside.fm", "*.fireside.fm", "substackcdn.com",
+  ];
   for (const relativePath of ["src/renderer/index.html", "scripts/build-renderer.mjs"]) {
     const html = readFileSync(resolve(root, relativePath), "utf8");
     assert.match(html, /img-src 'self' data:/, relativePath);
-    assert.doesNotMatch(html, /img-src[^;]*https:/, relativePath);
+    const policy = /img-src ([^;"]+)/.exec(html)?.[1] ?? "";
+    const hosts = policy.split(/\s+/).filter((token) => token.startsWith("https://"))
+      .map((token) => token.slice("https://".length));
+    for (const host of hosts) {
+      assert.ok(reviewed.includes(host), `${relativePath}: ${host} draws images and nobody reviewed it`);
+    }
+    /* A bare wildcard would let any host under a domain draw into the reader's
+       window; only fireside's numbered shards earned one, the way podbean's
+       did in media-src. */
+    assert.doesNotMatch(policy, /https:\/\/\*\.(?!fireside\.fm)/, relativePath);
   }
 });
 

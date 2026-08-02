@@ -718,10 +718,34 @@ own instruments instead, and the catalogue's `cover` field is captured but
 unused. Their download links are recorded and likewise undrawn — a download
 is a different act from a stream, and this app does not perform it.
 
+## Artwork — the deferral lifted, 2026-08-02
+
+"Publisher artwork and cover thumbnails" stood in Deferred below from the
+first pass to this one. The maintainer lifted it deliberately, looking at a
+Listen room built without it: a page of type where every other listening app
+a reader has ever used shows the record.
+
+WHAT THIS PERMITS, narrowly. Artwork is REFERENCED, never copied: an `img`
+whose `src` is the publisher's own URL on the publisher's own host, fetched by
+the reader's app at draw time, exactly as the audio is. Nothing is downloaded
+into the library, nothing is re-hosted, nothing is re-encoded, and a
+publisher who removes or replaces a file sees that change here immediately —
+which is the property that makes a takedown work without our cooperation.
+
+The renderer's policy is the enforcement, as it is for audio: `img-src` now
+names the seven hosts these publishers serve their covers from and nothing
+else, so a source that has not been reviewed cannot draw one.
+
+CREDITS TRAVEL WITH THE ART where the publisher states them. Poor Bishop
+Hooper name a different illustrator per project — Lauren Stevens for
+EveryPsalm, Colin Kettler for the Hymns, Jeremy Luther, Greg Clifton and
+Sophie Killingley, Charlie Robertson — and the room prints that name on the
+record it belongs to. An artist whose work is shown and not named is the
+thing this clause exists to prevent.
+
 ## Deferred work
 
 - marks for any source beyond those approved above;
-- publisher artwork and cover thumbnails;
 - article/commentary descriptions, excerpts, or bodies;
 - embedded playback or remote thumbnails;
 - automated full-catalog crawling or metadata generation;

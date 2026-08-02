@@ -1,3 +1,4 @@
+import type { AudioCatalogueEpisode } from "../core/resources/audio-catalogue.js";
 import type { AppMaterial, AppTheme } from "./theme.js";
 import type { Transcript, TranscriptRefusal } from "../core/transcripts.js";
 import type { ReferenceSet } from "../core/references.js";
@@ -104,6 +105,14 @@ declare global {
           endVerse: number,
           packageId: string,
         ): Promise<CrossReferenceResultData>;
+      };
+      audio: {
+        /* The AUDIO catalogue, which is not the manifest the margin reads —
+           see src/host/audio-catalogue-loader.ts. */
+        catalogue(sourceIds: string[]): Promise<
+          | { ok: true; series: { sourceId: string; episodes: AudioCatalogueEpisode[] }[] }
+          | { ok: false; reason: "refused" }
+        >;
       };
       transcripts: {
         /* Absence is the ordinary answer, not a failure: most episodes have no

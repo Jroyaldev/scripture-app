@@ -23715,35 +23715,47 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 /* ── LISTEN · the room organised by material · 2026-08-02 ──────────────────
-   The one page in the app that is not passage-shaped. Its whole job is to
-   answer "what is here?", which every other way into the player refuses to
-   answer because they are all built to answer "what teaches THIS?".
+   The one page in the app that is not passage-shaped. Its job is to answer
+   "what is here?", which every other way into the player refuses because they
+   are all built to answer "what teaches THIS?".
 
-   TYPE-LED, NOT ART-LED, and that is a permission fact before it is a taste
-   one: publisher artwork and cover thumbnails sit under DEFERRED in
-   docs/trusted-resource-permissions, so a grid of scraped covers is not ours
-   to draw. What is left is the app's own instrument — a name in the reading
-   face, one line of what it holds — which is what the rest of the app already
-   uses and is the reason this room looks like the app rather than like a
-   store. The plates on the series shelf are the exception and are the brand
-   system's own, already permitted and already drawn everywhere else. */
-/* `.main-content` is a flex ROW, so a page that only sets max-width shrinks to
-   its content instead of centring in the shell — the room drew 498px wide and
-   its grid collapsed to one column. The page is the flex item and fills; the
-   column inside it is what carries the measure. */
+   ART-LED, and that is a permission fact before it is a taste one: the
+   maintainer lifted the artwork deferral for this room (see the Artwork
+   clause in docs/trusted-resource-permissions), on terms — the image is
+   referenced from the publisher's own host, never copied, and the illustrator
+   is named wherever the publisher names one. A room full of records is how
+   anyone has ever found music; fourteen albums of type all look like the
+   same album. */
 .listen {
+  position: relative;
   flex: 1 1 auto;
   min-width: 0;
   overflow-y: auto;
 }
 
+/* The album's own colour, computed from its cover at import and laid behind
+   the hero as a field rather than a fill: it fades to nothing within a
+   viewport height, so the page is still the app's paper by the time the
+   track list starts. Apple and Spotify both do this and it is the single
+   cheapest thing that makes a record feel like an object rather than a row. */
+.listen-ambient {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 420px;
+  opacity: 0.28;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, transparent 100%);
+}
+
 .listen-inner {
-  max-width: 900px;
+  position: relative;
+  max-width: 1000px;
   margin: 0 auto;
   padding: 40px 32px 96px;
 }
 
-.listen-head { margin-bottom: 36px; }
+.listen-head { margin-bottom: 34px; }
 
 .listen-title {
   margin: 0;
@@ -23758,23 +23770,19 @@ button.lang-phrase-diagram-node:focus-visible,
   font: 0.875rem/1.6 var(--font-reading);
 }
 
-.listen-shelf { margin-bottom: 40px; }
+.listen-shelf { margin-bottom: 44px; }
 
-/* The shelf says what it is and whose it is on one line, because a heading
-   that has to be read twice is a heading doing two jobs. */
 .listen-shelf-head {
   display: flex;
   align-items: baseline;
   gap: 10px;
-  margin-bottom: 14px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 16px;
 }
 
 .listen-shelf-name {
   margin: 0;
   color: var(--text-primary);
-  font: var(--fw-medium) 1rem/1.3 var(--font-reading);
+  font: var(--fw-medium) 1.0625rem/1.3 var(--font-reading);
 }
 
 .listen-shelf-by {
@@ -23783,39 +23791,86 @@ button.lang-phrase-diagram-node:focus-visible,
   font: 0.6875rem/1.5 var(--font-ui);
 }
 
-/* auto-fill rather than a fixed count: this page has the window's whole width
-   and a track list underneath it, so a column count that moves with the width
-   is right here where it was wrong in the 332px margin. */
 .listen-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(212px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+  gap: 26px 20px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
+/* No border and no fill: the RECORD is the object, and a box drawn around a
+   cover is a frame around a frame. What separates one card from the next is
+   the gutter, which is the same instrument the reading page uses. */
 .listen-card-face {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 3px;
   width: 100%;
-  padding: 14px 15px 15px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-md);
+  padding: 0;
+  border: 0;
   background: none;
   color: inherit;
   text-align: left;
   cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .listen-card-face.is-series { cursor: default; }
 
-.listen-card-face:hover:not(.is-series) {
-  border-color: var(--border-medium);
-  background: var(--surface-hover);
+.listen-card-art {
+  position: relative;
+  display: block;
+  margin-bottom: 9px;
 }
+
+/* Square, because every cover here is square and a record is square. The
+   ratio is declared rather than inherited from the file so a publisher who
+   ships 821×755 (Golgotha does) is letterboxed by `cover` instead of
+   dragging the whole row out of alignment. */
+.listen-cover {
+  display: block;
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1;
+  overflow: hidden;
+  /* The sheet's own card radius. A cover is a card that happens to be an
+     image, and the family band holds one value for both. */
+  border-radius: var(--radius-md);
+  background: var(--bg-canvas);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.16), 0 8px 24px rgb(0 0 0 / 0.10);
+}
+
+.listen-cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.listen-cover.is-plate { display: grid; place-items: center; }
+
+/* The press target is the whole card; this is the affordance that says so,
+   and it arrives on hover the way it does in every listening app. */
+.listen-card-play {
+  position: absolute;
+  right: 9px;
+  bottom: 9px;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--accent-seal);
+  color: var(--text-on-accent);
+  box-shadow: 0 3px 10px rgb(0 0 0 / 0.3);
+  opacity: 0;
+  transform: translateY(5px);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.listen-card-face:hover .listen-card-play,
+.listen-card-face:focus-visible .listen-card-play { opacity: 1; transform: none; }
 
 .listen-card-face:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring);
@@ -23824,31 +23879,27 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .listen-card-name {
   color: var(--text-primary);
-  font: var(--fw-medium) 0.9375rem/1.35 var(--font-reading);
-  letter-spacing: -0.004em;
+  font: var(--fw-medium) 0.8125rem/1.4 var(--font-reading);
+  letter-spacing: -0.003em;
 }
 
 .listen-card-foot {
   color: var(--text-tertiary);
-  font: 0.6875rem/1.5 var(--font-ui);
+  font: 0.6875rem/1.45 var(--font-ui);
 }
 
-/* The series plate, at the card's own scale — the same object the resources
-   room draws, so a publisher is recognised in both rooms by one shape. */
 .listen-card-plate[data-source] {
   display: grid;
   place-items: center;
-  width: 56px;
-  height: 28px;
-  margin-bottom: 2px;
-  padding: 4px 6px;
+  width: 72px;
+  height: 36px;
   border-radius: var(--radius-sm);
   background: var(--resource-source);
   color: var(--resource-ink);
 }
 
 .listen-card-plate .taught-here-mark {
-  --card-art-h: clamp(8px, calc(14.6px / pow(var(--resource-symbol-ratio), 0.34)), 17px);
+  --card-art-h: clamp(10px, calc(19px / pow(var(--resource-symbol-ratio), 0.34)), 22px);
   display: block;
   width: min(100%, calc(var(--card-art-h) * var(--resource-symbol-ratio)));
   height: var(--card-art-h);
@@ -23857,10 +23908,8 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 /* ── An album, opened ────────────────────────────────────────────────────── */
-.listen-album-head { margin-bottom: 18px; }
-
 .listen-back {
-  margin: 0 0 12px;
+  margin: 0 0 20px;
   padding: 0;
   border: 0;
   background: none;
@@ -23871,30 +23920,126 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .listen-back:hover { color: var(--text-primary); }
 
-.listen-album-name {
-  margin: 0;
-  color: var(--text-primary);
-  font: var(--fw-medium) 1.375rem/1.25 var(--font-reading);
-  letter-spacing: -0.008em;
+/* The hero is the record at a size worth looking at, with everything the
+   publisher said about it beside — which is the one thing a spreadsheet of
+   runtimes could never carry. */
+.listen-hero {
+  display: grid;
+  grid-template-columns: 208px minmax(0, 1fr);
+  gap: 26px;
+  align-items: end;
+  margin-bottom: 40px;
 }
 
-.listen-album-foot {
-  margin: 6px 0 0;
+.listen-cover.is-hero { box-shadow: 0 4px 12px rgb(0 0 0 / 0.22), 0 18px 50px rgb(0 0 0 / 0.16); }
+
+.listen-hero-words { padding-bottom: 4px; }
+
+.listen-hero-kicker {
+  margin: 0 0 6px;
+  color: var(--text-tertiary);
+  font: var(--fw-medium) 0.625rem/1.4 var(--font-ui);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+.listen-hero-name {
+  margin: 0;
+  color: var(--text-primary);
+  font: var(--fw-medium) 2rem/1.12 var(--font-reading);
+  letter-spacing: -0.018em;
+}
+
+.listen-hero-line {
+  margin: 8px 0 0;
   color: var(--text-secondary);
-  font: 0.75rem/1.5 var(--font-ui);
+  font: 0.8125rem/1.5 var(--font-ui);
+}
+
+/* Three lines of the publisher's own words. Clamped rather than truncated by
+   character count, because a sentence cut at 220 characters ends mid-word and
+   a clamp ends at a line. */
+.listen-hero-about {
+  display: -webkit-box;
+  overflow: hidden;
+  max-width: 62ch;
+  margin: 12px 0 0;
+  color: var(--text-secondary);
+  font: 0.8125rem/1.6 var(--font-reading);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+.listen-hero-actions { margin-top: 16px; }
+
+.listen-play-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 9px 20px 9px 16px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent-seal);
+  color: var(--text-on-accent);
+  font: var(--fw-medium) 0.8125rem/1 var(--font-ui);
+  cursor: pointer;
+  transition: transform var(--transition-fast);
+}
+
+.listen-play-all:hover { transform: scale(1.03); }
+.listen-play-all:active { transform: scale(0.98); }
+
+/* The illustrator, named. A cover shown without its artist is the thing the
+   permission clause was written to prevent. */
+.listen-credits {
+  margin: 14px 0 0;
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.6 var(--font-ui);
+}
+
+/* ── Groups — the publisher's own division of their own record ───────────── */
+.listen-group { margin-bottom: 26px; }
+
+.listen-group-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.listen-group-head .listen-cover.is-group {
+  width: 40px;
+  border-radius: var(--radius-pebble);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
+}
+
+.listen-group-name {
+  flex: 1;
+  margin: 0;
+  color: var(--text-primary);
+  font: var(--fw-medium) 0.875rem/1.4 var(--font-reading);
+}
+
+.listen-group-count {
+  color: var(--text-tertiary);
+  font: 0.6875rem/1.5 var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 .listen-tracks { margin: 0; padding: 0; list-style: none; }
 
 /* A row, not a card: two hundred and twenty-two psalms in cards is a scroll
-   nobody finishes, and a track has one fact worth a line of its own. */
+   nobody finishes. The number becomes the play mark in place on hover, which
+   is what every listening app does and costs the row no width. */
 .listen-track-face {
   display: grid;
-  grid-template-columns: 2.25rem minmax(0, 1fr) auto auto;
+  grid-template-columns: 1.75rem minmax(0, 1fr) auto;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   width: 100%;
-  padding: 9px 10px;
+  padding: 8px 10px;
   border: 0;
   border-radius: var(--radius-sm);
   background: none;
@@ -23905,20 +24050,26 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .listen-track-face:hover { background: var(--surface-hover); }
 
-/* The house offset, not an inset one: Rev 04 §4 bans an inset ring because it
-   lands on the element's own fill. A row is flush with its neighbours, so the
-   ring sits in the list's own gap rather than inside the row. */
 .listen-track-face:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
 }
 
+.listen-track-no,
+.listen-track-play { grid-area: 1 / 1; justify-self: center; }
+
 .listen-track-no {
   color: var(--text-tertiary);
   font: 0.6875rem/1.5 var(--font-mono);
   font-variant-numeric: tabular-nums;
-  text-align: right;
 }
+
+.listen-track-play { color: var(--text-primary); opacity: 0; }
+
+.listen-track-face:hover .listen-track-no,
+.listen-track-face:focus-visible .listen-track-no { opacity: 0; }
+.listen-track-face:hover .listen-track-play,
+.listen-track-face:focus-visible .listen-track-play { opacity: 1; }
 
 .listen-track-title {
   overflow: hidden;
@@ -23928,12 +24079,6 @@ button.lang-phrase-diagram-node:focus-visible,
   white-space: nowrap;
 }
 
-/* Drawn only under the pointer: a play mark on all 222 rows is a column of
-   arrows, and the row is the control whether or not one is showing. */
-.listen-track-play { color: var(--player-accent, var(--accent-seal)); opacity: 0; }
-.listen-track-face:hover .listen-track-play,
-.listen-track-face:focus-visible .listen-track-play { opacity: 1; }
-
 .listen-track-extent {
   color: var(--text-tertiary);
   font: 0.6875rem/1.5 var(--font-mono);
@@ -23941,12 +24086,18 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 .listen-colophon {
-  margin: 40px 0 0;
+  margin: 44px 0 0;
   padding-top: 10px;
   border-top: 1px solid var(--border-subtle);
   color: var(--text-tertiary);
   font: 0.625rem/1.5 var(--font-ui);
 }
+
+@media (max-width: 719px) {
+  .listen-hero { grid-template-columns: minmax(0, 1fr); align-items: start; }
+  .listen-cover.is-hero { max-width: 208px; }
+}
+
 
 /* Hover is a promise that something will happen. Nothing will. */
 .is-disabled-instrument:hover {

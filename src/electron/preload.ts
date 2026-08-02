@@ -137,6 +137,9 @@ const api = {
       book, chapter, startVerse, endVerse, packageId,
     }),
   },
+  audio: {
+    catalogue: (sourceIds: string[]) => ipcRenderer.invoke("audio-catalogue", { sourceIds }),
+  },
   transcripts: {
     load: (recordId: string) => ipcRenderer.invoke("transcript-load", { recordId }),
   },

@@ -10,6 +10,7 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { appendFileSync, existsSync, mkdirSync, readdirSync, unlinkSync, writeFileSync } from "node:fs";
 import { readFileSyncInterruptible } from "../host/exec-sync.js";
 import { loadTranscript } from "../host/transcript-loader.js";
+import { loadAudioCatalogue } from "../host/audio-catalogue-loader.js";
 import { loadReferences } from "../host/reference-loader.js";
 import { loadPassageMoments } from "../host/passage-index-loader.js";
 import { createRequire } from "node:module";
@@ -2635,6 +2636,17 @@ function registerIpcHandlers(): void {
       return { ok: false as const, reason: "refused" as const };
     }
     return loadTranscript(getLibraryPath(), recordId);
+  });
+
+  /* Every episode a carried publisher has, for the room that is about audio
+     rather than about a passage. See src/host/audio-catalogue-loader.ts for
+     why this cannot be the manifest the margin reads. */
+  registerRuntimeReadIpc("audio-catalogue", (_event, input: unknown) => {
+    const ids = (input as { sourceIds?: unknown } | null)?.sourceIds;
+    if (!Array.isArray(ids) || ids.some((id) => typeof id !== "string")) {
+      return { ok: false as const, reason: "refused" as const };
+    }
+    return loadAudioCatalogue(getLibraryPath(), ids as string[]);
   });
 
   /* Where in an episode a passage is discussed, and in what way. Gated by the
