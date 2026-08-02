@@ -597,13 +597,123 @@ function PassageSeed({ backbone, bookNames, onMade }: {
         onClick={() => void build()}
         type="button"
       >{busy ? "Building…" : "Build"}</button>
-      {error && <span className="listen-seed-error">{error}</span>}
+      {/* A WAY OUT THAT CAN BE SEEN. Once this field opened, nothing on screen
+          closed it: Escape did, but only while the field still held focus, so a
+          reader who typed a reference, clicked elsewhere and changed their mind
+          was left with an open field and no way back to the button it replaced.
+          It behaves exactly as Escape does — closes, drops the error, keeps what
+          was typed — because two dismissals of one field that differ is a defect
+          waiting to be found. */}
+      <button
+        aria-label="Cancel"
+        className="listen-field-cancel"
+        onClick={() => { setOpen(false); setError(null); }}
+        title="Cancel"
+        type="button"
+      >×</button>
+      {/* ANNOUNCED, NOT MERELY DRAWN. "Nothing in your library on that passage
+          yet" is the whole answer to a press, and it reached a sighted reader
+          only — a screen reader was told the Build button had been pressed and
+          then nothing, which reads as a control that does not work. `alert`
+          rather than `status` because it is assertive by nature: it reports that
+          the thing asked for did not happen. */}
+      {error && <span className="listen-seed-error" role="alert">{error}</span>}
     </div>
   );
 }
 
 /** Enough to be a list, few enough to be a list somebody reads. */
 const SEEDED_MAX = 25;
+
+/**
+ * A PLAIN LIST, MADE ON PURPOSE — the door that was not there.
+ *
+ * Every path to a new playlist ran through something else. Right-clicking a row
+ * offered "New playlist…", but only as a step inside adding THAT row to it, and
+ * only to a reader who thought to try the gesture. The seed control beside this
+ * builds a list from a chapter, names it itself and caps it — a fine thing, and
+ * not what a reader means by "make me a playlist". So the shelf's only visible
+ * control was the specialist one, and the ordinary act — name an empty list,
+ * then fill it — had no affordance at all. A shelf headed "Playlists · Yours"
+ * with no way to start one is a promise the room does not keep.
+ *
+ * IT STAYS ON THE SHELF AFTER MAKING ONE. The seed opens what it built, and
+ * should: a seeded list arrives with contents and the reader's next question is
+ * what it found. An empty list has nothing to show — opening it would answer a
+ * naming with a blank page and carry the reader away from the shelves that are
+ * the only place they can fill it from. The card appearing below is the
+ * confirmation, in the place they will look; the toast carries an Open for the
+ * reader who did mean to go there.
+ */
+function NewPlaylist({ onMade }: {
+  onMade: (id: string, name: string) => void;
+}): React.JSX.Element {
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const field = useRef<HTMLInputElement>(null);
+  useEffect(() => { if (open) field.current?.focus(); }, [open]);
+
+  const make = (): void => {
+    /* `createPlaylist` falls back to "Untitled" on a blank name, which is right
+       for a store and wrong to reach from here: a reader who presses Create on
+       an empty field meant to type something. The button is disabled and Enter
+       does nothing, so the field stays open holding the cursor rather than
+       quietly inventing a name. */
+    const clean = name.trim();
+    if (!clean) return;
+    const id = createPlaylist(clean);
+    setOpen(false);
+    setName("");
+    onMade(id, clean);
+  };
+
+  if (!open) {
+    return (
+      <button className="listen-new-open" onClick={() => setOpen(true)} type="button">
+        New playlist…
+      </button>
+    );
+  }
+  return (
+    /* NOT `.listen-seed`. The tour reaches the passage field through
+       `.listen-seed .listen-sift-input`; a second input under that class would
+       hand it whichever the document held first. The input keeps the filter's
+       class because it is the same object at the same size — only the container
+       has to be able to tell the two apart. */
+    <div className="listen-new">
+      <input
+        aria-label="Name for the new playlist"
+        className="listen-sift-input"
+        onChange={(event) => setName(event.target.value)}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") { event.preventDefault(); make(); }
+          if (event.key === "Escape") {
+            event.preventDefault();
+            event.stopPropagation();
+            setOpen(false);
+            setName("");
+          }
+        }}
+        placeholder="Advent, Lament, Sunday…"
+        ref={field}
+        value={name}
+      />
+      <button
+        className="listen-sift-order"
+        disabled={name.trim().length === 0}
+        onClick={make}
+        type="button"
+      >Create</button>
+      <button
+        aria-label="Cancel"
+        className="listen-field-cancel"
+        onClick={() => { setOpen(false); setName(""); }}
+        title="Cancel"
+        type="button"
+      >×</button>
+    </div>
+  );
+}
 
 /** How much of that a single chapter's settings may take, so the spoken half is
  *  never crowded out — see the sung loop for the psalm that proved it. */
@@ -732,7 +842,7 @@ function AlbumGroup({ album, askProps, group, onPlay, ordered, playingHere, soun
  */
 function Hero({
   art, tint, kicker, name, line, about, credits, onPlay, onShuffle, playing, innerRef,
-  plate, initial, source,
+  plate, initial, source, rename,
 }: {
   art?: string | null; tint?: string; kicker: string; name: string; line: string;
   about?: string; credits?: Record<string, string>;
@@ -745,8 +855,43 @@ function Hero({
   plate?: string;
   /* A record with no publisher at all — the reader's own. See below. */
   initial?: string;
+  /**
+   * THE NAME BECOMES A FIELD IN PLACE — for the one record whose name is the
+   * reader's to change.
+   *
+   * The swap belongs HERE and not in the playlist branch, and the reason is the
+   * h1: it carries a fluid clamp and a `data-long` step-down nothing else
+   * reproduces. A field rendered outside this component would restate both, and
+   * the first edit to either would leave a page that jumps a whole type step the
+   * moment a reader presses Rename.
+   *
+   * FULLY CONTROLLED, deliberately: the control that STARTS the edit is not in
+   * the hero — it is the pill below, which has to become Save and know whether
+   * Save can be pressed. A draft held in here would have to be reported back
+   * out, which is the same state in two places with a callback pretending
+   * otherwise.
+   */
+  rename?: {
+    draft: string;
+    onDraft: (next: string) => void;
+    onCommit: () => void;
+    onCancel: () => void;
+  };
   innerRef?: React.RefObject<HTMLElement | null>;
 }): React.JSX.Element {
+  const nameField = useRef<HTMLInputElement>(null);
+  const editing = rename != null;
+  /* Focused on open and its text selected: a rename almost always replaces the
+     name rather than appending to it, and a reader who must select four words by
+     hand first has been given a text box instead of a rename. Focusing also
+     brings the hero back on screen if the edit started from a page scrolled past
+     it — the engine scrolls a focused element into view, and the compact bar's
+     observer then retires the bar on its own. */
+  useEffect(() => {
+    if (!editing) return;
+    nameField.current?.focus();
+    nameField.current?.select();
+  }, [editing]);
   return (
     <header className="listen-hero" ref={innerRef as React.RefObject<HTMLElement>}>
       {/* THE PLATE IS A REAL FACE, not a hole where a cover would go. The shelf
@@ -795,7 +940,36 @@ function Hero({
         <p className="listen-hero-kicker">{kicker}</p>
         {/* Long names step down rather than wrapping to four lines of display
             type, which is the one thing a fluid scale cannot do on its own. */}
-        <h1 className="listen-hero-name" data-long={name.length > 26 ? "" : undefined}>{name}</h1>
+        {/* The field is measured against the DRAFT rather than the stored name,
+            so it steps down as a long name is typed instead of after saving. */}
+        {rename
+          ? (
+            <input
+              aria-label="Playlist name"
+              className="listen-hero-name-field"
+              data-long={rename.draft.length > 26 ? "" : undefined}
+              onChange={(event) => rename.onDraft(event.target.value)}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") { event.preventDefault(); rename.onCommit(); }
+                /* ESCAPE IS STOPPED HERE, and that is why the key works at all.
+                   The room hangs a `keydown` on `window` that leaves whatever
+                   record is open — so on a playlist page the key that should
+                   abandon an edit abandoned the PAGE, taking the half-typed name
+                   with it. Stopping the synthetic event stops the native one at
+                   the React root, below `window`. Only Escape is stopped:
+                   swallowing every key would disarm the app's own shortcuts
+                   inside one text field. */
+                if (event.key === "Escape") {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  rename.onCancel();
+                }
+              }}
+              ref={nameField}
+              value={rename.draft}
+            />
+          )
+          : <h1 className="listen-hero-name" data-long={name.length > 26 ? "" : undefined}>{name}</h1>}
         <p className="listen-hero-line">{line}</p>
         {about && <About text={about} />}
         <div className="listen-hero-actions">
@@ -953,6 +1127,20 @@ export function ListenPage({ backbone, bookNames }: {
   const [ask, setAsk] = useState<PlaylistAsk | null>(null);
   const askProps = usePlaylistAsk(setAsk);
   /**
+   * WHICH LIST IS BEING RENAMED, and what to.
+   *
+   * An ID rather than a boolean on purpose. A flag would be inherited: open one
+   * list, press Rename, go back, open another, and the second list's hero would
+   * arrive already in edit mode holding the first list's draft. An id makes the
+   * test `renaming === list.id`, so only the list actually being edited can be
+   * in that state — and it lets the edit survive a glance away and back, which
+   * is the same memory the room already keeps for where you were. An unfinished
+   * rename is an unfinished sentence; the room does not throw those away when a
+   * reader looks at something else.
+   */
+  const [renaming, setRenaming] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  /**
    * THE MENU, BUILT ONCE AND PLACED IN ALL FOUR ROOMS.
    *
    * THE DEFECT THIS REPLACES was invisible in review and total in use. This
@@ -1040,6 +1228,10 @@ export function ListenPage({ backbone, bookNames }: {
   const albumKey = (name: string): string => `music:${name}`;
   const hiddenCount = readListenHidden().size;
   const away = (key: string): boolean => !showHidden && isListenHidden(key);
+  /* Filtered once and then both counted and drawn. It used to be filtered inline
+     inside the grid, which meant the shelf could not know whether it was about
+     to draw nothing — see the Music shelf for what that cost. */
+  const shownAlbums = albums.filter((entry) => !away(albumKey(entry.name)));
 
   /* Escape leaves whichever record is open. It used to leave only an album,
      because the handler was hung on `album` and the series page had been
@@ -1351,17 +1543,66 @@ export function ListenPage({ backbone, bookNames }: {
             onPlay={() => play(0)}
             innerRef={mark}
             playing={here}
+            {...(renaming === list.id ? {
+              rename: {
+                draft,
+                onDraft: setDraft,
+                onCommit: () => {
+                  if (draft.trim().length === 0) return;
+                  renamePlaylist(list.id, draft);
+                  setRenaming(null);
+                },
+                onCancel: () => setRenaming(null),
+              },
+            } : {})}
             tint={live[0]?.tint}
           />
+          {/* WHAT WAS WRONG WITH RENAME, and what is true now. `window.prompt`
+              is not implemented in Electron's renderer — it THROWS rather than
+              returning, so pressing Rename in the shipped app did nothing at
+              all, and the `was != null` guard beside it read like careful
+              handling of a cancel while the call above it never returned a value
+              to guard. It was also the only prompt, confirm or alert anywhere in
+              this renderer, which is why nobody had met it: every other question
+              this app asks, it asks in its own window, in its own type, on the
+              reader's own page.
+
+              So the name is edited where the name IS. The pill that opened the
+              dead dialogue opens the hero's own h1 as a field and becomes Save
+              beside a Cancel — the reader's hand never leaves the row it started
+              from, and Enter and Escape do what they do in every other field.
+
+              SAVE IS DISABLED ON A BLANK NAME rather than allowed and ignored.
+              `renamePlaylist` trims and returns silently on an empty string,
+              which is right for a store and would be a lie here: the editor
+              would close, the name would be unchanged, and the reader would have
+              watched a control succeed at nothing. */}
           <div className="listen-list-tools">
-            <button
-              className="listen-list-tool"
-              onClick={() => {
-                const was = window.prompt("Rename this playlist", list.name);
-                if (was != null) renamePlaylist(list.id, was);
-              }}
-              type="button"
-            >Rename</button>
+            {renaming === list.id ? (
+              <>
+                <button
+                  className="listen-list-tool"
+                  disabled={draft.trim().length === 0}
+                  onClick={() => {
+                    if (draft.trim().length === 0) return;
+                    renamePlaylist(list.id, draft);
+                    setRenaming(null);
+                  }}
+                  type="button"
+                >Save</button>
+                <button
+                  className="listen-list-tool"
+                  onClick={() => setRenaming(null)}
+                  type="button"
+                >Cancel</button>
+              </>
+            ) : (
+              <button
+                className="listen-list-tool"
+                onClick={() => { setDraft(list.name); setRenaming(list.id); }}
+                type="button"
+              >Rename</button>
+            )}
             <button
               className="listen-list-tool"
               onClick={() => {
@@ -1380,7 +1621,8 @@ export function ListenPage({ backbone, bookNames }: {
           </div>
           {rows.length === 0 ? (
             <p className="listen-empty">
-              Nothing on this list yet. Right-click any track or episode to add it.
+              Nothing on this list yet. Right-click any song or episode — on any
+              album or series — to put it here.
             </p>
           ) : (
             <ol className="listen-tracks">
@@ -1886,8 +2128,21 @@ export function ListenPage({ backbone, bookNames }: {
             <h2 className="listen-shelf-name">Music</h2>
             <p className="listen-shelf-by">{MUSIC.source.name}</p>
           </div>
+          {shownAlbums.length === 0 ? (
+            /* THE DEFECT THE SERIES SHELF ALREADY DOCUMENTED, sitting one shelf
+               above it unfixed: a heading, a byline, and then an empty grid.
+               Music ships bundled, so the only way to empty this shelf is to
+               shelve every record on it — which is a reader tidying, not a
+               reader losing anything, and the sentence has to say so. It names
+               the control that undoes it by the exact words on that control,
+               because "use the toggle below" is a scavenger hunt. */
+            <p className="listen-empty">
+              Every album is hidden from this shelf. Nothing has been removed —
+              Show them, below, brings them all back.
+            </p>
+          ) : (
           <ul className="listen-grid">
-            {albums.filter((entry) => !away(albumKey(entry.name))).map((entry) => {
+            {shownAlbums.map((entry) => {
               const on = entry.tracks.some((t) => playingHere(MUSIC.source.id, trackId(entry, t))) && sounding;
               return (
                 <li
@@ -1918,6 +2173,7 @@ export function ListenPage({ backbone, bookNames }: {
               );
             })}
           </ul>
+          )}
         </section>
 
         <section aria-label="Series" className="listen-shelf">
@@ -1932,8 +2188,9 @@ export function ListenPage({ backbone, bookNames }: {
                the ordinary state of a fresh install — so it says what is true
                and where the audio would come from. */
             <p className="listen-empty">
-              No spoken series in your library yet. Shows appear here once their
-              episodes are in <code>.artifacts/resources</code>.
+              No spoken series in your library yet. Shows arrive on this shelf on
+              their own, as your library takes their episodes in — there is
+              nothing to set up here, and nothing has gone wrong.
             </p>
           ) : (
             <ul className="listen-grid">
@@ -1990,16 +2247,32 @@ export function ListenPage({ backbone, bookNames }: {
           <div className="listen-shelf-head">
             <h2 className="listen-shelf-name">Playlists</h2>
             <p className="listen-shelf-by">Yours</p>
-            <PassageSeed
-              backbone={backbone ?? null}
-              bookNames={bookNames ?? null}
-              onMade={(id) => openListenPlaylist(id)}
-            />
+            {/* BOTH DOORS, SIDE BY SIDE, and in this order. The seed is first
+                because it was here first, and a reader looking for the unusual
+                thing this app can do finds it where they left it; the plain one
+                sits after it, where the eye lands last on the way to the shelf
+                it fills. Grouped rather than each pushed right on its own — see
+                the styles for why two auto margins in one row is not twice
+                one auto margin. */}
+            <div className="listen-shelf-tools">
+              <PassageSeed
+                backbone={backbone ?? null}
+                bookNames={bookNames ?? null}
+                onMade={(id) => openListenPlaylist(id)}
+              />
+              <NewPlaylist
+                onMade={(id, made) => showToast(
+                  `Created ${made}`, "Open", () => openListenPlaylist(id),
+                )}
+              />
+            </div>
           </div>
           {lists.length === 0 ? (
             <p className="listen-empty">
-              No playlists yet. Right-click any track or episode to start one — or
-              build one from a passage.
+              No playlists yet. New playlist… makes an empty one to fill; New
+              from a passage… builds one out of a chapter of scripture. Or
+              right-click any song or episode to start from what you are already
+              looking at.
             </p>
           ) : (
             <ul className="listen-grid">

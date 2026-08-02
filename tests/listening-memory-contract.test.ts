@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
 import { resolve } from "node:path";
 import { test } from "node:test";
 
@@ -288,6 +288,29 @@ test("the add-to-playlist menu is placed in every room that can ask for it", () 
     /event\.key !== "Escape" \|\| ask/,
     "the record's Escape must stand down while something smaller is open",
   );
+});
+
+test("the renderer never asks a question the engine cannot draw", () => {
+  /* `window.prompt` is not implemented in Electron's renderer — it THROWS. The
+     playlist rename called it, so Rename did nothing at all in the shipped app,
+     and the `was != null` beside it read like careful cancel-handling while the
+     call above it never returned a value to guard. It was the only one in the
+     whole renderer, which is why nobody had met it: every other question this
+     app asks, it asks in its own window on the reader's own page.
+
+     Asserted across the renderer rather than at the one call site, because the
+     next one will be written somewhere else. */
+  const files = readdirSync(resolve(root, "src/renderer/components"))
+    .filter((name) => name.endsWith(".tsx") || name.endsWith(".ts"))
+    .map((name) => `src/renderer/components/${name}`)
+    .concat(["src/renderer/app.tsx", "src/renderer/playlists.ts", "src/renderer/listen-view.ts"]);
+  for (const file of files) {
+    assert.doesNotMatch(
+      code(file),
+      /\bwindow\.(prompt|confirm|alert)\s*\(/,
+      `${file}: Electron does not implement this — ask in the app's own window`,
+    );
+  }
 });
 
 test("the sung half of a seeded list cannot eat the spoken half", () => {

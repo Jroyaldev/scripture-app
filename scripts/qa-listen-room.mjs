@@ -826,6 +826,97 @@ await shot("album-siblings");
    already asks. */
 await evaluate(`document.querySelector('.listen-back').click()`);
 await waitFor(`${SHELVES}.includes('Playlists')`, "the playlists shelf");
+
+/* ── The plain door ─────────────────────────────────────────────────────────
+   Every path to a new list used to run through something else: right-click
+   offered "New playlist…", but only as a step inside adding THAT row to it, and
+   the only VISIBLE control on the shelf was the specialist one that builds from
+   a chapter and names the list itself. A shelf headed "Playlists · Yours" with
+   no way to start one is a promise the room does not keep. */
+const doors = await evaluate(`(() => ({
+  seed: !!document.querySelector('.listen-seed-open'),
+  plain: !!document.querySelector('.listen-new-open'),
+  /* Two auto left-margins in one row split the free space and fling the pair to
+     opposite ends of the head; the push belongs to the group. */
+  grouped: !!document.querySelector('.listen-shelf-tools .listen-new-open'),
+}))()`);
+gate(doors.seed && doors.plain, "both doors are on the shelf head");
+gate(doors.grouped, "and travel together rather than splitting the head");
+
+const made = await evaluate(`(() => {
+  document.querySelector('.listen-new-open').click();
+  return new Promise((r) => setTimeout(() => {
+    const input = document.querySelector('.listen-new .listen-sift-input');
+    const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    set.call(input, 'Tour Scratch List');
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    setTimeout(() => {
+      [...document.querySelectorAll('.listen-new button')]
+        .find((b) => /Create/.test(b.textContent))?.click();
+      setTimeout(() => r({
+        names: [...document.querySelectorAll('.listen-card-name')].map((n) => n.textContent),
+        /* It stays on the shelf: an empty list has nothing to show, and opening
+           it would answer a naming with a blank page. The toast carries the way
+           in for the reader who did mean to go there. */
+        toast: document.querySelector('.toast-action')?.textContent ?? null,
+        stillOnShelf: !!document.querySelector('.listen-new-open'),
+      }), 700);
+    }, 350);
+  }, 400));
+})()`);
+gate(made.names.includes("Tour Scratch List"), "a plain list can be made by name",
+  made.names.filter((n) => /Scratch/.test(n ?? "")).join(", "));
+gate(made.stillOnShelf && made.toast === "Open",
+  "and the shelf keeps the reader, offering the way in", `toast: ${made.toast}`);
+
+/* ── Rename, which was dead in the shipped app ──────────────────────────────
+   `window.prompt` is not implemented in Electron's renderer — it throws — so
+   the old Rename did nothing at all, and the `!= null` guard beside it read as
+   careful cancel-handling of a call that never returned. */
+const renamed = await evaluate(`(() => {
+  const card = [...document.querySelectorAll('.listen-card-face')]
+    .find((f) => /Tour Scratch List/.test(f.querySelector('.listen-card-name')?.textContent || ''));
+  card.click();
+  return new Promise((r) => setTimeout(() => {
+    [...document.querySelectorAll('.listen-list-tool')]
+      .find((b) => b.textContent === 'Rename')?.click();
+    setTimeout(() => {
+      const field = document.querySelector('.listen-hero-name-field');
+      const opened = {
+        field: !!field,
+        seeded: field?.value ?? null,
+        focused: document.activeElement === field,
+        tools: [...document.querySelectorAll('.listen-list-tool')].map((b) => b.textContent),
+      };
+      const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+      set.call(field, 'Tour Renamed List');
+      field.dispatchEvent(new Event('input', { bubbles: true }));
+      field.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+      setTimeout(() => r({
+        ...opened,
+        after: document.querySelector('.listen-hero-name')?.textContent ?? null,
+        closed: !document.querySelector('.listen-hero-name-field'),
+        onRecord: !!document.querySelector('.listen-hero-name'),
+      }), 700);
+    }, 600);
+  }, 900));
+})()`);
+gate(renamed.field && renamed.focused && renamed.seeded === "Tour Scratch List",
+  "Rename opens the name itself, focused and seeded", renamed.seeded);
+gate(renamed.tools.includes("Save") && renamed.tools.includes("Cancel"),
+  "with Save and Cancel where Rename was", renamed.tools.join(", "));
+gate(renamed.after === "Tour Renamed List" && renamed.closed && renamed.onRecord,
+  "and Enter commits without leaving the record", renamed.after);
+await shot("playlist-rename");
+
+/* The tour puts its own list away. */
+await evaluate(`(() => {
+  [...document.querySelectorAll('.listen-list-tool')].find((b) => b.textContent === 'Delete')?.click();
+  return true;
+})()`);
+await sleep(700);
+await evaluate(`(() => { document.querySelector('.listen-back')?.click(); return true; })()`);
+await sleep(700);
 const seeded = await evaluate(`(() => {
   const open = document.querySelector('.listen-seed-open');
   open?.click();

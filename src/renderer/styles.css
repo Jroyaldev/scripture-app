@@ -24316,8 +24316,12 @@ button.lang-phrase-diagram-node:focus-visible,
 
 .listen-shelf { margin-bottom: 44px; }
 
+/* Wrapping, because the Playlists head is no longer a heading and a byline: it
+   carries two controls, either of which becomes a field. On a narrow window the
+   row has to fold rather than push a horizontal scrollbar under the shelf. */
 .listen-shelf-head {
   display: flex;
+  flex-wrap: wrap;
   align-items: baseline;
   gap: 10px;
   margin-bottom: 16px;
@@ -24548,8 +24552,15 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 /* The loudest thing on the page, which it was not: the art was carrying the
-   record alone while its name sat at body size beside it. */
-.listen-hero-name {
+   record alone while its name sat at body size beside it.
+
+   THE FIELD IS GROUPED WITH THE HEADING rather than restating it. A playlist's
+   name is edited in place, and if the two carried their own copies of this clamp
+   the page would step a whole type size the moment somebody edited one of them —
+   a rename that visibly resizes the page it is renaming. Sharing the selector
+   makes drift impossible instead of merely unlikely. */
+.listen-hero-name,
+.listen-hero-name-field {
   margin: 0;
   color: var(--text-primary);
   font: var(--fw-medium) clamp(1.9rem, 1.15rem + 2vw, 3.1rem)/1.05 var(--font-reading);
@@ -24558,9 +24569,31 @@ button.lang-phrase-diagram-node:focus-visible,
 
 /* A long name steps DOWN rather than wrapping to four lines of display type,
    which is the one thing a fluid scale cannot decide for itself. */
-.listen-hero-name[data-long] {
+.listen-hero-name[data-long],
+.listen-hero-name-field[data-long] {
   font-size: clamp(1.55rem, 1.05rem + 1.25vw, 2.25rem);
   letter-spacing: -0.018em;
+}
+
+/* NOT A TEXT BOX ON THE HERO. A bordered, filled input at display size would put
+   a form control where the record's name was and make the page look like a
+   settings sheet for one keystroke's worth of work. So it keeps the heading's
+   own type and ground, and says it is editable with a single rule in the
+   record's own accent — the colour the play control wears, which is the page's
+   way of saying "this one is yours". */
+.listen-hero-name-field {
+  display: block;
+  width: 100%;
+  padding: 0 0 3px;
+  border: 0;
+  border-bottom: 2px solid var(--record-accent);
+  border-radius: 0;
+  background: none;
+}
+
+.listen-hero-name-field:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
 }
 
 .listen-hero-line {
@@ -24936,29 +24969,79 @@ button.lang-phrase-diagram-node:focus-visible,
 }
 
 /* ── The reader's own lists ─────────────────────────────────────────────────── */
-.listen-seed-open,
-.listen-seed {
-  /* Pushed to the far end of the shelf head, where it does not compete with
-     the heading it belongs to. */
+
+/* TWO DOORS, ONE JAMB. The push to the far end used to live on the control
+   itself, which was correct while there was one of them and wrong the moment
+   there were two: two `margin-left: auto` in one flex row do not push a pair to
+   the right, they SPLIT the free space and fling the controls to opposite ends
+   of the head. The push is a fact about the group, so the group is a real
+   element and owns it. */
+.listen-shelf-tools {
   margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Each opener becomes a field in place, and the field is a row. */
+.listen-seed,
+.listen-new {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-.listen-seed-open {
+/* ONE PILL, TWO DOORS. They are the same kind of control opening the same kind
+   of thing, and this room's secondaries are 999px everywhere else. A second
+   shape here would be a third grammar on one shelf.
+   `.listen-new-open` is its own class rather than a second `.listen-seed-open`
+   because the tour reaches the passage door by first match on that selector: a
+   gate that cannot tell the two apart is a gate that passes while typing a
+   chapter reference into the wrong field. */
+.listen-seed-open,
+.listen-new-open {
   padding: 5px 11px;
   border: 1px solid var(--border-subtle);
   border-radius: 999px;
   background: none;
   color: var(--text-secondary);
   font: 0.75rem/1.4 var(--font-ui);
+  white-space: nowrap;
   cursor: pointer;
 }
 
-.listen-seed-open:hover { border-color: var(--border-strong); color: var(--text-primary); }
+.listen-seed-open:hover,
+.listen-new-open:hover { border-color: var(--border-strong); color: var(--text-primary); }
 
-.listen-seed-open:focus-visible {
+.listen-seed-open:focus-visible,
+.listen-new-open:focus-visible {
+  outline: var(--focus-ring-width) solid var(--focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+/* A WAY OUT THAT CAN BE SEEN. Both fields opened with no dismissal drawn: the
+   only exit was Escape, and only while the field still held focus, so a reader
+   who clicked away was left with an open field, a vanished button, and nothing
+   on screen that closed either. Shaped like the filter's own clear, because it
+   is the same gesture at the same size. */
+.listen-field-cancel {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--text-tertiary);
+  font: 0.9375rem/1 var(--font-ui);
+  cursor: pointer;
+}
+
+.listen-field-cancel:hover { color: var(--text-primary); }
+
+.listen-field-cancel:focus-visible {
   outline: var(--focus-ring-width) solid var(--focus-ring);
   outline-offset: var(--focus-ring-offset);
 }
@@ -24973,15 +25056,29 @@ button.lang-phrase-diagram-node:focus-visible,
    two related controls read as unrelated. */
 .listen-list-tools { display: flex; gap: 8px; margin: 4px 0 18px; }
 
+/* A PILL, LIKE EVERY OTHER SECONDARY IN THIS ROOM. It was the one squared
+   control among them — the shuffle beside the hero, the halves under it, both
+   doors on the Playlists head are 999px — and the odd radius read as an older
+   screen that had not been brought forward rather than as emphasis. The
+   horizontal padding grows with the radius because a pill needs the room: at
+   12px the round ends crowd the word. */
 .listen-list-tool {
-  padding: 7px 12px;
+  padding: 6px 15px;
   border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
+  border-radius: 999px;
   background: none;
   color: var(--text-secondary);
   font: 0.75rem/1.4 var(--font-ui);
+  white-space: nowrap;
   cursor: pointer;
 }
+
+/* Save with a blank field is the one state here that must LOOK unavailable. The
+   store trims and returns silently on an empty name, so a live button would
+   close nothing and change nothing, and the reader would have watched a press
+   succeed at doing that. */
+.listen-list-tool:disabled { opacity: 0.4; cursor: default; }
+.listen-list-tool:disabled:hover { border-color: var(--border-subtle); color: var(--text-secondary); }
 
 .listen-list-tool:hover { border-color: var(--border-strong); color: var(--text-primary); }
 
@@ -25309,9 +25406,6 @@ button.lang-phrase-diagram-node:focus-visible,
   font: 0.8125rem/1.6 var(--font-ui);
 }
 
-.listen-empty code {
-  font: 0.75rem/1 var(--font-mono);
-}
 
 /* WITHDRAWN. The shelf briefly wore a half-strength field of the last-played
    record's colour; it made the translucent sidebar read as an opaque dark band,
