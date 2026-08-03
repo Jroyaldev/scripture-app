@@ -167,6 +167,27 @@ test("the top edge does not vary by mode, by width, or by atmosphere", () => {
   assert.match(bar, /padding: 0 var\(--page-inset\) 0 max\(0px, calc\(var\(--os-buttons\) - var\(--rail-flow-w\)\)\);/);
   assert.match(styles, /\.app-shell\[data-fullscreen\] \.scripture-workspace-bar \{\s*padding-left: 0;\s*\}/);
 
+  /* AND THE FIRST TAB'S FILLET IS DROPPED UNCONDITIONALLY, which is the half of
+     flush-start that does NOT depend on the reserve.
+
+     A fillet is a joint: a block of paper outside the tab whose outer corner is
+     carved away, so the tab sweeps into the page's top edge on a curve. The
+     first tab has nothing to its left to sweep into — and while the row reserves
+     room for the window's buttons that is MORE true, not less, because the space
+     there belongs to the window and holds the system's own controls. Gated on
+     the reserve, it drew a wedge of paper under the traffic lights, which is
+     what a single-tab window showed. The PAGE's corner is the half that depends
+     on the reserve, and it is gated below. */
+  assert.match(
+    styles,
+    /\.scripture-workspace-bar\[data-flush-start\] \.scripture-workspace-tab\[aria-selected="true"\]::before \{\s*display: none;/,
+  );
+  assert.match(
+    styles,
+    /\.app-shell\[data-fullscreen\] \.scripture-workspace-bar\[data-flush-start\] ~ \.scripture-body \.scripture-content,/,
+    "the page's corner is squared only where the tab actually stands on it",
+  );
+
   /* THE BAND IS GONE FROM THE SHEET AND FROM THE PAGE. Not hidden, not zeroed:
      a 24px row that already exists and holds nothing is the most convenient
      place in the frame for the next feature that needs a home, and everything

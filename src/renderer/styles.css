@@ -2811,15 +2811,22 @@ html, body, #root {
    owner ruled that the strip's controls may not relocate between selections, so
    the last tab always has the actions cluster to its right and its right fillet
    always has a page edge to sweep into. See src/renderer/styles/register.css. */
-/* THE FLUSH CORNER NEEDS THE CORNER · qualified 2026-08-03. The first tab
-   squares the page's own top-left corner by dropping its left fillet, and that
-   is only true when the tab is actually AT that corner. While the row is
-   reserving room for the window's buttons it is not, so the fillet stays and
-   the page keeps its radius; in fullscreen, and with the rail open, the reserve
-   is zero and the corner is claimed exactly as before. Chrome's first tab is
-   not flush with its window edge either, and for the same reason. */
-.app-shell[data-fullscreen] .scripture-workspace-bar[data-flush-start] .scripture-workspace-tab[aria-selected="true"]::before,
-.app-shell:not(:has(> .sidebar.collapsed)) .scripture-workspace-bar[data-flush-start] .scripture-workspace-tab[aria-selected="true"]::before {
+/* THE FILLET AND THE CORNER ARE TWO CONSEQUENCES, not one · split 2026-08-03,
+   after being gated together and getting one of them backwards.
+
+   A fillet is a JOINT: an 8px block of paper outside the tab whose outer corner
+   is carved away, so the tab's side sweeps into the page's top edge on a
+   continuous curve. The first tab drops its left one because there is nothing to
+   its left to sweep into.
+
+   That is true whether or not the row is reserving room for the window's
+   buttons — MORE true, in fact. While it reserves, the space to the tab's left
+   is the WINDOW's and holds the system's own controls; a fillet drawn there is
+   a wedge of paper under the traffic lights, which is what a single-tab window
+   showed. So the fillet goes whenever the tab is first, unconditionally.
+
+   The PAGE's corner is the half that depends on the reserve, and it is below. */
+.scripture-workspace-bar[data-flush-start] .scripture-workspace-tab[aria-selected="true"]::before {
   display: none;
 }
 
@@ -4962,8 +4969,11 @@ html[data-tab-drag] * {
    rounded in every state — squaring it would require the last tab to reach it,
    which the retired flush-end docking bought at the price of moving the strip's
    controls between selections. */
-/* The page's own corner, squared by the same two states and for the same
-   reason: a tab that is not standing on the corner may not square it. */
+/* AND THE PAGE'S OWN CORNER is squared only when the tab is actually standing on
+   it. A tab inset by the button reserve is not, so the page keeps its radius —
+   Chrome's first tab is not flush with its window edge either, and for the same
+   reason. In fullscreen, and with the rail open, the reserve is zero and the
+   corner is claimed exactly as it always was. */
 .app-shell[data-fullscreen] .scripture-workspace-bar[data-flush-start] ~ .scripture-body .scripture-content,
 .app-shell:not(:has(> .sidebar.collapsed)) .scripture-workspace-bar[data-flush-start] ~ .scripture-body .scripture-content {
   border-top-left-radius: 0;

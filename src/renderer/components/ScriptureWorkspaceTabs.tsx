@@ -1102,6 +1102,27 @@ export function ScriptureWorkspaceTabs({
      mid-air under a cursor that will not change back, and this shape of code
      always fails that way — so there is exactly one way out and every path takes
      it. */
+  /* IS THE POINTER OVER THE STUDIES — the control, or the list it opens?
+
+     BY RECTANGLE, NOT BY HIT-TEST, and that is forced. The list is a popover,
+     and a popover renders a full-viewport scrim beneath its panel: over the
+     panel `elementFromPoint` finds a row, but over the CONTROL it finds the
+     scrim, which stands above the register at a layer of its own. So the face
+     that says "drag here to change study" answered a drag by looking like
+     nothing at all, the phase fell back to a reorder, and the list closed under
+     the very hand it had invited. The maintainer found it by taking the
+     invitation literally.
+
+     Two rectangles is also cheaper than it looks: it runs only when the pointer
+     is not already over a study target, and it reads two elements. */
+  const overStudySurface = (x: number, y: number): boolean => {
+    for (const node of document.querySelectorAll("[data-study-control], .scripture-workspace-context-popover")) {
+      const rect = node.getBoundingClientRect();
+      if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) return true;
+    }
+    return false;
+  };
+
   /* The proxy sits below and right of the cursor, which is where a hand holding
      something leaves it — and, more to the point, NOT over the rows the drop is
      aimed at. One expression, because the mount and every frame after it must
@@ -1217,6 +1238,7 @@ export function ScriptureWorkspaceTabs({
     const phase: "reorder" | "carry" = studyId !== null
       || event.clientY < origin.band.top
       || event.clientY > origin.band.bottom
+      || overStudySurface(event.clientX, event.clientY)
       ? "carry"
       : "reorder";
     const settledPhase = origin.phase;

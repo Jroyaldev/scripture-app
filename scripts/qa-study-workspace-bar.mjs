@@ -1579,6 +1579,34 @@ try {
   assert.equal(shuffling.ghost, false, "and nothing is carried while the tab is still in its row");
   await captureBand("study-control-drag-shuffle.png");
 
+  /* STRAIGHT ONTO THE FACE, the way the invitation reads. This is the gesture
+     the maintainer took literally and it broke: the list is a popover, and a
+     popover puts a full-viewport scrim beneath its panel, so `elementFromPoint`
+     over the CONTROL finds the scrim rather than the control. The phase fell
+     back to a reorder and the list closed under the very hand it had invited.
+     The control's own rectangle is what answers now. */
+  const facePoint = await driver.evaluate(`(() => {
+    const rect = document.querySelector("[data-study-face]").getBoundingClientRect();
+    return { x: Math.round(rect.x + rect.width / 2), y: Math.round(rect.y + rect.height / 2) };
+  })()`);
+  await drag(facePoint.x, facePoint.y);
+  await sleep(240);
+  const onFace = await driver.evaluate(`(() => ({
+    panel: document.querySelector("[data-study-menu]") !== null,
+    ghost: document.querySelector("[data-study-tab-ghost]") !== null,
+  }))()`);
+  assert.equal(onFace.panel, true,
+    "dragging onto the control that says 'drag here to change study' closed its own list");
+  assert.equal(onFace.ghost, true, "and the tab stopped being carried while over the very place it is carried to");
+  // Lingering there must not close it either — the phase is a state, not an edge.
+  await drag(facePoint.x + 2, facePoint.y + 2);
+  await sleep(200);
+  assert.equal(
+    await driver.evaluate(`document.querySelector("[data-study-menu]") !== null`),
+    true,
+    "the list closed while the pointer stayed on the control",
+  );
+
   // Off the row: the tab leaves it, the run closes up, the list opens.
   await drag(dragPoints.second.x + 10, dragPoints.below);
   await sleep(220);

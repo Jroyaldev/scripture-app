@@ -263,6 +263,16 @@ test("pointer drag is thresholded, and the run itself opens the slot", () => {
      TAKEN somewhere, the run closes back up, and what the reader is holding
      rides the cursor. A pointer over a study target is carrying by definition. */
   assert.match(onMoveHandler, /\? "carry"\s*: "reorder";/);
+  /* AND THE CONTROL ITSELF IS CARRY, tested BY RECTANGLE rather than by
+     hit-test — which is forced, not preferred. The list is a popover, and a
+     popover renders a full-viewport scrim beneath its panel: over the panel
+     `elementFromPoint` finds a row, but over the CONTROL it finds the scrim,
+     which stands above the register at a layer of its own. So the face that says
+     "drag here to change study" answered a drag by looking like nothing at all,
+     the phase fell back to a reorder, and the list closed under the very hand it
+     had invited — found by taking the invitation literally. */
+  assert.match(onMoveHandler, /\|\| overStudySurface\(event\.clientX, event\.clientY\)/);
+  assert.match(source, /querySelectorAll\("\[data-study-control\], \.scripture-workspace-context-popover"\)/);
   assert.match(onMoveHandler, /if \(phase !== settledPhase\) \{/);
   assert.match(source, /onTabDragPhase\("reorder", origin\.tabId\);/,
     "the tab travels with the phase: the study control asks the model whether it could found a study with it");
