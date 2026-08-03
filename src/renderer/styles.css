@@ -23511,28 +23511,43 @@ button.lang-phrase-diagram-node:focus-visible,
 
    Ten of the eleven publishers chose an ink that holds on their own colour.
    Spoken Gospel's cream is a REVERSE — drawn for their white lockup, which is
-   graphics — and on their green it is 3.24:1. Nothing in their palette clears
-   the floor there: their pale yellow pill ink measures 3.56 and pure white
-   3.67. Only a near-black does, and the ceiling on that green is 5.72.
+   graphics — and on the KELLY GREEN they wore then it was 3.24:1. Nothing in
+   that palette cleared the floor: their pale yellow pill ink measured 3.56 and
+   pure white 3.67. Only a near-black did, so `--shelf-tally-ink: #041509` was
+   declared here, in the shelf's own scope rather than in their palette block,
+   and measured 5.13:1 against a ceiling of 5.72.
 
-   So on that one plate the numeral is their green taken down until it clears
-   the floor: 5.13:1 measured in the engine, against a ceiling of 5.72. It is
-   recorded as OURS — a re-pick with a stated reason, the same way
-   --resource-pill-ink for 40 Minutes is — and it is declared here, in the
-   shelf's own scope, rather than in their palette block. The palettes are not
-   this surface's to edit: the shelf is fitting an ink to a job the palette was
-   never asked about.
+   ── AND THEN THE GROUND MOVED OUT FROM UNDER IT · 2026-08-03 ──────────────
+   On 2026-08-02 that green was replaced. It was 95° off their own artwork's
+   hue, the largest disagreement of the twelve, and `--resource-source` became
+   #172E40 — the navy their covers actually are. The near-black went with the
+   green as a matter of fact and stayed as a matter of code: near-black on dark
+   navy is 1.34:1, the worst ratio this app has ever shipped, on the one piece
+   of text that plate carries. The player's own tour caught it and had been
+   failing on it since, which is the only reason it is written here rather than
+   found by a reader.
 
-   Written as a hex rather than as `oklch(from …)` or a `color-mix`, and that
-   is not a style preference: both of those PRESERVE their function in the
-   computed value in this engine, and the contrast probe in
-   scripts/qa-podcast-player reads computed colours by pulling numbers out of
-   the string. An oklch triple parsed as an rgb one is a measurement of
-   nothing, which is how a colour ships unmeasured under a gate that appears
-   to pass. */
-.resource-shelf .trusted-resource-imprint[data-source="spoken-gospel"] {
-  --shelf-tally-ink: #041509;
-}
+   THE REPAIR IS A DELETION, and it is worth being explicit that a third colour
+   would have been the wrong answer. The override existed to solve "their cream
+   does not hold on their green". There is no green. Cream on the navy measures
+   12.33:1 — the palette block above says so in its own note — so removing the
+   re-pick returns the numeral to `--resource-ink` and the plate is the
+   publisher's own two colours with nothing of ours in it.
+
+   A shelf-scoped override is the right instrument when a palette value cannot
+   do a job the palette was never asked about. It is a LIABILITY the moment that
+   value changes, because it is derived from a number it does not name and
+   nothing links the two: the palette block that moved the ground had no reason
+   to know this existed, and this block had no way to notice. If another ground
+   moves, look here first.
+
+   Kept from the original note, because it is still true of whatever lands here
+   next: write such an ink as a hex rather than as `oklch(from …)` or a
+   `color-mix`. Both of those PRESERVE their function in the computed value in
+   this engine, and the contrast probe in scripts/qa-podcast-player reads
+   computed colours by pulling numbers out of the string. An oklch triple parsed
+   as an rgb one is a measurement of nothing, which is how a colour ships
+   unmeasured under a gate that appears to pass. */
 
 /* The library panel opens where a card opens, and its rows carry their own
    border — so a panel border around them was a box drawn around boxes. The
