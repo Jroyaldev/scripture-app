@@ -3773,6 +3773,106 @@ html, body, #root {
   transition: transform var(--transition-normal);
 }
 
+/* ── THE TAB LEAVES THE ROW WHEN IT IS CARRIED OFF IT · 2026-08-03 ───────
+
+   Dragging a tab to another study used to dim it in place at half opacity and
+   leave the cursor over a menu holding nothing. The maintainer put it exactly:
+   "you lose clear handling when you enter menu". Half opacity is also this
+   app's own idiom for DISABLED, so the one thing on screen standing for the tab
+   in hand was drawn as the thing you can no longer act on.
+
+   So it goes. The run closes over the gap, the proxy rides the cursor, and the
+   register reads as a row a tab has been taken out of — which is what has
+   happened.
+
+   `visibility` rather than `display` or an unmount, and that is the whole
+   safety of it: the move may still be refused, or need a confirmation the
+   reader then declines, and a tab that had really left would have to be put
+   back by a component that no longer had it. The node, its ref and its geometry
+   all stay; the snap-back is this attribute coming off. */
+.scripture-workspace-tab-wrap[data-carried] {
+  visibility: hidden;
+}
+
+/* ── WHAT THE READER IS HOLDING ────────────────────────────────────────────
+
+   Over everything and touchable by nothing. `pointer-events: none` is not
+   politeness: the drop target is found with `elementFromPoint` AT THE CURSOR,
+   and the cursor is exactly where this card is — a proxy that could be hit
+   would be the only thing any drag ever found.
+
+   1400 clears the study list it is dragged over (901) and every other floating
+   layer in the app (1360). It is the top of the stack for the length of one
+   gesture, which is the one thing in this app that genuinely is.
+
+   DELIBERATELY PLAIN: paper, the register's own type, and the same two shadows a
+   lifted tab already casts. No seal — the premium sweep forbids a gold fill
+   wider than a mark, and a proxy arriving in the app's authorship ink would be
+   claiming the drag had already done something. No scale, for the reason the
+   lift refuses one: this is the tab, not a bigger idea of it. */
+.scripture-workspace-tab-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1400;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  max-width: 176px;
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+  background: var(--bg-reading);
+  color: var(--text-primary);
+  font: var(--fw-medium) 11px/1 var(--font-mono);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 10px rgb(0 0 0 / 0.16)) drop-shadow(0 1px 2px rgb(0 0 0 / 0.10));
+  animation: scripture-workspace-ghost-in 120ms ease;
+}
+
+.scripture-workspace-tab-ghost .scripture-workspace-tab-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes scripture-workspace-ghost-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* ── THE FACE SAYS WHAT IT IS FOR, while a tab is in the air ──────────────
+
+   A reorder opens no list, which left this control silent during the one
+   gesture it is the destination for. The study's name gives its place up for
+   the length of the drag and the control says the invitation instead — the
+   reader is already holding the tab; the only thing they are missing is that
+   this is somewhere to put it.
+
+   It keeps its own ground and its own box, so nothing beside it moves. And it
+   says it ONCE: no pulse, no loop. A hint that repeats itself does not trust the
+   reader to have read it, and this app refuses that everywhere else. */
+.scripture-study-face[data-study-face-inviting] {
+  background: color-mix(in srgb, var(--text-primary) 11%, transparent);
+  color: var(--text-primary);
+}
+
+.scripture-study-invite {
+  animation: scripture-study-invite-in 150ms ease;
+}
+
+@keyframes scripture-study-invite-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scripture-workspace-tab-ghost,
+  .scripture-study-invite { animation: none; }
+}
+
 /* ── THE HAND KEEPS ITS GRIP · 2026-08-03 ─────────────────────────────────
 
    `cursor: grabbing` on the tab is lost the moment the pointer leaves it, and
@@ -4023,8 +4123,17 @@ html[data-tab-drag] * {
   .scripture-study-row[data-study-drop-target] .scripture-study-row-count { color: HighlightText; }
 
   /* A lifted tab loses its shadow here — forced colours drops filters — so the
-     outline is what says "held". */
+     outline is what says "held". The carried proxy loses the same shadow and
+     needs the same answer, or the one object standing for a tab in mid-air is a
+     bare rectangle on the system's own canvas. */
   .scripture-workspace-tab-wrap.is-dragging { outline: 2px solid Highlight; outline-offset: -1px; }
+
+  .scripture-workspace-tab-ghost {
+    background: Canvas;
+    color: CanvasText;
+    outline: 2px solid Highlight;
+    forced-color-adjust: none;
+  }
 
   .scripture-workspace-tab[aria-selected="true"] { background: Highlight; color: HighlightText; }
   .scripture-workspace-tab[aria-selected="true"]::after { background: HighlightText; }

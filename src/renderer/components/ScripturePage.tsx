@@ -739,13 +739,17 @@ export function ScripturePage({
      the strip SHOWS is stored here, and this is null except while a pointer is
      actually down on a tab. */
   const [tabDropStudyId, setTabDropStudyId] = useState<string | null>(null);
-  /* AND WHETHER A DRAG IS HAPPENING AT ALL, which the fact above cannot answer.
-     Null there means "over no study", and that is true both mid-drag and when
-     there is no drag — but the study control's list has to be OPEN for the
-     length of a drag, because its rows are the only study targets on screen now
-     that the chips are gone. Two booleans rather than one tri-state: they answer
-     different questions and the strip reports them at different moments. */
-  const [tabDragActive, setTabDragActive] = useState(false);
+  /* AND WHAT THE DRAG IS DOING, which the fact above cannot answer. Null there
+     means "over no study", and that is true both mid-drag and when there is no
+     drag — but the study control has to tell those apart, and now has to tell
+     two kinds of drag apart as well.
+
+     A PHASE RATHER THAN A BOOLEAN as of 2026-08-03. It was `tabDragActive`, and
+     the list opened on it: sliding a tab two places along its own row hung a
+     252px panel off the control, about a decision the reader was not making. In
+     REORDER the control only says that it is somewhere a tab can be taken; the
+     list opens on CARRY, once the tab has left the row. */
+  const [tabDragPhase, setTabDragPhase] = useState<"reorder" | "carry" | null>(null);
   const marginWorkspace: MarginWorkspace = activeWorkspaceKind === "entity" ? "research" : "study";
   const [marginData, setMarginData] = useState<QueryResult>(EMPTY_MARGIN_DATA);
   const [marginDataChapterKey, setMarginDataChapterKey] = useState<string | null>(null);
@@ -4738,7 +4742,7 @@ export function ScripturePage({
           )}
           onPromoteTab={(tabId) => onWorkspaceTabPromote?.(tabId) ?? Promise.resolve(false)}
           onTabDragOverStudy={setTabDropStudyId}
-          onTabDragActive={setTabDragActive}
+          onTabDragPhase={setTabDragPhase}
           studies={(
             <StudyControl
               workspace={studyWorkspace}
@@ -4751,7 +4755,7 @@ export function ScripturePage({
               onStartStudy={() => onStartStudy?.() ?? Promise.resolve(false)}
               onNewTab={() => (onOpenResearchPalette ?? onOpenCommandPalette)?.()}
               namingRequest={studyNamingRequest}
-              tabDragActive={tabDragActive}
+              dragPhase={tabDragPhase}
               dropTargetStudyId={tabDropStudyId}
             />
           )}

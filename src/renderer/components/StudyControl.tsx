@@ -149,17 +149,23 @@ export interface StudyControlProps {
   /** A study that has just been made and is waiting to be named. */
   namingRequest: { groupId: string; nonce: number } | null;
   /**
-   * A tab is being dragged in the strip right now.
+   * What the strip's drag is doing, or null when there is none.
    *
-   * The list opens on it, and that is not a flourish — it is what keeps the
+   * The list opens on CARRY, and that is not a flourish — it is what keeps the
    * gesture alive. A tab is moved between studies by dragging it onto that
    * study's own target, and `studyDropTargetId` hit-tests the document for one;
    * with the chips gone there was exactly one target on screen, the study the
    * tab is already in, which that function excludes by design. The menu rows ARE
-   * the targets now, so the list has to be open while a drag is in flight or
-   * there is nowhere to drop.
+   * the targets, so the list has to be open while a carry is in flight or there
+   * is nowhere to drop.
+   *
+   * IT OPENS ON CARRY AND NOT ON REORDER, as of 2026-08-03. It used to open the
+   * moment any drag began, so sliding a tab two places along its own row hung a
+   * 252px panel over the page about a decision the reader was not making. In
+   * REORDER this control says one quieter thing instead — see the face — and the
+   * list waits until the tab has actually left the row.
    */
-  tabDragActive: boolean;
+  dragPhase: "reorder" | "carry" | null;
   /**
    * The study a tab is currently being dragged over, reported by the strip.
    *
@@ -182,7 +188,7 @@ export function StudyControl({
   onStartStudy,
   onNewTab,
   namingRequest,
-  tabDragActive,
+  dragPhase,
   dropTargetStudyId,
 }: StudyControlProps): React.JSX.Element | null {
   const [anchor, setAnchor] = useState<DOMRect | null>(null);
@@ -219,15 +225,20 @@ export function StudyControl({
     if (node?.isConnected) node.focus();
   }, []);
 
-  /* THE LIST OPENS ITSELF FOR A DRAG and closes when the drag ends. It takes no
-     focus while it does — `initialFocus` is off below — because a pointer drag
-     has not asked for the keyboard, and pulling focus mid-gesture would leave it
-     somewhere arbitrary once the tab lands. */
+  /* THE LIST OPENS ITSELF FOR A CARRY and closes when the drag ends. It takes
+     no focus while it does — `initialFocus` is off below — because a pointer
+     drag has not asked for the keyboard, and pulling focus mid-gesture would
+     leave it somewhere arbitrary once the tab lands.
+
+     A REORDER opens nothing. The reader is placing a tab among its siblings and
+     the run itself answers that; a panel would be a second answer to a question
+     already being answered, over the page, about studies they have not asked
+     about. */
   useEffect(() => {
-    if (!tabDragActive) return;
+    if (dragPhase !== "carry") return;
     openMenu("list");
     return () => { setAnchor(null); setMode("list"); };
-  }, [openMenu, tabDragActive]);
+  }, [dragPhase, openMenu]);
 
   /* A study is born unnamed and the reader is invited to name it at once. The
      invitation used to be a synthetic click on the strip's Manage control, which
@@ -318,6 +329,25 @@ export function StudyControl({
   const otherWord = `${others} other ${others === 1 ? "study" : "studies"}`;
   const closeAvailability = studyWorkspaceGroupCloseAvailability(workspace, current.groupId);
 
+  /* THE NAME BECOMES AN INVITATION WHILE A TAB IS IN THE AIR.
+
+     A reorder opens no list — see the effect above — which left this control
+     saying nothing at all during the one gesture it is the destination for. So
+     the study's name gives its place up for the length of the drag and the
+     control says what it is FOR instead. The reader is already holding the tab;
+     the only thing they are missing is that this is somewhere to put it.
+
+     It is a swap of copy in a control that is already there, not a thing that
+     appears: nothing is added to the frame, nothing moves beside it, and the
+     control keeps its own ground and its own box. It says it once and holds it —
+     no pulse, no loop. A hint that repeats itself is a hint that does not trust
+     the reader to have read it, and this app has refused that everywhere else.
+
+     The accessible name follows the visible one, because they are the same
+     sentence and a screen reader is in the middle of the same gesture. */
+  const inviting = dragPhase !== null;
+  const hint = "Drag here to change study";
+
   return (
     <div className="scripture-study-control" data-study-control="">
       <Tooltip label={others > 0 ? `${label} — ${tabs} · ${otherWord}` : `${label} — ${tabs}`}>
@@ -327,6 +357,7 @@ export function StudyControl({
           className="scripture-study-face"
           data-study-face=""
           data-study-face-open={open || undefined}
+          data-study-face-inviting={inviting || undefined}
           aria-haspopup="menu"
           aria-expanded={open}
           /* The name carries the state, and that is how a switch is announced:
@@ -334,9 +365,11 @@ export function StudyControl({
              It is the same mechanism the strip uses to announce a fold, chosen
              for the same reason — the fact is already on screen, and a live
              region would say it a second time on every ⌘1 as well. */
-          aria-label={others > 0
-            ? `Study: ${label}, ${tabs}, ${otherWord}`
-            : `Study: ${label}, ${tabs}`}
+          aria-label={inviting
+            ? hint
+            : others > 0
+              ? `Study: ${label}, ${tabs}, ${otherWord}`
+              : `Study: ${label}, ${tabs}`}
           aria-keyshortcuts="F2"
           onKeyDown={(event) => {
             if (event.key !== "F2") return;
@@ -351,22 +384,28 @@ export function StudyControl({
               did — the act Law 3's ink certifies — is give this study a name; a
               study still wearing its derived reference has been made and not yet
               claimed, and goes unmarked until it is. */}
-          {current.named && <span className="scripture-study-seal" aria-hidden="true" />}
-          <span className="scripture-study-name">{label}</span>
-          {others > 0 && (
-            <span className="scripture-study-rest" aria-hidden="true">{`+${others}`}</span>
+          {inviting ? (
+            <span className="scripture-study-invite" data-study-invite="">{hint}</span>
+          ) : (
+            <>
+              {current.named && <span className="scripture-study-seal" aria-hidden="true" />}
+              <span className="scripture-study-name">{label}</span>
+              {others > 0 && (
+                <span className="scripture-study-rest" aria-hidden="true">{`+${others}`}</span>
+              )}
+              <CaretGlyph />
+            </>
           )}
-          <CaretGlyph />
         </button>
       </Tooltip>
 
       {open && (
         <Popover
           anchorRect={anchor}
-          onClose={() => closeMenu(!tabDragActive)}
+          onClose={() => closeMenu(dragPhase === null)}
           width={252}
           maxHeight={420}
-          initialFocus={!tabDragActive}
+          initialFocus={dragPhase === null}
           {...(mode === "rename" ? { initialFocusRef: renameInputRef } : {})}
           className="scripture-workspace-context-popover"
           ariaLabel={mode === "rename" ? `Name this study — currently ${label}` : "Studies"}

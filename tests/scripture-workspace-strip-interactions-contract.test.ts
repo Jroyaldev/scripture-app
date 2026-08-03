@@ -241,6 +241,12 @@ test("pointer drag is thresholded, and the run itself opens the slot", () => {
      no longer where the layout put it — which is a feedback loop, not a
      measurement, and it reads as tabs shuddering under the pointer. */
   assert.match(onMoveHandler, /origin\.slots = \(entry\?\.tabs \?\? \[\]\)\.flatMap/);
+
+  /* AND THE BAND IS SNAPSHOTTED WITH IT. Whether the pointer has left the row is
+     the whole of the reorder/carry distinction, and the bar does not move under
+     a drag — asking it every frame would be a layout read per frame for an
+     answer that cannot change. */
+  assert.match(onMoveHandler, /origin\.band = \{ top: rect\.top - CARRY_SLACK_PX, bottom: rect\.bottom \+ CARRY_SLACK_PX \};/);
   assert.match(onMoveHandler, /origin\.draggedIndex = origin\.slots\.findIndex/);
   assert.match(onMoveHandler, /held\.left \+ \(event\.clientX - origin\.x\) \+ held\.width \/ 2/,
     "the dragged centre comes from the snapshot plus pointer travel, never its live rect");
@@ -251,7 +257,16 @@ test("pointer drag is thresholded, and the run itself opens the slot", () => {
      `--tab-drag-x` write exists to avoid, paid anyway one line later. The tab's
      travel stays imperative and touches one node; which slot the pointer is in
      changes a handful of times in a whole gesture. */
-  assert.match(onMoveHandler, /if \(studyId === settledStudyId && insertionIndex === settledIndex\) return;/);
+  assert.match(onMoveHandler, /if \(phase === settledPhase\s*&& studyId === settledStudyId\s*&& insertionIndex === settledIndex\) return;/);
+  /* TWO GESTURES WEARING ONE POINTER. In the row a tab is being placed among its
+     siblings and the run answers by opening a slot; off the row it is being
+     TAKEN somewhere, the run closes back up, and what the reader is holding
+     rides the cursor. A pointer over a study target is carrying by definition. */
+  assert.match(onMoveHandler, /\? "carry"\s*: "reorder";/);
+  assert.match(onMoveHandler, /if \(phase !== settledPhase\) \{/);
+  assert.match(source, /onTabDragPhase\("reorder"\);/);
+  assert.match(source, /if \(origin\?\.started\) onTabDragPhase\(null\);/);
+
   assert.match(source, /insertionIndex: -1,/,
     "-1, because 0 is a real slot and a first frame landing on it must still paint");
 
@@ -358,7 +373,7 @@ test("a drag that reaches a study is asking for a study, not for a slot", () => 
   const onMove = section("const handleTabPointerMove", "const handleTabPointerUp");
   assert.match(onMove, /origin\.started = true;/);
   assert.ok(
-    onMove.indexOf("onTabDragActive(true)") > onMove.indexOf("origin.started = true"),
+    onMove.indexOf('onTabDragPhase("reorder")') > onMove.indexOf("origin.started = true"),
     "the drag is announced once it IS a drag, inside the threshold branch",
   );
 
@@ -388,17 +403,43 @@ test("a drag that reaches a study is asking for a study, not for a slot", () => 
   assert.match(source, /document\.documentElement\.setAttribute\("data-tab-drag", ""\);/);
   assert.match(styles, /html\[data-tab-drag\],\s*html\[data-tab-drag\] \* \{\s*cursor: grabbing !important;/,
     "an overlay would break elementFromPoint and a pointer-events:none layer carries no cursor");
-  assert.match(up, /if \(origin\?\.started\) onTabDragActive\(false\);/);
+  assert.match(up, /if \(origin\?\.started\) onTabDragPhase\(null\);/);
   const ended = section("const handleTabPointerCancel", "const handleTabAuxClick");
   assert.match(ended, /endDrag\(dragPointerRef\.current\?\.tabId\);/);
-  assert.match(ended, /if \(dragPointerRef\.current\?\.started\) onTabDragActive\(false\);/);
+  assert.match(ended, /if \(dragPointerRef\.current\?\.started\) onTabDragPhase\(null\);/);
 
   /* AND WHILE A STUDY IS THE TARGET THE RUN STOPS ANSWERING, so exactly one
      thing on screen says where this lands and it is the surface under the
      pointer. The run closes back up rather than holding a slot open for a drop
      that is going somewhere else entirely. */
   assert.match(source, /const overStudy = dragState\?\.studyId != null;/);
-  assert.match(source, /const shift = overStudy \? 0 : dragState\?\.shifts\.get\(tab\.id\) \?\? 0;/);
+  assert.match(source, /const shift = dragState\?\.phase === "carry" \? 0 : dragState\?\.shifts\.get\(tab\.id\) \?\? 0;/);
+
+  /* THE TAB LEAVES THE ROW WHEN IT IS CARRIED OFF IT, and the run closes over
+     the gap. Hidden rather than unmounted: the move may still be refused or need
+     a confirmation the reader declines, and a tab that had really left would
+     have to be put back by a component that no longer had it. */
+  assert.match(source, /const carriedOff = dragging && dragState\?\.phase === "carry";/);
+  assert.match(source, /data-carried=\{carriedOff \|\| undefined\}/);
+  assert.match(styles, /\.scripture-workspace-tab-wrap\[data-carried\] \{\s*visibility: hidden;\s*\}/,
+    "visibility keeps the node, its ref and its geometry — the snap-back is the attribute coming off");
+
+  /* AND WHAT THE READER IS HOLDING RIDES THE CURSOR. `pointer-events: none` is
+     not politeness: the drop target is found with `elementFromPoint` AT the
+     cursor, which is exactly where this card is, so a proxy that could be hit
+     would be the only thing any drag ever found. */
+  assert.match(source, /createPortal\(/);
+  assert.match(source, /data-study-tab-ghost=""/);
+  assert.match(styles, /\.scripture-workspace-tab-ghost \{[\s\S]{0,400}z-index: 1400;/,
+    "it has to clear the study list it is dragged over, which is a fixed layer of its own");
+  assert.match(styles, /\.scripture-workspace-tab-ghost \{[\s\S]{0,700}pointer-events: none;/);
+  assert.doesNotMatch(styles, /\.scripture-workspace-tab-ghost \{[\s\S]{0,700}--study-gold/,
+    "a proxy in the app's authorship ink would claim the drag had already done something");
+  // Positioned before its first paint, not after: the proxy is mounted by the
+  // render that FOLLOWS the move which decided to mount it, so without this it
+  // paints once at the document's top-left corner — the opposite corner of the
+  // screen from the thing being dragged.
+  assert.match(source, /useLayoutEffect\(\(\) => \{\s*if \(!carried \|\| !carriedRef\.current\) return;/);
 
   // The mark is strictly transient: cleared on drop and on cancel, so it can
   // never be mistaken for state by a reader or by a screenshot.

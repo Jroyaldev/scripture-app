@@ -259,9 +259,22 @@ test("the count counts the rest, and it is the only thing saying a set exists", 
   assert.equal(studyChoices(twoStudies(), bookNames).length, 2);
   assert.match(control, /\{others > 0 && \(/);
 
-  // The number a screen reader hears is the same number, in words.
-  assert.match(control, /aria-label=\{others > 0/);
+  /* The number a screen reader hears is the same number, in words — except
+     while a tab is in the air, when the visible copy is an invitation and the
+     accessible name is the same sentence. They are one sentence and a screen
+     reader is in the middle of the same gesture. */
+  assert.match(control, /aria-label=\{inviting/);
   assert.match(control, /`Study: \$\{label\}, \$\{tabs\}, \$\{otherWord\}`/);
+  assert.match(control, /const hint = "Drag here to change study";/);
+  assert.match(control, /const inviting = dragPhase !== null;/);
+  assert.match(control, /data-study-face-inviting=\{inviting \|\| undefined\}/);
+  /* It says it ONCE. A hint that repeats itself does not trust the reader to
+     have read it, and this app refuses a pulse everywhere else. */
+  assert.doesNotMatch(
+    rule(".scripture-study-invite"),
+    /infinite|alternate/,
+    "no loop and no pulse: the invitation is stated, not insisted on",
+  );
 
   /* PER-STUDY COUNTS MOVED INTO THE LIST, which is where a count answers a
      question rather than asking one. On a row of chips a number beside every
@@ -360,8 +373,12 @@ test("a tab can still be dragged into another study, and the open list is why", 
      So the list opens for the length of a drag and its rows ARE the targets.
      Nothing about the mechanism changed, and the attribute is why: what is
      hit-tested is "a thing that stands for a study". */
-  assert.match(control, /tabDragActive: boolean;/);
-  assert.match(control, /if \(!tabDragActive\) return;\s*openMenu\("list"\);/);
+  assert.match(control, /dragPhase: "reorder" \| "carry" \| null;/);
+  /* AND IT OPENS ON CARRY, NOT ON REORDER · 2026-08-03. It used to open the
+     moment any drag began, so sliding a tab two places along its own row hung a
+     252px panel over the page — about a decision the reader was not making. The
+     run answers a reorder by itself; this waits until the tab has left it. */
+  assert.match(control, /if \(dragPhase !== "carry"\) return;\s*openMenu\("list"\);/);
   assert.match(control, /return \(\) => \{ setAnchor\(null\); setMode\("list"\); \};/);
   assert.match(control, /data-study-target=""/);
   assert.match(control, /data-study-group-id=\{choice\.groupId\}/);
@@ -370,7 +387,7 @@ test("a tab can still be dragged into another study, and the open list is why", 
   /* IT TAKES NO FOCUS WHILE IT DOES. A pointer drag has not asked for the
      keyboard, and pulling focus mid-gesture leaves it somewhere arbitrary once
      the tab lands. */
-  assert.match(control, /initialFocus=\{!tabDragActive\}/);
+  assert.match(control, /initialFocus=\{dragPhase === null\}/);
 
   /* AND THE DESTINATION SAYS WHAT IT WILL BE, not where the pointer is. A rule
      under a row only repeats what the pointer already said; the count is

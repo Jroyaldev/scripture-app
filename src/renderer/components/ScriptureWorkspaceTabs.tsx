@@ -1,5 +1,6 @@
 import type React from "react";
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { BookNameData } from "../api.js";
 import {
   orderedStudyWorkspaceTabs,
@@ -50,15 +51,21 @@ export interface ScriptureWorkspaceTabsProps {
    */
   onTabDragOverStudy: (groupId: string | null) => void;
   /**
-   * A tab drag started or ended.
+   * What the drag is currently doing, or null when there is none.
    *
    * Separate from `onTabDragOverStudy` because null there means "over no study",
-   * which is true both during a drag and when there is no drag at all — and the
-   * study control has to tell those apart: its list opens for the length of a
-   * drag so its rows exist to be dropped on. Reported at the DRAG THRESHOLD
-   * rather than at pointerdown, so a plain click on a tab never opens a list.
+   * which is true both during a drag and when there is no drag at all. Reported
+   * at the DRAG THRESHOLD rather than at pointerdown, so a plain click on a tab
+   * never reaches the study control.
+   *
+   * IT IS A PHASE AND NOT A BOOLEAN as of 2026-08-03, because two different
+   * things wanted it. The list used to open the moment any drag began — so
+   * sliding a tab two places along its own row hung a 252px panel off the study
+   * control, which is noise about a decision the reader is not making. In
+   * REORDER the control says only that it is somewhere a tab can be taken; the
+   * list opens on CARRY, when the tab has actually left the row.
    */
-  onTabDragActive: (active: boolean) => void;
+  onTabDragPhase: (phase: "reorder" | "carry" | null) => void;
   /**
    * The study control, rendered into this row rather than constructed by it.
    *
@@ -110,7 +117,20 @@ interface WorkspaceDragState {
   studyId: string | null;
   /** How far each OTHER tab has stepped aside to open the slot, in pixels. */
   shifts: Map<string, number>;
+  /**
+   * REORDER while the tab is still in its row; CARRY once it has left.
+   *
+   * They are two different gestures wearing one pointer. In the row the tab is
+   * being placed among its siblings and the run answers by opening a slot. Off
+   * the row it is being taken somewhere — to another study — and the run has no
+   * answer to give: it closes back up, the tab leaves it, and what the reader is
+   * holding rides the cursor instead.
+   */
+  phase: "reorder" | "carry";
 }
+
+/** How far past the register's own row a pointer may stray and still be in it. */
+const CARRY_SLACK_PX = 14;
 
 /** One tab's box as it stood when the drag began. */
 export interface TabSlot {
@@ -225,6 +245,30 @@ export function studyDropTargetId(
   const target = element?.closest("[data-study-target]");
   const groupId = target?.getAttribute("data-study-group-id") ?? null;
   return groupId && groupId !== sourceGroupId ? groupId : null;
+}
+
+/**
+ * WHAT THE READER IS HOLDING, once the tab has left the row.
+ *
+ * A drag that reaches the study list used to dim the tab in place and leave the
+ * cursor over a menu with nothing in it. The maintainer put it exactly: "you
+ * lose clear handling when you enter menu" — there was no longer anything on
+ * screen saying a tab was still in hand, or that the rows under the pointer
+ * would take it.
+ *
+ * So the tab comes with. It is a proxy rather than the tab itself because the
+ * tab belongs to a row that is closing up behind it, and because a fixed layer
+ * can be over the study list while a flex child of the strip can never be.
+ *
+ * It is DELIBERATELY PLAIN. Paper, the register's own type, and the same pair of
+ * shadows a lifted tab already casts — no seal, no tint, no scale. The premium
+ * sweep forbids a gold fill wider than a mark, and a proxy that arrived in the
+ * app's authorship ink would be claiming the drag had already done something.
+ */
+interface CarriedTab {
+  id: string;
+  label: string;
+  kind: string;
 }
 
 interface TabExitGeometry {
@@ -385,12 +429,20 @@ function PlaceGlyph(): React.JSX.Element {
   );
 }
 
-function TabMark({ tab }: { tab: StudyWorkspaceTab }): React.JSX.Element {
-  const kind = studyWorkspaceTabType(tab);
+/* WHAT A KIND OF TAB LOOKS LIKE, decided once.
+   Split from `TabMark` on 2026-08-03 so the carried proxy can ask the same
+   question the tab asks. It takes the kind rather than the tab because the proxy
+   has left the model behind — it is standing for what is on screen — and two
+   functions drawing the same four marks is two chances to disagree about them. */
+function TabMarkForKind({ kind }: { kind: string }): React.JSX.Element {
   if (kind === "passage") return <span className="scripture-workspace-tab-mark is-passage" aria-hidden="true"><PassageGlyph /></span>;
   if (kind === "person") return <span className="scripture-workspace-tab-mark is-person" aria-hidden="true"><PersonGlyph /></span>;
   if (kind === "place") return <span className="scripture-workspace-tab-mark is-place" aria-hidden="true"><PlaceGlyph /></span>;
   return <span className="scripture-workspace-tab-mark" aria-hidden="true" />;
+}
+
+function TabMark({ tab }: { tab: StudyWorkspaceTab }): React.JSX.Element {
+  return <TabMarkForKind kind={studyWorkspaceTabType(tab)} />;
 }
 
 interface WorkspaceMenuItem {
@@ -425,7 +477,7 @@ export function ScriptureWorkspaceTabs({
   onMoveTab,
   onPromoteTab,
   onTabDragOverStudy,
-  onTabDragActive,
+  onTabDragPhase,
   studies,
   onReorderTab,
   onReorderGroup,
@@ -449,6 +501,19 @@ export function ScriptureWorkspaceTabs({
   const [dragState, setDragState] = useState<WorkspaceDragState | null>(null);
   const [menu, setMenu] = useState<WorkspaceMenuState | null>(null);
   const [exitingTabs, setExitingTabs] = useState<ExitingTab[]>([]);
+  /* The proxy is STATE because it appears and disappears, and its POSITION is a
+     ref because it changes every frame — the same division the dragged tab's own
+     offset makes one field up, for the same reason. */
+  const [carried, setCarried] = useState<CarriedTab | null>(null);
+  const carriedRef = useRef<HTMLDivElement>(null);
+  /* WHERE THE POINTER WAS ON THE FRAME THE PROXY APPEARED.
+     The proxy is mounted by a render, and the render happens AFTER the move that
+     decided to mount it — so on its first frame the ref the position is written
+     through does not exist yet, and the card paints at the document's top-left
+     corner before the next move corrects it. A flash in the opposite corner of
+     the screen from the thing the reader is dragging. This carries the last
+     coordinates across that one frame; the layout effect below spends them. */
+  const carriedAtRef = useRef({ x: 0, y: 0 });
   const viewportRef = useRef<HTMLDivElement>(null);
   const overflowButtonRef = useRef<HTMLButtonElement>(null);
   const overflowSearchRef = useRef<HTMLInputElement>(null);
@@ -468,6 +533,9 @@ export function ScriptureWorkspaceTabs({
       /** The run as it stood when the gesture became a drag. See the shuffle. */
       slots: TabSlot[];
       draggedIndex: number;
+      phase: "reorder" | "carry";
+      /** The register's own row, snapshotted, so leaving it is a fixed test. */
+      band: { top: number; bottom: number };
     } | null
   >(null);
   /* WHERE THE DRAGGED TAB WAS LAST SEEN, kept for the settle.
@@ -714,6 +782,13 @@ export function ScriptureWorkspaceTabs({
     query.addEventListener("change", onChange);
     return () => query.removeEventListener("change", onChange);
   }, []);
+
+  // Before the proxy's first paint, not after: a layout effect runs between the
+  // commit and the frame, so the card is never seen anywhere but under the hand.
+  useLayoutEffect(() => {
+    if (!carried || !carriedRef.current) return;
+    carriedRef.current.style.transform = carriedTransform(carriedAtRef.current.x, carriedAtRef.current.y);
+  }, [carried]);
 
   /* THE TAB TRAVELS THE LAST OF THE WAY ITSELF.
 
@@ -993,6 +1068,8 @@ export function ScriptureWorkspaceTabs({
       studyId: null,
       slots: [],
       draggedIndex: -1,
+      phase: "reorder",
+      band: { top: 0, bottom: 0 },
     };
   };
 
@@ -1006,10 +1083,43 @@ export function ScriptureWorkspaceTabs({
      mid-air under a cursor that will not change back, and this shape of code
      always fails that way — so there is exactly one way out and every path takes
      it. */
+  /* The proxy sits below and right of the cursor, which is where a hand holding
+     something leaves it — and, more to the point, NOT over the rows the drop is
+     aimed at. One expression, because the mount and every frame after it must
+     agree about where the card is or the first one is a jump. */
+  const carriedTransform = (x: number, y: number): string =>
+    `translate3d(${x + 14}px, ${y + 12}px, 0)`;
+
   const endDrag = (tabId: string | undefined): void => {
     document.documentElement.removeAttribute("data-tab-drag");
+    setCarried(null);
     if (!tabId) return;
     tabRefs.current.get(tabId)?.parentElement?.style.removeProperty("--tab-drag-x");
+  };
+
+  /* The proxy's contents, read off the tab it stands for.
+     Read from the DOM rather than rebuilt from the model because what the reader
+     picked up is what is on screen — the label the strip decided to draw, at the
+     length it decided to draw it. A proxy assembled from `workspace` a second
+     time is a second chance to disagree with the tab it is standing in for. */
+  /* THE PROXY LEAVES THE APP SHELL, so it has to take the theme with it.
+     A body portal inherits nothing from `.app-shell`, and every token this card
+     is drawn in — paper, ink, the shadows — is declared there. This is the same
+     two lines Tooltip and Popover carry, for the same reason and in the same
+     shape; a third spelling of it would be a third thing to keep in step. */
+  const shell = document.querySelector(".app-shell");
+  const materialClasses = shell
+    ? [...shell.classList].filter((name) => name === "dark" || name.startsWith("theme-")).join(" ")
+    : "";
+
+  const carriedTabFor = (tabId: string): CarriedTab | null => {
+    const node = tabRefs.current.get(tabId);
+    if (!node) return null;
+    return {
+      id: tabId,
+      label: node.querySelector(".scripture-workspace-tab-label")?.textContent ?? "",
+      kind: node.dataset.studyTabKind ?? "",
+    };
   };
 
   const handleTabPointerMove = (
@@ -1035,6 +1145,11 @@ export function ScriptureWorkspaceTabs({
         return [{ id: tab.id, left: rect.left, width: rect.width }];
       });
       origin.draggedIndex = origin.slots.findIndex((slot) => slot.id === origin.tabId);
+      const bar = viewportRef.current?.closest(".scripture-workspace-bar");
+      if (bar) {
+        const rect = bar.getBoundingClientRect();
+        origin.band = { top: rect.top - CARRY_SLACK_PX, bottom: rect.bottom + CARRY_SLACK_PX };
+      }
       /* AND THE CURSOR IS THE DOCUMENT'S PROBLEM for the length of the gesture.
          `grabbing` on the tab alone is lost the instant the pointer leaves it,
          which on this surface is most of the drag — over the strip's ground,
@@ -1046,7 +1161,7 @@ export function ScriptureWorkspaceTabs({
       // Announced HERE and not at pointerdown: the study control opens its list
       // on this, and a plain click on a tab must not open one. The threshold is
       // already the line this code draws between a press and a drag.
-      onTabDragActive(true);
+      onTabDragPhase("reorder");
     }
     /* THE TAB TRAVELS WITH THE POINTER, and it is written straight onto the
        node rather than put in `dragState`.
@@ -1073,6 +1188,37 @@ export function ScriptureWorkspaceTabs({
     const settledStudyId = origin.studyId;
     if (studyId !== settledStudyId) onTabDragOverStudy(studyId);
     origin.studyId = studyId;
+
+    /* IN THE ROW, OR CARRIED OFF IT — and the test is the row, not the strip.
+       A pointer over a study target is carrying by definition; so is one that
+       has left the register's own band, which is what a reader does on the way
+       to the list. The band is snapshotted with everything else, because the bar
+       moves under a drag exactly never and asking it every frame would be a
+       layout read per frame for an answer that cannot change. */
+    const phase: "reorder" | "carry" = studyId !== null
+      || event.clientY < origin.band.top
+      || event.clientY > origin.band.bottom
+      ? "carry"
+      : "reorder";
+    const settledPhase = origin.phase;
+    origin.phase = phase;
+    if (phase !== settledPhase) {
+      onTabDragPhase(phase);
+      /* The proxy is built from the tab's own label and kind so it is the same
+         object the reader picked up, not a generic card. Cleared rather than
+         left standing when the pointer comes home: a tab cannot be both in the
+         row and in the hand. */
+      setCarried(phase === "carry" ? carriedTabFor(origin.tabId) : null);
+    }
+    /* Per-frame, and imperative for the reason everything per-frame here is:
+       one node moves, and a state update would re-render the register to do it.
+       The offset puts the card below and right of the cursor, which is where a
+       hand holding something leaves it — over it would hide the very rows the
+       drop is aimed at. */
+    carriedAtRef.current = { x: event.clientX, y: event.clientY };
+    if (phase === "carry" && carriedRef.current) {
+      carriedRef.current.style.transform = carriedTransform(event.clientX, event.clientY);
+    }
     /* THE SLOT, FROM THE SNAPSHOT. The dragged tab's centre is where it started
        plus how far the pointer has travelled — never its live rect, which is the
        thing being moved. */
@@ -1094,8 +1240,10 @@ export function ScriptureWorkspaceTabs({
        continuous one. */
     const settledIndex = origin.insertionIndex;
     origin.insertionIndex = insertionIndex;
-    if (studyId === settledStudyId && insertionIndex === settledIndex) return;
-    setDragState({ tabId: origin.tabId, groupId, insertionIndex, studyId, shifts });
+    if (phase === settledPhase
+      && studyId === settledStudyId
+      && insertionIndex === settledIndex) return;
+    setDragState({ tabId: origin.tabId, groupId, insertionIndex, studyId, shifts, phase });
   };
 
   const handleTabPointerUp = async (
@@ -1124,7 +1272,7 @@ export function ScriptureWorkspaceTabs({
     // off `origin`, so the move below does not depend on the rows still being
     // there. Announcing the end before awaiting the move is what keeps the list
     // from hanging open across a confirmation.
-    if (origin?.started) onTabDragActive(false);
+    if (origin?.started) onTabDragPhase(null);
     if (!origin || !origin.started) return;
     suppressTabClickRef.current = true;
     try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* release is best-effort */ }
@@ -1147,7 +1295,7 @@ export function ScriptureWorkspaceTabs({
     if (dragPointerRef.current?.studyId) onTabDragOverStudy(null);
     // A cancelled drag ends the drag. The list would otherwise be left open by a
     // gesture the platform tore up — the one path where nothing else runs.
-    if (dragPointerRef.current?.started) onTabDragActive(false);
+    if (dragPointerRef.current?.started) onTabDragPhase(null);
     dragPointerRef.current = null;
     setDragState(null);
   };
@@ -1383,12 +1531,19 @@ export function ScriptureWorkspaceTabs({
           // stops answering it: the tabs close back up and the only thing saying
           // where this lands is the surface the pointer is actually over.
           const overStudy = dragState?.studyId != null;
+          /* THE TAB LEAVES THE ROW WHEN IT IS CARRIED OFF IT, and the run closes
+             the gap behind it. It is hidden rather than unmounted: the move may
+             still be refused, or need a confirmation, and a tab that had really
+             left would have to be put back — from a component that no longer has
+             it. `visibility` keeps the node, its ref and its geometry, so the
+             snap-back is the class coming off. */
+          const carriedOff = dragging && dragState?.phase === "carry";
           /* HOW FAR THIS TAB HAS STEPPED ASIDE. Zero for every tab until the
              dragged one passes its middle, and then the distance to the slot it
              is giving up — a positional delta from the drag's own snapshot, not
              a tab width, because the run's gaps are uneven wherever the selected
              tab's fillet margins fall. See studyWorkspaceDragShuffle. */
-          const shift = overStudy ? 0 : dragState?.shifts.get(tab.id) ?? 0;
+          const shift = dragState?.phase === "carry" ? 0 : dragState?.shifts.get(tab.id) ?? 0;
           return (
             <div
               className={`scripture-workspace-tab-wrap${selected ? " is-selected" : ""}${dragging ? " is-dragging" : ""}`}
@@ -1402,6 +1557,7 @@ export function ScriptureWorkspaceTabs({
                  and two things claiming the eye at the moment of a drop is one
                  thing too many. It is the handoff, drawn. */
               data-drag-away={(dragging && overStudy) || undefined}
+              data-carried={carriedOff || undefined}
             >
               <button
                 ref={(node) => {
@@ -1875,6 +2031,32 @@ export function ScriptureWorkspaceTabs({
             </div>
           )}
         </Popover>
+      )}
+
+      {/* THE CARRIED TAB, over everything and touchable by nothing.
+
+          It portals to the body for two reasons that both have to hold: the
+          strip's viewport clips on x and carries a mask, so a proxy inside it
+          would be cut off at the first edge it crossed; and it has to be ABOVE
+          the study list it is being dragged over, which is itself a fixed layer
+          outside this subtree.
+
+          `pointer-events: none` is not politeness. The drop target is found with
+          `elementFromPoint` at the cursor, and the cursor is exactly where this
+          card is — a proxy that could be hit would be the only thing the drag
+          ever found, and every drop would land on nothing. */}
+      {carried && createPortal(
+        <div
+          ref={carriedRef}
+          className={`scripture-workspace-tab-ghost ${materialClasses}`}
+          data-study-tab-ghost=""
+          data-study-tab-kind={carried.kind}
+          aria-hidden="true"
+        >
+          <TabMarkForKind kind={carried.kind} />
+          <span className="scripture-workspace-tab-label">{carried.label}</span>
+        </div>,
+        document.body,
       )}
 
       {contextMenu && (
