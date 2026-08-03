@@ -766,13 +766,70 @@ export function ScriptureWorkspaceTabs({
   const openContextMenu = useCallback((
     target: WorkspaceContextTarget,
     event: React.MouseEvent<HTMLElement>,
+    options: { keepOverflow?: boolean } = {},
   ): void => {
     event.preventDefault();
     setMenu(null);
-    setOverflowOpen(false);
+    /* A menu raised from the STRIP dismisses the overview, because the reader
+       has gone back to the tabs. One raised from a row inside the overview does
+       not: they are managing a list, and closing the list to offer them one row's
+       verbs would end the job they are in the middle of. */
+    if (!options.keepOverflow) setOverflowOpen(false);
     contextTriggerRef.current = event.currentTarget;
     setContextMenu({ target, anchor: new DOMRect(event.clientX, event.clientY, 0, 0) });
   }, []);
+
+  /* ── WALKING THE LIST ──────────────────────────────────────────────────────
+
+     Every stop in the overview that answers Enter with a place to go: the tab
+     rows in study order, then the recently-closed items. One sequence, because
+     to a reader looking for a chapter they are one list — the fact that half of
+     them are open and half are recoverable is a property of the rows, not a
+     reason to make the arrow keys stop in the middle.
+
+     Read from the DOM rather than assembled from state, and deliberately: what
+     the arrows should travel is what is ON SCREEN, already filtered by the
+     search and already in the order the sections put it. A parallel model of
+     that ordering is a second thing to keep in step with the render. */
+  const overflowStops = useCallback((): HTMLButtonElement[] => {
+    const panel = overflowSearchRef.current?.closest(".popover-panel");
+    if (!panel) return [];
+    return [...panel.querySelectorAll<HTMLButtonElement>(
+      "[data-study-all-tabs-row] > button, [data-study-recent-item]",
+    )];
+  }, []);
+
+  /* `from` is where the reader is; `delta` is the step. Above the first stop is
+     the search field — not a wrap to the last one, because this list has a text
+     home at the top and ArrowUp out of the first row is a reader going back to
+     typing, which is the only thing above it. */
+  const moveOverflowFocus = useCallback((from: number, delta: number): void => {
+    const stops = overflowStops();
+    if (stops.length === 0) return;
+    const next = from + delta;
+    if (next < 0) {
+      overflowSearchRef.current?.focus({ preventScroll: true });
+      return;
+    }
+    const target = stops[Math.min(stops.length - 1, next)];
+    if (!target) return;
+    target.focus({ preventScroll: true });
+    target.scrollIntoView({ block: "nearest" });
+  }, [overflowStops]);
+
+  const handleOverflowListKeyDown = useCallback((
+    event: React.KeyboardEvent<HTMLButtonElement>,
+  ): void => {
+    const stops = overflowStops();
+    const index = stops.indexOf(event.currentTarget);
+    if (index < 0) return;
+    if (event.key === "ArrowDown") moveOverflowFocus(index, 1);
+    else if (event.key === "ArrowUp") moveOverflowFocus(index, -1);
+    else if (event.key === "Home") moveOverflowFocus(0, 0);
+    else if (event.key === "End") moveOverflowFocus(stops.length - 1, 0);
+    else return;
+    event.preventDefault();
+  }, [moveOverflowFocus, overflowStops]);
 
   useLayoutEffect(() => {
     const viewport = viewportRef.current;
@@ -1887,6 +1944,23 @@ export function ScriptureWorkspaceTabs({
               value={overflowQuery}
               data-study-all-tabs-search=""
               onChange={(event) => setOverflowQuery(event.currentTarget.value)}
+              /* THE FIELD IS THE TEXT HOME AND THE DOOR TO THE LIST. Down goes
+                 into the rows without giving up the caret's place, and Enter
+                 commits the first thing the search has left standing — which is
+                 what a reader typing three letters and pressing return means,
+                 and what this field did nothing about until now. */
+              onKeyDown={(event) => {
+                if (event.key === "ArrowDown") {
+                  event.preventDefault();
+                  moveOverflowFocus(-1, 1);
+                  return;
+                }
+                if (event.key !== "Enter") return;
+                const first = overflowStops()[0];
+                if (!first) return;
+                event.preventDefault();
+                first.click();
+              }}
               placeholder="Find a chapter, person, place, or study…"
               autoComplete="off"
             />
@@ -1994,6 +2068,21 @@ export function ScriptureWorkspaceTabs({
                           <button
                             type="button"
                             className={workspace.activeTabId === tab.id ? "is-active" : undefined}
+                            onKeyDown={handleOverflowListKeyDown}
+                            /* THE ROW'S VERBS ARE ON ITS MENU, not beside it.
+                               Order and Move stood here as two more buttons per
+                               row, which made a twenty-tab list eighty tab stops
+                               and made every row a small toolbar. They are the
+                               same verbs the strip's own tabs offer on a
+                               right-click, so the row offers them the same way —
+                               one builder, one set of items, and the Menu key
+                               reaches it from the keyboard because the platform
+                               fires `contextmenu` on the focused element. */
+                            onContextMenu={(event) => openContextMenu(
+                              { kind: "tab", tabId: tab.id, groupId: group.id },
+                              event,
+                              { keepOverflow: true },
+                            )}
                             onClick={async () => { await handleSelectTab(tab.id, { closeOverflow: true, moveFocus: true }); }}
                           >
                             <TabMark tab={tab} /><span>{tabLabel}</span>
@@ -2006,54 +2095,6 @@ export function ScriptureWorkspaceTabs({
                             )}
                           </button>
                           <div className="scripture-workspace-row-tools">
-                            <button
-                              type="button"
-                              className="scripture-workspace-menu-trigger"
-                              data-study-tab-reorder=""
-                              aria-haspopup="menu"
-                              aria-expanded={menu?.id === `tab-reorder-${tab.id}`}
-                              aria-label={`Reorder ${tabLabel}`}
-                              onMouseDown={deferMouseFocus}
-                              onClick={(event) => {
-                                const trigger = event.currentTarget;
-                                openMenu(
-                                  `tab-reorder-${tab.id}`,
-                                  trigger,
-                                  `Reorder ${tabLabel}`,
-                                  REORDER_MENU_LABELS.map(({ position, label: itemLabel }) => ({
-                                    key: position,
-                                    label: itemLabel,
-                                    run: () => handleReorderTab(tab.id, position, trigger),
-                                  })),
-                                );
-                              }}
-                            ><span>Order</span><CaretGlyph /></button>
-                            {allGroups.length > 1 && (
-                              <button
-                                type="button"
-                                className="scripture-workspace-menu-trigger"
-                                data-study-tab-move=""
-                                aria-haspopup="menu"
-                                aria-expanded={menu?.id === `tab-move-${tab.id}`}
-                                aria-label={`Move ${tabLabel} to another study`}
-                                onMouseDown={deferMouseFocus}
-                                onClick={(event) => {
-                                  const trigger = event.currentTarget;
-                                  openMenu(
-                                    `tab-move-${tab.id}`,
-                                    trigger,
-                                    `Move ${tabLabel} to another study`,
-                                    allGroups
-                                      .filter((entry) => entry.group.id !== group.id)
-                                      .map((entry) => ({
-                                        key: entry.group.id,
-                                        label: entry.label,
-                                        run: () => handleMoveTab(tab.id, entry.group.id, trigger),
-                                      })),
-                                  );
-                                }}
-                              ><span>Move</span><CaretGlyph /></button>
-                            )}
                             {canClose && (
                               <button
                                 type="button"
@@ -2061,7 +2102,16 @@ export function ScriptureWorkspaceTabs({
                                 aria-label={tabCloseCopy.ariaLabel}
                                 title={tabCloseCopy.title}
                                 onMouseDown={deferMouseFocus}
-                                onClick={async () => { await handleCloseTab(tab.id, { closeOverflow: true, moveFocus: true }); }}
+                                /* CLOSING A TAB KEEPS THE LIST OPEN. It used to
+                                   dismiss the whole overview, so tidying three
+                                   tabs was three trips out to the ⋯ and back —
+                                   a list you can only act on once is not a list.
+                                   Selecting still closes, because that one takes
+                                   the reader somewhere. */
+                                onClick={async () => {
+                                  await handleCloseTab(tab.id, { moveFocus: false });
+                                  overflowSearchRef.current?.focus({ preventScroll: true });
+                                }}
                               ><CloseGlyph /></button>
                             )}
                           </div>
@@ -2087,6 +2137,10 @@ export function ScriptureWorkspaceTabs({
                   key={`${item.kind}-${index}`}
                   data-study-recent-item=""
                   onMouseDown={deferMouseFocus}
+                  // Same walk as the rows above: to a reader looking for a
+                  // chapter these are one list, and the arrows do not stop at
+                  // the seam between what is open and what is recoverable.
+                  onKeyDown={handleOverflowListKeyDown}
                   onClick={async () => { await handleReopenRecentItem(index); }}
                 >
                   <span aria-hidden="true"><ReopenGlyph /></span>

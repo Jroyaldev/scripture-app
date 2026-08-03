@@ -263,10 +263,39 @@ test("All Tabs is searchable, grouped, and owns tab and group management", () =>
   assert.doesNotMatch(allTabs, /data-study-group-collapse/);
   assert.match(allTabs, /data-study-group-close/);
   assert.match(allTabs, /data-study-group-reorder/);
-  assert.match(allTabs, /data-study-tab-reorder/);
-  assert.match(allTabs, /data-study-tab-move/);
+  /* A ROW'S VERBS MOVED TO ITS MENU · 2026-08-03. `data-study-tab-reorder` and
+     `data-study-tab-move` were two more buttons on every row, which made a
+     twenty-tab list eighty tab stops and made each row a small toolbar the eye
+     had to parse before it could read a chapter name. They are the same verbs
+     the strip's own tabs offer on a right-click, so the row offers them the same
+     way — one builder, one set of items, reachable from the keyboard by the key
+     the platform already reserves for a context menu.
+
+     The STUDY still keeps its tools inline: a study header is one row per study
+     rather than one per tab, and those verbs are the reason to be in this panel
+     at all when the study is not the one you are in. */
+  assert.doesNotMatch(allTabs, /data-study-tab-reorder|data-study-tab-move/);
+  assert.match(allTabs, /onContextMenu=\{\(event\) => openContextMenu\(/);
+  assert.match(componentSource, /if \(!options\.keepOverflow\) setOverflowOpen\(false\);/,
+    "a menu raised from a row must not dismiss the list the reader is working in");
   assert.match(allTabs, /data-study-all-tabs-row/);
   assert.match(allTabs, /data-study-empty-search/);
+
+  /* AND THE LIST IS WALKABLE. It had no arrows, no roving and an inert Enter:
+     twenty tabs was a Tab-only surface. The stops are the tab rows in study
+     order and then the recently-closed items, as ONE sequence — to a reader
+     looking for a chapter they are one list, and the arrows have no business
+     stopping at the seam between what is open and what is recoverable. */
+  assert.match(componentSource, /"\[data-study-all-tabs-row\] > button, \[data-study-recent-item\]"/);
+  assert.match(componentSource, /if \(event\.key === "ArrowDown"\) moveOverflowFocus\(index, 1\);/);
+  assert.match(componentSource, /else if \(event\.key === "Home"\) moveOverflowFocus\(0, 0\);/);
+  // Above the first stop is the field, not a wrap to the last: this list has a
+  // text home at the top, and ArrowUp out of the first row is a reader going
+  // back to typing.
+  assert.match(componentSource, /if \(next < 0\) \{\s*overflowSearchRef\.current\?\.focus/);
+  // Enter in the field commits what the search left standing, which is what
+  // typing three letters and pressing return means.
+  assert.match(allTabs, /const first = overflowStops\(\)\[0\];/);
 
   assert.equal(studyWorkspaceSearchMatches("spirit", "Acts study", "Holy Spirit"), true);
   assert.equal(studyWorkspaceSearchMatches("holy acts", "Acts study", "Holy Spirit"), true);
@@ -923,7 +952,7 @@ test("a derived tab wears the machine hue whether or not you are reading it", ()
   // unmarked in the list. That is the one place forty tabs are told apart, so
   // it is the place the mark matters most; provenance belongs to the tab, not
   // to the surface the tab happens to be drawn on.
-  assert.match(componentSource, /className="scripture-workspace-overflow-row"[\s\S]{0,700}<TabMark tab=\{tab\} \/>/);
+  assert.match(componentSource, /className="scripture-workspace-overflow-row"[\s\S]{0,1800}<TabMark tab=\{tab\} \/>/);
   const overflowRule = rail.slice(machineIndex, rail.indexOf("}", machineIndex));
   for (const selector of [
     ".scripture-workspace-overflow-row .scripture-workspace-tab-mark.is-person",
