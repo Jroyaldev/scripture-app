@@ -1885,8 +1885,16 @@ export function ScriptureWorkspaceTabs({
             What is left in this cluster is the save status and the overview —
             one control that REPORTS on tabs and one that opens the door to all
             of them, and nothing that names a study. */}
-        {(allGroups.length > 0 || hasMeasuredOverflow) && (
-          <Tooltip label="Every tab in every study">
+        {/* THE GATE USED TO READ `allGroups.length > 0 || hasMeasuredOverflow`,
+            which is the same sentence twice: the model refuses to close the last
+            study, so there is always at least one group and the left side is
+            always true. The right side was the overflow story — show the door
+            when the strip cannot show everything — and it has been dead code
+            since the door stopped being about overflow. What it measures is
+            still worth publishing: `data-study-overflowing` stays, because the
+            sheet fades the run's edges by it. */}
+        {allGroups.length > 0 && (
+          <Tooltip label="All tabs — search, switch, reopen">
             <button
               ref={overflowButtonRef}
               type="button"
@@ -1901,9 +1909,24 @@ export function ScriptureWorkspaceTabs({
                 setOverflowAnchor(overflowButtonRef.current?.getBoundingClientRect() ?? null);
                 setOverflowOpen(true);
               }}
-              aria-label={`Show all ${totalTabs} study tabs in ${allGroups.length} ${allGroups.length === 1 ? "study" : "studies"}`}
+              /* NAMED FOR WHAT IT DOES NOW. "Show all N study tabs in M studies"
+                 described an overflow list, and every job that made it one has
+                 since moved out: reaching another study went to the study line,
+                 tabs past the edge of the row went to wheel-pan and the edge
+                 fades, and jumping by ordinal went to ⌘1–9. What is left is
+                 management — search across studies, recover something closed,
+                 rename or order or close a study you are not in — so the name
+                 leads with those three verbs and keeps the count after them,
+                 which is where a count belongs on a control that opens a list. */
+              aria-label={
+                `All tabs — search, switch, reopen; ${totalTabs} open in `
+                + `${allGroups.length} ${allGroups.length === 1 ? "study" : "studies"}`
+              }
               aria-haspopup="dialog"
               aria-expanded={overflowOpen}
+              // Only while the panel exists: an aria-controls pointing at an id
+              // that is not in the document names nothing.
+              aria-controls={overflowOpen ? "study-workspace-all-tabs" : undefined}
             >
               {/* THE QUIET DOOR, and one glyph in every state as of 2026-07-30.
                   It wore a `+n` count whenever the strip was not showing
@@ -2068,9 +2091,20 @@ export function ScriptureWorkspaceTabs({
                       const tabCloseAvailability = studyWorkspaceTabCloseAvailability(workspace, tab.id);
                       const canClose = tabCloseAvailability !== "unavailable";
                       const tabCloseCopy = studyWorkspaceCloseActionCopy(tabLabel, tabCloseAvailability);
-                      // ⌘1–9 counts across the whole register including collapsed
-                      // studies, and the numbers live here — never on the tabs. A
-                      // strip of shortcut hints is chrome about chrome.
+                      /* ⌘1–9 COUNTS THE STRIP, WHICH IS THE STUDY YOU ARE IN —
+                         not the register. The note here used to say the whole
+                         register including collapsed studies, and that was true
+                         of a workspace where every study's tabs shared one run.
+                         `studyWorkspaceStripTabIds` has counted the active
+                         group alone since the register learned to hold one
+                         study at a time, so `studyWorkspaceTabOrdinal` returns
+                         null for every tab in every other study and the hint
+                         below renders in exactly one section of this list. That
+                         is the honest thing to draw: a ⌘4 beside a tab in a
+                         study you are not in would address a different tab.
+
+                         The numbers live here and never on the tabs themselves —
+                         a strip of shortcut hints is chrome about chrome. */
                       const ordinal = studyWorkspaceTabOrdinal(workspace, tab.id);
                       return (
                         <div className="scripture-workspace-overflow-row" data-study-all-tabs-row="" data-study-tab-id={tab.id} key={tab.id}>
@@ -2279,6 +2313,9 @@ export function ScriptureWorkspaceTabs({
                           role="menuitem"
                           key={entry.group.id}
                           data-study-context-move=""
+                          // Named, so the tours can say which study they mean
+                          // without matching on a label a reader can rename.
+                          data-study-move-group={entry.group.id}
                           onMouseDown={deferMouseFocus}
                           onClick={async (event) => {
                             const trigger = event.currentTarget;

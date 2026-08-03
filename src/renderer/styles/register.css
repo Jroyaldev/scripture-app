@@ -185,9 +185,10 @@
   border-left-color: var(--study-gold);
 }
 
-/* ⌘1–9 counts across the whole register including collapsed studies, and the
-   numbers live here rather than on the tabs. Tertiary ink: a hint you can find
-   when you look for it and never read by accident. */
+/* ⌘1–9 counts the strip — the study you are in — so these land in exactly one
+   section of the list and nowhere else; the component's note gives the reason.
+   The numbers live here rather than on the tabs. Tertiary ink: a hint you can
+   find when you look for it and never read by accident. */
 .scripture-workspace-overflow-shortcut {
   margin-left: auto;
   flex: 0 0 auto;

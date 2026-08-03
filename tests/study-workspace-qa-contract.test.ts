@@ -80,9 +80,19 @@ test("desktop control covers the bounded V2 pastoral workflow and active-only st
     "[data-study-all-tabs-search]",
     "[data-study-all-tabs-row]",
     "[data-study-group-rename]",
-    "[data-study-tab-move]",
+    /* `[data-study-tab-move]` stood here until 2026-08-03, when the row's verbs
+       moved onto the menu the strip's own tabs raise on a right-click — four tab
+       stops a row is a list read as twenty small toolbars. The tour raises the
+       menu the way a reader does, so what this list pins now is the menu and the
+       named move target inside it. */
+    '[data-study-context-menu="tab"]',
+    "[data-study-context-move]",
     "[data-study-group-collapse]",
     "[data-study-reopen-recent]",
+    // A3: the recovery list can be emptied, and the tour proves the undo puts
+    // the same entries back rather than merely raising a toast that says so.
+    "[data-study-recent-item]",
+    "[data-study-recent-clear]",
     "[data-study-passage-fallback]",
     "[data-study-entity-unavailable]",
     "[data-study-persistence-status]",

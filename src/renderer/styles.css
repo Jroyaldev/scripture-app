@@ -1373,6 +1373,25 @@ html, body, #root {
   background-clip: padding-box;
 }
 
+/* EXCEPT IN ALL TABS, WHERE THE THUMB IS OWED AT REST. Hide-until-hover is right
+   for the surfaces above: they are the page, they are always there, and a
+   reader learns in a week that they scroll. This list is a panel that opens over
+   the page, holds up to sixty-four tabs, and is read at whatever zoom the reader
+   keeps — at 200% it can be four rows tall with forty below the fold and no
+   thumb until a pointer happens to cross it, which is a list quietly claiming to
+   be complete. So it rests at a little over half strength — enough to say "there
+   is more" without competing with the rows — and takes the full tint on hover
+   like everything else. */
+.scripture-workspace-overflow-popover .scripture-workspace-overflow-list::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--border-strong) 55%, transparent);
+  background-clip: padding-box;
+}
+
+.scripture-workspace-overflow-popover .scripture-workspace-overflow-list:hover::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  background-clip: padding-box;
+}
+
 /* --- Layout --- */
 
 .app-shell {
@@ -3503,6 +3522,17 @@ html, body, #root {
   outline: 0;
 }
 
+/* The field is `type="search"` for what that buys at the platform layer — the
+   right keyboard, the right announcement — and not for the ✕ Chromium draws
+   inside it, which is a second, undesigned clear button sitting a few pixels
+   from a Clear the sheet drew itself, wearing none of its type or spacing. The
+   note workspace and the command palette both suppress it; this is the third. */
+.scripture-workspace-search input::-webkit-search-cancel-button,
+.scripture-workspace-search input::-webkit-search-decoration {
+  display: none;
+  appearance: none;
+}
+
 /* ── AND NOT ON ARRIVAL · 2026-08-03 ──────────────────────────────────────
  *
  * The note above says it plainly — "a field focused FOR the reader gets no
@@ -3589,13 +3619,36 @@ html, body, #root {
   font-size: 9px;
 }
 
-.scripture-workspace-group-title > button {
+/* ONE REVEAL RULE FOR THE WHOLE HEADER. Rename was quiet until you hovered the
+   header; Order and Close, six inches to the right of it and doing the same kind
+   of work, were painted at full strength all the time. Three tools in one row
+   answering to two different rules reads as an accident, because it was one —
+   the pencil was added later and given a treatment nobody carried back.
+
+   Quiet-until-hover is the one that survives, because the header's job is to
+   NAME a study and the tools are what you do to it once you have found it. The
+   reveal hangs off the header rather than off each control, so arriving at any
+   one of them by pointer or by Tab shows all three and tells the reader what
+   else is here — `:focus-within` rather than `:focus-visible` for exactly that
+   reason. Nothing is hidden from the accessibility tree or from the tab order:
+   `opacity: 0` is a paint, and every one of these stays hit-testable. */
+.scripture-workspace-group-title > button,
+.scripture-workspace-group-tools button,
+.scripture-workspace-group-tools select {
   opacity: 0;
   transition: opacity var(--transition-fast), background-color var(--transition-fast);
 }
 
-.scripture-workspace-overflow-group > header:hover .scripture-workspace-group-title > button,
-.scripture-workspace-group-title > button:focus-visible { opacity: 1; }
+.scripture-workspace-overflow-group > header:hover :is(
+  .scripture-workspace-group-title > button,
+  .scripture-workspace-group-tools button,
+  .scripture-workspace-group-tools select
+),
+.scripture-workspace-overflow-group > header:focus-within :is(
+  .scripture-workspace-group-title > button,
+  .scripture-workspace-group-tools button,
+  .scripture-workspace-group-tools select
+) { opacity: 1; }
 
 .scripture-workspace-group-tools {
   flex: 0 0 auto;
@@ -3680,11 +3733,15 @@ html, body, #root {
 .scripture-workspace-overflow-row:hover .scripture-workspace-row-tools,
 .scripture-workspace-overflow-row:focus-within .scripture-workspace-row-tools { opacity: 1; }
 
+/* 28px, the same as the row's own button. The two sit side by side in one grid
+   and were 28 and 26, so the × rode two pixels shy of the label it belongs to
+   and the hover fills ended a hair apart — the kind of difference nobody names
+   and everybody feels. */
 .scripture-workspace-row-tools select,
 .scripture-workspace-row-tools button {
   min-width: 24px;
-  min-height: 26px;
-  height: 26px;
+  min-height: 28px;
+  height: 28px;
   padding: 0 5px;
   border-radius: var(--radius-sm);
   background: transparent;

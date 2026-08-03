@@ -623,16 +623,34 @@ try {
   await driver.waitFor(`document.querySelector('[data-study-line-chip][data-study-group-id="pastoral-romans-study"]')
     ?.textContent?.trim().startsWith("Baptism and New Life")`);
 
+  /* MOVING A TAB BETWEEN STUDIES IS A RIGHT-CLICK NOW, 2026-08-03. This drove
+     `[data-study-tab-move]`, a button that stood in every row of All Tabs beside
+     an Order select — four tab stops per row, and a twenty-tab list read as
+     twenty small toolbars. The verbs did not go away; they went where the same
+     verbs already lived, on the menu the strip's own tabs raise on a
+     right-click. So the tour raises it the way a reader does.
+
+     Two claims worth holding here beyond the move itself: the menu comes up
+     WITHOUT dismissing the list underneath — a reader managing twenty tabs has
+     not finished after one — and the row lands in the study it was sent to while
+     that list is still open to watch it happen. */
   await clickStudyControl(driver, "[data-study-all-tabs]");
   await driver.waitFor(`Boolean(document.querySelector("[data-study-all-tabs-search]"))`);
+  await driver.evaluate(`(() => {
+    const row = document.querySelector('[data-study-all-tabs-row][data-study-tab-id="john-3-kjv"] > button');
+    if (!row) return false;
+    const box = row.getBoundingClientRect();
+    row.dispatchEvent(new MouseEvent("contextmenu", {
+      bubbles: true, clientX: Math.round(box.x + 12), clientY: Math.round(box.y + 12),
+    }));
+    return true;
+  })()`);
+  await driver.waitFor(`Boolean(document.querySelector('[data-study-context-menu="tab"]'))
+    && Boolean(document.querySelector("[data-study-all-tabs-search]"))`);
   await clickStudyControl(
     driver,
-    '[data-study-all-tabs-row][data-study-tab-id="john-3-kjv"] [data-study-tab-move]',
+    '[data-study-context-move][data-study-move-group="pastoral-romans-study"]',
   );
-  await driver.waitFor(`Boolean(document.querySelector(
-    '[data-study-workspace-menu] [data-study-menu-item="pastoral-romans-study"]'
-  ))`);
-  await clickStudyControl(driver, '[data-study-workspace-menu] [data-study-menu-item="pastoral-romans-study"]');
   await driver.waitFor(`Boolean(document.querySelector(
     '[data-study-group-id="pastoral-romans-study"] [data-study-all-tabs-row][data-study-tab-id="john-3-kjv"]'
   ))`);
@@ -664,7 +682,27 @@ try {
   await setNativeControlValue(driver, "[data-study-all-tabs-search]", "Priscilla");
   await driver.waitFor(`document.querySelectorAll("[data-study-all-tabs-row]").length === 1
     && document.querySelector("[data-study-all-tabs-row]")?.textContent?.includes("Priscilla")`);
-  await setNativeControlValue(driver, "[data-study-all-tabs-search]", "");
+  /* TYPE, ARROW DOWN, RETURN — the whole point of a find-and-switch door, and
+     inert until 2026-08-03: the field took text and the list took clicks, and
+     nothing joined them. ArrowDown out of the field moves real focus onto the
+     first row the search has left standing, so the ring travels with it, and
+     Enter on that row is the row's own button doing what a click does. */
+  await driver.evaluate(`(() => {
+    const field = document.querySelector("[data-study-all-tabs-search]");
+    field?.focus();
+    field?.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    return Boolean(field);
+  })()`);
+  await driver.waitFor(`document.activeElement?.closest("[data-study-all-tabs-row]") !== null`);
+  await driver.evaluate(`document.activeElement?.click()`);
+  // The Priscilla tab is opened earlier in this tour, so its id is minted at
+  // runtime — the oracle is the tab the strip now reports as selected.
+  await driver.waitFor(`!document.querySelector("[data-study-all-tabs-search]")
+    && document.querySelector('[data-study-workspace-bar] [aria-selected="true"]')
+      ?.textContent?.includes("Priscilla") === true`);
+
+  await clickStudyControl(driver, "[data-study-all-tabs]");
+  await driver.waitFor(`Boolean(document.querySelector("[data-study-all-tabs-search]"))`);
   await driver.evaluate(`(() => {
     const row = document.querySelector('[data-study-all-tabs-row][data-study-tab-id="ephesus-entity"]');
     const button = row ? [...row.querySelectorAll("button")].find((candidate) => candidate.getAttribute("aria-label")?.startsWith("Close Ephesus")) : null;
@@ -672,12 +710,12 @@ try {
     return Boolean(button);
   })()`);
   await driver.waitFor(`!document.querySelector('[data-study-tab-id="ephesus-entity"]')`);
-  await driver.evaluate(`(() => {
-    if (!document.querySelector("[data-study-all-tabs-search]")) {
-      document.querySelector("[data-study-all-tabs]")?.click();
-    }
-    return true;
-  })()`);
+  /* AND THE LIST IS STILL OPEN. Closing a tab from here used to take the whole
+     panel down with it, so tidying three tabs meant three trips through the
+     door. This waits on the search field instead of re-opening the panel if it
+     went away — a tour that reopens what it is testing cannot tell you the
+     difference. */
+  await driver.waitFor(`Boolean(document.querySelector("[data-study-all-tabs-search]"))`);
   await driver.waitFor(`Boolean(document.querySelector("[data-study-reopen-recent]"))`);
   await clickStudyControl(driver, "[data-study-reopen-recent]");
   await driver.waitFor(`Boolean(document.querySelector('[data-study-tab-id="ephesus-entity"]'))`);
@@ -700,6 +738,41 @@ try {
   await clickStudyControl(driver, "[data-study-reopen-recent]");
   await driver.waitFor(`Boolean(document.querySelector('[data-study-group-id="pastoral-romans-study"]'))
     && Boolean(document.querySelector('[data-study-tab-id="ephesus-entity"]'))`);
+
+  /* EMPTYING THE NET, AND GETTING IT BACK. The recovery list held ten entries,
+     survived restarts, and could only be emptied by reopening everything in it.
+     What this leg is really checking is that the undo is not decoration: the
+     list goes for real on the press — nothing deferred, nothing pending — and
+     the toast hands the same entries back, which is the only reason it is safe
+     to throw away the one list a reader would reach for when they are wrong. */
+  await driver.evaluate(`(() => {
+    if (!document.querySelector("[data-study-all-tabs-search]")) {
+      document.querySelector("[data-study-all-tabs]")?.click();
+    }
+    return true;
+  })()`);
+  await driver.waitFor(`document.querySelectorAll("[data-study-recent-item]").length > 0`);
+  const recentsBeforeClear = await driver.evaluate(
+    `[...document.querySelectorAll("[data-study-recent-item]")].map((item) => item.textContent?.trim())`,
+  );
+  await clickStudyControl(driver, "[data-study-recent-clear]");
+  await driver.waitFor(`document.querySelectorAll("[data-study-recent-item]").length === 0
+    && !document.querySelector("[data-study-recent-clear]")
+    && Boolean(document.querySelector("[data-study-all-tabs-search]"))`);
+  // Gone from the store too, not just from the list that draws it.
+  const clearedInSettings = await driver.evaluate(
+    `(async () => ((await window.api.settings.get()).studyWorkspace?.recentlyClosed ?? []).length)()`,
+  );
+  assert.equal(clearedInSettings, 0);
+  await clickButtonByText(driver, "button", "Undo");
+  await driver.waitFor(`document.querySelectorAll("[data-study-recent-item]").length === ${recentsBeforeClear.length}`);
+  const recentsAfterUndo = await driver.evaluate(
+    `[...document.querySelectorAll("[data-study-recent-item]")].map((item) => item.textContent?.trim())`,
+  );
+  assert.deepEqual(recentsAfterUndo, recentsBeforeClear);
+  await driver.evaluate(`window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`);
+  await driver.waitFor(`!document.querySelector("[data-study-all-tabs-search]")`);
+
   await driver.waitFor(`document.querySelector("[data-study-persistence-status]")?.getAttribute("data-study-persistence-status") === "idle"`);
 
   const pastoralPersistedBeforeReload = await driver.evaluate(`(async () => (await window.api.settings.get()).studyWorkspace)()`);

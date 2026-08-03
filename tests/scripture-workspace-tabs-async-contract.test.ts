@@ -190,8 +190,17 @@ test("every study keeps a keyboard-reachable close in the overview, without requ
      and a toggle whose only effect is a field nobody reads is worse than a
      missing one: a reader presses it, nothing happens, and they conclude the
      app is broken. Close is what remains, and it is the action that needed the
-     overview in the first place — a study you are not in has no other door. */
-  assert.match(source, /\(allGroups\.length > 0 \|\| hasMeasuredOverflow\)/);
+     overview in the first place — a study you are not in has no other door.
+
+     The `|| hasMeasuredOverflow` half went on 2026-08-03. It was the same
+     sentence twice: the model refuses to close the last study, so the left side
+     is always true, and the right side was the overflow story the door stopped
+     telling when reaching another study moved to the study line and tabs past
+     the edge of the row moved to wheel-pan. The measurement itself still ships —
+     the sheet fades the run's edges by `data-study-overflowing` — it just no
+     longer decides whether the door exists. */
+  assert.match(source, /\{allGroups\.length > 0 && \(/);
+  assert.doesNotMatch(statementsOnly(source), /allGroups\.length > 0 \|\| hasMeasuredOverflow/);
 
   const groupManagement = section(
     '<section className="scripture-workspace-overflow-group"',

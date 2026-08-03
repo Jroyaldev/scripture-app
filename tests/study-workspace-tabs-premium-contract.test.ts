@@ -998,7 +998,7 @@ test("a save is announced and never drawn, and its live region is never removed"
      follow the status region in the cluster, and which left the strip on
      2026-07-30. The region is still the cluster's first child, so the slice now
      ends at the control that follows it. */
-  const status = section(componentSource, 'className="scripture-workspace-actions"', "{(allGroups.length > 0");
+  const status = section(componentSource, 'className="scripture-workspace-actions"', "{allGroups.length > 0");
   assert.match(status, /role="status"/);
   assert.match(status, /aria-live="polite"/);
   // Rendered in every phase: the phase is a class on it, never a condition
@@ -1080,13 +1080,33 @@ test("the overview is a door, not a readout, and the ordinals live inside it", (
      had left to report was a tab or two past the edge of a row you can pan with
      a wheel. That is chrome reporting on chrome.
 
-     So the control goes back to being what it is: the quiet door to every tab
-     in every study. The count survives in its accessible name, where a number
-     answers a question rather than sitting in the frame asking one. */
+     So the control goes back to being what it is: one door, one glyph. The
+     count survives in its accessible name, where a number answers a question
+     rather than sitting in the frame asking one — and as of 2026-08-03 the name
+     leads with the three verbs the surface actually offers. "Show all N study
+     tabs in M studies" described an overflow list, and every job that made it
+     one had moved out from under it: reaching another study to the study line,
+     tabs past the edge of the row to wheel-pan, ordinals to ⌘1–9. */
   assert.doesNotMatch(componentStatements, /hiddenTabCount|tabsInStrip|scripture-workspace-overflow-count/);
   assert.doesNotMatch(declarationsOnly(registerSource), /scripture-workspace-overflow-count/,
     "styling a badge the strip does not render describes a product that does not exist");
-  assert.match(componentSource, /aria-label=\{`Show all \$\{totalTabs\} study tabs in \$\{allGroups\.length\}/);
+  assert.match(componentSource, /`All tabs — search, switch, reopen; \$\{totalTabs\} open in `/);
+  assert.match(componentSource, /<Tooltip label="All tabs — search, switch, reopen">/);
+  // Named while it names something: an aria-controls pointing at an id that is
+  // not in the document names nothing.
+  assert.match(
+    componentSource,
+    /aria-controls=\{overflowOpen \? "study-workspace-all-tabs" : undefined\}/,
+  );
+  /* And the gate is one claim, not the same one twice. `allGroups.length > 0 ||
+     hasMeasuredOverflow` had a left side that is always true — the model refuses
+     to close the last study — and a right side that was the overflow story the
+     door stopped telling. What the measurement feeds still ships: the sheet
+     fades the run's edges by `data-study-overflowing`. */
+  // Statements only — the note at the gate quotes the expression it replaced,
+  // which is the whole point of leaving a note there.
+  assert.doesNotMatch(componentStatements, /allGroups\.length > 0 \|\| hasMeasuredOverflow/);
+  assert.match(componentSource, /data-study-overflowing=\{hasMeasuredOverflow \|\| undefined\}/);
   assert.match(componentSource, /<span aria-hidden="true"><OverflowGlyph \/><\/span>/);
 
   // B5: numbers appear in the overview's list, never on the tabs.

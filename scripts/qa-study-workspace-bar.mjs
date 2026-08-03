@@ -1078,8 +1078,41 @@ try {
   })()`);
   assert.equal(renameFocus.value, "Romans Baptism Cohort", "F2 opens the field on the study the page is in");
   assert.equal(renameFocus.selected, true, "the name arrives selected: a rename replaces rather than appends");
-  assert.equal(renameFocus.focusVisible, true, "a field reached by the keyboard shows a focus ring");
-  assert.ok(renameFocus.outlineWidth >= 2, `study control focus ring is ${renameFocus.outlineWidth}px`);
+  /* THE RING IS THE ONE THING THIS FIELD DOES NOT NEED · restated 2026-08-03.
+     This asserted a 2px ring on arrival, on the reasoning that a field reached
+     by the keyboard shows one. What arrives is not a field the reader reached —
+     it is a field the app opened for them and put the caret in, and it says so
+     twice over already: the caret is blinking in it and the whole name is
+     selected, which is a louder "type here" than any outline. `:focus-visible`
+     still MATCHES, because per Selectors 4 it matches any focused text field,
+     programmatic or not — which is exactly why the panel had to carry the
+     distinction the selector cannot. The gate is what gets PAINTED. */
+  assert.equal(renameFocus.focusVisible, true, "the field is focused and matches :focus-visible");
+  assert.equal(
+    renameFocus.outlineWidth,
+    0,
+    `the rename field rings on arrival at ${renameFocus.outlineWidth}px; the caret and the selection already say where typing goes`,
+  );
+  // And the reader's own first move hands the rings back — Tab off the field
+  // lands on Save, which is a control they reached and is owed one.
+  await dispatchKey(cdp, "Tab", "Tab", 9);
+  await driver.settle();
+  const renameAfterTab = await driver.evaluate(`(() => {
+    const focused = document.activeElement;
+    if (!(focused instanceof HTMLElement)) return null;
+    const style = getComputedStyle(focused);
+    return {
+      insidePanel: Boolean(focused.closest("[data-study-rename]")),
+      arrival: Boolean(document.querySelector(".popover-panel[data-focus-arrival]")),
+      outlineWidth: Number.parseFloat(style.outlineWidth) || 0,
+    };
+  })()`);
+  assert.equal(renameAfterTab.insidePanel, true, "Tab walked out of the rename popover");
+  assert.equal(renameAfterTab.arrival, false, "the arrival outlived the reader's first move");
+  assert.ok(
+    renameAfterTab.outlineWidth >= 2,
+    `the control the keyboard reached rings at ${renameAfterTab.outlineWidth}px`,
+  );
   await dispatchKey(cdp, "Escape", "Escape", 27);
   await driver.waitFor(`!document.querySelector("[data-study-rename]")`);
 
@@ -1119,6 +1152,7 @@ try {
       listOverflowY: listStyle.overflowY,
       zoomLastTabVisible: lastRect.top >= listRect.top - 1 && lastRect.bottom <= listRect.bottom + 1,
       lastTabFocused: document.activeElement === lastButton,
+      restingThumb: getComputedStyle(list, "::-webkit-scrollbar-thumb").backgroundColor,
     };
   })()`);
   assert.equal(zoomMetrics.finePointer, true, "zoom fixture unexpectedly entered the coarse-pointer mobile surface");
@@ -1131,6 +1165,17 @@ try {
   assert.ok(["auto", "scroll"].includes(zoomMetrics.listOverflowY), `All Tabs overflow is ${zoomMetrics.listOverflowY}`);
   assert.equal(zoomMetrics.zoomLastTabVisible, true, "the final study tab remains clipped at 200% zoom");
   assert.equal(zoomMetrics.lastTabFocused, true, "the final study tab is not keyboard focusable at 200% zoom");
+  /* AND THE READER CAN SEE THAT IT SCROLLS. The app's scrollbars hide until the
+     pointer crosses them, which is right for the reading column and the margin —
+     they are the page, and a reader learns in a week that they move. This is a
+     panel that opens over the page and, at exactly this viewport, shows four
+     rows with the rest below the fold. A list with no thumb at rest is a list
+     claiming to be complete, so inside All Tabs the thumb rests at a little over
+     half strength and takes the full tint on hover. */
+  assert.ok(
+    !/^rgba\(.*,\s*0\)$/.test(zoomMetrics.restingThumb) && zoomMetrics.restingThumb !== "transparent",
+    `All Tabs hides its scrollbar thumb at rest (${zoomMetrics.restingThumb}) on the one surface that scrolls at 200% zoom`,
+  );
   await driver.evaluate(`window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`);
   await driver.waitFor(`!document.querySelector("[data-study-all-tabs-search]")`);
   await cdp.send("Emulation.setDeviceMetricsOverride", VIEWPORT);
@@ -1195,6 +1240,49 @@ try {
 
   await driver.evaluate(`document.querySelector("[data-study-all-tabs]")?.click()`);
   await driver.waitFor(`document.activeElement?.matches("[data-study-all-tabs-search]") === true`);
+
+  /* THE CARET ARRIVES; THE RING DOES NOT · 2026-08-03. The autofocus above is a
+     courtesy — it puts the caret where a reader who opened a find-and-switch
+     door wants to type — and for a year it also lit two rings, the field's and
+     its frame's, concentric and two pixels apart, on every open including every
+     open by mouse. The browser cannot tell a courtesy from a keyboard gesture:
+     per Selectors 4 a text field matches `:focus-visible` whenever it is
+     focused. So the panel carries the distinction itself, and this is the gate
+     that holds it: zero painted outlines anywhere inside the panel while focus
+     is still where the app put it, and exactly one — on the control focus
+     landed on — the moment a Tab moves it. A used-layout pass is the only place
+     this can be asserted; no source-reading test watches a cascade resolve. */
+  const ringExpression = `(() => {
+    const panel = document.querySelector(".scripture-workspace-overflow-popover");
+    if (!(panel instanceof HTMLElement)) throw new Error("All Tabs is not open for the arrival-ring gate");
+    const painted = [...panel.querySelectorAll("*"), panel].filter((node) => {
+      const style = getComputedStyle(node);
+      return style.outlineStyle !== "none" && Number.parseFloat(style.outlineWidth) > 0;
+    });
+    return {
+      arrival: Boolean(document.querySelector(".popover-panel[data-focus-arrival]")),
+      painted: painted.length,
+      onFocused: painted.some((node) => node === document.activeElement),
+    };
+  })()`;
+  const arrivalRings = await driver.evaluate(ringExpression);
+  assert.equal(arrivalRings.arrival, true, "the panel does not mark the focus it performed itself");
+  assert.equal(
+    arrivalRings.painted,
+    0,
+    `All Tabs painted ${arrivalRings.painted} rings on a focus the reader never asked for`,
+  );
+  await dispatchKey(cdp, "Tab", "Tab", 9);
+  await driver.settle();
+  const afterTabRings = await driver.evaluate(ringExpression);
+  assert.equal(afterTabRings.arrival, false, "the arrival outlived the reader's first move");
+  assert.equal(
+    afterTabRings.painted,
+    1,
+    `a Tab inside All Tabs painted ${afterTabRings.painted} rings, not one`,
+  );
+  assert.equal(afterTabRings.onFocused, true, "the ring is not on the control the keyboard reached");
+
   await driver.evaluate(`document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`);
   await driver.waitFor(`!document.querySelector("[data-study-all-tabs-search]")
     && document.activeElement?.matches("[data-study-all-tabs]") === true`);
