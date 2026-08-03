@@ -13,6 +13,7 @@ import {
   studyWorkspaceTabLabelParts,
   studyWorkspaceTabOrdinal,
   studyWorkspaceTabPromoteAvailability,
+  type WorkspaceReorderPosition,
   studyWorkspaceTabType,
   type StudyWorkspaceGroup,
   type StudyWorkspaceStateV2,
@@ -26,7 +27,11 @@ import { Tooltip } from "./Tooltip.js";
 /** Warn on the `+` control once within this many tabs of the hard cap. */
 const CAPACITY_HINT_THRESHOLD = 4;
 
-export type WorkspaceReorderPosition = "left" | "right" | "start" | "end";
+/* RE-EXPORTED, NOT RESTATED. This was a fourth copy of the model's vocabulary —
+   the model, this file, ScripturePage and app.tsx each spelled the same union
+   out, which is why widening it for the drag failed to compile in three places
+   at once. One declaration, in the file that acts on it. */
+export type { WorkspaceReorderPosition };
 
 /** Pointer travel (px) before a press on a tab becomes a reorder drag. */
 const DRAG_THRESHOLD_PX = 4;
@@ -373,9 +378,16 @@ export function studyWorkspaceDragReorderPosition(
   let destination = insertionIndex > current ? insertionIndex - 1 : insertionIndex;
   destination = Math.max(0, Math.min(lastIndex, destination));
   if (destination === current) return null;
-  if (destination <= 0) return "start";
-  if (destination >= lastIndex) return "end";
-  return destination < current ? "left" : "right";
+  /* THE SLOT, NOT A DIRECTION · 2026-08-03. This returned "left"/"right" for
+     anything that was not an end-stop, and those words mean ONE STEP — so the
+     first tab dragged to the fourth slot arrived second, having been asked to
+     move right, once. The reader had just watched the run open the fourth slot
+     and the tab went somewhere else.
+
+     It looked like a middle-of-the-run bug because the extremes were fine:
+     "start" and "end" are absolute and say the whole answer. The middles were
+     the only place the vocabulary lost the number. */
+  return { slot: destination };
 }
 
 /**
@@ -479,7 +491,11 @@ interface WorkspaceMenuState {
   items: WorkspaceMenuItem[];
 }
 
-const REORDER_MENU_LABELS: ReadonlyArray<{ position: WorkspaceReorderPosition; label: string }> = [
+/* The menu offers the four STEPS and no slot, which is the whole point of the
+   distinction: a menu item is a named move — "move earlier" — while a drag is a
+   place. Typed to the words alone so the key below is a string, and so that a
+   slot can never be added here without someone deciding what to call it. */
+const REORDER_MENU_LABELS: ReadonlyArray<{ position: "left" | "right" | "start" | "end"; label: string }> = [
   { position: "start", label: "Move to first" },
   { position: "left", label: "Move earlier" },
   { position: "right", label: "Move later" },

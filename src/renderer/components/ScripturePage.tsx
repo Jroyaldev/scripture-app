@@ -41,6 +41,7 @@ import { nextVerseSelection } from "../utils/verseSelection.js";
 import { scopeHighlightsToPackage } from "../utils/highlightPackageScope.js";
 import { Popover } from "./Popover.js";
 import { ScriptureWorkspaceTabs } from "./ScriptureWorkspaceTabs.js";
+import type { WorkspaceReorderPosition } from "../utils/studyWorkspace.js";
 import { StudyControl } from "./StudyControl.js";
 import { HighlightUnderlay, FADE_MS, SWEEP_MS } from "./HighlightUnderlay.js";
 import {
@@ -488,11 +489,11 @@ interface Props {
   onWorkspaceTabPromote?: (tabId: string) => Promise<boolean>;
   onWorkspaceTabReorder?: (
     tabId: string,
-    position: "left" | "right" | "start" | "end",
+    position: WorkspaceReorderPosition,
   ) => Promise<boolean>;
   onWorkspaceGroupReorder?: (
     groupId: string,
-    position: "left" | "right" | "start" | "end",
+    position: WorkspaceReorderPosition,
   ) => Promise<boolean>;
   onWorkspaceRecentReopen?: (index?: number) => Promise<boolean>;
   onWorkspaceTabDuplicate?: () => Promise<boolean>;

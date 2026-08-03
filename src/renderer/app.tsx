@@ -131,7 +131,9 @@ type EntityResearchFocusRequest = {
 type PendingWorkspaceDecision = {
   resolve: (decision: WorkspaceDecision) => void;
 };
-type WorkspaceReorderPosition = "left" | "right" | "start" | "end";
+/* One declaration, in the model — see studyWorkspace.ts. Four copies of this
+   union is why the drag's slot failed to compile in three files at once. */
+import type { WorkspaceReorderPosition } from "./utils/studyWorkspace.js";
 
 const WRITING_DRAFT_STORAGE_KEY = "scripture.writing-draft";
 

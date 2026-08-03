@@ -577,13 +577,32 @@ export function renameStudyWorkspaceGroup(
   };
 }
 
-type WorkspaceReorderPosition = "left" | "right" | "start" | "end";
+/**
+ * WHERE A TAB IS BEING MOVED TO.
+ *
+ * The four words are a STEP, and they were the whole vocabulary because the only
+ * things that reordered were a keyboard and a menu: "move left" means one place
+ * left, and "start" and "end" are the two absolutes at the ends of that walk.
+ *
+ * A DRAG IS NOT A STEP, and this is what it was missing. Dragging the first tab
+ * to the fourth slot went through `"right"` and landed it second — one step, as
+ * asked, and not at all what the reader had just watched the run make room for.
+ * The extremes worked, which is what made it look like a middle-of-the-run bug:
+ * `"start"` and `"end"` are absolute and say the whole answer.
+ *
+ * So a slot joins them. The words keep their meaning for the devices that mean
+ * them; a gesture that knows exactly where it landed says so.
+ */
+export type WorkspaceReorderPosition = "left" | "right" | "start" | "end" | { slot: number };
 
 function reorderedIndex(
   current: number,
   length: number,
   position: WorkspaceReorderPosition,
 ): number {
+  // Clamped rather than refused: the caller measured a run that may have changed
+  // under an await, and the nearest legal slot is a better answer than none.
+  if (typeof position === "object") return Math.max(0, Math.min(length - 1, position.slot));
   if (position === "start") return 0;
   if (position === "end") return length - 1;
   if (position === "left") return Math.max(0, current - 1);

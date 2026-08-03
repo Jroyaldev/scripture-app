@@ -15,6 +15,7 @@ import {
   openPassageWorkspaceTab,
   reopenClosedStudyItem,
   reopenClosedStudyItemAt,
+  reorderStudyWorkspaceTab,
   studyWorkspaceTabPromoteAvailability,
   type PassageViewState,
 } from "../src/renderer/utils/studyWorkspace.js";
@@ -65,21 +66,76 @@ function view(book: string, chapter: number): PassageViewState {
   };
 }
 
-test("drag reorder position maps a drop slot to one legal in-group move", () => {
+/** One study, five passage tabs, in a known order. */
+function fiveTabs() {
+  let state = createStudyWorkspace(view("ACT", 19), { groupId: "study", passageTabId: "t0" });
+  for (let index = 1; index < 5; index += 1) {
+    state = openPassageWorkspaceTab(state, {
+      id: `t${index}`,
+      sourceTabId: `t${index - 1}`,
+      view: view("ACT", 19 + index),
+    }).state;
+  }
+  assert.deepEqual(state.groups[0]!.tabIds, ["t0", "t1", "t2", "t3", "t4"]);
+  return state;
+}
+
+test("a drop lands in the slot it was dropped in, not one step towards it", () => {
+  /* THE BUG THIS TEST WAS WRITTEN AROUND, and then written to protect.
+
+     It read `assert.equal(studyWorkspaceDragReorderPosition(ids, "a", 2),
+     "right")` — and "right" means ONE STEP, because the four words were the
+     whole vocabulary while the only things that reordered were a keyboard and a
+     menu. So the first of five tabs dragged to the fourth slot arrived SECOND,
+     having been asked to move right, once. The reader had just watched the run
+     open the fourth slot and the tab went somewhere else.
+
+     It looked like a middle-of-the-run bug because the extremes were fine:
+     "start" and "end" are absolute and say the whole answer. The middles were
+     the only place the vocabulary lost the number. Both of the maintainer's
+     cases are below, in the five-tab run they were reported in. */
+  const five = ["a", "b", "c", "d", "e"];
+  assert.deepEqual(studyWorkspaceDragReorderPosition(five, "a", 4), { slot: 3 },
+    "the first tab dropped in the fourth slot lands in the fourth slot");
+  assert.deepEqual(studyWorkspaceDragReorderPosition(five, "e", 1), { slot: 1 },
+    "and the last tab dropped in the second lands in the second");
+
   const ids = ["a", "b", "c", "d"];
   // Dropping onto its own slot (or the slot just after removal) is a no-op.
   assert.equal(studyWorkspaceDragReorderPosition(ids, "a", 0), null);
   assert.equal(studyWorkspaceDragReorderPosition(ids, "b", 1), null);
   assert.equal(studyWorkspaceDragReorderPosition(ids, "b", 2), null);
-  // Extremes resolve to the exact end-stops.
-  assert.equal(studyWorkspaceDragReorderPosition(ids, "a", 4), "end");
-  assert.equal(studyWorkspaceDragReorderPosition(ids, "d", 0), "start");
-  // Interior drops resolve to a single directional step.
-  assert.equal(studyWorkspaceDragReorderPosition(ids, "a", 2), "right");
-  assert.equal(studyWorkspaceDragReorderPosition(ids, "d", 2), "left");
-  assert.equal(studyWorkspaceDragReorderPosition(ids, "b", 3), "right");
+  // The end-stops are slots like any other now: they were only ever special
+  // because they were the two the four words could say exactly.
+  assert.deepEqual(studyWorkspaceDragReorderPosition(ids, "a", 4), { slot: 3 });
+  assert.deepEqual(studyWorkspaceDragReorderPosition(ids, "d", 0), { slot: 0 });
+  assert.deepEqual(studyWorkspaceDragReorderPosition(ids, "a", 2), { slot: 1 });
+  assert.deepEqual(studyWorkspaceDragReorderPosition(ids, "d", 2), { slot: 2 });
+  assert.deepEqual(studyWorkspaceDragReorderPosition(ids, "b", 3), { slot: 2 });
   // A tab that is not part of the ordering never reorders.
   assert.equal(studyWorkspaceDragReorderPosition(ids, "missing", 0), null);
+
+  /* AND THE MODEL PUTS IT THERE. The two halves are tested together because the
+     defect lived in the join: this function said the right thing in the wrong
+     vocabulary, and the mutation faithfully did the lesser thing it was told. */
+  const workspace = fiveTabs();
+  const moved = reorderStudyWorkspaceTab(workspace, { tabId: "t0", position: { slot: 3 } });
+  assert.deepEqual(
+    moved.groups[0]!.tabIds,
+    ["t1", "t2", "t3", "t0", "t4"],
+    "the first tab moved to the fourth slot, not the second",
+  );
+  // Clamped rather than refused: the caller measured a run that may have changed
+  // under an await, and the nearest legal slot beats no move at all.
+  assert.deepEqual(
+    reorderStudyWorkspaceTab(workspace, { tabId: "t0", position: { slot: 99 } }).groups[0]!.tabIds,
+    ["t1", "t2", "t3", "t4", "t0"],
+  );
+  // The four words still mean a step, for the devices that mean them.
+  assert.deepEqual(
+    reorderStudyWorkspaceTab(workspace, { tabId: "t0", position: "right" }).groups[0]!.tabIds,
+    ["t1", "t0", "t2", "t3", "t4"],
+  );
 });
 
 test("vertical wheel is translated to horizontal scroll only when the strip overflows", () => {
