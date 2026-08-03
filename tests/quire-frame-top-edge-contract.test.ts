@@ -259,24 +259,36 @@ test("the band holds the study line, and the register still draws nothing above 
     assert.doesNotMatch(body, /padding-top\s*:\s*(?!0)/, "nothing may be reserved above the tab row");
   }
 
-  // The band is the window's, and the line hands it back to the window: the row
-  // drags, and every control in it opts out, or the band eats the press before
-  // the chip ever sees it.
+  /* THE BAND IS THE WINDOW'S, AND IT IS EMPTY · RESTATED 2026-08-03.
+     This used to check that the row drags AND that every control standing in it
+     opts back out, because a drag region swallows the press before the element
+     under the pointer ever sees it. Both halves were true and the pair was still
+     the defect: a drag region interrupted by a dozen no-drag boxes is not a drag
+     region, it is the gaps between them, and the maintainer could not grab the
+     window. The chips are in the register now — see tests/study-control-contract
+     — and what is asserted here is the stronger claim the opt-out was standing
+     in for: the row drags, and there is nothing in it to opt out. */
   const line = styles.slice(
     styles.indexOf(".scripture-study-line {"),
     styles.indexOf("}", styles.indexOf(".scripture-study-line {")),
   );
   assert.match(line, /-webkit-app-region: drag;/);
-  const noDrag = styles.slice(
-    styles.indexOf(".scripture-study-chip,\n.scripture-study-open,"),
-    styles.indexOf("}", styles.indexOf(".scripture-study-chip,\n.scripture-study-open,")),
+  assert.doesNotMatch(styles, /\.scripture-study-chip\b/,
+    "the chips are gone from the sheet, not merely unmounted");
+  assert.match(
+    read("src/renderer/components/ScripturePage.tsx"),
+    /<div className="scripture-study-line" data-study-drag-band="" \/>/,
+    "the band is a leaf: nothing can be pressed in it because nothing is in it",
   );
-  assert.match(noDrag, /-webkit-app-region: no-drag;/,
-    "a chip inside the drag band must opt out or it cannot be pressed");
+  /* The tooltip primitive's own wrapper had to opt out too, because it is a real
+     span between the band and the control inside it and a drag region swallows
+     the press at whichever element it reaches first. That is still true wherever
+     a tooltipped control stands in a drag region — it is asserted on the study
+     control's own anchor now, one row down, where the tooltip actually is. */
   assert.match(
     styles,
-    /\.scripture-study-line \.control-tooltip-anchor \{\s*-webkit-app-region: no-drag;/,
-    "the tooltip primitive wraps the study line's plus, so the wrapper opts out too",
+    /\.scripture-study-control \.control-tooltip-anchor \{\s*-webkit-app-region: no-drag;/,
+    "a tooltip wrapper around a control opts out wherever that control stands",
   );
 });
 

@@ -400,7 +400,7 @@ test("the register is a strip of canvas the active page is pulled up through", (
      number is not what a reader chooses by. Each chip's tooltip and accessible
      name still carry it, which is where a number belongs when it answers a
      question you have to ask. */
-  assert.doesNotMatch(stylesDeclarations, /\.scripture-study-chip small/,
+  assert.doesNotMatch(stylesDeclarations, /\.scripture-study-face small/,
     "a count on every chip is a dashboard");
   assert.match(rail, /min-width: 24px/);
   assert.match(rail, /min-height: 24px/);
@@ -543,7 +543,7 @@ test("no dialog opens over the page to ask a study for its name", () => {
     "styling a popover the strip cannot open describes a product that does not exist");
 
   const line = readFileSync(
-    resolve(import.meta.dirname, "../src/renderer/components/StudyLine.tsx"),
+    resolve(import.meta.dirname, "../src/renderer/components/StudyControl.tsx"),
     "utf8",
   );
   assert.match(line, /className="scripture-study-rename"/);
@@ -563,11 +563,25 @@ test("no dialog opens over the page to ask a study for its name", () => {
      So the claim is restated as the two facts that carry it. */
   assert.doesNotMatch(line, /role="dialog"/,
     "no float in the line asks a study for its name");
-  assert.match(line, /data-study-chip-rename=""[\s\S]{0,320}beginRename\(group\.id, label\)/,
-    "a study is renamed where its name is, from every gesture that offers it");
+  /* RESTATED 2026-08-03. The hook was `data-study-chip-rename` landing in
+     `beginRename`, which turned a chip into a field in the row. There is no chip
+     and no row: growing the control into a field would push the save status and
+     the All Tabs door sideways for the length of a rename, which is the one real
+     cost of putting the studies in a shared row. So the field opens in the
+     surface the control already owns — anchored to the name, pre-filled and
+     selected — and the two gestures that reach it are the menu's item and F2.
+     Still nothing over the page asking a study for its name. */
+  assert.match(line, /data-study-rename-open=""[\s\S]{0,240}setMode\("rename"\)/,
+    "the list offers the rename, and it opens where the control already is");
+  assert.match(line, /if \(event\.key !== "F2"\) return;[\s\S]{0,160}openMenu\("rename"\)/,
+    "and F2 reaches the same field without opening the list first");
+  /* The field's own ring, now one selector in the control's grouped rule rather
+     than the last one before the brace — the list of focusable things grew when
+     the chips became a control with a list and a two-button field, and the ring
+     is declared once for all of them. */
   assert.match(
     stylesSource,
-    /\.scripture-study-rename input:focus-visible \{\s*outline: 2px solid var\(--study-gold\);/,
+    /\.scripture-study-rename input:focus-visible,[\s\S]{0,120}outline: 2px solid var\(--study-gold\);/,
   );
 });
 
@@ -682,11 +696,11 @@ test("the group is a kicker at the head of its members, separated by canvas and 
      study rather than only the one you are in, which is more than the row ever
      did at any of its three prices. */
   const studyLine = readFileSync(
-    resolve(import.meta.dirname, "../src/renderer/components/StudyLine.tsx"),
+    resolve(import.meta.dirname, "../src/renderer/components/StudyControl.tsx"),
     "utf8",
   );
   assert.match(studyLine, /studyWorkspaceGroupLabel\(workspace, group, bookNames\)/,
-    "a study is named on its chip, in the same vocabulary every other surface uses");
+    "a study is named by the control, in the same vocabulary every other surface uses");
   assert.doesNotMatch(
     studyLine.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, ""),
     /This study/,
@@ -718,12 +732,15 @@ test("the group is a kicker at the head of its members, separated by canvas and 
      because every study was made the same way. Which study you are in is told by
      the label's ink. "All" carries none — it is not a study, and a provenance
      mark on it would certify a thing nobody authored. */
-  assert.match(stylesDeclarations, /\.scripture-study-chip-seal \{[\s\S]{0,140}background: var\(--study-gold\);/,
+  assert.match(stylesDeclarations, /\.scripture-study-seal \{[\s\S]{0,140}background: var\(--study-gold\);/,
     "an authored study wears the seal");
-  assert.match(studyLine, /<span className="scripture-study-chip-seal" aria-hidden="true" \/>/);
-  const allChip = studyLine.slice(studyLine.indexOf("{showAll && ("), studyLine.indexOf("{chips.map("));
-  assert.doesNotMatch(allChip, /scripture-study-chip-seal/,
-    "All is not a study and may not be certified as one");
+  assert.match(studyLine, /<span className="scripture-study-seal" aria-hidden="true" \/>/);
+  /* RESTATED 2026-08-03. This read `.scripture-study-chip-seal` and checked that
+     the retired "All" chip did not carry one. There is no chip and no All; the
+     mark is on the control's own face and, in the list, in a column reserved
+     whether or not it draws — an unnamed study's row must not hang two pixels
+     left of every other one. */
+  assert.match(studyLine, /<span className="scripture-study-row-seal" aria-hidden="true">/);
 
   /* "Separated from the ungrouped tabs by 24px of canvas rather than by a rule
      — the same argument that removed the Research divider." The ARGUMENT is
@@ -855,13 +872,20 @@ test("no control in the register is left to the platform to draw", () => {
   ]) {
     assert.ok(focusSelectors.includes(selector), `${selector} must carry the register's focus mark`);
   }
-  const lineFocusStart = rail.indexOf(".scripture-study-chip:focus-visible");
-  assert.ok(lineFocusStart > 0, "the study line must declare a focus ring");
+  const lineFocusStart = rail.indexOf(".scripture-study-face:focus-visible");
+  assert.ok(lineFocusStart > 0, "the study control must declare a focus ring");
   const lineFocus = rail.slice(lineFocusStart, rail.indexOf("}", lineFocusStart) + 1);
+  /* Four now rather than three, and the list is longer because the control is
+     smaller: what was a row of chips plus a + is one face, the rows of its list,
+     the field, and the field's two buttons. Every one of them is reachable by a
+     keyboard, so every one of them owes the register's mark at the same width
+     and the same offset — the control and the strip are one surface as far as a
+     keyboard is concerned. */
   for (const selector of [
-    ".scripture-study-chip:focus-visible",
-    ".scripture-study-open:focus-visible",
+    ".scripture-study-face:focus-visible",
+    ".scripture-study-row:focus-visible",
     ".scripture-study-rename input:focus-visible",
+    ".scripture-study-rename-actions button:focus-visible",
   ]) {
     assert.ok(lineFocus.includes(selector), `${selector} must carry the register's focus mark`);
   }

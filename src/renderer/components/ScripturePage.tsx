@@ -41,7 +41,7 @@ import { nextVerseSelection } from "../utils/verseSelection.js";
 import { scopeHighlightsToPackage } from "../utils/highlightPackageScope.js";
 import { Popover } from "./Popover.js";
 import { ScriptureWorkspaceTabs } from "./ScriptureWorkspaceTabs.js";
-import { StudyLine } from "./StudyLine.js";
+import { StudyControl } from "./StudyControl.js";
 import { HighlightUnderlay, FADE_MS, SWEEP_MS } from "./HighlightUnderlay.js";
 import {
   MarkingSurface,
@@ -739,6 +739,13 @@ export function ScripturePage({
      the strip SHOWS is stored here, and this is null except while a pointer is
      actually down on a tab. */
   const [tabDropStudyId, setTabDropStudyId] = useState<string | null>(null);
+  /* AND WHETHER A DRAG IS HAPPENING AT ALL, which the fact above cannot answer.
+     Null there means "over no study", and that is true both mid-drag and when
+     there is no drag — but the study control's list has to be OPEN for the
+     length of a drag, because its rows are the only study targets on screen now
+     that the chips are gone. Two booleans rather than one tri-state: they answer
+     different questions and the strip reports them at different moments. */
+  const [tabDragActive, setTabDragActive] = useState(false);
   const marginWorkspace: MarginWorkspace = activeWorkspaceKind === "entity" ? "research" : "study";
   const [marginData, setMarginData] = useState<QueryResult>(EMPTY_MARGIN_DATA);
   const [marginDataChapterKey, setMarginDataChapterKey] = useState<string | null>(null);
@@ -4700,21 +4707,22 @@ export function ScripturePage({
   return (
     <div className="scripture-page">
 
-      {!focusMode && (
-        <StudyLine
-          workspace={studyWorkspace}
-          bookNames={bookNames}
-          onSelectTab={(tabId) => onWorkspaceTabSelect?.(tabId) ?? Promise.resolve(false)}
-          onRenameStudy={(groupId, label) => (
-            onWorkspaceGroupRename?.(groupId, label) ?? Promise.resolve(false)
-          )}
-          onCloseStudy={(groupId) => onWorkspaceGroupClose?.(groupId) ?? Promise.resolve(false)}
-          onStartStudy={() => onStartStudy?.() ?? Promise.resolve(false)}
-          onNewTab={() => (onOpenResearchPalette ?? onOpenCommandPalette)?.()}
-          namingRequest={studyNamingRequest}
-          dropTargetStudyId={tabDropStudyId}
-        />
-      )}
+      {/* THE DRAG BAND, AND NOTHING ELSE · restored 2026-08-03.
+          Rev 05 §05·2's own words for this row, given back to it. It held a row
+          of study chips for one wave, and that cost three things at once: with
+          the rail collapsed to 56 the window's own buttons were drawn over the
+          first chip, the band could not be grabbed because everything standing
+          in it opts out of the drag region, and in fullscreen the row lay flush
+          against the screen's top edge where the menu bar drops. The studies are
+          one row down now — see StudyControl, passed into the strip below — and
+          what is left here is what the frame reserved in the first place.
+
+          It keeps its height, so --frame-top is the same 54 it has always been
+          and tests/quire-frame-top-edge-contract holds unchanged. Empty is the
+          POINT rather than an oversight: in fullscreen the revealed menu bar now
+          lands on 24px of chrome carrying nothing, and a reader reaching for the
+          window can grab it anywhere along the page's whole width. */}
+      {!focusMode && <div className="scripture-study-line" data-study-drag-band="" />}
 
       {!focusMode && (
         <ScriptureWorkspaceTabs
@@ -4731,6 +4739,23 @@ export function ScripturePage({
           )}
           onPromoteTab={(tabId) => onWorkspaceTabPromote?.(tabId) ?? Promise.resolve(false)}
           onTabDragOverStudy={setTabDropStudyId}
+          onTabDragActive={setTabDragActive}
+          studies={(
+            <StudyControl
+              workspace={studyWorkspace}
+              bookNames={bookNames}
+              onSelectTab={(tabId) => onWorkspaceTabSelect?.(tabId) ?? Promise.resolve(false)}
+              onRenameStudy={(groupId, label) => (
+                onWorkspaceGroupRename?.(groupId, label) ?? Promise.resolve(false)
+              )}
+              onCloseStudy={(groupId) => onWorkspaceGroupClose?.(groupId) ?? Promise.resolve(false)}
+              onStartStudy={() => onStartStudy?.() ?? Promise.resolve(false)}
+              onNewTab={() => (onOpenResearchPalette ?? onOpenCommandPalette)?.()}
+              namingRequest={studyNamingRequest}
+              tabDragActive={tabDragActive}
+              dropTargetStudyId={tabDropStudyId}
+            />
+          )}
           onReorderTab={(tabId, position) => (
             onWorkspaceTabReorder?.(tabId, position) ?? Promise.resolve(false)
           )}

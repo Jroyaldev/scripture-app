@@ -42,12 +42,34 @@ export interface ScriptureWorkspaceTabsProps {
   /**
    * The study a dragged tab is currently over, or null.
    *
-   * The chips are the study line's, one row up and in another component, so
-   * the strip reports what its own pointer is over and the line paints it. It
-   * is deliberately NOT an intent: nothing is committed by hovering, so this
-   * one callback is void where every mutation here returns an approval.
+   * The targets belong to the study control at the end of this row and are
+   * rendered by another component, so the strip reports what its own pointer is
+   * over and that component paints it. It is deliberately NOT an intent: nothing
+   * is committed by hovering, so this one callback is void where every mutation
+   * here returns an approval.
    */
   onTabDragOverStudy: (groupId: string | null) => void;
+  /**
+   * A tab drag started or ended.
+   *
+   * Separate from `onTabDragOverStudy` because null there means "over no study",
+   * which is true both during a drag and when there is no drag at all — and the
+   * study control has to tell those apart: its list opens for the length of a
+   * drag so its rows exist to be dropped on. Reported at the DRAG THRESHOLD
+   * rather than at pointerdown, so a plain click on a tab never opens a list.
+   */
+  onTabDragActive: (active: boolean) => void;
+  /**
+   * The study control, rendered into this row rather than constructed by it.
+   *
+   * It is a slot for one reason: layout. The control right-aligns at the end of
+   * the register beside the cluster that reports on tabs, and that is a fact
+   * about THIS row's flexbox — a sibling positioned over the row would have to
+   * measure a cluster whose width changes with the save status. The strip holds
+   * the node and knows nothing about studies; every prop it needs is passed
+   * where the rest of the workspace props are.
+   */
+  studies?: React.ReactNode;
   onReorderTab: (tabId: string, position: WorkspaceReorderPosition) => Promise<boolean>;
   onReorderGroup: (groupId: string, position: WorkspaceReorderPosition) => Promise<boolean>;
   onReopenRecent: () => Promise<boolean>;
@@ -89,24 +111,30 @@ interface WorkspaceDragState {
 }
 
 /**
- * The study chip under a dragged tab, if the pointer has left the strip for the
- * line above it.
+ * The study under a dragged tab, if the pointer has left the tabs for one.
  *
- * Hit-testing the document rather than listening for pointer events on the chip
- * is not a shortcut: the drag sets pointer capture on the tab so the gesture
- * survives leaving the strip, and a captured pointer sends its events to the
- * capturing element — the chips never see one. `elementFromPoint` asks the
+ * Hit-testing the document rather than listening for pointer events on the
+ * target is not a shortcut: the drag sets pointer capture on the tab so the
+ * gesture survives leaving the strip, and a captured pointer sends its events to
+ * the capturing element — a target never sees one. `elementFromPoint` asks the
  * question capture cannot answer, and asks it of the DOM the reader can see.
  *
- * A chip standing for the tab's OWN study is not a target: dropping a tab back
+ * RESTATED 2026-08-03, when the studies stopped being a row of chips above the
+ * strip and became one control at its end. The targets are the rows of that
+ * control's list, which is open for the length of a drag precisely so that they
+ * exist to be dropped on — see StudyControl. Nothing about the mechanism changed
+ * and that is the point of the attribute: what is hit-tested is "a thing that
+ * stands for a study", not "a chip in a row that no longer exists".
+ *
+ * A target standing for the tab's OWN study is not a target: dropping a tab back
  * where it already is has no move to make, and lighting it would promise one.
  */
-export function studyChipDropTargetId(
+export function studyDropTargetId(
   element: Element | null,
   sourceGroupId: string,
 ): string | null {
-  const chip = element?.closest("[data-study-line-chip]");
-  const groupId = chip?.getAttribute("data-study-group-id") ?? null;
+  const target = element?.closest("[data-study-target]");
+  const groupId = target?.getAttribute("data-study-group-id") ?? null;
   return groupId && groupId !== sourceGroupId ? groupId : null;
 }
 
@@ -308,6 +336,8 @@ export function ScriptureWorkspaceTabs({
   onMoveTab,
   onPromoteTab,
   onTabDragOverStudy,
+  onTabDragActive,
+  studies,
   onReorderTab,
   onReorderGroup,
   onReopenRecent,
@@ -810,6 +840,19 @@ export function ScriptureWorkspaceTabs({
     };
   };
 
+  /* Put a dragged tab back where the layout says it lives.
+
+     Every exit from a drag goes through here — drop, cancel, and the drop that
+     turns into a confirmation the reader then refuses — because the offset is
+     on the node and React has no idea it is there. One function rather than the
+     same two lines at three call sites: a drag that ends down a path nobody
+     wrote a cleanup for is a tab stranded mid-air, which is the failure this
+     shape of code always has. */
+  const releaseDragTransform = (tabId: string | undefined): void => {
+    if (!tabId) return;
+    tabRefs.current.get(tabId)?.parentElement?.style.removeProperty("--tab-drag-x");
+  };
+
   const handleTabPointerMove = (
     event: React.PointerEvent<HTMLButtonElement>,
     groupId: string,
@@ -820,11 +863,30 @@ export function ScriptureWorkspaceTabs({
       if (Math.hypot(event.clientX - origin.x, event.clientY - origin.y) < DRAG_THRESHOLD_PX) return;
       origin.started = true;
       try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* capture is best-effort */ }
+      // Announced HERE and not at pointerdown: the study control opens its list
+      // on this, and a plain click on a tab must not open one. The threshold is
+      // already the line this code draws between a press and a drag.
+      onTabDragActive(true);
     }
-    // The line is one row up, and a drag that reaches it is asking for a study
-    // rather than a slot. It outranks the insertion index because the two
-    // answers cannot both be shown without the row claiming to do both.
-    const studyId = studyChipDropTargetId(
+    /* THE TAB TRAVELS WITH THE POINTER, and it is written straight onto the
+       node rather than put in `dragState`.
+
+       A pointer move fires on every frame of a drag; a state update per frame
+       re-renders every tab in the strip to move ONE of them, and at 676 rows in
+       a long study that is the difference between a drag that glides and a drag
+       that stutters. The same argument the viewport-resize handler in app.tsx
+       makes when it pins --player-column-w imperatively, for the same reason.
+
+       It is a custom property rather than `transform` directly so the sheet
+       still owns the whole transform — the lift, the settle when the pointer
+       reaches a study, and the reduced-motion answer are all one declaration in
+       one place, and this line contributes a number to it and nothing else. */
+    const dragged = tabRefs.current.get(origin.tabId)?.parentElement;
+    if (dragged) dragged.style.setProperty("--tab-drag-x", `${event.clientX - origin.x}px`);
+    // A drag that reaches a study target is asking for a study rather than a
+    // slot. It outranks the insertion index because the two answers cannot both
+    // be shown without the row claiming to do both.
+    const studyId = studyDropTargetId(
       document.elementFromPoint(event.clientX, event.clientY),
       groupId,
     );
@@ -855,11 +917,20 @@ export function ScriptureWorkspaceTabs({
     const origin = dragPointerRef.current;
     dragPointerRef.current = null;
     setDragState(null);
+    // The tab goes home before anything else happens. It is written on the node,
+    // so nothing in a re-render clears it and a dropped tab left carrying a
+    // 300px offset would simply stay there.
+    releaseDragTransform(origin?.tabId);
     if (origin?.studyId) onTabDragOverStudy(null);
+    // The list may close now: which study was under the pointer is already read
+    // off `origin`, so the move below does not depend on the rows still being
+    // there. Announcing the end before awaiting the move is what keeps the list
+    // from hanging open across a confirmation.
+    if (origin?.started) onTabDragActive(false);
     if (!origin || !origin.started) return;
     suppressTabClickRef.current = true;
     try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* release is best-effort */ }
-    // A DROP ON A CHIP IS THE MOVE THE MENUS ALREADY MAKE — same mutation, same
+    // A DROP ON A STUDY IS THE MOVE THE MENUS ALREADY MAKE — same mutation, same
     // confirmations, same refusals. The gesture is a second door onto
     // `onMoveTab`, never a second set of rules for changing a tab's study.
     if (origin.studyId) {
@@ -874,7 +945,11 @@ export function ScriptureWorkspaceTabs({
   };
 
   const handleTabPointerCancel = (): void => {
+    releaseDragTransform(dragPointerRef.current?.tabId);
     if (dragPointerRef.current?.studyId) onTabDragOverStudy(null);
+    // A cancelled drag ends the drag. The list would otherwise be left open by a
+    // gesture the platform tore up — the one path where nothing else runs.
+    if (dragPointerRef.current?.started) onTabDragActive(false);
     dragPointerRef.current = null;
     setDragState(null);
   };
@@ -1116,6 +1191,12 @@ export function ScriptureWorkspaceTabs({
               key={tab.id}
               data-study-group-id={group.id}
               data-study-drop={dropBefore ? "before" : dropAfter ? "after" : undefined}
+              /* THE TAB SETTLES ONCE IT HAS SOMEWHERE TO GO. Lifted, it is a
+                 card held above the strip; over a study it eases down and back
+                 a little, because the affirmation has moved to the destination
+                 and two things claiming the eye at the moment of a drop is one
+                 thing too many. It is the handoff, drawn. */
+              data-drag-away={(dragging && overStudy) || undefined}
             >
               <button
                 ref={(node) => {
@@ -1246,6 +1327,20 @@ export function ScriptureWorkspaceTabs({
           <span aria-hidden="true"><PlusGlyph /></span>
         </button>
       </Tooltip>
+
+      {/* THE STUDY, AT THE HEAD OF THE RIGHT-HAND RUN · 2026-08-03. Rev 05 §05·2
+          ruled that a study's label "belongs in the strip", and it does; it was
+          only ever its ALTERNATIVE placement — at the head of the members — that
+          could not be built, twice, because a name given a fixed width beside
+          the first tab clipped and shouldered the flush-start corner. At this
+          end there is no fixed width to give it.
+
+          It comes BEFORE the cluster because that cluster reports on tabs and
+          this names what the tabs belong to; the reader reads outward from the
+          page. And the auto end-margin moves onto it in the sheet rather than
+          being added here — two auto margins in one row are not twice one auto
+          margin, they split the free space and fling the pair to opposite ends. */}
+      {studies}
 
       <div className="scripture-workspace-actions" role="toolbar" aria-label="Study tab controls">
         {/* This element is rendered in every phase and hidden by the sheet, not

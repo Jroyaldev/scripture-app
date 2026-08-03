@@ -3,7 +3,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { test } from "node:test";
 import {
-  studyChipDropTargetId,
+  studyDropTargetId,
   studyWorkspaceDragReorderPosition,
   studyWorkspaceWheelScrollDelta,
 } from "../src/renderer/components/ScriptureWorkspaceTabs.js";
@@ -214,28 +214,56 @@ test("pointer drag is thresholded and paints a lift plus a drop indicator", () =
   assert.match(source, /studyWorkspaceDragReorderPosition\(orderedIds, tabId, origin\.insertionIndex\)/);
   assert.match(source, /dragging \? " is-dragging" : ""/);
   assert.match(source, /data-study-drop=\{dropBefore \? "before" : dropAfter \? "after" : undefined\}/);
+  /* A PICKED-UP TAB TRAVELS WITH THE POINTER · 2026-08-03. It used to sit still
+     at `opacity: .55`, which said the wrong thing twice: half opacity is this
+     app's idiom for DISABLED, and a tab that does not move while the pointer
+     does is not being dragged. The offset is written straight onto the node
+     because a pointer move fires every frame and a state update per frame
+     re-renders every tab in the strip to move one of them. */
+  assert.match(source, /dragged\.style\.setProperty\("--tab-drag-x", `\$\{event\.clientX - origin\.x\}px`\)/);
+  assert.match(source, /data-drag-away=\{\(dragging && overStudy\) \|\| undefined\}/);
   // A plain click below the threshold is never swallowed as a drag.
   assert.match(source, /suppressTabClickRef/);
 });
 
-test("a drag that reaches a study chip is asking for a study, not for a slot", () => {
-  /* THE SECOND AUTHORING GESTURE. The chips are one row up and in another
-     component, and the drag cannot be handed to them: it sets pointer capture
-     on the tab so it survives leaving the strip, and a captured pointer routes
-     every event to the capturing element — a chip never sees one. So the strip
-     hit-tests the document it can see, and reports what it found.
+test("a drag that reaches a study is asking for a study, not for a slot", () => {
+  /* THE SECOND AUTHORING GESTURE. The studies are in another component and the
+     drag cannot be handed to them: it sets pointer capture on the tab so it
+     survives leaving the strip, and a captured pointer routes every event to the
+     capturing element — a target never sees one. So the strip hit-tests the
+     document it can see, and reports what it found.
 
-     A chip standing for the tab's OWN study is not a target. There is no move
+     RESTATED 2026-08-03 with the move off the drag band. The targets used to be
+     a row of chips above the strip and are now the rows of the study control's
+     own list, which opens for the length of a drag precisely so that they exist
+     to be dropped on. Nothing about the mechanism changed, and the attribute is
+     why: what is hit-tested is "a thing that stands for a study", never "a chip
+     in a row". The rename from `data-study-line-chip` to `data-study-target` is
+     the assertion that this stayed true when the furniture moved.
+
+     A target standing for the tab's OWN study is not a target. There is no move
      to make and lighting it would promise one. */
-  const chip = (groupId: string | null): Element => ({
-    closest: (selector: string) => (selector === "[data-study-line-chip]" && groupId !== null
+  const target = (groupId: string | null): Element => ({
+    closest: (selector: string) => (selector === "[data-study-target]" && groupId !== null
       ? { getAttribute: (name: string) => (name === "data-study-group-id" ? groupId : null) }
       : null),
   }) as unknown as Element;
-  assert.equal(studyChipDropTargetId(chip("john-study"), "acts-study"), "john-study");
-  assert.equal(studyChipDropTargetId(chip("acts-study"), "acts-study"), null);
-  assert.equal(studyChipDropTargetId(chip(null), "acts-study"), null);
-  assert.equal(studyChipDropTargetId(null, "acts-study"), null);
+  assert.equal(studyDropTargetId(target("john-study"), "acts-study"), "john-study");
+  assert.equal(studyDropTargetId(target("acts-study"), "acts-study"), null);
+  assert.equal(studyDropTargetId(target(null), "acts-study"), null);
+  assert.equal(studyDropTargetId(null, "acts-study"), null);
+
+  /* THE LIST HAS TO BE OPEN OR THERE IS NOWHERE TO DROP. With one control in
+     place of a row of chips there is exactly one target on screen at rest, and
+     it is the study the tab is already in — which the function above excludes by
+     design. So the strip announces the drag itself, at the THRESHOLD and not at
+     pointerdown, or a plain click on a tab would open a list. */
+  const onMove = section("const handleTabPointerMove", "const handleTabPointerUp");
+  assert.match(onMove, /origin\.started = true;/);
+  assert.ok(
+    onMove.indexOf("onTabDragActive(true)") > onMove.indexOf("origin.started = true"),
+    "the drag is announced once it IS a drag, inside the threshold branch",
+  );
 
   // The drop is `onMoveTab` — the same mutation the "Move to study…" menus
   // make, with the same confirmations and the same refusals. A second gesture
@@ -245,8 +273,19 @@ test("a drag that reaches a study chip is asking for a study, not for a slot", (
   assert.match(up, /studyWorkspaceDragReorderPosition\(orderedIds, tabId, origin\.insertionIndex\)/);
   assert.ok(
     up.indexOf("handleMoveTab") < up.indexOf("studyWorkspaceDragReorderPosition"),
-    "a chip outranks the slot: the row's question has been left behind",
+    "a study outranks the slot: the row's question has been left behind",
   );
+
+  /* AND EVERY EXIT FROM A DRAG ENDS IT. Both the drop and the cancel announce
+     the end and put the tab's offset back — the offset is written on the node,
+     so React has no idea it is there and nothing in a re-render clears it. A
+     drag that ends down a path nobody wrote a cleanup for is a tab left hanging
+     in mid-air and a list left open over the page. */
+  assert.match(up, /releaseDragTransform\(origin\?\.tabId\);/);
+  assert.match(up, /if \(origin\?\.started\) onTabDragActive\(false\);/);
+  const ended = section("const handleTabPointerCancel", "const handleTabAuxClick");
+  assert.match(ended, /releaseDragTransform\(dragPointerRef\.current\?\.tabId\);/);
+  assert.match(ended, /if \(dragPointerRef\.current\?\.started\) onTabDragActive\(false\);/);
 
   // And while a chip is the target the row stops answering, so exactly one
   // drop indicator is on screen and it is on the surface under the pointer.
