@@ -264,8 +264,9 @@ test("pointer drag is thresholded, and the run itself opens the slot", () => {
      rides the cursor. A pointer over a study target is carrying by definition. */
   assert.match(onMoveHandler, /\? "carry"\s*: "reorder";/);
   assert.match(onMoveHandler, /if \(phase !== settledPhase\) \{/);
-  assert.match(source, /onTabDragPhase\("reorder"\);/);
-  assert.match(source, /if \(origin\?\.started\) onTabDragPhase\(null\);/);
+  assert.match(source, /onTabDragPhase\("reorder", origin\.tabId\);/,
+    "the tab travels with the phase: the study control asks the model whether it could found a study with it");
+  assert.match(source, /if \(origin\?\.started\) onTabDragPhase\(null, null\);/);
 
   assert.match(source, /insertionIndex: -1,/,
     "-1, because 0 is a real slot and a first frame landing on it must still paint");
@@ -373,7 +374,7 @@ test("a drag that reaches a study is asking for a study, not for a slot", () => 
   const onMove = section("const handleTabPointerMove", "const handleTabPointerUp");
   assert.match(onMove, /origin\.started = true;/);
   assert.ok(
-    onMove.indexOf('onTabDragPhase("reorder")') > onMove.indexOf("origin.started = true"),
+    onMove.indexOf('onTabDragPhase("reorder", origin.tabId)') > onMove.indexOf("origin.started = true"),
     "the drag is announced once it IS a drag, inside the threshold branch",
   );
 
@@ -403,10 +404,10 @@ test("a drag that reaches a study is asking for a study, not for a slot", () => 
   assert.match(source, /document\.documentElement\.setAttribute\("data-tab-drag", ""\);/);
   assert.match(styles, /html\[data-tab-drag\],\s*html\[data-tab-drag\] \* \{\s*cursor: grabbing !important;/,
     "an overlay would break elementFromPoint and a pointer-events:none layer carries no cursor");
-  assert.match(up, /if \(origin\?\.started\) onTabDragPhase\(null\);/);
+  assert.match(up, /if \(origin\?\.started\) onTabDragPhase\(null, null\);/);
   const ended = section("const handleTabPointerCancel", "const handleTabAuxClick");
   assert.match(ended, /endDrag\(dragPointerRef\.current\?\.tabId\);/);
-  assert.match(ended, /if \(dragPointerRef\.current\?\.started\) onTabDragPhase\(null\);/);
+  assert.match(ended, /if \(dragPointerRef\.current\?\.started\) onTabDragPhase\(null, null\);/);
 
   /* AND WHILE A STUDY IS THE TARGET THE RUN STOPS ANSWERING, so exactly one
      thing on screen says where this lands and it is the surface under the

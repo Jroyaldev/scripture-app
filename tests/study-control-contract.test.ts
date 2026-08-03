@@ -15,6 +15,7 @@ import {
   selectStudyWorkspaceTab,
   STUDY_WORKSPACE_GROUP_LIMIT,
   studyWorkspaceOrdinalTabId,
+  studyWorkspaceTabPromoteAvailability,
   type PassageViewState,
   type StudyWorkspaceStateV2,
 } from "../src/renderer/utils/studyWorkspace.js";
@@ -431,6 +432,44 @@ test("a picked-up tab is lifted, not greyed out", () => {
      one that says what will happen. */
   assert.match(strip, /data-drag-away=\{\(dragging && overStudy\) \|\| undefined\}/);
   assert.match(rule(".scripture-workspace-tab-wrap.is-dragging[data-drag-away]"), /opacity: 0\.5;/);
+});
+
+test("a carried tab can found a study, on the row that is not a study yet", () => {
+  /* THE SAME DROP, ROUTED TO A MUTATION THAT ALREADY EXISTS. "New study from
+     this tab" is in the tab's own context menu; what it did not have was a way
+     to reach it with the tab in hand — Safari's drag-a-tab-out-to-a-new-window,
+     mapped onto studies.
+
+     The row has no group id, because the group is what the drop would create, so
+     it borrows a sentinel. That sentinel travels every pipe the real ids travel
+     — the hit-test, the strip's report, the landing paint — and is read back at
+     exactly one place, the drop. A second callback for "and also this row" would
+     be a second drag gesture to keep in step with the first. */
+  assert.match(strip, /export const START_STUDY_TARGET = "start-a-new-study";/);
+  assert.match(control, /"data-study-group-id": START_STUDY_TARGET,/);
+  assert.match(strip, /if \(origin\.studyId === START_STUDY_TARGET\) \{\s*await handlePromoteTab\(tabId\);/);
+
+  /* GATED ON THE MODEL'S OWN ANSWER, because a target that lights up and then
+     refuses is worse than one that never lights. The model says no to a research
+     tab and to the last passage in a study — a study with nothing left in it is
+     not a study — and that answer is its to give. */
+  assert.match(control, /studyWorkspaceTabPromoteAvailability\(workspace, draggedTabId\) === "direct"/);
+  assert.match(control, /dragPhase === "carry"/);
+  const workspace = twoStudies();
+  const acts = workspace.groups.find((group) => group.id === "acts-study")!;
+  assert.equal(studyWorkspaceTabPromoteAvailability(workspace, acts.tabIds[0]!), "direct");
+  const single = createStudyWorkspace(view("ACT", 19), { groupId: "solo", passageTabId: "acts-19" });
+  assert.equal(
+    studyWorkspaceTabPromoteAvailability(single, "acts-19"),
+    "unavailable",
+    "the last passage in a study cannot leave it: what is left would not be a study",
+  );
+
+  /* IT KEEPS ITS OWN LABEL when it lights. There is no count to tick up — the
+     study it would land in does not exist yet — and inventing a "1" would be the
+     app answering a question about a thing it has not made. */
+  assert.match(styles, /\[data-study-start\]\[data-study-drop-target\] \{[\s\S]{0,200}background: color-mix\(in srgb, var\(--text-primary\) 10%, transparent\);/);
+  assert.doesNotMatch(control, /data-study-start[\s\S]{0,400}tabCount \+ 1/);
 });
 
 test("renaming happens in the control's own surface, never in a dialog over the page", () => {

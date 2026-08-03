@@ -159,7 +159,14 @@ test("the study control is painted out of the same two planes, and states its ow
   assert.match(forced, /\.scripture-workspace-bar \{\s*background: Canvas;\s*forced-color-adjust: none;\s*\}/);
   assert.match(forced, /\.scripture-study-row\[aria-checked="true"\] \{ background: Highlight; color: HighlightText; \}/);
   assert.match(forced, /\.scripture-study-seal \{ background: CanvasText; \}/);
-  assert.match(forced, /\.scripture-study-row\[data-study-drop-target\] \{\s*background: Highlight;/);
+  /* The start row joined this on 2026-08-03: a carried tab can found a study by
+     being dropped on it, so it lights like every other destination and needs the
+     same answer where hues do not exist. */
+  assert.match(forced, /\.scripture-study-row\[data-study-drop-target\],\s*\[data-study-start\]\[data-study-drop-target\] \{\s*background: Highlight;/);
+  /* And the carried proxy loses its shadow here — forced colours drops filters —
+     so an outline is what says "held", or the one object standing for a tab in
+     mid-air is a bare rectangle on the system's own canvas. */
+  assert.match(forced, /\.scripture-workspace-tab-ghost \{[\s\S]{0,160}outline: 2px solid Highlight;/);
   assert.match(forced, /\.scripture-study-face:focus-visible,/);
   /* A lifted tab loses its shadow here — forced colours drops filters — so the
      outline is what says "held". Without it the one gesture that moves a tab

@@ -5,9 +5,11 @@ import {
   STUDY_WORKSPACE_GROUP_LIMIT,
   studyWorkspaceGroupCloseAvailability,
   studyWorkspaceGroupLabel,
+  studyWorkspaceTabPromoteAvailability,
   type StudyWorkspaceGroup,
   type StudyWorkspaceStateV2,
 } from "../utils/studyWorkspace.js";
+import { START_STUDY_TARGET } from "./ScriptureWorkspaceTabs.js";
 import { Popover } from "./Popover.js";
 import { Tooltip } from "./Tooltip.js";
 
@@ -167,6 +169,17 @@ export interface StudyControlProps {
    */
   dragPhase: "reorder" | "carry" | null;
   /**
+   * The tab in the air, so the start row can decide whether to offer itself.
+   *
+   * Founding a study from a tab is not always available — the model refuses it
+   * for a research tab, and for the last passage in a study, because a study
+   * with nothing left in it is not a study. That is
+   * `studyWorkspaceTabPromoteAvailability`'s answer to give, so the tab travels
+   * here and the row asks. A target that lit up and then refused would be worse
+   * than one that never lit.
+   */
+  draggedTabId: string | null;
+  /**
    * The study a tab is currently being dragged over, reported by the strip.
    *
    * It arrives as a prop rather than as state here for the reason this whole
@@ -189,6 +202,7 @@ export function StudyControl({
   onNewTab,
   namingRequest,
   dragPhase,
+  draggedTabId,
   dropTargetStudyId,
 }: StudyControlProps): React.JSX.Element | null {
   const [anchor, setAnchor] = useState<DOMRect | null>(null);
@@ -347,6 +361,24 @@ export function StudyControl({
      sentence and a screen reader is in the middle of the same gesture. */
   const inviting = dragPhase !== null;
   const hint = "Drag here to change study";
+
+  /* AND THE START ROW BECOMES A DESTINATION, when the tab in the air could
+     actually found a study with it.
+
+     It is the same drop the rest of the list takes, routed to the mutation the
+     tab menu's "New study from this tab" already uses — Safari's
+     drag-a-tab-out-to-a-new-window, mapped onto studies. What it does not have
+     is a group id, because the group is what the drop would create; it borrows a
+     sentinel, which travels every pipe the real ids travel and is read back at
+     exactly one place, the drop.
+
+     GATED, because a target that lights up and then refuses is worse than one
+     that never lights. The model says no to a research tab and to the last
+     passage in a study — a study with nothing left in it is not a study — and
+     that answer is its to give, so it is asked rather than guessed at. */
+  const canFound = dragPhase === "carry"
+    && draggedTabId !== null
+    && studyWorkspaceTabPromoteAvailability(workspace, draggedTabId) === "direct";
 
   return (
     <div className="scripture-study-control" data-study-control="">
@@ -561,6 +593,11 @@ export function StudyControl({
                 data-study-start=""
                 data-study-start-disabled={atStudyCapacity || undefined}
                 aria-disabled={atStudyCapacity || undefined}
+                {...(canFound ? {
+                  "data-study-target": "",
+                  "data-study-group-id": START_STUDY_TARGET,
+                  "data-study-drop-target": dropTargetStudyId === START_STUDY_TARGET || undefined,
+                } : {})}
                 onMouseDown={(event) => event.preventDefault()}
                 onClick={() => {
                   if (atStudyCapacity) return;

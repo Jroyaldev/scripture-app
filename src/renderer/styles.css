@@ -2459,6 +2459,17 @@ html, body, #root {
    stays under the ink it carries: it has to read as WARM rather than as
    SELECTED, because the row beside it may be the current study and those two
    must not look alike. */
+/* The start row takes the same landing ground as a study's row, because it is
+   the same drop — see START_STUDY_TARGET. It keeps its own label: there is no
+   count to tick up, since the study it would land in does not exist yet, and
+   inventing a "1" for it would be the app answering a question about a thing it
+   has not made. */
+[data-study-start][data-study-drop-target] {
+  background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+  color: var(--text-primary);
+  font-weight: var(--fw-semibold);
+}
+
 .scripture-study-row[data-study-drop-target] {
   position: relative;
   /* NEUTRAL, not gold. The seal's hue MARKS a thing and never fills one — Law 3,
@@ -4113,7 +4124,8 @@ html[data-tab-drag] * {
      the ordinary sheet, and "where will it land" is the last answer a drag can
      afford to lose. The count still reads as the new number, which is the rest
      of the message and needs no colour to carry it. */
-  .scripture-study-row[data-study-drop-target] {
+  .scripture-study-row[data-study-drop-target],
+  [data-study-start][data-study-drop-target] {
     background: Highlight;
     color: HighlightText;
     forced-color-adjust: none;

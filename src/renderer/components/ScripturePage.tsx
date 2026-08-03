@@ -750,6 +750,11 @@ export function ScripturePage({
      REORDER the control only says that it is somewhere a tab can be taken; the
      list opens on CARRY, once the tab has left the row. */
   const [tabDragPhase, setTabDragPhase] = useState<"reorder" | "carry" | null>(null);
+  /* AND WHICH TAB IS IN THE AIR. The study control needs it to answer one
+     question the strip cannot answer for it: whether "Start a new study" should
+     offer itself as a place to drop. That is `studyWorkspaceTabPromoteAvailability`,
+     which is the model's to say — so the tab travels and the control asks. */
+  const [tabDragTabId, setTabDragTabId] = useState<string | null>(null);
   const marginWorkspace: MarginWorkspace = activeWorkspaceKind === "entity" ? "research" : "study";
   const [marginData, setMarginData] = useState<QueryResult>(EMPTY_MARGIN_DATA);
   const [marginDataChapterKey, setMarginDataChapterKey] = useState<string | null>(null);
@@ -4742,7 +4747,10 @@ export function ScripturePage({
           )}
           onPromoteTab={(tabId) => onWorkspaceTabPromote?.(tabId) ?? Promise.resolve(false)}
           onTabDragOverStudy={setTabDropStudyId}
-          onTabDragPhase={setTabDragPhase}
+          onTabDragPhase={(phase, tabId) => {
+            setTabDragPhase(phase);
+            setTabDragTabId(tabId);
+          }}
           studies={(
             <StudyControl
               workspace={studyWorkspace}
@@ -4756,6 +4764,7 @@ export function ScripturePage({
               onNewTab={() => (onOpenResearchPalette ?? onOpenCommandPalette)?.()}
               namingRequest={studyNamingRequest}
               dragPhase={tabDragPhase}
+              draggedTabId={tabDragTabId}
               dropTargetStudyId={tabDropStudyId}
             />
           )}

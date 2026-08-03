@@ -65,7 +65,7 @@ export interface ScriptureWorkspaceTabsProps {
    * REORDER the control says only that it is somewhere a tab can be taken; the
    * list opens on CARRY, when the tab has actually left the row.
    */
-  onTabDragPhase: (phase: "reorder" | "carry" | null) => void;
+  onTabDragPhase: (phase: "reorder" | "carry" | null, tabId: string | null) => void;
   /**
    * The study control, rendered into this row rather than constructed by it.
    *
@@ -238,6 +238,25 @@ export function studyWorkspaceDragShuffle(
  * A target standing for the tab's OWN study is not a target: dropping a tab back
  * where it already is has no move to make, and lighting it would promise one.
  */
+/**
+ * THE ROW THAT IS NOT A STUDY YET.
+ *
+ * "Start a new study" is a destination for a carried tab exactly as every other
+ * row is — Safari's drag-a-tab-out-to-a-new-window, mapped onto studies — and
+ * the mutation it needs already exists, as the tab menu's "New study from this
+ * tab". What it does not have is a group id, because the group is what the drop
+ * would create.
+ *
+ * So it borrows one. A sentinel travels every pipe the real ids travel — the
+ * hit-test, the strip's report, the control's landing paint — and is read back
+ * at exactly one place, the drop. Nothing between them needs to know, which is
+ * the point: a second callback for "and also this row" would be a second drag
+ * gesture to keep in step with the first.
+ *
+ * It is a string no group id can collide with. Group ids are uuids.
+ */
+export const START_STUDY_TARGET = "start-a-new-study";
+
 export function studyDropTargetId(
   element: Element | null,
   sourceGroupId: string,
@@ -1161,7 +1180,7 @@ export function ScriptureWorkspaceTabs({
       // Announced HERE and not at pointerdown: the study control opens its list
       // on this, and a plain click on a tab must not open one. The threshold is
       // already the line this code draws between a press and a drag.
-      onTabDragPhase("reorder");
+      onTabDragPhase("reorder", origin.tabId);
     }
     /* THE TAB TRAVELS WITH THE POINTER, and it is written straight onto the
        node rather than put in `dragState`.
@@ -1203,7 +1222,7 @@ export function ScriptureWorkspaceTabs({
     const settledPhase = origin.phase;
     origin.phase = phase;
     if (phase !== settledPhase) {
-      onTabDragPhase(phase);
+      onTabDragPhase(phase, origin.tabId);
       /* The proxy is built from the tab's own label and kind so it is the same
          object the reader picked up, not a generic card. Cleared rather than
          left standing when the pointer comes home: a tab cannot be both in the
@@ -1272,13 +1291,22 @@ export function ScriptureWorkspaceTabs({
     // off `origin`, so the move below does not depend on the rows still being
     // there. Announcing the end before awaiting the move is what keeps the list
     // from hanging open across a confirmation.
-    if (origin?.started) onTabDragPhase(null);
+    if (origin?.started) onTabDragPhase(null, null);
     if (!origin || !origin.started) return;
     suppressTabClickRef.current = true;
     try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* release is best-effort */ }
-    // A DROP ON A STUDY IS THE MOVE THE MENUS ALREADY MAKE — same mutation, same
-    // confirmations, same refusals. The gesture is a second door onto
-    // `onMoveTab`, never a second set of rules for changing a tab's study.
+    /* A DROP ON A STUDY IS THE MOVE THE MENUS ALREADY MAKE — same mutation, same
+       confirmations, same refusals. The gesture is a second door onto
+       `onMoveTab`, never a second set of rules for changing a tab's study.
+
+       And a drop on the row that has no study yet is the PROMOTE the tab menu
+       already makes, which is the same claim a second time: `handlePromoteTab`
+       refuses what it refuses, and the row only offers itself when that
+       mutation would go through. Neither branch invents an outcome. */
+    if (origin.studyId === START_STUDY_TARGET) {
+      await handlePromoteTab(tabId);
+      return;
+    }
     if (origin.studyId) {
       await handleMoveTab(tabId, origin.studyId, event.currentTarget);
       return;
@@ -1295,7 +1323,7 @@ export function ScriptureWorkspaceTabs({
     if (dragPointerRef.current?.studyId) onTabDragOverStudy(null);
     // A cancelled drag ends the drag. The list would otherwise be left open by a
     // gesture the platform tore up — the one path where nothing else runs.
-    if (dragPointerRef.current?.started) onTabDragPhase(null);
+    if (dragPointerRef.current?.started) onTabDragPhase(null, null);
     dragPointerRef.current = null;
     setDragState(null);
   };
