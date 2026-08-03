@@ -58,6 +58,7 @@
  */
 
 import React, { useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
+import { createPortal } from "react-dom";
 
 import {
   isListenHidden,
@@ -263,6 +264,48 @@ function Cover({ src, tint, alt, className = "" }: {
     <span className={`listen-cover ${className}`} style={tint ? { background: tint } : undefined}>
       {src ? <img alt={alt} decoding="async" loading="lazy" src={src} /> : null}
     </span>
+  );
+}
+
+/**
+ * The room's colour, painted where the RAIL can also see it.
+ *
+ * Every screen in here is coloured by what it is about, and until now that
+ * colour was laid inside this pane — which begins to the right of the rail. The
+ * rail is transparent and blurs whatever is behind it, so a field that stopped
+ * at the pane's left edge turned an invisible strip into a dark band with a
+ * hard seam down the window. The maintainer saw it on the shelf, and the field
+ * was removed rather than moved, which cost the shelf a colour they wanted and
+ * left every record page still doing it.
+ *
+ * So the field is portalled out of this pane and into `.app-shell`, the one box
+ * the rail and the room are both inside. The rail then blurs a stained ground
+ * and the window is one field. See `.app-ambient` in styles.css for the paint.
+ *
+ * A PORTAL RATHER THAN A PROPERTY WRITTEN ONTO THE SHELL, and the difference is
+ * the whole safety argument. Setting `--record-tint` on the shell would have
+ * been fewer lines and would have reached two surfaces that read that name and
+ * are not in this room — a resource card's cover face, and the dock — so a
+ * record's colour would have followed the reader out of Listen and stained a
+ * page that never asked. The tint rides on the portalled element instead, under
+ * a name nothing else reads, and the element is unmounted with the room: there
+ * is no property to clear and nothing that can outlive the leaving.
+ *
+ * The target is looked up in an effect rather than during render, so this
+ * renders nothing on its first pass and the portal on its second. Reading the
+ * DOM in a render body is the version of this that works until something
+ * renders it twice.
+ */
+function ShellAmbient({ tint }: { tint?: string }): React.ReactPortal | null {
+  const [shell, setShell] = useState<HTMLElement | null>(null);
+  useEffect(() => { setShell(document.querySelector<HTMLElement>(".app-shell")); }, []);
+  if (!shell) return null;
+  return createPortal(
+    <div
+      className="app-ambient"
+      style={tint ? { "--shell-tint": tint } as React.CSSProperties : undefined}
+    />,
+    shell,
   );
 }
 
@@ -1647,7 +1690,7 @@ export function ListenPage({ backbone, bookNames }: {
         ref={scroller}
         style={live[0]?.tint ? { "--record-tint": live[0].tint } as React.CSSProperties : undefined}
       >
-        <div className="listen-ambient" />
+        <ShellAmbient {...(live[0]?.tint ? { tint: live[0].tint } : {})} />
         <div className="listen-inner">
           <CompactBar
             name={list.name}
@@ -1974,7 +2017,7 @@ export function ListenPage({ backbone, bookNames }: {
     const start = (): void => play(0);
     return (
       <div className="listen" ref={scroller} style={art ? { "--record-tint": art.tint } as React.CSSProperties : undefined}>
-        <div className="listen-ambient" />
+        <ShellAmbient {...(art ? { tint: art.tint } : {})} />
         <div className="listen-inner">
           <CompactBar name={openedSeries.name} onBack={() => setOpenSeries(null)} onPlay={start} playing={here} shown={passed} />
           <button className="listen-back" onClick={() => setOpenSeries(null)} type="button">← All series</button>
@@ -2134,7 +2177,7 @@ export function ListenPage({ backbone, bookNames }: {
       : album.tracks.length;
     return (
       <div className="listen" ref={scroller} style={album.tint ? { "--record-tint": album.tint } as React.CSSProperties : undefined}>
-        <div className="listen-ambient" />
+        <ShellAmbient {...(album.tint ? { tint: album.tint } : {})} />
         <div className="listen-inner">
           <CompactBar name={album.name} onBack={() => setOpenAlbum(null)} onPlay={start} playing={here} shown={passed} />
           <button className="listen-back" onClick={() => setOpenAlbum(null)} type="button">← All music</button>
@@ -2269,23 +2312,34 @@ export function ListenPage({ backbone, bookNames }: {
       className="listen"
       onScroll={rememberScroll}
       ref={scroller}
-      /* THE SHELF KEEPS ITS BARE CANVAS, and this is a reversal worth writing
-         down. It briefly wore a faint field of the last-played record's colour,
-         on the reasoning that every record page has one and the shelf was the
-         plainest screen in the room. The maintainer looked at it and named the
-         cost immediately: the SIDEBAR stopped looking translucent.
+      /* THE SHELF WEARS THE LAST RECORD'S COLOUR AGAIN · restored 2026-08-03,
+         and the round trip is the point of the note. It wore this field once
+         before, on the reasoning that every record page has one and the shelf
+         was the plainest screen in the room. The maintainer looked at it and
+         named the cost in one line: the SIDEBAR stopped looking translucent. So
+         it was removed — and what was removed was the field, when the fault was
+         never in the field.
 
-         That is not a sidebar bug. The rail is transparent with a 26px backdrop
-         blur, and what it blurs is the app SHELL behind it — not this pane,
-         which begins 56px to its right. So a field that colours only this pane
-         runs up to the rail and stops dead, turning a strip that had been
-         invisible into a dark band with a hard edge down the window.
+         The rail is transparent with a 26px backdrop blur, and what it blurs is
+         the app SHELL behind it, not this pane, which begins to its right. A
+         field painted INSIDE this pane therefore ran up to the rail and stopped
+         dead: a strip that had been invisible became a dark band with a hard
+         edge down the window. Every record page had the same seam and kept it,
+         because on those pages the colour is the subject and could not go.
 
-         Every record page has the same seam and keeps it, because that page is
-         ABOUT one record and its colour is the subject. The shelf is about
-         everything, and it was buying a tint nobody asked for with the one piece
-         of chrome that is supposed to disappear. */
+         Both halves were wanted — the maintainer said so plainly, the shelf's
+         colour and the rail's translucency together — and they were only ever in
+         conflict because of where the paint was. It is at shell scope now, under
+         the rail as well as under this pane, so the rail has something stained
+         to blur and the window is one field. See ShellAmbient above.
+
+         The colour is the most recently heard record's, which is the same colour
+         the first Continue Listening card is wearing an inch below — so the
+         field is not decoration, it is the room agreeing with itself about where
+         the reader last was. Nothing heard yet and it falls back to the app's
+         own seal, which is a quiet warm ground rather than a missing one. */
     >
+      <ShellAmbient {...(resume[0]?.tint ? { tint: resume[0].tint } : {})} />
       <div className="listen-inner">
         <header className="listen-head">
           <h1 className="listen-title">Listen</h1>

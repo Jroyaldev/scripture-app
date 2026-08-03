@@ -1391,6 +1391,93 @@ html, body, #root {
     --study-borrowed var(--transport-move) var(--ease-transport);
 }
 
+/* ── ONE FIELD UNDER THE WHOLE WINDOW · 2026-08-03 ──────────────────────────
+ *
+ * A record's colour used to be laid inside the Listen room, and the Listen
+ * room is the flex item to the RIGHT of the rail — so the colour ran up to the
+ * rail and stopped dead. The rail is transparent with a 26px backdrop blur and
+ * what it blurs is whatever is painted BEHIND it, which was the shell's plain
+ * ground: a tinted pane, an untinted rail, and a hard vertical edge down the
+ * window between them. The maintainer found it on the shelf and named the cost
+ * in one line — "the sidebar stopped looking translucent" — and the field was
+ * pulled rather than repaired, which bought a clean rail by taking away a
+ * colour they had asked for. Both were wanted. Neither had to be given up: the
+ * seam was never a fact about the rail or about the colour, only about WHERE
+ * the colour was being painted.
+ *
+ * So it is painted here, at shell scope, behind the rail and the room alike.
+ * The rail's own material finally has something stained to blur, the shelf
+ * gets its field back, and the two things that were being traded against each
+ * other turn out to be the same thing asked for twice.
+ *
+ * THE FIELD CARRIES ITS OWN TINT AND WRITES NOTHING ONTO THE SHELL, which is
+ * the whole of the safety argument. The obvious implementation — the room
+ * setting `--record-tint` on `.app-shell` — is the one to avoid: that name is
+ * already READ by two surfaces outside this room (a resource card's cover face
+ * at `.resource-card[data-face="cover"]`, and the dock at player.css), so a
+ * value parked on their common ancestor would reach pages that never asked for
+ * a record's colour, and a cover-faced card in the reading view would quietly
+ * take the tint of whatever album was last open. The colour rides on THIS
+ * element instead, under a name nothing else reads, and this element is
+ * unmounted with the room. There is no property to clear and nothing that
+ * outlives the leaving.
+ *
+ * `fixed` rather than `absolute`, and that is not interchangeable here.
+ * `backdrop-filter` makes an element a containing block for positioned
+ * descendants, and `.app-shell` carries one in translucent material and none
+ * in solid — so `absolute` would resolve against two different boxes in the
+ * two materials and only one of them by accident. The shell is 100vh at the
+ * window's origin, so `fixed` is the same rectangle in both.
+ *
+ * `z-index: -1` puts it under everything in the shell's stacking context and
+ * above the shell's own background, which is precisely the layer a
+ * backdrop-filter samples. It also cannot swallow a pointer — the same
+ * negative index was a BUG for the focus-mode ground band in styles/rail.css,
+ * because that band has a job and became unreachable; this one has none and is
+ * `pointer-events: none` besides.
+ *
+ * The field's own recipe is unchanged from the room's: mixed toward the canvas
+ * rather than named as a lightness, so the hue belongs to the record and the
+ * lightness belongs to the theme. It was a whisper at 0.28 of the raw tint
+ * once — nervous, and on a dark cover it put dark text on a dark ground.
+ * Mixing first means the field can be fully itself and the words on top keep
+ * their contrast in porcelain and onyx both.
+ *
+ * IT NO LONGER SCROLLS AWAY, and that is a real change rather than a
+ * side-effect left unmentioned. Inside the room it was absolutely positioned
+ * in a scrolling box, so it travelled up with the content — which nobody
+ * designed; it fell out of where it was mounted. At shell scope it stays, and
+ * it has to: the rail does not scroll, so a field that scrolled in the pane
+ * and not in the rail would put the seam back the moment a reader touched the
+ * wheel. Standing still, the room keeps saying which record you are inside
+ * for as long as you are inside it. The mask still ends it by 560px, so the
+ * first screen looks as it did.
+ */
+.app-ambient {
+  --shell-field: color-mix(in oklab, var(--shell-tint, var(--accent-seal)) 24%, var(--bg-canvas));
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: -1;
+  height: 560px;
+  background: linear-gradient(to bottom, var(--shell-field) 0%, var(--bg-canvas) 100%);
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 34%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 0%, #000 34%, transparent 100%);
+}
+
+/* Grain. A computed gradient reads as CSS; the same gradient under a little
+   noise reads as printed, and it is the cheapest instrument in the room. The
+   turbulence is an inline SVG rather than a fetched texture, so it costs no
+   request and asks nothing of the image policy beyond `data:`. */
+.app-ambient::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  opacity: 0.16;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
+  mix-blend-mode: overlay;
+}
+
 
 
 
@@ -24193,33 +24280,12 @@ button.lang-phrase-diagram-node:focus-visible,
   --record-accent: oklch(from var(--record-tint) 0.52 min(calc(c * 2.4), 0.15) h);
 }
 
-/* The album's own colour, laid behind the hero as a field rather than a fill.
-   It was a whisper at 0.28 of the raw tint — nervous, and on a dark cover it
-   put dark text on a dark ground. Mixing toward the canvas first means the
-   field can be fully itself: the hue is unmistakable and the lightness never
-   leaves the theme's range, so the words on top keep their contrast. */
-.listen-ambient {
-  position: absolute;
-  inset: 0 0 auto;
-  height: 560px;
-  background: linear-gradient(to bottom, var(--record-field) 0%, var(--bg-canvas) 100%);
-  pointer-events: none;
-  -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 34%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 0%, #000 34%, transparent 100%);
-}
-
-/* Grain. A computed gradient reads as CSS; the same gradient under a little
-   noise reads as printed, and it is the cheapest instrument in the room. The
-   turbulence is an inline SVG rather than a fetched texture, so it costs no
-   request and asks nothing of the image policy beyond `data:`. */
-.listen-ambient::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  opacity: 0.16;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
-  mix-blend-mode: overlay;
-}
+/* The record's field is no longer laid here. It was `.listen-ambient`, inside
+   this pane, which is what put a hard edge down the window where the pane met
+   the rail — see `.app-ambient` beside `.app-shell` for the field itself and
+   for why it had to leave this box to stop doing that. `--record-field` stays
+   declared above because the room still uses it for its own smaller washes;
+   only the page-sized one moved. */
 
 /* A browse page wants the window; 1000px was the READING measure, inherited on
    to a shelf, and it held the grid to five columns on any monitor. */

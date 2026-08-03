@@ -158,9 +158,29 @@ const shelf = await evaluate(`(() => {
     covers: seen.length,
     loaded: seen.filter((i) => i.complete && i.naturalWidth > 0).length,
     ghosts: document.querySelectorAll('.listen-card.is-ghost').length,
+    /* THE SHELF'S OWN FIELD, back after a removal · 2026-08-03. It is measured
+       against the RAIL rather than merely found, because the reason it was
+       taken away was that it stopped at the rail's edge and turned a piece of
+       chrome that is meant to disappear into a dark band. A field wider than
+       the rail and starting at zero is the state that cannot do that. */
+    field: (() => {
+      const el = document.querySelector('.app-ambient');
+      if (!el) return null;
+      const box = el.getBoundingClientRect();
+      return {
+        left: Math.round(box.left),
+        width: Math.round(box.width),
+        rail: Math.round(document.querySelector('.sidebar').getBoundingClientRect().width),
+      };
+    })(),
   };
 })()`);
 gate(shelf.ghosts === 0, "the skeleton has been replaced by records");
+gate(!!shelf.field && shelf.field.left === 0 && shelf.field.width > shelf.field.rail,
+  "the shelf's field passes under the rail",
+  shelf.field
+    ? `left ${shelf.field.left}, ${shelf.field.width} wide over a ${shelf.field.rail} rail`
+    : "no field");
 gate(shelf.loaded === shelf.covers && shelf.covers > 0,
   "every cover the reader can see has loaded", `${shelf.loaded}/${shelf.covers}`);
 console.log(`      ${shelf.shelves.map((s) => `${s.name}: ${s.cards}`).join(" · ")}`);
@@ -225,14 +245,38 @@ const album = await evaluate(`(() => {
     groups: document.querySelectorAll('.listen-group').length,
     tracks: document.querySelectorAll('.listen-track').length,
     accent: getComputedStyle(document.querySelector('.listen-play-all')).backgroundColor,
-    ambient: !!document.querySelector('.listen-ambient'),
+    /* THE FIELD HAS TO BE OUTSIDE THIS PANE · RESTATED 2026-08-03. This read
+       "is there a .listen-ambient", and passed for a whole wave while the thing
+       it was checking ran up to the rail and stopped dead — an existence gate
+       cannot see a seam. What is measured now is REACH: the element is not
+       inside .listen, and its box starts at the window's own left edge, which
+       is the only arrangement in which the rail's backdrop blur has a stained
+       ground behind it to pick up. */
+    ambient: (() => {
+      const field = document.querySelector('.app-ambient');
+      if (!field) return null;
+      const box = field.getBoundingClientRect();
+      return {
+        outside: !field.closest('.listen'),
+        left: Math.round(box.left),
+        width: Math.round(box.width),
+        window: window.innerWidth,
+      };
+    })(),
     twoLine: getComputedStyle(document.querySelector('.listen-track-title')).webkitLineClamp,
   };
 })()`);
 console.log(`      ${album.name} — ${album.line} · ${album.groups} groups · ${album.tracks} tracks`);
 gate(album.hasAbout && album.more === "More", "the description offers a way in", album.more ?? "no control");
 gate(album.fontPx >= 30, "the record's name is display type", `${album.fontPx}px`);
-gate(album.ambient, "the album carries a field of its own colour");
+gate(
+  !!album.ambient && album.ambient.outside && album.ambient.left === 0
+    && album.ambient.width >= album.ambient.window,
+  "the album's field reaches under the rail",
+  album.ambient
+    ? `left ${album.ambient.left}, ${album.ambient.width} of ${album.ambient.window}, outside the pane: ${album.ambient.outside}`
+    : "no field",
+);
 gate(album.twoLine === "2", "a track title may take two lines", album.twoLine);
 gate(!album.accent.startsWith("rgb(150, 104, 74)"), "the accent is the record's, not the app's seal", album.accent);
 await shot("album");
@@ -297,7 +341,11 @@ await waitFor(`!!document.querySelector('.listen-track')`, "the series episode l
 const series = await evaluate(`(() => ({
   name: document.querySelector('.listen-hero-name')?.textContent,
   line: document.querySelector('.listen-hero-line')?.textContent,
-  ambient: !!document.querySelector('.listen-ambient'),
+  ambient: (() => {
+    const field = document.querySelector('.app-ambient');
+    return !!field && !field.closest('.listen')
+      && Math.round(field.getBoundingClientRect().left) === 0;
+  })(),
   hero: !!document.querySelector('.listen-hero'),
   bar: !!document.querySelector('.listen-bar'),
   years: document.querySelectorAll('.listen-group').length,
