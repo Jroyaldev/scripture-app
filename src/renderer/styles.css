@@ -3282,7 +3282,13 @@ html, body, #root {
 .scripture-workspace-persistence button:focus-visible,
 .scripture-workspace-context-menu button:focus-visible,
 .scripture-workspace-overflow-popover button:focus-visible,
-.scripture-workspace-overflow-popover input:focus-visible,
+/* NOT the search field. It draws its ring on the FRAME around it — see
+   `.scripture-workspace-search:has(:focus-visible)` — and takes `outline: 0`
+   itself to stay out of the way. That reset is one class and one element deep;
+   this list is two and one, so for a year it won the cascade and the field
+   painted BOTH rings, concentric, two pixels apart. The sheet said one thing
+   over there and did another over here. */
+.scripture-workspace-overflow-popover input:not([data-study-all-tabs-search]):focus-visible,
 .scripture-workspace-overflow-popover select:focus-visible {
   outline: 2px solid var(--study-gold);
   outline-offset: 2px;
@@ -3482,6 +3488,28 @@ html, body, #root {
 .scripture-workspace-search:has(:focus-visible) {
   outline: 2px solid var(--study-gold);
   outline-offset: 2px;
+}
+
+/* ── AND NOT ON ARRIVAL · 2026-08-03 ──────────────────────────────────────
+ *
+ * The note above says it plainly — "a field focused FOR the reader gets no
+ * ring, and the overflow popover focuses this field the moment it opens" — and
+ * then the ring was drawn anyway, on every open, including every open by mouse.
+ *
+ * The browser cannot tell the two apart on its own. Per Selectors 4 an element
+ * that takes keyboard input matches `:focus-visible` WHENEVER it is focused,
+ * programmatic focus included, and there is no selector for "the reader did
+ * this". So the panel says so instead: `data-focus-arrival` is on it for
+ * exactly as long as focus is still where the app put it, and the first key or
+ * pointer press the reader makes takes it off and hands the rings back.
+ *
+ * It is stated as one rule over the whole panel rather than repeated on each
+ * ringed selector, because the claim is about the PANEL's state and not about
+ * any control in it — and because the next surface to autofocus something gets
+ * this for free rather than rediscovering it. */
+.popover-panel[data-focus-arrival] :focus-visible,
+.popover-panel[data-focus-arrival] .scripture-workspace-search:has(:focus-visible) {
+  outline: none;
 }
 
 .scripture-workspace-overflow-list {

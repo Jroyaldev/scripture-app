@@ -191,6 +191,56 @@ test("text entry answers a click with the wash and a seal caret, not a ring", ()
     css,
     /\.scripture-workspace-search:has\(:focus-visible\) \{\s*outline: 2px solid var\(--study-gold\);\s*outline-offset: 2px;/,
   );
+
+  /* AND THE FIELD IS EXCLUDED FROM THE PANEL-WIDE RULE, which is the half of
+     this that was only ever true in prose. The reset above is one class and one
+     element deep; `.scripture-workspace-overflow-popover input:focus-visible`
+     is two and one — so it won the cascade and the field painted BOTH rings,
+     concentric, two pixels apart, on every open of All Tabs. The sheet said the
+     frame rings on the input's behalf and then ringed the input as well. */
+  assert.match(
+    css,
+    /\.scripture-workspace-overflow-popover input:not\(\[data-study-all-tabs-search\]\):focus-visible,/,
+  );
+});
+
+test("a focus the reader did not ask for is not a focus they see ringed", () => {
+  const css = read("src/renderer/styles.css");
+  const popover = read("src/renderer/components/Popover.tsx");
+
+  /* §4's own words, from the search frame's note: "a field focused FOR the
+     reader gets no ring, and the overflow popover focuses this field the moment
+     it opens". It was written, and then the ring was drawn anyway — on every
+     open, including every open by mouse.
+
+     The browser cannot tell the two apart. Per Selectors 4 an element that takes
+     keyboard input matches `:focus-visible` WHENEVER it is focused, programmatic
+     focus included, and there is no selector for "the reader did this". So the
+     panel carries the distinction: `data-focus-arrival` is on it for exactly as
+     long as focus is still where the app put it. */
+  assert.match(popover, /panel\.setAttribute\("data-focus-arrival", ""\);/);
+  assert.ok(
+    popover.indexOf('panel.setAttribute("data-focus-arrival"')
+      < popover.indexOf('target.focus({ preventScroll: true })'),
+    "the marker goes on before the focus it is about, or one frame rings anyway",
+  );
+
+  /* THE READER TAKES IT OFF, with anything at all. The listeners are broad and
+     capture-phase on purpose: a reader who has pressed a key or put a pointer
+     down inside the panel has arrived under their own power, and a narrow list
+     of "navigation keys" is a list that goes stale the first time a surface
+     invents a gesture. */
+  assert.match(popover, /panel\.addEventListener\("keydown", depart, true\);/);
+  assert.match(popover, /panel\.addEventListener\("pointerdown", depart, true\);/);
+
+  /* Stated once over the whole panel rather than repeated on each ringed
+     selector: the claim is about the PANEL's state, not about any control in
+     it — and the next surface to autofocus something gets this for free rather
+     than rediscovering it. */
+  assert.match(
+    css,
+    /\.popover-panel\[data-focus-arrival\] :focus-visible,\s*\n\.popover-panel\[data-focus-arrival\] \.scripture-workspace-search:has\(:focus-visible\) \{\s*outline: none;\s*\}/,
+  );
 });
 
 test("a programmatic landing spot says where focus went", () => {

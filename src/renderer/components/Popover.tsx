@@ -147,6 +147,27 @@ export function Popover({
     }
   }, [anchorRect, boundaryRect, position]);
 
+  /* A FOCUS THE READER DID NOT ASK FOR IS NOT A FOCUS THEY SHOULD SEE RINGED.
+   *
+   * Opening a popover puts the caret somewhere useful — a search field, a name
+   * to replace — and that is a courtesy, not a keyboard gesture. But the browser
+   * cannot tell the two apart: per Selectors 4 an element that takes keyboard
+   * input matches `:focus-visible` WHENEVER it is focused, programmatically
+   * included. So a text field focused on the reader's behalf paints a ring, on
+   * every open, mouse or keyboard alike — which is the app announcing a keyboard
+   * mode nobody entered.
+   *
+   * `data-focus-arrival` is that distinction, written down. It is on the panel
+   * for exactly as long as focus is still where WE put it; the sheet suppresses
+   * rings inside it, and the first move the reader makes themselves takes it off
+   * and hands the rings back. Nothing needs to put it back: the next arrival is
+   * a new panel.
+   *
+   * The clearing listeners are deliberately broad and deliberately capture-phase
+   * — every key, every pointer press, anywhere in the panel. A reader who has
+   * pressed anything at all has arrived under their own power, and a narrow list
+   * of "navigation keys" is a list that goes stale the first time a surface
+   * invents a gesture. */
   useEffect(() => {
     if (!anchorRect || !position || !initialFocus) return;
     const timer = window.setTimeout(() => {
@@ -157,10 +178,23 @@ export function Popover({
       );
       const preferred = initialFocusRef?.current;
       const target = preferred && panel.contains(preferred) ? preferred : first ?? panel;
+      panel.setAttribute("data-focus-arrival", "");
       target.focus({ preventScroll: true });
     }, 0);
     return () => window.clearTimeout(timer);
   }, [anchorRect, initialFocus, initialFocusRef, position]);
+
+  useEffect(() => {
+    const panel = panelRef.current;
+    if (!panel || !anchorRect || !initialFocus) return;
+    const depart = (): void => panel.removeAttribute("data-focus-arrival");
+    panel.addEventListener("keydown", depart, true);
+    panel.addEventListener("pointerdown", depart, true);
+    return () => {
+      panel.removeEventListener("keydown", depart, true);
+      panel.removeEventListener("pointerdown", depart, true);
+    };
+  }, [anchorRect, initialFocus, position]);
 
   useEffect(() => {
     if (!anchorRect) return;
