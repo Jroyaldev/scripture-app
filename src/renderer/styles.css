@@ -3722,19 +3722,79 @@ html, body, #root {
   filter: none;
 }
 
-.scripture-workspace-tab-wrap[data-study-drop="before"]::before,
-.scripture-workspace-tab-wrap[data-study-drop="after"]::after {
-  content: "";
-  position: absolute;
-  top: 4px;
-  bottom: 4px;
-  width: 2px;
-  border-radius: 1px;
-  background: var(--text-secondary);
+/* ── THE RUN OPENS A SLOT · 2026-08-03 ────────────────────────────────────
+
+   A 2px rule stood between two tabs here, faded in over 120ms, in seal. It was
+   drawn from B2 and it was the browser idiom this register was otherwise built
+   to refuse: a hairline appearing at an arbitrary edge, with nothing on screen
+   responding to the gesture that put it there. The maintainer named it exactly —
+   "a rather ugly random vertical line", and "not interactive".
+
+   The tabs answer now. Pass a neighbour's middle and it steps aside; the gap
+   that opens IS the slot, and nothing is drawn that was not already on screen.
+   That is also the only version of this that can be said to be INTERACTIVE — a
+   rule is a label for a decision the app has made, and a run that moves is the
+   decision itself.
+
+   The transition is on `--transition-normal`, the sheet's declared transform
+   tier. The transport tier is fenced to the player's column by its own comment
+   and this is not a third exception.
+
+   THE ATTRIBUTE IS WHY THIS IS SAFE. A wrap carries a 150ms entrance animation
+   on mount, and a transform transition declared at rest would run against it
+   every time a tab opens — two motions on one property, and neither wins.
+   `[data-drag-live]` exists only while a drag does, so the two never meet, and
+   reduced motion still reaches this through the wrap rule it already kills. */
+.scripture-workspace-viewport[data-drag-live] .scripture-workspace-tab-wrap {
+  transform: translateX(var(--tab-shift, 0px));
+  transition: transform var(--transition-normal);
 }
 
-.scripture-workspace-tab-wrap[data-study-drop="before"]::before { left: -1px; }
-.scripture-workspace-tab-wrap[data-study-drop="after"]::after { right: -1px; }
+/* The dragged tab is not a sibling and does not take the shuffle's transition:
+   it is following a pointer, and a transition on that is a tab lagging behind
+   the hand holding it. Its transform is the same declaration one rule down. */
+.scripture-workspace-viewport[data-drag-live] .scripture-workspace-tab-wrap.is-dragging {
+  transition: filter var(--transition-fast), opacity var(--transition-fast);
+}
+
+/* AND THE LAST OF THE DISTANCE IS TRAVELLED, not skipped. On the drop the tab
+   is put back where the reader last saw it and the offset is cleared under this
+   transition, so it glides into the slot it is already in rather than appearing
+   there. It is the same `--tab-drag-x` the drag writes — one transform,
+   declared once, with the gesture and its ending both contributing a number.
+
+   The transform is RESTATED here and that is not redundancy: `--tab-drag-x` is
+   read by `.is-dragging`, and by the time this class goes on, the drop has
+   already taken that one off. A settle that only declared a transition would be
+   transitioning a property nothing was reading — which is exactly what it did
+   for one build, and it looks like the snap it was written to replace. */
+.scripture-workspace-tab-wrap.is-settling {
+  transform: translateX(var(--tab-drag-x, 0px));
+  transition: transform var(--transition-normal);
+}
+
+/* ── THE HAND KEEPS ITS GRIP · 2026-08-03 ─────────────────────────────────
+
+   `cursor: grabbing` on the tab is lost the moment the pointer leaves it, and
+   on this gesture that is most of the drag: over the strip's own ground, over
+   the page, over the study list. The reader lets go of the tab visually while
+   still holding it, which is the thing this whole pass is about.
+
+   It cannot be done with an overlay. The drop target is found with
+   `elementFromPoint`, and a layer over the document is precisely what would
+   break it — and an element at `pointer-events: none` carries no cursor at all.
+   So the attribute goes on the document for the length of the gesture and this
+   answers it.
+
+   `!important` is the honest instrument rather than a shortcut: every control
+   under the pointer declares its own cursor, and a menu row's `pointer` beats an
+   attribute selector on an ancestor by specificity every time. The alternative
+   is restating this against a list of selectors that would go stale the first
+   time anything new is drawn. */
+html[data-tab-drag],
+html[data-tab-drag] * {
+  cursor: grabbing !important;
+}
 
 /* Context and reorder/move menus float on the shared --bg-float material. */
 .popover-panel.scripture-workspace-context-popover,

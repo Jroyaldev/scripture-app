@@ -108,6 +108,95 @@ interface WorkspaceDragState {
   insertionIndex: number;
   /** A study chip the pointer is over, which outranks the insertion slot. */
   studyId: string | null;
+  /** How far each OTHER tab has stepped aside to open the slot, in pixels. */
+  shifts: Map<string, number>;
+}
+
+/** One tab's box as it stood when the drag began. */
+export interface TabSlot {
+  id: string;
+  left: number;
+  width: number;
+}
+
+/**
+ * WHERE THE RUN GOES WHEN A TAB IS LIFTED OUT OF IT.
+ *
+ * The register used to answer "where will it land" with a 2px rule standing
+ * between two tabs. That is the browser idiom this design was drawn to refuse,
+ * and the maintainer read it as what it is — a vertical line appearing at an
+ * arbitrary edge, with nothing on screen responding to the gesture making it.
+ * So the tabs answer instead: pass a neighbour's middle and it moves aside, and
+ * the gap that opens IS the slot. Nothing is drawn that was not already there.
+ *
+ * THE MEASUREMENTS ARE A SNAPSHOT AND MUST BE. The old midpoint loop read live
+ * rects every frame, which is correct only while nothing moves; the moment a
+ * sibling slides aside its live rect is somewhere the layout never put it, and
+ * the next frame measures the consequence of the last one. That is a feedback
+ * loop, and it reads as tabs shuddering under the pointer. Every number here
+ * comes from the run as it stood at the threshold.
+ *
+ * AND THE SHIFT IS A POSITIONAL DELTA, never a constant. Tabs are 2px apart —
+ * except across the SELECTED tab, which carries `margin-inline: 14px` to reserve
+ * its fillets' footprint, and drops the start side of that at `[data-flush-start]`.
+ * So a run's gaps are genuinely uneven, and a sibling asked to move "one tab
+ * width" would land between two slots. What a sibling steps by is the distance
+ * between the two snapshot positions it is stepping between, which is exact
+ * whatever the margins are doing.
+ *
+ * Returns the insertion index in the ORIGINAL ordering (what
+ * `studyWorkspaceDragReorderPosition` expects) and the per-tab shift in pixels.
+ */
+export function studyWorkspaceDragShuffle(
+  slots: readonly TabSlot[],
+  draggedIndex: number,
+  draggedCenter: number,
+): { insertionIndex: number; shifts: Map<string, number> } {
+  const shifts = new Map<string, number>();
+  const dragged = slots[draggedIndex];
+  if (!dragged) return { insertionIndex: draggedIndex, shifts };
+
+  /* The slot the pointer is over: the last one whose middle the dragged tab's
+     centre has passed. Walking rather than searching keeps the rule readable —
+     "past half way" is stated once, in the comparison. */
+  let target = draggedIndex;
+  while (target > 0) {
+    const before = slots[target - 1]!;
+    if (draggedCenter >= before.left + before.width / 2) break;
+    target -= 1;
+  }
+  while (target < slots.length - 1) {
+    const after = slots[target + 1]!;
+    if (draggedCenter <= after.left + after.width / 2) break;
+    target += 1;
+  }
+
+  /* Everything between the tab's old slot and its new one steps over by one
+     slot, in the direction that opens the gap. The step is the difference
+     between the two snapshot lefts, which is what makes it exact under uneven
+     margins — see the note above. */
+  if (target < draggedIndex) {
+    for (let index = target; index < draggedIndex; index += 1) {
+      shifts.set(slots[index]!.id, slots[index + 1]!.left - slots[index]!.left);
+    }
+  } else if (target > draggedIndex) {
+    for (let index = draggedIndex + 1; index <= target; index += 1) {
+      shifts.set(slots[index]!.id, slots[index - 1]!.left - slots[index]!.left);
+    }
+  }
+
+  /* AND THE INDEX IS CONVERTED HERE rather than in the helper that consumes it.
+     `target` is the SLOT the tab ends up in; `studyWorkspaceDragReorderPosition`
+     takes "insert before index i" in the run as it stands, dragged tab included,
+     and subtracts one itself when the insertion is to the right. The two are the
+     same fact counted from opposite ends, and the conversion belongs on this
+     side: that helper is shared with the keyboard path and its arithmetic has
+     its own contract. A shuffle that redefined its argument would be a change to
+     reordering, dressed as a change to a drop indicator. */
+  return {
+    insertionIndex: target >= draggedIndex ? target + 1 : target,
+    shifts,
+  };
 }
 
 /**
@@ -376,8 +465,18 @@ export function ScriptureWorkspaceTabs({
       started: boolean;
       insertionIndex: number;
       studyId: string | null;
+      /** The run as it stood when the gesture became a drag. See the shuffle. */
+      slots: TabSlot[];
+      draggedIndex: number;
     } | null
   >(null);
+  /* WHERE THE DRAGGED TAB WAS LAST SEEN, kept for the settle.
+     A drop commits a reorder, React re-lays the run out, and the tab would
+     otherwise appear in its new slot with no travel between the two — the one
+     moment in the gesture where the app knows exactly where the reader is
+     looking and says nothing. This holds the visual left across the commit so
+     the layout effect below can play the difference back. */
+  const settleRef = useRef<{ tabId: string; left: number } | null>(null);
   const suppressTabClickRef = useRef(false);
   const rovingFocusNonceRef = useRef(0);
   // Symmetric exit motion: a closed tab leaves a decorative ghost that collapses
@@ -616,6 +715,58 @@ export function ScriptureWorkspaceTabs({
     return () => query.removeEventListener("change", onChange);
   }, []);
 
+  /* THE TAB TRAVELS THE LAST OF THE WAY ITSELF.
+
+     A reorder commits, React re-lays the run out, and the tab is suddenly in its
+     new slot. It never crossed the distance — which is the one motion in this
+     gesture the reader has actually earned, and the only frame where the app
+     knows exactly where they are looking.
+
+     So the difference is played back. `settleRef` holds where the tab was when
+     the pointer let go; this runs in the layout phase, after the new positions
+     exist and before anything is painted, and puts the tab back where it was
+     with the transition off — then clears the offset on the next frame with the
+     transition on, so it glides into the slot it is already in.
+
+     It is the same `--tab-drag-x` the drag itself writes, which is deliberate:
+     the transform is declared once, in the sheet, and both the gesture and its
+     ending contribute a number to it. Two properties would be two chances for
+     them to disagree about where the tab is.
+
+     Reduced motion skips the whole thing rather than shortening it — a settle IS
+     the motion, and a zero-length one is just the snap it was written against. */
+  useLayoutEffect(() => {
+    const pending = settleRef.current;
+    settleRef.current = null;
+    if (!pending || prefersReducedMotionRef.current) return;
+    const wrap = tabRefs.current.get(pending.tabId)?.parentElement;
+    if (!wrap) return;
+    const travelled = pending.left - wrap.getBoundingClientRect().left;
+    // Under a pixel is not a journey; playing it back would be a frame of
+    // motion nobody asked for on every drop that changed nothing.
+    if (Math.abs(travelled) < 1) return;
+    wrap.style.setProperty("--tab-drag-x", `${travelled}px`);
+    // Reading a layout property between the write and the class is what makes
+    // the browser treat them as two states rather than one — without it the
+    // start and end are coalesced into the same style recalculation and there is
+    // nothing to transition between.
+    void wrap.offsetWidth;
+    wrap.classList.add("is-settling");
+    wrap.style.removeProperty("--tab-drag-x");
+    /* AND IT IS TAKEN OFF ON A TIMER AS WELL AS ON THE EVENT. `transitionend`
+       does not fire if the browser coalesces the two states into one recalc, or
+       if the tab is unmounted mid-glide, and a wrap left wearing this class
+       carries a transform transition into every later layout change. The event
+       is the fast path; the timer is the one that cannot be skipped. */
+    const done = (): void => {
+      window.clearTimeout(fallback);
+      wrap.classList.remove("is-settling");
+      wrap.removeEventListener("transitionend", done);
+    };
+    const fallback = window.setTimeout(done, 400);
+    wrap.addEventListener("transitionend", done);
+  }, [registerTabIds]);
+
   // Track tab geometry each commit so a removed tab can be replayed as a
   // collapsing ghost. Runs in layout phase: the diff uses the geometry captured
   // on the previous commit (still valid for the just-removed tab), then records
@@ -835,20 +986,28 @@ export function ScriptureWorkspaceTabs({
       tabId,
       groupId,
       started: false,
-      insertionIndex: 0,
+      /* NOT 0. Zero is a real slot — the first one — and the guard below only
+         renders when the slot CHANGES, so a drag whose first computed slot was
+         zero would never paint at all. -1 is the honest "not yet asked". */
+      insertionIndex: -1,
       studyId: null,
+      slots: [],
+      draggedIndex: -1,
     };
   };
 
-  /* Put a dragged tab back where the layout says it lives.
+  /* EVERY EXIT FROM A DRAG COMES THROUGH HERE — the drop, the cancel, and the
+     drop that turns into a confirmation the reader then refuses.
 
-     Every exit from a drag goes through here — drop, cancel, and the drop that
-     turns into a confirmation the reader then refuses — because the offset is
-     on the node and React has no idea it is there. One function rather than the
-     same two lines at three call sites: a drag that ends down a path nobody
-     wrote a cleanup for is a tab stranded mid-air, which is the failure this
-     shape of code always has. */
-  const releaseDragTransform = (tabId: string | undefined): void => {
+     It is one function because the state a drag leaves behind is written in
+     three places React cannot see: an offset on the dragged node, a `grabbing`
+     cursor on the document, and whatever the sheet is transitioning. A gesture
+     that ends down a path nobody wrote a cleanup for leaves a tab stranded
+     mid-air under a cursor that will not change back, and this shape of code
+     always fails that way — so there is exactly one way out and every path takes
+     it. */
+  const endDrag = (tabId: string | undefined): void => {
+    document.documentElement.removeAttribute("data-tab-drag");
     if (!tabId) return;
     tabRefs.current.get(tabId)?.parentElement?.style.removeProperty("--tab-drag-x");
   };
@@ -863,6 +1022,27 @@ export function ScriptureWorkspaceTabs({
       if (Math.hypot(event.clientX - origin.x, event.clientY - origin.y) < DRAG_THRESHOLD_PX) return;
       origin.started = true;
       try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* capture is best-effort */ }
+      /* THE RUN IS MEASURED ONCE, HERE, and every question the drag asks is
+         asked of this snapshot. Measuring live would mean measuring the
+         consequence of the previous frame — a sibling that has stepped aside is
+         no longer where the layout put it — and that is a feedback loop, not a
+         measurement. See studyWorkspaceDragShuffle. */
+      const entry = groups.find((candidate) => candidate.group.id === groupId);
+      origin.slots = (entry?.tabs ?? []).flatMap((tab) => {
+        const wrap = tabRefs.current.get(tab.id)?.parentElement;
+        if (!wrap) return [];
+        const rect = wrap.getBoundingClientRect();
+        return [{ id: tab.id, left: rect.left, width: rect.width }];
+      });
+      origin.draggedIndex = origin.slots.findIndex((slot) => slot.id === origin.tabId);
+      /* AND THE CURSOR IS THE DOCUMENT'S PROBLEM for the length of the gesture.
+         `grabbing` on the tab alone is lost the instant the pointer leaves it,
+         which on this surface is most of the drag — over the strip's ground,
+         over the page, over the study list. It cannot be done with an overlay:
+         the drop target is found with `elementFromPoint`, and a layer over the
+         document is the one thing that would break it. So the attribute goes on
+         the document and the sheet answers it. */
+      document.documentElement.setAttribute("data-tab-drag", "");
       // Announced HERE and not at pointerdown: the study control opens its list
       // on this, and a plain click on a tab must not open one. The threshold is
       // already the line this code draws between a press and a drag.
@@ -890,23 +1070,32 @@ export function ScriptureWorkspaceTabs({
       document.elementFromPoint(event.clientX, event.clientY),
       groupId,
     );
-    if (studyId !== origin.studyId) onTabDragOverStudy(studyId);
+    const settledStudyId = origin.studyId;
+    if (studyId !== settledStudyId) onTabDragOverStudy(studyId);
     origin.studyId = studyId;
-    const entry = groups.find((candidate) => candidate.group.id === groupId);
-    if (!entry) return;
-    const orderedIds = entry.tabs.map((tab) => tab.id);
-    let insertionIndex = orderedIds.length;
-    for (let index = 0; index < orderedIds.length; index += 1) {
-      const node = tabRefs.current.get(orderedIds[index]);
-      if (!node) continue;
-      const rect = node.getBoundingClientRect();
-      if (event.clientX < rect.left + rect.width / 2) {
-        insertionIndex = index;
-        break;
-      }
-    }
+    /* THE SLOT, FROM THE SNAPSHOT. The dragged tab's centre is where it started
+       plus how far the pointer has travelled — never its live rect, which is the
+       thing being moved. */
+    const held = origin.slots[origin.draggedIndex];
+    if (!held) return;
+    const { insertionIndex, shifts } = studyWorkspaceDragShuffle(
+      origin.slots,
+      origin.draggedIndex,
+      held.left + (event.clientX - origin.x) + held.width / 2,
+    );
+    /* AND STATE IS SET ONLY WHEN SOMETHING DISCRETE CHANGED.
+       This used to build a fresh object every pointermove, so every frame of
+       every drag re-rendered the whole strip — six hundred and seventy-six rows
+       in a long study, to move one tab — which is the cost the `--tab-drag-x`
+       write above exists to avoid, paid anyway one line later. The tab's own
+       travel stays imperative and touches one node; the siblings' positions are
+       a fact about which SLOT the pointer is in, and that changes a handful of
+       times in a whole gesture. Render for the discrete thing, write for the
+       continuous one. */
+    const settledIndex = origin.insertionIndex;
     origin.insertionIndex = insertionIndex;
-    setDragState({ tabId: origin.tabId, groupId, insertionIndex, studyId });
+    if (studyId === settledStudyId && insertionIndex === settledIndex) return;
+    setDragState({ tabId: origin.tabId, groupId, insertionIndex, studyId, shifts });
   };
 
   const handleTabPointerUp = async (
@@ -916,11 +1105,20 @@ export function ScriptureWorkspaceTabs({
   ): Promise<void> => {
     const origin = dragPointerRef.current;
     dragPointerRef.current = null;
+    /* WHERE THE READER LAST SAW IT, recorded before anything is torn down.
+       A drop commits a reorder and React re-lays the run out; without this the
+       tab would vanish from under the pointer and reappear in its new slot, and
+       the one moment in the gesture when the app knows exactly where the eye is
+       says nothing. The settle effect below plays the difference back. */
+    if (origin?.started && !origin.studyId) {
+      const wrap = tabRefs.current.get(origin.tabId)?.parentElement;
+      if (wrap) settleRef.current = { tabId: origin.tabId, left: wrap.getBoundingClientRect().left };
+    }
     setDragState(null);
     // The tab goes home before anything else happens. It is written on the node,
     // so nothing in a re-render clears it and a dropped tab left carrying a
     // 300px offset would simply stay there.
-    releaseDragTransform(origin?.tabId);
+    endDrag(origin?.tabId);
     if (origin?.studyId) onTabDragOverStudy(null);
     // The list may close now: which study was under the pointer is already read
     // off `origin`, so the move below does not depend on the rows still being
@@ -945,7 +1143,7 @@ export function ScriptureWorkspaceTabs({
   };
 
   const handleTabPointerCancel = (): void => {
-    releaseDragTransform(dragPointerRef.current?.tabId);
+    endDrag(dragPointerRef.current?.tabId);
     if (dragPointerRef.current?.studyId) onTabDragOverStudy(null);
     // A cancelled drag ends the drag. The list would otherwise be left open by a
     // gesture the platform tore up — the one path where nothing else runs.
@@ -1128,6 +1326,14 @@ export function ScriptureWorkspaceTabs({
           scrollEdges.left ? "is-scrollable-left" : "",
           scrollEdges.right ? "is-scrollable-right" : "",
         ].filter(Boolean).join(" ")}
+        /* THE SHUFFLE'S TRANSITION LIVES ON THIS ATTRIBUTE and therefore only
+           exists while a drag does. A wrap carries a 150ms entrance animation on
+           mount, and a transform transition declared at rest would run against
+           it every time a tab is opened — two motions on one property, which is
+           a fight neither wins. Scoped here, the transition is switched on at
+           the threshold and off at the drop, and reduced motion still reaches it
+           through the wrap rule it already kills. */
+        data-drag-live={dragState ? "" : undefined}
         role="tablist"
         aria-label="Open study tabs"
         onDoubleClick={handleViewportDoubleClick}
@@ -1164,7 +1370,7 @@ export function ScriptureWorkspaceTabs({
            one.
 
            What is left is the study's members, in the study's own order. */
-        return tabs.map((tab, tabIndex) => {
+        return tabs.map((tab) => {
           const label = studyWorkspaceTabLabel(workspace, tab, bookNames);
           const labelParts = studyWorkspaceTabLabelParts(workspace, tab, bookNames);
           const selected = workspace.activeTabId === tab.id;
@@ -1173,24 +1379,23 @@ export function ScriptureWorkspaceTabs({
           const canClose = closeAvailability !== "unavailable";
           const closeCopy = studyWorkspaceCloseActionCopy(label, closeAvailability);
           const dragging = dragState?.tabId === tab.id;
-          // A drag over a study chip has left the row's question behind, so the
-          // row stops answering it: one drop indicator at a time, and it is on
-          // the surface the pointer is over.
+          // A drag over a study has left the row's question behind, so the run
+          // stops answering it: the tabs close back up and the only thing saying
+          // where this lands is the surface the pointer is actually over.
           const overStudy = dragState?.studyId != null;
-          const dropBefore = !overStudy
-            && dragState?.groupId === group.id
-            && dragState.insertionIndex === tabIndex;
-          const dropAfter = !overStudy
-            && dragState?.groupId === group.id
-            && tabIndex === tabs.length - 1
-            && dragState.insertionIndex >= tabs.length;
+          /* HOW FAR THIS TAB HAS STEPPED ASIDE. Zero for every tab until the
+             dragged one passes its middle, and then the distance to the slot it
+             is giving up — a positional delta from the drag's own snapshot, not
+             a tab width, because the run's gaps are uneven wherever the selected
+             tab's fillet margins fall. See studyWorkspaceDragShuffle. */
+          const shift = overStudy ? 0 : dragState?.shifts.get(tab.id) ?? 0;
           return (
             <div
               className={`scripture-workspace-tab-wrap${selected ? " is-selected" : ""}${dragging ? " is-dragging" : ""}`}
               role="presentation"
               key={tab.id}
               data-study-group-id={group.id}
-              data-study-drop={dropBefore ? "before" : dropAfter ? "after" : undefined}
+              style={shift ? { "--tab-shift": `${shift}px` } as React.CSSProperties : undefined}
               /* THE TAB SETTLES ONCE IT HAS SOMEWHERE TO GO. Lifted, it is a
                  card held above the strip; over a study it eases down and back
                  a little, because the affirmation has moved to the destination

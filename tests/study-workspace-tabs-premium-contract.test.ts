@@ -92,7 +92,11 @@ test("one global APG tablist contains one study's tabs, with one roving stop", (
      2026-07-30, because there is one study in the strip and it has no head, no
      proxy and no interval to another study; `members` was a name for "what is
      left over", and what is left over is the tabs. */
-  assert.match(tablist, /return tabs\.map\(\(tab, tabIndex\) => \{/,
+  /* The index binding went with the insertion rule on 2026-08-03: it existed to
+     compare a tab's position against the drop slot, and the slot is not drawn as
+     a rule between two tabs any more — the run opens a gap instead, and which
+     tab has stepped aside is looked up by id. The claim is unchanged. */
+  assert.match(tablist, /return tabs\.map\(\(tab\) => \{/,
     "the strip renders one study's tabs and nothing standing for the study");
   /* Declarations only. This file records a retirement by quoting the rule that
      was retired, so a "may not come back" check that reads comments fails on

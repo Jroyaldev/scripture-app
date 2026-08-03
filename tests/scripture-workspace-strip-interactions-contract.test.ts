@@ -4,6 +4,7 @@ import { resolve } from "node:path";
 import { test } from "node:test";
 import {
   studyDropTargetId,
+  studyWorkspaceDragShuffle,
   studyWorkspaceDragReorderPosition,
   studyWorkspaceWheelScrollDelta,
 } from "../src/renderer/components/ScriptureWorkspaceTabs.js";
@@ -22,6 +23,12 @@ const source = readFileSync(
   resolve(import.meta.dirname, "../src/renderer/components/ScriptureWorkspaceTabs.tsx"),
   "utf8",
 );
+/* Both sheets, because the register's drag rules live in two files: styles.css
+   declares them and styles/register.css overrode the retired insertion rule to
+   repaint it gold. A "this is gone" check that read only one of them would pass
+   on the half that was deleted. */
+const styles = readFileSync(resolve(import.meta.dirname, "../src/renderer/styles.css"), "utf8")
+  + readFileSync(resolve(import.meta.dirname, "../src/renderer/styles/register.css"), "utf8");
 
 function section(start: string, end: string): string {
   const startIndex = source.indexOf(start);
@@ -205,7 +212,8 @@ test("middle-click closes the tab under the pointer, and every tab is one tab", 
   );
 });
 
-test("pointer drag is thresholded and paints a lift plus a drop indicator", () => {
+test("pointer drag is thresholded, and the run itself opens the slot", () => {
+  const onMoveHandler = section("const handleTabPointerMove", "const handleTabPointerUp");
   assert.match(source, /const DRAG_THRESHOLD_PX = 4/);
   assert.match(source, /onPointerDown=\{\(event\) => handleTabPointerDown/);
   assert.match(source, /onPointerMove=\{\(event\) => handleTabPointerMove/);
@@ -213,7 +221,96 @@ test("pointer drag is thresholded and paints a lift plus a drop indicator", () =
   assert.match(source, /Math\.hypot\(event\.clientX - origin\.x, event\.clientY - origin\.y\) < DRAG_THRESHOLD_PX/);
   assert.match(source, /studyWorkspaceDragReorderPosition\(orderedIds, tabId, origin\.insertionIndex\)/);
   assert.match(source, /dragging \? " is-dragging" : ""/);
-  assert.match(source, /data-study-drop=\{dropBefore \? "before" : dropAfter \? "after" : undefined\}/);
+
+  /* THE RUN ANSWERS, RATHER THAN A RULE BETWEEN TWO TABS · 2026-08-03.
+     This pinned `data-study-drop={dropBefore ? "before" : dropAfter ? "after"
+     : undefined}` — a 2px seal hairline at a wrap's edge, from B2. The
+     maintainer read it as what it looks like: "a rather ugly random vertical
+     line", with nothing responding to the hand that summoned it. A rule is a
+     LABEL for a decision; a run that moves IS the decision. Pass a neighbour's
+     middle and it steps aside, and the gap that opens is the slot.
+
+     What replaces the pin is the arithmetic, tested directly below, and the
+     three properties that keep it honest. */
+  assert.doesNotMatch(source, /data-study-drop=/, "the insertion rule is gone from the render");
+  assert.doesNotMatch(styles, /\[data-study-drop="(?:before|after)"\]/,
+    "and from the sheet — both of them, since register.css repainted it gold");
+
+  /* THE RUN IS MEASURED ONCE, at the threshold. Measuring live would measure
+     the consequence of the previous frame — a sibling that has stepped aside is
+     no longer where the layout put it — which is a feedback loop, not a
+     measurement, and it reads as tabs shuddering under the pointer. */
+  assert.match(onMoveHandler, /origin\.slots = \(entry\?\.tabs \?\? \[\]\)\.flatMap/);
+  assert.match(onMoveHandler, /origin\.draggedIndex = origin\.slots\.findIndex/);
+  assert.match(onMoveHandler, /held\.left \+ \(event\.clientX - origin\.x\) \+ held\.width \/ 2/,
+    "the dragged centre comes from the snapshot plus pointer travel, never its live rect");
+
+  /* AND THE STRIP RENDERS ONLY WHEN THE SLOT CHANGES. It used to build a fresh
+     state object every pointermove, so every frame re-rendered the whole strip —
+     676 rows in a long study, to move one tab — which is the cost the
+     `--tab-drag-x` write exists to avoid, paid anyway one line later. The tab's
+     travel stays imperative and touches one node; which slot the pointer is in
+     changes a handful of times in a whole gesture. */
+  assert.match(onMoveHandler, /if \(studyId === settledStudyId && insertionIndex === settledIndex\) return;/);
+  assert.match(source, /insertionIndex: -1,/,
+    "-1, because 0 is a real slot and a first frame landing on it must still paint");
+
+  /* THE TRANSITION EXISTS ONLY WHILE A DRAG DOES. A wrap carries a 150ms
+     entrance animation on mount, and a transform transition declared at rest
+     would run against it every time a tab opens — two motions on one property.
+     Reduced motion still reaches it through the wrap rule it already kills. */
+  assert.match(source, /data-drag-live=\{dragState \? "" : undefined\}/);
+  assert.match(styles, /\.scripture-workspace-viewport\[data-drag-live\] \.scripture-workspace-tab-wrap \{\s*transform: translateX\(var\(--tab-shift, 0px\)\);\s*transition: transform var\(--transition-normal\);/);
+
+  /* A SIBLING STEPS BY A POSITIONAL DELTA, never a tab width. Tabs are 2px
+     apart except across the SELECTED one, which carries 14px of fillet margin on
+     each side and drops the start side at [data-flush-start] — so a run's gaps
+     are genuinely uneven and a constant would land a tab between two slots. */
+  const runToSlotTwo = studyWorkspaceDragShuffle(
+    [{ id: "a", left: 0, width: 100 }, { id: "b", left: 102, width: 100 }, { id: "c", left: 230, width: 100 }],
+    0,
+    300,
+  );
+  assert.deepEqual([...runToSlotTwo.shifts], [["b", -102], ["c", -128]],
+    "each sibling steps to the position the one before it is giving up");
+  assert.equal(runToSlotTwo.insertionIndex, 3);
+  const stayPut = studyWorkspaceDragShuffle(
+    [{ id: "a", left: 0, width: 100 }, { id: "b", left: 102, width: 100 }],
+    0,
+    60,
+  );
+  assert.equal(stayPut.shifts.size, 0, "under half way is not a move");
+  /* ONE, NOT ZERO, and the difference is the whole reason the conversion is on
+     this side. `insertionIndex` is "insert before index i in the run as it
+     stands, dragged tab included" — so a tab at slot 0 that has not moved is
+     inserted before slot 1. `studyWorkspaceDragReorderPosition` subtracts the
+     one back off and returns null, which is the no-op this is. A shuffle that
+     redefined that argument would be a change to reordering wearing a drop
+     indicator's clothes. */
+  assert.equal(stayPut.insertionIndex, 1);
+  assert.equal(
+    studyWorkspaceDragReorderPosition(["a", "b"], "a", stayPut.insertionIndex),
+    null,
+    "and the helper it feeds reads that as staying put",
+  );
+  const leftward = studyWorkspaceDragShuffle(
+    [{ id: "a", left: 0, width: 100 }, { id: "b", left: 102, width: 100 }],
+    1,
+    40,
+  );
+  assert.deepEqual([...leftward.shifts], [["a", 102]], "and it works in the other direction");
+  assert.equal(leftward.insertionIndex, 0);
+
+  /* THE LAST OF THE DISTANCE IS TRAVELLED, not skipped. A drop commits a
+     reorder and React re-lays the run out; without this the tab vanishes from
+     under the pointer and reappears in its slot, in the one frame where the app
+     knows exactly where the reader is looking. */
+  assert.match(source, /settleRef\.current = \{ tabId: origin\.tabId, left: wrap\.getBoundingClientRect\(\)\.left \};/);
+  assert.match(source, /wrap\.classList\.add\("is-settling"\);/);
+  assert.match(styles, /\.scripture-workspace-tab-wrap\.is-settling \{\s*transform: translateX\(var\(--tab-drag-x, 0px\)\);/,
+    "the settle must RESTATE the transform: .is-dragging has already been taken off by the time it runs");
+  assert.match(source, /const fallback = window\.setTimeout\(done, 400\);/,
+    "transitionend does not fire on a coalesced recalc, and a stranded class carries a transition into every later layout");
   /* A PICKED-UP TAB TRAVELS WITH THE POINTER · 2026-08-03. It used to sit still
      at `opacity: .55`, which said the wrong thing twice: half opacity is this
      app's idiom for DISABLED, and a tab that does not move while the pointer
@@ -281,22 +378,32 @@ test("a drag that reaches a study is asking for a study, not for a slot", () => 
      so React has no idea it is there and nothing in a re-render clears it. A
      drag that ends down a path nobody wrote a cleanup for is a tab left hanging
      in mid-air and a list left open over the page. */
-  assert.match(up, /releaseDragTransform\(origin\?\.tabId\);/);
+    /* ONE WAY OUT · restated 2026-08-03. It was `releaseDragTransform`, which put
+     the tab's offset back. A drag now also leaves a `grabbing` cursor on the
+     document, so the cleanup is one function every path takes — a gesture that
+     ends down a path nobody wrote a cleanup for strands a tab mid-air under a
+     cursor that will not change back. */
+  assert.match(up, /endDrag\(origin\?\.tabId\);/);
+  assert.match(source, /document\.documentElement\.removeAttribute\("data-tab-drag"\);/);
+  assert.match(source, /document\.documentElement\.setAttribute\("data-tab-drag", ""\);/);
+  assert.match(styles, /html\[data-tab-drag\],\s*html\[data-tab-drag\] \* \{\s*cursor: grabbing !important;/,
+    "an overlay would break elementFromPoint and a pointer-events:none layer carries no cursor");
   assert.match(up, /if \(origin\?\.started\) onTabDragActive\(false\);/);
   const ended = section("const handleTabPointerCancel", "const handleTabAuxClick");
-  assert.match(ended, /releaseDragTransform\(dragPointerRef\.current\?\.tabId\);/);
+  assert.match(ended, /endDrag\(dragPointerRef\.current\?\.tabId\);/);
   assert.match(ended, /if \(dragPointerRef\.current\?\.started\) onTabDragActive\(false\);/);
 
-  // And while a chip is the target the row stops answering, so exactly one
-  // drop indicator is on screen and it is on the surface under the pointer.
+  /* AND WHILE A STUDY IS THE TARGET THE RUN STOPS ANSWERING, so exactly one
+     thing on screen says where this lands and it is the surface under the
+     pointer. The run closes back up rather than holding a slot open for a drop
+     that is going somewhere else entirely. */
   assert.match(source, /const overStudy = dragState\?\.studyId != null;/);
-  assert.match(source, /const dropBefore = !overStudy/);
-  assert.match(source, /const dropAfter = !overStudy/);
+  assert.match(source, /const shift = overStudy \? 0 : dragState\?\.shifts\.get\(tab\.id\) \?\? 0;/);
 
   // The mark is strictly transient: cleared on drop and on cancel, so it can
   // never be mistaken for state by a reader or by a screenshot.
   const move = section("const handleTabPointerMove", "const handleTabPointerUp");
-  assert.match(move, /if \(studyId !== origin\.studyId\) onTabDragOverStudy\(studyId\);/);
+  assert.match(move, /if \(studyId !== settledStudyId\) onTabDragOverStudy\(studyId\);/);
   assert.match(up, /if \(origin\?\.studyId\) onTabDragOverStudy\(null\);/);
   const cancel = section("const handleTabPointerCancel", "const handleTabAuxClick");
   assert.match(cancel, /if \(dragPointerRef\.current\?\.studyId\) onTabDragOverStudy\(null\);/);

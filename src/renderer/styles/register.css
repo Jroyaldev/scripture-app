@@ -222,23 +222,17 @@
 
 /* ── Drag and drop ────────────────────────────────────────────────────────
 
-   B2 rules: "the drop point is a 2px seal insertion rule", faded in over
-   120ms. It is seal because it is a mark the app is making on your behalf, in
-   the same ink as every other selection mark in the app. */
-.scripture-workspace-viewport .scripture-workspace-tab-wrap[data-study-drop="before"]::before,
-.scripture-workspace-viewport .scripture-workspace-tab-wrap[data-study-drop="after"]::after {
-  background: var(--study-gold);
-  animation: scripture-workspace-insertion-in 120ms ease;
-}
+   B2 asked for "the drop point is a 2px seal insertion rule", faded in over
+   120ms, and it shipped: a hairline between two tabs, in the same ink as every
+   other selection mark in the app. RETIRED 2026-08-03.
 
-@keyframes scripture-workspace-insertion-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+   The ink was never the problem. A rule is a LABEL for a decision — it says
+   "here" and leaves the run standing still — and on this surface the maintainer
+   read it as what it looks like: a vertical line appearing at an arbitrary edge
+   while nothing responds to the hand that summoned it. The tabs answer now, by
+   moving; the gap that opens is the slot. See `[data-drag-live]` in styles.css,
+   which also explains why the transition may only exist while a drag does.
 
-@media (prefers-reduced-motion: reduce) {
-  .scripture-workspace-viewport .scripture-workspace-tab-wrap[data-study-drop="before"]::before,
-  .scripture-workspace-viewport .scripture-workspace-tab-wrap[data-study-drop="after"]::after {
-    animation: none;
-  }
-}
+   The reduced-motion kill that stood here went with it. There is nothing left
+   to fade, and the shuffle's transition is already reached by the wrap rule
+   reduced motion has always killed. */
