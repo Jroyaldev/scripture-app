@@ -285,48 +285,49 @@
   --page-inset: 10px;    /* paper's inset from the window, four sides */
   --page-gutter: 24px;
 
-  /* Rev 05 §05·3, row one of the frame table: "Page top · 54 · Window top:
-     24 canvas + 30 strip. Invariant across modes."
+  /* ── THE FRAME'S TOP EDGE · RECOMPOSED 2026-08-03 ──────────────────────
+     Rev 05 §05·3 row one read "Page top · 54 · Window top: 24 canvas + 30
+     strip. Invariant across modes", and the 24 has been three things in three
+     weeks: empty canvas, then a row of study chips, then empty canvas again.
+     It is now nothing at all, and the frame is ONE ROW.
 
-     The number is COMPOSED rather than asserted, because §05·2's whole argument
-     is that the top band held four objects measured against four references.
-     There is one datum and it is this sum. The rail's brand tile aligns its top
-     edge to --frame-top and the page grid derives its rectangle from it, so the
-     two halves may not be edited apart, and neither may be redeclared in a mode
-     block. tests/quire-frame-top-edge-contract.test.ts holds both facts.
+     WHY THE BAND COULD GO. It existed as the window's drag region, and a drag
+     region is not a row — it is a property a row can carry. The register is a
+     row the window can be dragged by just as well, and better: it spans the
+     same width and it is the row a reader's hand is already near. Every browser
+     on this platform does exactly this, which is the drawing the maintainer
+     sent — one strip at the top of the window with the system's buttons inset
+     into its left end and the tabs beginning after them.
 
-     RECOMPOSED 2026-07-30, and the sum returns to the frame table's own 54.
-     The first half used to be --page-inset: 10px of empty canvas that was "the
-     drag band, and nothing else". It had been 24 until commit e8e2ee9 re-canned
-     the frame to a 10px inset, and at 10 the band was too thin to drag by and
-     held nothing — the section's "and nothing else" had become the whole of it.
-     The study line takes that band over: the same region, the same job for the
-     window, and now a row of study chips in it. So the first half is named for
-     what stands in it rather than for a coincidence with the paper's inset —
-     the page's inset is still 10 and is no longer the frame's top half — and 24
-     is the height the band held before e8e2ee9, which is also what a 24px
-     pointer row needs.
+     WHAT IT BUYS. 54 becomes 40: sixteen pixels of window handed back to the
+     page, on every screen and in every mode. And the tabs come up to within
+     10px of the window's own top edge, which is what "almost all the way up"
+     means — the 10 is the ground the buttons sit on, not a margin.
 
-     AND THE CHIPS LEFT AGAIN ON 2026-08-03, which is why the token keeps a name
-     the row no longer earns. Interactive things in the window's own furniture
-     put the studies under the traffic lights, made the band ungrabbable, and in
-     fullscreen laid a row of controls on the screen's top edge; they are one
-     object in the register now. The token is NOT renamed to --drag-band, and
-     that is a deliberate refusal rather than an oversight: it is read by the
-     frame-table contracts in three test files and by Tooltip's mirrored copy of
-     the sum, and a rename buys nothing but a diff. The row is the frame's first
-     24, whatever has stood in it; what it holds is written where it is drawn.
+     THE BUTTONS ARE ACCOUNTED FOR RATHER THAN AVOIDED. --os-buttons is the zone
+     macOS reserves at the window's left edge for close/minimise/zoom; the
+     register subtracts the rail from it, because the rail is already standing
+     in most of that zone, and reserves only what is left. Collapsed at 56 that
+     is 22px; open at 232 it is nothing. In fullscreen the buttons are not there
+     and the reserve is zero, so the tabs go all the way to the page's edge —
+     which is the same rule, not an exception to it.
 
-     Top to bottom: --study-line, then --register-strip, then paper. The order
-     matters and is not a formality. The active tab is a piece of the page
-     pulled up above the register's baseline and its two fillets sweep into
-     --bg-reading at that baseline, so nothing may be inserted between the strip
-     and the page without severing that joint; the band above the strip is the
-     one place in the frame a second row could go, and the point of 2026-08-03
-     is that nothing should. */
-  --study-line: 24px;
-  --register-strip: 30px;
-  --frame-top: calc(var(--study-line) + var(--register-strip));  /* 54px */
+     NEITHER NUMBER MAY BE REDECLARED IN A MODE BLOCK: the rail's brand tile
+     aligns its top edge to --frame-top and the page grid derives its rectangle
+     from it. tests/quire-frame-top-edge-contract.test.ts holds it.
+
+     The order still matters and is not a formality: the active tab is a piece
+     of the page pulled up above the register's baseline and its two fillets
+     sweep into --bg-reading at that baseline, so nothing may be inserted
+     between the strip and the page without severing that joint. There is now
+     nothing above it either. */
+  --register-strip: 40px;
+  --frame-top: var(--register-strip);
+  /* The zone macOS keeps at the window's left for its own buttons under
+     `titleBarStyle: "hiddenInset"`. Named rather than inlined because it is a
+     PLATFORM fact, not a design one: it is not ours to tune, and the register
+     subtracts the rail from it rather than repeating it. */
+  --os-buttons: 78px;
 
   /* Rev 05 §05·3: "Page padding · 40 / 24 · 40 left and right, 24 top and
      bottom, inside the paper. 40 is the one left datum of §05·2." Inside the
@@ -2201,6 +2202,19 @@ html, body, #root {
    persistence rules below); a rule here would fight the fillet, which is the
    thing actually joining the tab to the page. */
 .scripture-workspace-bar {
+  /* THE WINDOW IS DRAGGED BY THIS ROW · 2026-08-03. The 24px band above it is
+     gone and its one job came here, which is the arrangement every browser on
+     this platform uses: one strip at the top of the window, the system's
+     buttons inset into its left end, the tabs after them, and everything that
+     is not a control draggable.
+
+     The band failed at this job for a reason that does not apply here. It was
+     24px of chrome studded with no-drag chips, so what was left to grab was the
+     gaps between them. This row's controls sit at its two ENDS — tabs at one,
+     the study and the tab-reporting cluster at the other — and the free span
+     between them is most of the window. Measured with the margin open: tabs end
+     at 312, the cluster starts at 1073. */
+  -webkit-app-region: drag;
   position: relative;
   z-index: 7;
   height: var(--register-strip);
@@ -2208,53 +2222,34 @@ html, body, #root {
   display: flex;
   align-items: flex-end;
   min-width: 0;
-  padding: 0 var(--page-inset) 0 0;
+  /* ROOM FOR THE SYSTEM'S OWN BUTTONS, and only as much as is actually needed.
+     macOS keeps --os-buttons at the WINDOW's left edge, and the rail is already
+     standing in most of it — so what this row owes is the remainder. Collapsed
+     at 56 that is 22px; open at 232 it is nothing, and `max()` is what makes
+     the second case fall out rather than needing a rule of its own. */
+  padding: 0 var(--page-inset) 0 max(0px, calc(var(--os-buttons) - var(--rail-flow-w)));
   background: transparent;
   color: var(--text-secondary);
 }
 
-/* ── THE DRAG BAND · restored to itself 2026-08-03 ─────────────────────────
+/* IN FULLSCREEN THERE ARE NO BUTTONS TO RESERVE FOR, so the tabs go all the way
+   to the page's own edge. This is the same rule with the reserve at zero rather
+   than an exception to it — see main.ts for why the window has to tell the
+   renderer this, and the three things that look like they could answer it from
+   the DOM and cannot. */
+.app-shell[data-fullscreen] .scripture-workspace-bar {
+  padding-left: 0;
+}
 
-   Rev 05 §05·2: "the drag band is 24 and nothing else". It said that, then a
-   row of study chips moved in, and the section's answer at the time was that
-   the band's job was preserved because every chip opted out of the drag region.
-   That is exactly what made it unusable. A drag region interrupted by a dozen
-   no-drag boxes is not a drag region; it is the gaps between them.
-
-   THE MAINTAINER NAMED THREE FAULTS AND THEY WERE ONE FAULT. Measured on
-   2026-08-03: this row at `y 0–24`, its first chip at `x 56–116`, and macOS
-   `hiddenInset` putting the window buttons at roughly `x 14–66, y 14–26` — so
-   with the rail collapsed to 56 the green button was drawn over the first chip.
-   In fullscreen the same row lay flush on the screen's own top edge, which is
-   where the menu bar drops when a pointer reaches for it. And the band could
-   not be grabbed. All three are the same fault: interactive things were living
-   in the window's own furniture.
-
-   So the studies moved one row down, into the register, as one control at the
-   end of it — see StudyControl — and this row is empty again. Empty is the
-   POINT: in fullscreen the revealed menu bar lands on 24px carrying nothing,
-   the window can be grabbed anywhere across the page's whole width, and the
-   window buttons overlap chrome that has nothing to press.
-
-   It keeps its height and its z-index, so --frame-top is composed from the same
-   two numbers it always was and tests/quire-frame-top-edge-contract holds
-   unchanged. It is still the page's width and not the reading pane's — the
-   window has to be draggable across the whole top edge — where the strip below
-   it stops at the pane's right edge, which is right for tabs: a tab's fillet
-   reaches for a page edge that has to be underneath it.
-
-   NOTHING MAY BE PUT BACK IN HERE. tests/study-line-contract asserts the row
-   renders no interactive descendant, because a band this convenient will be
-   refilled by the next feature that needs somewhere to live, and the three
-   faults above will come back together. */
-.scripture-study-line {
-  -webkit-app-region: drag;
-  position: relative;
-  z-index: 7;
-  height: var(--study-line);
-  flex: 0 0 auto;
-  min-width: 0;
-  background: transparent;
+/* And every control in the row opts back out, or the drag region swallows the
+   press before the element under the pointer ever sees it. The tablist is
+   listed as a whole because a tab must be press-and-draggable — reordering one
+   is a pointer gesture that starts inside it. */
+.scripture-workspace-bar button,
+.scripture-workspace-bar input,
+.scripture-workspace-bar [role="tablist"],
+.scripture-workspace-bar .control-tooltip-anchor {
+  -webkit-app-region: no-drag;
 }
 
 /* ── THE STUDY CONTROL ─────────────────────────────────────────────────────
@@ -2723,7 +2718,15 @@ html, body, #root {
    a loose 30. */
 .scripture-workspace-tab {
   position: relative;
-  height: var(--register-strip);
+  /* THIRTY-TWO IN A FORTY ROW · 2026-08-03. It was `var(--register-strip)` and
+     filled the row, which was right while the row was 30 and there was a 24px
+     band above it holding the window. The band is gone and this row is the
+     window's, so the tab may not reach the top of it: the 8px of ground above a
+     tab is where the system's own buttons sit, and it is what stops a tab from
+     looking like it is trying to be the title bar. It is also the gap every
+     browser on this platform leaves, which is what the maintainer's reference
+     is a picture of. */
+  height: 32px;
   min-width: 104px;
   max-width: 176px;
   flex: 0 0 auto;
@@ -2794,7 +2797,15 @@ html, body, #root {
    owner ruled that the strip's controls may not relocate between selections, so
    the last tab always has the actions cluster to its right and its right fillet
    always has a page edge to sweep into. See src/renderer/styles/register.css. */
-.scripture-workspace-bar[data-flush-start] .scripture-workspace-tab[aria-selected="true"]::before {
+/* THE FLUSH CORNER NEEDS THE CORNER · qualified 2026-08-03. The first tab
+   squares the page's own top-left corner by dropping its left fillet, and that
+   is only true when the tab is actually AT that corner. While the row is
+   reserving room for the window's buttons it is not, so the fillet stays and
+   the page keeps its radius; in fullscreen, and with the rail open, the reserve
+   is zero and the corner is claimed exactly as before. Chrome's first tab is
+   not flush with its window edge either, and for the same reason. */
+.app-shell[data-fullscreen] .scripture-workspace-bar[data-flush-start] .scripture-workspace-tab[aria-selected="true"]::before,
+.app-shell:not(:has(> .sidebar.collapsed)) .scripture-workspace-bar[data-flush-start] .scripture-workspace-tab[aria-selected="true"]::before {
   display: none;
 }
 
@@ -3094,7 +3105,13 @@ html, body, #root {
   place-items: center;
   gap: 0;
   width: 28px;
-  height: 28px;
+  /* 30 + 2 of margin is 32, which is the TAB's row and no longer the frame's.
+     It was 28 + 2 = 30 while the strip was 30 and a tab filled it; the band
+     above dissolved into this row on 2026-08-03, the row went to 40 and the tab
+     to 32, and a plus still measuring itself against the row would stand 8px
+     proud of every tab it extends — up into the ground the window's own buttons
+     sit on. It measures the thing it sits beside. */
+  height: 30px;
   /* The bottom margin was 3px until 2026-07-30, which made the plus's MARGIN
      box 31px inside a 30px row: seated on flex-end, the extra pixel came off
      the top, so the one control in the strip that is not a tab began a pixel
@@ -3908,10 +3925,10 @@ html, body, #root {
     forced-color-adjust: none;
   }
 
-  /* The drag band takes the system's own field, like the strip below it. It
-     holds nothing now, so nothing in it needs a selection pair — which is one
-     more thing the row got back by emptying. */
-  .scripture-study-line {
+  /* The frame's row takes the system's own field. This was on the drag band
+     while there was one; the band dissolved into the register on 2026-08-03 and
+     the rule followed the region that was its only reason to exist. */
+  .scripture-workspace-bar {
     background: Canvas;
     forced-color-adjust: none;
   }
@@ -4754,7 +4771,10 @@ html, body, #root {
    rounded in every state — squaring it would require the last tab to reach it,
    which the retired flush-end docking bought at the price of moving the strip's
    controls between selections. */
-.scripture-workspace-bar[data-flush-start] ~ .scripture-body .scripture-content {
+/* The page's own corner, squared by the same two states and for the same
+   reason: a tab that is not standing on the corner may not square it. */
+.app-shell[data-fullscreen] .scripture-workspace-bar[data-flush-start] ~ .scripture-body .scripture-content,
+.app-shell:not(:has(> .sidebar.collapsed)) .scripture-workspace-bar[data-flush-start] ~ .scripture-body .scripture-content {
   border-top-left-radius: 0;
 }
 
@@ -24212,30 +24232,27 @@ button.lang-phrase-diagram-node:focus-visible,
      2026-07-29, the interval on 2026-07-30 with the second study it separated
      the first from — so there is nothing left for this width to concede. */
 
-  /* THE STUDY LINE STAYS, and the decision is recorded here because the obvious
-     move — drop the second row where there is no room — is not available, and
-     the reason is structural rather than aesthetic. The frame's top edge is
-     invariant across modes and widths and is composed as --study-line +
-     --register-strip; a block that hid the line would leave 24px of the page's
-     own reserve standing empty and put the rail's brand tile 24px out of
-     alignment with the paper, which is the four-datums fault §05·2 was written
-     against. Neither half of the sum may be redeclared here either — same rule,
-     held by tests/quire-frame-top-edge-contract.test.ts.
+  /* THE REGISTER STAYS, and the decision is recorded here because the obvious
+     move — drop a row where there is no room — is not available, and the reason
+     is structural rather than aesthetic. The frame's top edge IS this row now,
+     so a block that hid it would leave 40px of the page's own reserve standing
+     empty and put the rail's brand tile 40px out of alignment with the paper,
+     which is the four-datums fault §05·2 was written against. It may not be
+     redeclared here either — same rule, held by
+     tests/quire-frame-top-edge-contract.test.ts.
 
      It also has to stay on the merits. Below 980 the rail becomes a bottom bar
      with no switcher in it, and All Tabs is a list of tabs rather than a way of
-     changing which study you are in; take the study control away and the reader
-     loses the only thing at this width that switches studies at all. It is one
-     object in the register now rather than a row above it, which is why the
-     narrow shell needs no rule tightening its spacing: what used to give way
-     here was a row of chips competing for a width that no longer exists.
+     changing which study you are in; take the register away and the reader
+     loses the only thing at this width that switches studies at all.
 
-     The band stops claiming the window, though, and that is unchanged: a shell
-     whose navigation is under the thumb has no title bar to drag, so the drag
-     region is released. What is released is now an empty row, which is the only
-     thing that was ever supposed to be in it. */
-  .scripture-study-line {
+     WHAT THIS WIDTH DOES CHANGE is the drag region and the buttons' reserve,
+     and they go together: a shell whose navigation is under the thumb has no
+     title bar to drag and no window buttons to keep clear of, so the row
+     releases the region and reclaims the 22px it was holding for them. */
+  .scripture-workspace-bar {
     -webkit-app-region: no-drag;
+    padding-left: 0;
   }
 }
 

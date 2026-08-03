@@ -86,7 +86,13 @@ test("the rail is bracketed by the same two lines as the paper", () => {
   // frame table states. The rail needed no edit for either move, which is the
   // property this line is really defending: it consumes the composed token and
   // never the number.
-  assert.match(css, /--frame-top: calc\(var\(--study-line\) \+ var\(--register-strip\)\);/,
+  /* RESTATED 2026-08-03, the third move of this token and the third time the
+     rail needed no edit — which is the property this line is really defending.
+     It read `calc(var(--study-line) + var(--register-strip))` while a band stood
+     above the tabs; the band dissolved into the register, so the frame is that
+     one row and the composition says so. The rail consumes the token and never
+     the number. */
+  assert.match(css, /--frame-top: var\(--register-strip\);/,
     "the frame's top edge token is rev05-canon's; the rail consumes it");
   assert.match(ruleBlocks(css, ".sidebar")[0]!, /padding-top: var\(--frame-top\);/,
     "the rail's vertical origin must be the page's, not the window's");

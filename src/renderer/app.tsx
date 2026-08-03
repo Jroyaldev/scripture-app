@@ -1007,6 +1007,14 @@ export function App(): React.JSX.Element {
     });
   }, [runWorkspaceTransition]);
 
+  /* WHETHER THE WINDOW IS FULLSCREEN, held here because the frame's top row
+     lays itself out around the traffic lights and macOS hides them in
+     fullscreen. Nothing in the DOM can answer it — see main.ts, which lists the
+     three things that look like they can and do not — so the window reports it
+     and the shell wears it. */
+  const [windowFullScreen, setWindowFullScreen] = useState(false);
+  useEffect(() => window.api.appWindow.onFullScreenChange(setWindowFullScreen), []);
+
   useEffect(() => window.api.appWindow.onCloseRequested((request) => {
     void (async () => {
       let proceed = false;
@@ -2351,7 +2359,7 @@ export function App(): React.JSX.Element {
         materialClassName={floatingMaterialClass}
         onShowToastReady={registerWorkspaceShowToast}
       >
-        <div className={shellClass} data-theme={theme}>
+        <div className={shellClass} data-theme={theme} data-fullscreen={windowFullScreen || undefined}>
           <nav
               className={`sidebar${collapsedRail ? " collapsed" : ""}`}
               aria-label="Primary navigation"

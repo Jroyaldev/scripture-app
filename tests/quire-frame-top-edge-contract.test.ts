@@ -65,54 +65,58 @@ const px = (value: string): number => Number.parseFloat(value.replace("px", ""))
  * silently through the second one because this file pinned `= 54` as text
  * instead of as arithmetic on the sheets.
  */
-const FRAME_TOP = px(declarationsOf("--study-line")[0]!.value)
-  + px(declarationsOf("--register-strip")[0]!.value);
+const FRAME_TOP = px(declarationsOf("--register-strip")[0]!.value);
 
-test("the page's top edge is 54, and it is composed rather than asserted", () => {
-  /* The number is never written down. It is a 24px study line — the drag band,
-     with the study chips standing in it — over a 30px tab strip, and the sum is
-     what the other two surfaces read.
+test("the page's top edge is 40, and it is composed rather than asserted", () => {
+  /* THE NUMBER HAS NEVER BEEN WRITTEN DOWN and it has moved three times.
 
-     THE FIRST HALF WAS RENAMED ON 2026-07-30 and the sum went back to 54. It
-     used to be --page-inset, and the coincidence was real for one day: commit
-     e8e2ee9 re-canonned the frame to a 10px inset and the band above the tabs
-     happened to be that same 10. §05·2 had specified the band as "24 and
-     nothing else", so at 10 the band was two thirds gone and its "and nothing
-     else" was the whole of it — too thin to drag a window by and holding
-     nothing. The study line takes the band over: the same region, still the
-     window's drag region, now with a row of chips in it. The page's own inset
-     is still 10 and is no longer half of the frame's top edge, which is the
-     honest arrangement — two facts that were never the same fact are no longer
-     spelled with one token.
+     54 while the canvas above the tabs was 24. Then 40, when commit e8e2ee9
+     re-canonned the frame to a 10px inset — and the band was two-thirds gone,
+     too thin to drag a window by and holding nothing. Then 54 again on
+     2026-07-30, when the study line took the band over at §05·2's own 24 and
+     put a row of chips in it. And 40 again on 2026-08-03, when those chips went
+     into the register and the band dissolved into it with them.
 
-     What this test defends is unchanged, and it is why the rename could be made
-     safely: the edge is composed from two declarations, each stated exactly
-     once, and read by three surfaces that do not own it. */
-  const line = declarationsOf("--study-line");
+     THE LAST MOVE IS THE ONE THIS TEST WAS WAITING FOR. Each of the first three
+     kept a band above the tabs whose only job, once it was empty, was to be
+     dragged by — and a drag region is not a row, it is a property a row can
+     carry. The register carries it now: one strip at the top of the window with
+     the system's buttons inset into its left end, which is what every browser
+     on this platform does. Sixteen pixels of window go back to the page.
+
+     What this test defends is unchanged, and it is why each of those moves could
+     be made safely: the edge is stated exactly once and read by three surfaces
+     that do not own it. It is arithmetic on the sheet rather than a literal, so
+     it fails when the value moves and not when someone edits a comment. */
   const strip = declarationsOf("--register-strip");
   const frame = declarationsOf("--frame-top");
 
-  assert.equal(line.length, 1, "--study-line is declared once");
   assert.equal(strip.length, 1, "--register-strip is declared once");
   assert.equal(frame.length, 1, "--frame-top is declared once");
+  assert.equal(strip[0].value, "40px");
+  assert.match(frame[0].value, /^var\(--register-strip\)$/);
+  assert.equal(FRAME_TOP, 40);
 
-  assert.equal(line[0].value, "24px");
-  assert.equal(strip[0].value, "30px");
-  assert.match(frame[0].value, /^calc\(var\(--study-line\) \+ var\(--register-strip\)\)$/);
+  /* THE SECOND HALF IS GONE, NOT ZEROED. --study-line was the band's own token
+     and it is retired with the band; a `0px` left standing would be a row the
+     next feature could grow back, which is exactly the history above. */
+  assert.equal(declarationsOf("--study-line").length, 0,
+    "the band's token is retired, not set to zero");
 
-  // And the sum is 54. Written as arithmetic on the two declared values so the
-  // test fails when either half moves, rather than when someone edits a comment.
-  assert.equal(px(line[0].value) + px(strip[0].value), 54);
-  assert.equal(FRAME_TOP, 54);
-
-  // The page's inset is still declared once and is still 10; it is simply not
-  // part of this sum any more. Asserted so the rename cannot be undone by
-  // accident, in either direction.
+  // The page's inset is still declared once and is still 10; it has not been
+  // part of this sum since 2026-07-30 and must not become part of it again.
   const inset = declarationsOf("--page-inset");
   assert.equal(inset.length, 1, "--page-inset is declared once");
   assert.equal(inset[0].value, "10px");
   assert.doesNotMatch(frame[0].value, /--page-inset/,
-    "the frame's top edge is the study line over the strip, not the paper's inset over it");
+    "the frame's top edge is the register, not the paper's inset over it");
+
+  /* AND THE ROOM MACOS KEEPS FOR ITS OWN BUTTONS is declared once too, because
+     the register subtracts the rail from it rather than repeating it. It is a
+     platform fact and not ours to tune. */
+  const buttons = declarationsOf("--os-buttons");
+  assert.equal(buttons.length, 1, "--os-buttons is declared once");
+  assert.equal(buttons[0].value, "78px");
 });
 
 test("the top edge does not vary by mode, by width, or by atmosphere", () => {
@@ -126,34 +130,54 @@ test("the top edge does not vary by mode, by width, or by atmosphere", () => {
     styles.indexOf(".scripture-workspace-bar {"),
     styles.indexOf("}", styles.indexOf(".scripture-workspace-bar {")),
   );
-  /* THE BAR IS HALF THE FRAME NOW, 2026-07-30. These two lines read
+  /* THE BAR IS THE WHOLE FRAME AGAIN · 2026-08-03, and this has now been true,
+     false and true again. It first read
+
        assert.match(bar, /height: var\(--frame-top\);/);
        assert.match(bar, /padding: var\(--page-inset\) var\(--page-inset\) 0 0;/);
-     from when the band above the tabs was the bar's own empty top padding and
-     the bar therefore stood for the whole edge. The study line is a real
-     element in that band now and owns its height, so a bar still claiming
-     --frame-top would claim it twice and the page's top edge would land at 78.
-     The claim being defended is the same one and is if anything sharper: each
-     half of the sum is declared by exactly one element, and neither may state a
-     second height. */
+
+     from when the band above the tabs was the bar's own empty top padding.
+     Then the study line became a real element in that band and owned its own
+     height, so the bar claimed only --register-strip or it would have claimed
+     the edge twice and put the page's top at 78. Now the band is gone and the
+     bar is the frame's only row — so it is back to standing for the whole edge,
+     and states it in the token it composes from rather than in --frame-top,
+     which is derived FROM it. A bar reading --frame-top would be circular.
+
+     The claim being defended has not moved: the edge is declared by exactly one
+     element and nothing anywhere may state a second height for it. */
   assert.match(bar, /height: var\(--register-strip\);/);
-  assert.match(bar, /padding: 0 var\(--page-inset\) 0 0;/);
-  const line = styles.slice(
-    styles.indexOf(".scripture-study-line {"),
-    styles.indexOf("}", styles.indexOf(".scripture-study-line {")),
-  );
-  assert.match(line, /height: var\(--study-line\);/);
-  assert.match(line, /flex: 0 0 auto;/);
-  assert.doesNotMatch(line, /min-height/);
-  // And the two halves are siblings in the page's column, in that order — the
-  // line above the strip. Between the strip and the page is the one place a
-  // second row may not go: the active tab's fillets join it to --bg-reading at
-  // the strip's baseline, and a row inserted there severs the joint that makes
-  // the tab a piece of the page.
+  assert.doesNotMatch(bar, /height: var\(--frame-top\)/,
+    "--frame-top derives from this row; a row reading it back is circular");
+
+  /* THE ROW IS THE WINDOW'S NOW. The band held the drag region and dissolved
+     into this, which is the whole reason the row could go: a drag region is not
+     a row, it is a property a row can carry. Every control in it opts back out
+     — the band failed at exactly this, because 24px studded with no-drag chips
+     leaves only the gaps between them, and here the controls sit at the two
+     ends with most of the window free between them. */
+  assert.match(bar, /-webkit-app-region: drag;/);
+  assert.match(styles, /\.scripture-workspace-bar button,\s*\.scripture-workspace-bar input,\s*\.scripture-workspace-bar \[role="tablist"\],\s*\.scripture-workspace-bar \.control-tooltip-anchor \{\s*-webkit-app-region: no-drag;/);
+
+  /* AND IT KEEPS ROOM FOR THE SYSTEM'S OWN BUTTONS, minus whatever the rail is
+     already standing in. `max()` is what makes the open rail fall out of the
+     same expression rather than needing a rule of its own, and fullscreen —
+     where macOS hides the buttons entirely — is the same rule with the reserve
+     at zero. */
+  assert.match(bar, /padding: 0 var\(--page-inset\) 0 max\(0px, calc\(var\(--os-buttons\) - var\(--rail-flow-w\)\)\);/);
+  assert.match(styles, /\.app-shell\[data-fullscreen\] \.scripture-workspace-bar \{\s*padding-left: 0;\s*\}/);
+
+  /* THE BAND IS GONE FROM THE SHEET AND FROM THE PAGE. Not hidden, not zeroed:
+     a 24px row that already exists and holds nothing is the most convenient
+     place in the frame for the next feature that needs a home, and everything
+     that has ever stood in it has been under the window's buttons, in the way
+     of the drag, or on the screen's top edge in fullscreen. */
+  assert.doesNotMatch(styles, /\.scripture-study-line\b/, "the band's rules are deleted");
   const page = read("src/renderer/components/ScripturePage.tsx");
+  assert.doesNotMatch(page, /scripture-study-line/, "and nothing renders it");
   assert.ok(
-    page.indexOf("<StudyLine") < page.indexOf("<ScriptureWorkspaceTabs"),
-    "the study line stands above the strip, in the band, not between the strip and the page",
+    page.indexOf("<ScriptureWorkspaceTabs") < page.indexOf('id="scripture-workspace-panel"'),
+    "the strip still meets the page with nothing in between: the fillets join there",
   );
   // A floor is what let the band grow in the first place — the retired group
   // bracket opened a 15px lane above the tabs and the edge moved 54 → 69 with
@@ -161,7 +185,7 @@ test("the top edge does not vary by mode, by width, or by atmosphere", () => {
   // may restate it.
   assert.doesNotMatch(bar, /min-height/);
   for (const { name, source } of sheets) {
-    for (const [, selector, body] of source.matchAll(/([^{};]*\.scripture-(?:workspace-bar|study-line)[^{};]*)\{([^}]*)\}/g)) {
+    for (const [, selector, body] of source.matchAll(/([^{};]*\.scripture-workspace-bar[^{};]*)\{([^}]*)\}/g)) {
       // Only rules whose SUBJECT is the bar itself. A rule that merely scopes
       // itself to the bar sizes something inside it — the failure line's retry
       // button has a 24px target, and the seal baseline is a 1px pseudo-element
@@ -169,11 +193,9 @@ test("the top edge does not vary by mode, by width, or by atmosphere", () => {
       const subjectIsFrameRow = selector
         .split(",")
         .map((one) => one.trim().split(/[\s>+~]+/).at(-1) ?? "")
-        .some((subject) => (subject.startsWith(".scripture-workspace-bar")
-          || subject.startsWith(".scripture-study-line")) && !subject.includes("::"));
+        .some((subject) => subject.startsWith(".scripture-workspace-bar") && !subject.includes("::"));
       if (!subjectIsFrameRow) continue;
       if (body === bar.slice(bar.indexOf("{") + 1)) continue;
-      if (body === line.slice(line.indexOf("{") + 1)) continue;
       assert.doesNotMatch(
         body,
         /(?:^|[\s;])(?:min-)?height\s*:/,
@@ -184,7 +206,14 @@ test("the top edge does not vary by mode, by width, or by atmosphere", () => {
 
   // The strip's half of the sum is the tab, and the tab reads the token rather
   // than restating 30 — the two cannot drift apart while that holds.
-  assert.match(styles, /\.scripture-workspace-tab \{[\s\S]{0,460}height: var\(--register-strip\);/);
+  /* THE TAB NO LONGER FILLS THE ROW · 2026-08-03. It was `var(--register-strip)`
+     and reached the top of the strip, which was right while a 24px band stood
+     above holding the window. The band is gone and this row IS the window's, so
+     a tab may not reach its top edge: the 8px above a tab is the ground the
+     system's own buttons sit on, and it is the gap every browser on this
+     platform leaves. Stated as a literal because it is no longer a function of
+     the row — the row is 40 and the tab is 32, and the difference is the point. */
+  assert.match(styles, /\.scripture-workspace-tab \{[\s\S]{0,900}height: 32px;/);
 
   // And where there is no strip, the 54 is reserved anyway. Focus does not
   // render a register, so without this the page's top edge would rise to 0 in
@@ -259,32 +288,35 @@ test("the band holds the study line, and the register still draws nothing above 
     assert.doesNotMatch(body, /padding-top\s*:\s*(?!0)/, "nothing may be reserved above the tab row");
   }
 
-  /* THE BAND IS THE WINDOW'S, AND IT IS EMPTY · RESTATED 2026-08-03.
-     This used to check that the row drags AND that every control standing in it
-     opts back out, because a drag region swallows the press before the element
-     under the pointer ever sees it. Both halves were true and the pair was still
-     the defect: a drag region interrupted by a dozen no-drag boxes is not a drag
+  /* THE ROW IS THE WINDOW'S, AND IT HAS BEEN TWO ROWS AND ONE.
+     This first checked that the BAND dragged and that every chip standing in it
+     opted back out, because a drag region swallows the press before the element
+     under the pointer ever sees it. Both halves were true and the pair was
+     still the defect: a 24px region studded with a dozen no-drag boxes is not a
      region, it is the gaps between them, and the maintainer could not grab the
-     window. The chips are in the register now — see tests/study-control-contract
-     — and what is asserted here is the stronger claim the opt-out was standing
-     in for: the row drags, and there is nothing in it to opt out. */
-  const line = styles.slice(
-    styles.indexOf(".scripture-study-line {"),
-    styles.indexOf("}", styles.indexOf(".scripture-study-line {")),
+     window at all.
+
+     The chips went into the register, and then the band went with them —
+     because once it was empty its only job was to be dragged by, and a drag
+     region is not a row. It is a property a row can carry, and the register
+     carries it better: the same width, the row a hand is already near, and its
+     controls at the two ENDS with most of the window free between them.
+
+     The opt-out claim survives and is stronger for having somewhere real to
+     apply: every control in this row opts out, and the free span between them
+     is what the window is actually grabbed by. */
+  assert.doesNotMatch(styles, /\.scripture-study-chip\b|\.scripture-study-line\b/,
+    "the chips and the band are gone from the sheet, not merely unmounted");
+  const row = styles.slice(
+    styles.indexOf(".scripture-workspace-bar {"),
+    styles.indexOf("}", styles.indexOf(".scripture-workspace-bar {")),
   );
-  assert.match(line, /-webkit-app-region: drag;/);
-  assert.doesNotMatch(styles, /\.scripture-study-chip\b/,
-    "the chips are gone from the sheet, not merely unmounted");
-  assert.match(
-    read("src/renderer/components/ScripturePage.tsx"),
-    /<div className="scripture-study-line" data-study-drag-band="" \/>/,
-    "the band is a leaf: nothing can be pressed in it because nothing is in it",
-  );
+  assert.match(row, /-webkit-app-region: drag;/);
+  assert.match(styles, /\.scripture-workspace-bar button,\s*\.scripture-workspace-bar input,/);
   /* The tooltip primitive's own wrapper had to opt out too, because it is a real
-     span between the band and the control inside it and a drag region swallows
-     the press at whichever element it reaches first. That is still true wherever
-     a tooltipped control stands in a drag region — it is asserted on the study
-     control's own anchor now, one row down, where the tooltip actually is. */
+     span between the row and the control inside it and a drag region swallows
+     the press at whichever element it reaches first. It is asserted on the study
+     control's own anchor, which is where the tooltip actually is. */
   assert.match(
     styles,
     /\.scripture-study-control \.control-tooltip-anchor \{\s*-webkit-app-region: no-drag;/,

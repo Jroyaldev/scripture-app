@@ -4707,22 +4707,21 @@ export function ScripturePage({
   return (
     <div className="scripture-page">
 
-      {/* THE DRAG BAND, AND NOTHING ELSE · restored 2026-08-03.
-          Rev 05 §05·2's own words for this row, given back to it. It held a row
-          of study chips for one wave, and that cost three things at once: with
-          the rail collapsed to 56 the window's own buttons were drawn over the
-          first chip, the band could not be grabbed because everything standing
-          in it opts out of the drag region, and in fullscreen the row lay flush
-          against the screen's top edge where the menu bar drops. The studies are
-          one row down now — see StudyControl, passed into the strip below — and
-          what is left here is what the frame reserved in the first place.
+      {/* THE BAND IS GONE · 2026-08-03, and this note is where it stood.
+          A 24px row sat here holding the window's drag region. It held study
+          chips for one wave, which put them under the traffic lights, made the
+          region ungrabbable and laid a row of controls on the screen's top edge
+          in fullscreen; the chips moved into the register on the same day, and
+          what was left was 24 pixels of nothing whose only job was to be
+          dragged by.
 
-          It keeps its height, so --frame-top is the same 54 it has always been
-          and tests/quire-frame-top-edge-contract holds unchanged. Empty is the
-          POINT rather than an oversight: in fullscreen the revealed menu bar now
-          lands on 24px of chrome carrying nothing, and a reader reaching for the
-          window can grab it anywhere along the page's whole width. */}
-      {!focusMode && <div className="scripture-study-line" data-study-drag-band="" />}
+          A drag region is not a row. It is a property a row can carry, and the
+          register carries it better: same width, and it is the row a reader's
+          hand is already near. So the band dissolved into it — see
+          .scripture-workspace-bar in styles.css — the frame went from 54 to 40,
+          and the tabs came up to within 10px of the window's own top edge with
+          the system's buttons inset beside them. Which is the drawing the
+          maintainer sent, and what every browser on this platform does. */}
 
       {!focusMode && (
         <ScriptureWorkspaceTabs

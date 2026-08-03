@@ -1287,6 +1287,12 @@ function resolveRendererCloseAcknowledgement(
 }
 
 ipcMain.on("app-window-close-response", resolveRendererCloseAcknowledgement);
+ipcMain.on("app-window-fullscreen-ready", (event) => {
+  const window = BrowserWindow.fromWebContents(event.sender);
+  if (window && !window.isDestroyed()) {
+    event.sender.send("app-window-fullscreen", window.isFullScreen());
+  }
+});
 ipcMain.on("app-window-close-guard-ready", (event) => {
   const target = currentRendererCloseTarget();
   if (target && event.sender === target.window.webContents) target.guardReady = true;
@@ -2293,6 +2299,27 @@ function createWindow(): void {
     return;
   }
   mainWindow = win;
+  /* WHETHER THE WINDOW IS FULLSCREEN, which the renderer cannot work out for
+     itself and needs in order to lay out its own top row.
+
+     The register reserves horizontal space for the traffic lights, and in
+     fullscreen macOS hides them and there is nothing to reserve — so the frame
+     has to know. Nothing in the DOM answers this: `document.fullscreenElement`
+     only reports JS-initiated fullscreen, the display-mode media query is for
+     installed web apps, and comparing innerHeight to screen.height is wrong on
+     any display with a notch (measured on this machine: 949 against 982 while
+     fullscreen). The window itself is the only thing that knows.
+
+     Sent on every transition, and again on request, because a renderer that
+     reloads while fullscreen would otherwise start out laying out for buttons
+     that are not there. */
+  const reportFullScreen = (): void => {
+    if (win.isDestroyed()) return;
+    win.webContents.send("app-window-fullscreen", win.isFullScreen());
+  };
+  win.on("enter-full-screen", reportFullScreen);
+  win.on("leave-full-screen", reportFullScreen);
+
   const closeTarget: MainWindowCloseTarget = {
     window: win,
     windowGeneration: ++windowGeneration,

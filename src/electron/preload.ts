@@ -259,6 +259,19 @@ const api = {
       ipcRenderer.send("app-window-close-guard-ready");
       return () => ipcRenderer.removeListener("app-window-close-requested", handler);
     },
+    /* The frame reserves room for the traffic lights and must stop reserving it
+       in fullscreen, where macOS hides them. `ready` is what makes a reload
+       correct: the main process replies with the state as it is now, so the
+       renderer never has to wait for the next transition to find out. */
+    onFullScreenChange(listener: (fullScreen: boolean) => void): () => void {
+      const handler = (_event: unknown, value: unknown): void => {
+        if (typeof value !== "boolean") return;
+        listener(value);
+      };
+      ipcRenderer.on("app-window-fullscreen", handler);
+      ipcRenderer.send("app-window-fullscreen-ready");
+      return () => ipcRenderer.removeListener("app-window-fullscreen", handler);
+    },
     requestClose: () => ipcRenderer.send("app-window-request-close"),
     resolveCloseRequest: (requestId: string, proceed: boolean) => {
       ipcRenderer.send("app-window-close-response", requestId, proceed);

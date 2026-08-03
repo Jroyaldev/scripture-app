@@ -192,9 +192,15 @@ test("the register's actions cluster is held in place by layout, not by a select
   assert.match(inlineOpen, /margin: 0 0 2px 4px;/);
   assert.doesNotMatch(inlineOpen, /margin:[^;]*auto/,
     "the plus cannot resolve an auto margin inside the tooltip's anchor");
-  assert.match(inlineOpen, /height: 28px;/);
-  const stripRow = Number.parseFloat(/--register-strip:\s*([\d.]+)px;/.exec(css)![1]!);
-  assert.equal(28 + 2, stripRow, "the plus's margin box must be the strip's row exactly");
+  /* RESTATED 2026-08-03. It measured against --register-strip, which was right
+     while the strip was 30 and a tab filled it. The drag band above dissolved
+     into this row, the row went to 40 and the tab to 32 with 8px of ground
+     above it for the system's own buttons — so a plus still measuring the ROW
+     would stand eight pixels proud of every tab it extends, in the one place
+     the register may not draw. It measures the thing it sits beside. */
+  assert.match(inlineOpen, /height: 30px;/);
+  const tabRow = Number.parseFloat(/\.scripture-workspace-tab \{[\s\S]{0,1000}?height: ([\d.]+)px;/.exec(css)![1]!);
+  assert.equal(30 + 2, tabRow, "the plus's margin box must be the tab's row exactly");
   // And the cluster is at the far edge, held there by a margin on the element
   // that can actually resolve one, while still only ever shrinking.
   const actions = body(".scripture-workspace-actions {");

@@ -29,26 +29,26 @@ const HOVER_DELAY_MS = 420;
  * thing in the app that can put ink there without owning a pixel of layout.
  *
  * The authority for the number is `--frame-top` in styles.css, composed there
- * as `--study-line + --register-strip`. It is mirrored rather than read because
+ * as `--register-strip`. It is mirrored rather than read because
  * a custom property that is not registered with `@property` comes back from
  * getComputedStyle as its unresolved token stream ("calc(24px + 30px)"), and a
  * placement rule may not depend on parsing that.
  *
- * CORRECTED 2026-07-30, twice in one day, which is the whole argument for the
- * way it is now checked. It read 54 while the frame's composition read 40 —
- * commit e8e2ee9 had re-canonned the canvas from 24 to 10 and left the mirror
- * behind — so every tooltip that fell back upward cleared a floor 14px lower
- * than the page it was supposed to stay inside. That was fixed to 40, and then
- * the study line took the band over and the frame's first half went from
- * --page-inset to --study-line: 24 of study line over a 30px strip, and the sum
- * is 54 again.
+ * CORRECTED THREE TIMES NOW, which is the whole argument for the way it is
+ * checked. It read 54 while the frame's composition read 40 — commit e8e2ee9
+ * had re-canonned the canvas from 24 to 10 and left the mirror behind — so
+ * every tooltip that fell back upward cleared a floor 14px lower than the page
+ * it was supposed to stay inside. That was fixed to 40; then the study line
+ * took the band over and the sum went to 54; and on 2026-08-03 the band was
+ * dissolved into the register, which now carries the window's drag region by
+ * itself, so the frame is one 40px row again and the sum is 40.
  *
  * Neither move was caught by reading this file, and neither could have been.
  * tests/quire-frame-top-edge-contract.test.ts pins no literal: it ADDS the two
  * declared halves in styles.css and demands that sum here, by name. Move either
  * token and this line is the one edit the failure asks for.
  */
-const PAGE_TOP_EDGE = 54;
+const PAGE_TOP_EDGE = 40;
 
 interface Placement {
   top: number;

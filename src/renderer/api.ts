@@ -238,6 +238,7 @@ declare global {
       };
       appWindow: {
         onCloseRequested(listener: (request: AppWindowCloseRequest) => void): () => void;
+        onFullScreenChange(listener: (fullScreen: boolean) => void): () => void;
         requestClose(): void;
         resolveCloseRequest(requestId: string, proceed: boolean): void;
       };

@@ -209,7 +209,7 @@ test("one new-tab control, inline with the strip, glyph only, and still named", 
   const inline = section(stylesSource, ".scripture-workspace-open.is-inline {", "}");
   assert.match(inline, /align-self: flex-end;/);
   assert.match(inline, /width: 28px;/);
-  assert.match(inline, /height: 28px;/);
+  assert.match(inline, /height: 30px;/);
 });
 
 test("the strip and its popovers use custom menus and shared tooltips, never native selects", () => {
@@ -310,20 +310,28 @@ test("the register is a strip of canvas the active page is pulled up through", (
      for the whole edge. The study line is a real element in that band now and
      states its own height, so a bar still claiming --frame-top would claim it
      twice. The frame's sum is held in tests/quire-frame-top-edge-contract. */
-  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}height: var\(--register-strip\);/);
-  assert.doesNotMatch(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}min-height:/);
-  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}flex: 0 0 auto;/);
-  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}padding: 0 var\(--page-inset\) 0 0;/);
-  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,320}background: transparent;/);
+  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,2600}height: var\(--register-strip\);/);
+  assert.doesNotMatch(rail, /\.scripture-workspace-bar \{[\s\S]{0,2600}min-height:/);
+  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,2600}flex: 0 0 auto;/);
+  /* THE ROW KEEPS ROOM FOR THE SYSTEM'S OWN BUTTONS · 2026-08-03. It read
+     `padding: 0 var(--page-inset) 0 0` while a 24px drag band stood above it and
+     the register began at the page's own edge. The band dissolved into this row
+     and the row became the window's, so it reserves macOS's button zone at its
+     left — minus whatever the rail is already standing in, which is why the
+     expression subtracts rather than repeating a number. `max()` makes the open
+     rail fall out of the same expression, and fullscreen is the same rule with
+     the reserve at zero. */
+  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,2600}padding: 0 var\(--page-inset\) 0 max\(0px, calc\(var\(--os-buttons\) - var\(--rail-flow-w\)\)\);/);
+  assert.match(rail, /\.scripture-workspace-bar \{[\s\S]{0,2600}background: transparent;/);
   // No border-bottom: a rule here would fight the fillet, which is the thing
   // actually joining the tab to the page.
   assert.doesNotMatch(rail.slice(0, rail.indexOf("\n}")), /border-bottom/);
-  assert.match(rail, /\.scripture-workspace-tab \{[\s\S]{0,420}height: var\(--register-strip\);/);
+  assert.match(rail, /\.scripture-workspace-tab \{[\s\S]{0,2000}height: 32px;/);
 
   // The paper fill IS the mark. The tab is a piece of the page pulled up above
   // the register's baseline, so it takes paper, the page's radius, and no
   // second indicator — instant, because this is the app answering "where am I".
-  assert.match(rail, /\.scripture-workspace-tab \{[\s\S]{0,420}border-radius: var\(--radius-page\) var\(--radius-page\) 0 0;/);
+  assert.match(rail, /\.scripture-workspace-tab \{[\s\S]{0,2000}border-radius: var\(--radius-page\) var\(--radius-page\) 0 0;/);
   assert.match(
     rail,
     /\.scripture-workspace-tab\[aria-selected="true"\] \{\s*background: var\(--bg-reading\);\s*color: var\(--text-primary\);\s*transition: none;\s*\}/,
@@ -450,7 +458,7 @@ test("the fillets reserve their own 16px of footprint, dropped on the flush side
   assert.doesNotMatch(registerSource, /margin-inline-end: 0;/);
   // 104px min width leaves a flat run of 104 - 8 - 8 = 88px between the two top
   // curves, comfortably over the 40px floor the study sets.
-  assert.match(stylesSource, /\.scripture-workspace-tab \{[\s\S]{0,420}min-width: 104px;/);
+  assert.match(stylesSource, /\.scripture-workspace-tab \{[\s\S]{0,2000}min-width: 104px;/);
 });
 
 test("flush-END is retired: the actions never move and the last tab keeps its right fillet", () => {

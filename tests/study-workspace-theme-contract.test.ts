@@ -85,7 +85,7 @@ test("every atmosphere paints the register out of the two planes and nothing els
       assert.match(value, /^(?:transparent|Canvas)$/, `${selector} gives the register a fill of its own (${value})`);
     }
   }
-  assert.match(workspaceStyles, /\.scripture-workspace-bar \{[\s\S]{0,320}background: transparent;/);
+  assert.match(workspaceStyles, /\.scripture-workspace-bar \{[\s\S]{0,2600}background: transparent;/);
   assert.match(
     workspaceStyles,
     /\.scripture-workspace-tab\[aria-selected="true"\] \{\s*background: var\(--bg-reading\);/,
@@ -153,7 +153,10 @@ test("the study control is painted out of the same two planes, and states its ow
   const forced = mediaBlocks("@media (forced-colors: active)")
     .find((block) => block.includes(".scripture-study-row"));
   assert.ok(forced, "forced colours must reach the study control");
-  assert.match(forced, /\.scripture-study-line \{\s*background: Canvas;\s*forced-color-adjust: none;\s*\}/);
+    /* The frame's row takes the system's own field. This was on the drag band
+     while there was one; the band dissolved into the register on 2026-08-03 and
+     the rule followed the region that was its only reason to exist. */
+  assert.match(forced, /\.scripture-workspace-bar \{\s*background: Canvas;\s*forced-color-adjust: none;\s*\}/);
   assert.match(forced, /\.scripture-study-row\[aria-checked="true"\] \{ background: Highlight; color: HighlightText; \}/);
   assert.match(forced, /\.scripture-study-seal \{ background: CanvasText; \}/);
   assert.match(forced, /\.scripture-study-row\[data-study-drop-target\] \{\s*background: Highlight;/);
@@ -225,7 +228,7 @@ test("the active tab joins the page with two fillets, not with an underline", ()
   assert.match(pageRadius[0]![1]!.trim(), /^\d+px$/,
     "the fillet is drawn from this length, so it must be a plain px value");
   assert.match(styles, /\.scripture-content \{[\s\S]{0,320}background: var\(--bg-reading\);\s*border-radius: var\(--radius-page\);/);
-  assert.match(workspaceStyles, /\.scripture-workspace-tab \{[\s\S]{0,420}border-radius: var\(--radius-page\) var\(--radius-page\) 0 0;/);
+  assert.match(workspaceStyles, /\.scripture-workspace-tab \{[\s\S]{0,1000}border-radius: var\(--radius-page\) var\(--radius-page\) 0 0;/);
   // Exactly two gradients in the whole register: the pair of fillets.
   assert.equal([...workspaceStyles.matchAll(/radial-gradient/g)].length, 2);
   // And no underline anywhere: the old 2px gold indicator is gone, along with

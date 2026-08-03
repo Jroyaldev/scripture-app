@@ -118,38 +118,56 @@ function twoStudies(): StudyWorkspaceStateV2 {
 
 const bookNames = { ACT: ["Acts"], JHN: ["John"] } as Record<string, string[]>;
 
-test("the band above the strip is empty, and that is the whole of the repair", () => {
-  /* THE ASSERTION THAT WOULD HAVE CAUGHT ALL THREE FAULTS AT ONCE, and the one
-     that stops them coming back. A 24px row that already exists, already spans
-     the page and already holds nothing is the most convenient place in the
-     frame to put the next thing that needs a home — and the moment anything is
-     put there it is under the window's buttons, in the way of the drag, and on
-     the screen's top edge in fullscreen again.
+test("there is no band above the register, and that is the whole of the repair", () => {
+  /* THE ASSERTION THAT WOULD HAVE CAUGHT ALL THREE FAULTS, and the one that
+     stops them coming back. The chips lived in a 24px row the window was dragged
+     by; the fix was to get them out of it, and this test first held the row to
+     being a LEAF — nothing in it, so nothing in it could be under the window's
+     buttons or in the way of the drag.
 
-     So the row is asserted to be a LEAF. Not "holds no chips" — holds nothing;
-     a self-closing element cannot acquire a child by accident. */
-  assert.match(
-    page,
-    /\{!focusMode && <div className="scripture-study-line" data-study-drag-band="" \/>\}/,
-    "the band is a leaf element and renders no descendant at all",
+     Then the row itself went, hours later and for the reason the leaf assertion
+     made visible: once it was empty its only job was to be dragged by, and a
+     drag region is not a row. It is a property a row can carry, and the register
+     carries it — same width, the row a hand is already near, and its controls at
+     the two ENDS with most of the window free between them. The frame went from
+     54 to 40 and the tabs came up to within 8px of the window's own top edge.
+
+     So the claim is stronger than a leaf: there is no row to fill. */
+  assert.doesNotMatch(page, /scripture-study-line/, "nothing renders a band");
+  assert.doesNotMatch(styles, /\.scripture-study-line\b/, "and the sheet declares none");
+  assert.ok(
+    page.indexOf("<ScriptureWorkspaceTabs") < page.indexOf('id="scripture-workspace-panel"'),
+    "the register meets the page with nothing in between: the fillets join there",
   );
-  assert.doesNotMatch(pageStatements, /<StudyLine/, "the study line component is gone, not renamed in place");
 
-  /* AND IT IS STILL THE WINDOW'S. The band was the drag region before the chips
-     moved in and it still is; what changed is that there is nothing in it to
-     interrupt the region. `-webkit-app-region: drag` on a row studded with
-     no-drag boxes is not a drag region, it is the gaps between them. */
-  const band = rule(".scripture-study-line");
-  assert.match(band, /-webkit-app-region: drag;/);
-  assert.match(band, /height: var\(--study-line\);/);
-  assert.doesNotMatch(band, /display: flex|align-items/,
-    "an empty row lays nothing out; a flex container here is a row waiting to be filled");
+  /* THE FRAME'S TOP EDGE IS THE REGISTER, and the register keeps room for the
+     system's own buttons — minus whatever the rail is already standing in. In
+     fullscreen macOS hides them and the reserve is zero, which is the same rule
+     rather than an exception to it. The arithmetic is held in
+     tests/quire-frame-top-edge-contract; what is claimed here is that the studies
+     did not simply move into a second problem. */
+  assert.match(styles, /--register-strip: 40px;/);
+  assert.match(styles, /--frame-top: var\(--register-strip\);/);
+  assert.match(rule(".scripture-workspace-bar"), /-webkit-app-region: drag;/);
+  assert.match(
+    rule(".scripture-workspace-bar"),
+    /padding: 0 var\(--page-inset\) 0 max\(0px, calc\(var\(--os-buttons\) - var\(--rail-flow-w\)\)\);/,
+  );
+  assert.match(styles, /\.app-shell\[data-fullscreen\] \.scripture-workspace-bar \{\s*padding-left: 0;\s*\}/);
 
-  /* THE FRAME'S TOP EDGE DID NOT MOVE. --frame-top is composed from this row
-     and the strip, it is invariant across modes, and emptying the row must not
-     change either half — held here and in tests/quire-frame-top-edge-contract. */
-  assert.match(styles, /--study-line: 24px;/);
-  assert.match(styles, /--frame-top: calc\(var\(--study-line\) \+ var\(--register-strip\)\);/);
+  /* AND THE WINDOW IS THE ONLY THING THAT KNOWS whether it is fullscreen. The
+     three things that look like they could answer it from the DOM cannot:
+     `document.fullscreenElement` reports only JS-initiated fullscreen, the
+     display-mode media query is for installed web apps, and innerHeight against
+     screen.height is wrong on any display with a notch — measured 949 against
+     982 while fullscreen on this machine. */
+  const main = read("src/electron/main.ts");
+  assert.match(main, /win\.on\("enter-full-screen", reportFullScreen\);/);
+  assert.match(main, /win\.on\("leave-full-screen", reportFullScreen\);/);
+  assert.match(main, /ipcMain\.on\("app-window-fullscreen-ready"/,
+    "a renderer that reloads while fullscreen must not start out laying out for buttons that are not there");
+  assert.match(app, /window\.api\.appWindow\.onFullScreenChange\(setWindowFullScreen\)/);
+  assert.match(app, /data-fullscreen=\{windowFullScreen \|\| undefined\}/);
 });
 
 test("the control stands in the register, before the cluster that reports on tabs", () => {
