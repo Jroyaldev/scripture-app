@@ -485,7 +485,13 @@ test("renaming happens in the control's own surface, never in a dialog over the 
      page asking a question. */
   assert.doesNotMatch(controlStatements, /window\.prompt|window\.confirm|window\.alert/);
   assert.match(control, /type MenuMode = "list" \| "rename";/);
-  assert.match(control, /if \(mode !== "rename"\) return;\s*renameInputRef\.current\?\.select\(\);/);
+  /* THE NAME ARRIVES SELECTED, so the first keystroke replaces it — a study is
+     usually being named rather than edited. ON FOCUS rather than in a layout
+     effect, and the difference is a race this lost: the popover focuses the
+     field in its own layout effect, and a parent selecting in one of its own is
+     only correct while the two run in that order. They stopped. Selecting where
+     focus actually lands cannot be out of order with focus. */
+  assert.match(control, /onFocus=\{\(event\) => event\.currentTarget\.select\(\)\}/);
   assert.match(control, /maxLength=\{60\}/);
   // Escape abandons the name and leaves the study as it was. An unnamed study
   // keeps its derived reference — "Acts 19" — which is a true name.

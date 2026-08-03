@@ -2298,7 +2298,10 @@ html, body, #root {
    No border, no fill, no chevron drawn until there is something to open onto:
    Law 2 refuses a second fill in a row that already has the active tab's. */
 .scripture-study-face {
-  height: 22px;
+  /* TWENTY-FOUR IS A FLOOR, not a preference. It was 22, which looked right in a
+     40px row and is under the pointer target this app holds every control to —
+     the tour caught it. There is room: the row is 40 and the tabs are 32. */
+  height: 24px;
   max-width: 100%;
   flex: 0 1 auto;
   display: inline-flex;
@@ -3761,10 +3764,17 @@ html, body, #root {
   transition: transform var(--transition-normal);
 }
 
-/* The dragged tab is not a sibling and does not take the shuffle's transition:
+/* The dragged tab is not a sibling. It does not take the shuffle's transition —
    it is following a pointer, and a transition on that is a tab lagging behind
-   the hand holding it. Its transform is the same declaration one rule down. */
+   the hand holding it — and it does not take the shuffle's transform either.
+
+   BOTH ARE RESTATED HERE RATHER THAN INHERITED, and that is a specificity fact
+   before it is a design one: the rule above is three classes deep and
+   `.scripture-workspace-tab-wrap.is-dragging` is two, so the SIBLING transform
+   wins on the dragged tab and pins it at zero. It stopped following the pointer
+   the moment the shuffle was scoped, and the tour is what noticed. */
 .scripture-workspace-viewport[data-drag-live] .scripture-workspace-tab-wrap.is-dragging {
+  transform: translate(var(--tab-drag-x, 0px), -1px);
   transition: filter var(--transition-fast), opacity var(--transition-fast);
 }
 

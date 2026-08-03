@@ -1,5 +1,5 @@
 import type React from "react";
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BookNameData } from "../api.js";
 import {
   STUDY_WORKSPACE_GROUP_LIMIT,
@@ -269,11 +269,14 @@ export function StudyControl({
   }, [bookNames, namingRequest, openMenu, workspace]);
 
   /* The field opens with the old name selected, so the first keystroke replaces
-     it — a study is usually being named rather than edited. */
-  useLayoutEffect(() => {
-    if (mode !== "rename") return;
-    renameInputRef.current?.select();
-  }, [mode]);
+     it — a study is usually being named rather than edited.
+
+     ON FOCUS, not in a layout effect, and the difference is a race this lost.
+     The popover focuses the field itself, in its own layout effect, and a parent
+     that selects in one of its own is only correct while the two run in that
+     order — which they did until the popover re-ran its effect and focused a
+     second time, collapsing the selection to a caret. Selecting where focus
+     actually lands cannot be out of order with focus. */
 
   /* A study that closes while its name is being edited takes the field with it.
      No surface may go on standing for a study that is not there. */
@@ -465,6 +468,7 @@ export function StudyControl({
                 maxLength={60}
                 autoComplete="off"
                 aria-label={`Name this study — currently ${label}`}
+                onFocus={(event) => event.currentTarget.select()}
                 onChange={(event) => setRenameDraft(event.currentTarget.value)}
                 onKeyDown={(event) => {
                   if (event.key !== "Escape") return;

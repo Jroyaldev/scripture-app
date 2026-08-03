@@ -210,13 +210,15 @@ test("workspace-bar QA captures one identical fixture across four atmospheres an
     "document.getAnimations()",
     "Page.bringToFront",
     "pendingScreenshots",
-    /* The study line is captured on its own, at 3x, in the clean state and in
-       All, plus a forced-colours frame. A 24px row of 11px type is not
-       something a designer can read in a 1180x900 viewport shot, and the six
-       theme captures are taken with the All Tabs popover open over the page. */
-    "study-line.png",
-    "study-line-switched.png",
-    "study-line-single.png",
+    /* The study control is captured on its own, at 3x, in the clean state and
+       after a switch, plus a forced-colours frame. Eleven-pixel type in a 40px
+       row is not something a designer can read in a 1180x900 viewport shot, and
+       the six theme captures are taken with the All Tabs popover open over the
+       page. The names changed with the device on 2026-08-03: the row of chips in
+       the band above the strip became one control at the end of it. */
+    "study-control.png",
+    "study-control-switched.png",
+    "study-control-single.png",
     /* Added 2026-07-30 with the waking pass: the tour starts a study from the
        floor IN ONE SESSION and measures the first name again, instead of
        comparing the resting name to the sixteen-study row across two reloads.
@@ -227,9 +229,15 @@ test("workspace-bar QA captures one identical fixture across four atmospheres an
        instant its chip existed, which is up to 4px into the chip's own 150ms
        `translateX(-4px)` entrance; `loadShape` settles the animations now, and
        that is what the `driver.settle()` inside it is for. */
-    "study-line-woken.png",
-    "study-line-many.png",
-    "study-line-narrow.png",
+    "study-control-woken.png",
+    /* AND THE GESTURE, added 2026-08-03. Reordering a tab and taking one to
+       another study are the same pointer doing two different things, and neither
+       had a capture or a gate. Both are driven with real pointer events, because
+       a drag is a sequence and the only faithful version of it is the real one. */
+    "study-control-drag-shuffle.png",
+    "study-control-drag-landing.png",
+    "study-control-many.png",
+    "study-control-narrow.png",
     "forced-colors.png",
   ]) {
     assert.ok(workspaceBarQa.includes(marker), `missing bar-fixture marker: ${marker}`);
@@ -272,36 +280,43 @@ test("workspace-bar QA computes geometry, material, focus, and accessibility ass
     "openInStrip",
     /* THE STUDY LINE, measured rather than read. `groupVisible` was here and
        is `groupNamedInStrip` now, inverted: it asserted that the strip carried
-       a control with a study's name on it, and it pointed at the kicker, then
-       at the Manage control, and outlived both. Nothing in the strip stands for
-       a study; the line above it names every one, and these are the properties
-       a source-reading test cannot see — that the line is ABOVE the strip (a
-       row between the strip and the page severs the fillet joining the active
-       tab to the page), that the frame's top edge is still the composed 54,
-       that the chips carry the window's drag band without eating a press, and
-       that switching studies moves nothing above the strip. */
+       a control with a study's name on it, and it pointed at the kicker, then at
+       the Manage control, then at a row of chips, and outlived all three.
+       Nothing in the strip stands for a study except the control at its end, and
+       these are the properties a source-reading test cannot see: that the
+       control is IN the register, that no band stands above the tabs any more,
+       that the frame's top edge is the register's own 40, that the row carries
+       the window's drag region without eating a press on the control, and that
+       switching studies moves nothing in the frame.
+
+       RESTATED 2026-08-03 with the device. Every name below that began `chip` or
+       `line` named a row that no longer exists — and `bandGone` is the one that
+       replaces them all, because the failure this whole pass was about was
+       things LIVING in that band rather than anything about how they looked. */
     "groupNamedInStrip",
-    "lineAboveStrip",
+    "bandGone",
     "frameTop",
-    "lineOutsideRegister",
-    "chipNames",
-    "currentChipNames",
-    "chipTargets",
-    "lineDrags",
-    "chipsNoDrag",
-    "currentChipFilled",
+    "controlInRegister",
+    "faceName",
+    "restCount",
+    "studyTargets",
+    "barDrags",
+    "faceNoDrag",
+    "faceFilled",
     "sealVisible",
-    /* `allChipSealed` was here and the All chip it named lasted a day: the strip
-       holds one study's tabs, so a chip for "every study at once" was a control
-       for choosing between one arrangement and itself. What replaced it is a
-       count — the seal marks a study the reader has NAMED, so the tour drives a
-       fixture that is half named and asserts the number of marks. */
-    "sealedChips",
-    "lineState",
     "studyLineForced",
     "geometryBefore",
-    "data-study-line-chip",
+    "data-study-face",
     "data-study-start",
+    /* AND THE GESTURE'S OWN STATE. Every one of these is written somewhere React
+       cannot see it — an offset on a node, a cursor on the document, a proxy in
+       a body portal — which is exactly why the tour asserts them together and
+       after the fact. A drag that ends down a path nobody wrote a cleanup for
+       leaves a tab stranded mid-air under a cursor that will not change back. */
+    "data-study-tab-ghost",
+    "data-tab-drag",
+    "data-drag-live",
+    "Input.dispatchMouseEvent",
     "minimumTargetSize",
     "centerVisible",
     "Escape",
