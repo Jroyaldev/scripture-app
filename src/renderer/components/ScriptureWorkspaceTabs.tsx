@@ -86,6 +86,14 @@ export interface ScriptureWorkspaceTabsProps {
   onReorderGroup: (groupId: string, position: WorkspaceReorderPosition) => Promise<boolean>;
   onReopenRecent: () => Promise<boolean>;
   onReopenRecentItem: (index: number) => Promise<boolean>;
+  /**
+   * Forget every retained recently-closed entry.
+   *
+   * Void where its neighbours return an approval, because there is nothing to
+   * approve: clearing a list can only remove, and the reversal it offers is a
+   * toast rather than a refusal this surface has to react to.
+   */
+  onClearRecent: () => void;
   onDuplicateTab: () => Promise<boolean>;
   onNewResearch: () => void;
   persistenceStatus: WorkspacePersistenceStatus;
@@ -518,6 +526,7 @@ export function ScriptureWorkspaceTabs({
   onReorderGroup,
   onReopenRecent,
   onReopenRecentItem,
+  onClearRecent,
   onDuplicateTab,
   onNewResearch,
   persistenceStatus,
@@ -2130,7 +2139,26 @@ export function ScriptureWorkspaceTabs({
           </div>
           {recentlyClosedList.length > 0 && (
             <div className="scripture-workspace-recent-list" data-study-recent-list="">
-              <span className="scripture-workspace-recent-heading">Recently closed</span>
+              <div className="scripture-workspace-recent-head">
+                <span className="scripture-workspace-recent-heading">Recently closed</span>
+                {/* THE SHORTCUT EXISTS AND WAS ADVERTISED NOWHERE. ⌘⇧T has
+                    reopened the most recent item all along; the only place a
+                    reader could have learned it is the source. It sits with the
+                    list it acts on, in the same `kbd` the rows use for ⌘n. */}
+                <kbd className="scripture-workspace-overflow-shortcut">⌘⇧T</kbd>
+                <button
+                  type="button"
+                  data-study-recent-clear=""
+                  onMouseDown={deferMouseFocus}
+                  /* A NET NOBODY CAN EMPTY fills up with things the reader has
+                     stopped meaning to recover — ten deep, surviving restarts,
+                     removable only by reopening them, which is the opposite of
+                     what someone tidying wants. The undo is not a nicety here:
+                     this IS the recovery list, so it is cleared for real on the
+                     press and offered back for as long as the toast stands. */
+                  onClick={onClearRecent}
+                >Clear</button>
+              </div>
               {recentlyClosedList.map(({ item, index }) => (
                 <button
                   type="button"

@@ -225,13 +225,33 @@ test("a focus the reader did not ask for is not a focus they see ringed", () => 
     "the marker goes on before the focus it is about, or one frame rings anyway",
   );
 
-  /* THE READER TAKES IT OFF, with anything at all. The listeners are broad and
-     capture-phase on purpose: a reader who has pressed a key or put a pointer
-     down inside the panel has arrived under their own power, and a narrow list
-     of "navigation keys" is a list that goes stale the first time a surface
-     invents a gesture. */
-  assert.match(popover, /panel\.addEventListener\("keydown", depart, true\);/);
-  assert.match(popover, /panel\.addEventListener\("pointerdown", depart, true\);/);
+  /* FOCUS MOVING TAKES IT OFF — not a press. The first form of this listened
+     for every key and every pointer press in the panel, on the reasoning that a
+     reader who pressed anything had arrived under their own power. Two of the
+     sheet's own controls disproved it: Clear holds the caret in the search field
+     on purpose, and typing never moves focus at all, yet both handed a ring to
+     the field the reader had never left. `focusin` says the true thing — the
+     arrival ends when focus is somewhere other than where the app put it. */
+  assert.match(popover, /panel\.addEventListener\("focusin", depart\);/);
+  assert.doesNotMatch(popover, /addEventListener\("(?:keydown|pointerdown)", depart/);
+  // Attached after the focus call, or the app's own arrival — which dispatches
+  // focusin synchronously — would read as the reader's first move and clear the
+  // marker in the same tick it was set.
+  assert.ok(
+    popover.indexOf("target.focus({ preventScroll: true })")
+      < popover.indexOf('panel.addEventListener("focusin", depart)'),
+    "the listener goes on after the arrival focus, not before it",
+  );
+  // Focus RETURNING to the same target is still the app's doing: it is how the
+  // sheet re-homes the caret when a row the reader closed takes its own focus
+  // out of the document with it.
+  assert.match(popover, /if \(event\.target === target\) return;/);
+
+  /* And the field's own reset has to hold IN THE FOCUSED STATE.
+     `.scripture-workspace-search input` and the app-wide `input:focus-visible`
+     tie at one class and one element; source order breaks the tie 13,000 lines
+     later, so the field drew its frame's ring and its own, concentric. */
+  assert.match(css, /\.scripture-workspace-search input:focus-visible \{\s*outline: 0;\s*\}/);
 
   /* Stated once over the whole panel rather than repeated on each ringed
      selector: the claim is about the PANEL's state, not about any control in

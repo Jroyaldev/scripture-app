@@ -74,8 +74,11 @@ import {
   openPassageWorkspaceTab,
   orderedStudyWorkspaceTabs,
   promoteStudyWorkspaceTabToNewGroup,
+  clearRecentlyClosedStudyItems,
+  type ClosedStudyItem,
   reopenClosedStudyItem,
   reopenClosedStudyItemAt,
+  restoreRecentlyClosedStudyItems,
   renameStudyWorkspaceGroup,
   reorderStudyWorkspaceGroup,
   reorderStudyWorkspaceTab,
@@ -1689,6 +1692,41 @@ export function App(): React.JSX.Element {
     });
   }, [commitStudyWorkspace]);
 
+  /* FORGETTING WHAT WAS CLOSED, reversibly.
+   *
+   * Placed here rather than beside `reopenRecentWorkspaceItem`, and that is on
+   * purpose: tests/workspace-capacity-feedback pins the run of
+   * capacity-producing actions and asserts each reports a refusal. Clearing a
+   * list can only ever remove, so it has no capacity to report — and sitting
+   * inside that pinned run would let it borrow its neighbour's report and pass a
+   * check it never satisfied.
+   *
+   * The undo is not a nicety. This is the recovery list: the reader is throwing
+   * away the very thing they would reach for if they turn out to be wrong, so it
+   * is cleared for real on the press — truth first — and offered back for as
+   * long as the toast stands. The items are captured before the commit because
+   * after it there is nothing left to capture.
+   */
+  const clearRecentWorkspaceItems = useCallback((): void => {
+    let cleared: readonly ClosedStudyItem[] = [];
+    commitStudyWorkspace((current) => {
+      if (!current) return current;
+      const result = clearRecentlyClosedStudyItems(current);
+      if (result.state === current) return current;
+      cleared = current.recentlyClosed;
+      return result.state;
+    });
+    if (cleared.length === 0) return;
+    const restoring = cleared;
+    workspaceShowToastRef.current?.(
+      `Cleared ${restoring.length} recently closed`,
+      "Undo",
+      () => commitStudyWorkspace((current) => (
+        current ? restoreRecentlyClosedStudyItems(current, restoring).state : current
+      )),
+    );
+  }, [commitStudyWorkspace]);
+
   const globalShortcutBlocked = useCallback((event: KeyboardEvent): boolean => {
     if (event.defaultPrevented) return true;
     const target = event.target instanceof HTMLElement ? event.target : null;
@@ -2517,6 +2555,7 @@ export function App(): React.JSX.Element {
                 onWorkspaceTabReorder={reorderWorkspaceTab}
                 onWorkspaceGroupReorder={reorderWorkspaceGroup}
                 onWorkspaceRecentReopen={reopenRecentWorkspaceItem}
+          onWorkspaceRecentClear={clearRecentWorkspaceItems}
                 onWorkspaceTabDuplicate={duplicateActivePassageTab}
                 onStartStudy={startStudyFromCurrentCanvas}
                 studyNamingRequest={studyNamingRequest}

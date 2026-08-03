@@ -1546,6 +1546,59 @@ export function resolveStudyWorkspaceDecision(
     : { state: next, outcome: "applied" };
 }
 
+/**
+ * FORGET WHAT WAS CLOSED.
+ *
+ * The list is a safety net, and a net nobody can empty is a net that fills up
+ * with things the reader has stopped meaning to recover — ten entries deep, all
+ * of them survivors of a restart, none of them removable except by reopening
+ * them, which is the opposite of what the reader wants when they are tidying.
+ *
+ * It also holds more than it looks like it does. Every retained entry keeps a
+ * whole tab (or a whole study and its tabs) and RESERVES that tab's id against
+ * reuse — see `reservedStudyWorkspaceTabIds`, which derives from this array. So
+ * clearing is not only a tidy: it hands the ids back. Nothing else has to be
+ * told, because nothing else keeps its own copy.
+ *
+ * Paired with `restoreRecentlyClosedStudyItems` because a sweep of the recovery
+ * list is the one place an undo genuinely earns its keep — the reader is
+ * throwing away the very thing they would reach for if they were wrong.
+ */
+export function clearRecentlyClosedStudyItems(
+  state: StudyWorkspaceStateV2,
+): WorkspaceMutationResult {
+  if (state.recentlyClosed.length === 0) return { state, outcome: "unchanged" };
+  return { state: { ...state, recentlyClosed: [] }, outcome: "applied" };
+}
+
+/**
+ * Put a cleared list back, exactly as it was.
+ *
+ * The items are not revalidated here and that is deliberate: they came out of
+ * this same state moments ago, they are cloned on the way in as everything else
+ * in this file is, and the cap is re-applied because a restore is not a licence
+ * to exceed it. The persistence layer normalises on the way to disk regardless,
+ * so a malformed entry could not survive a save even if one arrived.
+ *
+ * It refuses when the list is no longer empty: something has been closed since,
+ * and pasting the old list over it would be an undo that discards a newer fact.
+ */
+export function restoreRecentlyClosedStudyItems(
+  state: StudyWorkspaceStateV2,
+  items: readonly ClosedStudyItem[],
+): WorkspaceMutationResult {
+  if (items.length === 0 || state.recentlyClosed.length > 0) {
+    return { state, outcome: "unchanged" };
+  }
+  return {
+    state: {
+      ...state,
+      recentlyClosed: items.slice(-RECENTLY_CLOSED_STUDY_LIMIT).map(cloneClosedStudyItem),
+    },
+    outcome: "applied",
+  };
+}
+
 export function reopenClosedStudyItem(
   state: StudyWorkspaceStateV2,
 ): WorkspaceMutationResult {

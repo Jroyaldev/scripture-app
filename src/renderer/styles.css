@@ -3490,6 +3490,19 @@ html, body, #root {
   outline-offset: 2px;
 }
 
+/* And the input keeps its `outline: 0` WHILE FOCUSED, which is the only state
+   that reset was ever for. Two rules claim this field at focus and they tie at
+   one class and one element: the reset above, and the app-wide
+   `input:focus-visible` at the foot of the sheet. A tie goes to source order,
+   the app-wide rule is 13,000 lines later, and so the field drew the concentric
+   pair the note above says it must not — the popover-scoped exclusion added in
+   the same breath fixed the narrower of the two rules and left the broader one
+   standing. Restating the reset in the focused state makes it one class and TWO
+   elements, which wins on its own merits from wherever either rule sits. */
+.scripture-workspace-search input:focus-visible {
+  outline: 0;
+}
+
 /* ── AND NOT ON ARRIVAL · 2026-08-03 ──────────────────────────────────────
  *
  * The note above says it plainly — "a field focused FOR the reader gets no
@@ -4057,33 +4070,67 @@ html[data-tab-drag] * {
   letter-spacing: 0.02em;
 }
 
+/* ── RECENTLY CLOSED, in the list's own hand · 2026-08-03 ─────────────────
+   It was the odd surface out in a 440px panel: 12px type against the rows' 10.5,
+   its own 5px/8px padding against their 28px min-height, its own 1px gap against
+   their 2. Three type scales and three spacing systems inside one popover, and
+   the seam fell exactly where the arrow keys now cross from open tabs to
+   recoverable ones — the one place the eye must read the two halves as one list.
+   It keeps its own heading and its own glyph; everything measurable it now
+   shares with the rows above it. */
 .scripture-workspace-recent-list {
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 2px;
   margin-top: 6px;
   padding-top: 6px;
   border-top: 1px solid var(--border-subtle);
 }
 
-.scripture-workspace-recent-heading {
+/* The heading, the shortcut nobody was told about, and the sweep — one row, so
+   the sweep sits with the list it empties rather than floating above it. */
+.scripture-workspace-recent-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   padding: 0 4px 2px;
+}
+
+.scripture-workspace-recent-heading {
   color: var(--text-tertiary);
   font: 500 10px/1 var(--font-ui);
   letter-spacing: 0.02em;
 }
 
+/* Pushed to the far end, and quiet: it is a sweep of a safety net, so it should
+   be findable and never inviting. The ink is the app's own error hue only on
+   hover — before that it is one more tertiary label, which is what a control
+   you should reach for deliberately looks like. */
+.scripture-workspace-recent-list [data-study-recent-clear] {
+  min-height: 20px;
+  margin-left: auto;
+  padding: 0 6px;
+  color: var(--text-tertiary);
+  font: 500 9.5px/1 var(--font-ui);
+}
+
+.scripture-workspace-recent-list [data-study-recent-clear]:hover {
+  background: color-mix(in srgb, var(--error) 10%, transparent);
+  color: var(--error);
+}
+
 .scripture-workspace-recent-list button {
+  min-height: 28px;
   display: flex;
   align-items: center;
   gap: 8px;
   appearance: none;
   border: 0;
   border-radius: var(--radius-sm);
-  padding: 5px 8px;
+  padding: 0 8px;
   background: transparent;
   color: var(--text-secondary);
-  font: var(--fw-medium) 12px/1.2 var(--font-ui);
+  font: var(--fw-medium) 10.5px/1.2 var(--font-ui);
   text-align: left;
   cursor: pointer;
 }
@@ -4203,6 +4250,29 @@ html[data-tab-drag] * {
      state stops being a 72% wash that this mode cannot render. */
   .scripture-workspace-group-title > button,
   .scripture-workspace-row-tools { opacity: 1; }
+
+  /* THE RECENTS LIST WAS NEVER IN THIS BLOCK, and neither was the row standing
+     for the tab you are reading — so in the one mode with no hues at all, the
+     current tab in All Tabs lost its seal rule with nothing put in its place
+     while the strip's current tab took Highlight. The list's own recovery
+     entries were untouched paper. Both are said in the system's pair now. */
+  .scripture-workspace-overflow-row > button.is-active {
+    background: Highlight;
+    color: HighlightText;
+    forced-color-adjust: none;
+  }
+
+  .scripture-workspace-recent-list button {
+    background: Canvas;
+    color: CanvasText;
+    forced-color-adjust: none;
+  }
+
+  .scripture-workspace-recent-list button:hover,
+  .scripture-workspace-recent-list [data-study-recent-clear]:hover {
+    background: Highlight;
+    color: HighlightText;
+  }
 
   .scripture-workspace-tab:focus-visible,
   .scripture-workspace-open:focus-visible,

@@ -9,6 +9,7 @@ import {
   studyWorkspaceWheelScrollDelta,
 } from "../src/renderer/components/ScriptureWorkspaceTabs.js";
 import {
+  clearRecentlyClosedStudyItems,
   closeStudyWorkspaceTab,
   createStudyWorkspace,
   openEntityWorkspaceTab,
@@ -16,6 +17,7 @@ import {
   reopenClosedStudyItem,
   reopenClosedStudyItemAt,
   reorderStudyWorkspaceTab,
+  restoreRecentlyClosedStudyItems,
   studyWorkspaceTabPromoteAvailability,
   type PassageViewState,
 } from "../src/renderer/utils/studyWorkspace.js";
@@ -187,6 +189,69 @@ test("recently-closed entries reopen by index while the button keeps the most re
   // Out-of-range indices are inert.
   assert.equal(reopenClosedStudyItemAt(populated, 5).outcome, "unchanged");
   assert.equal(reopenClosedStudyItemAt(populated, -1).outcome, "unchanged");
+});
+
+test("the recovery list can be emptied, and emptying it is reversible", () => {
+  /* A NET NOBODY CAN EMPTY fills up. Ten entries deep, surviving restarts, and
+     removable only by REOPENING them — which is the opposite of what a reader
+     tidying up wants. There was no clear anywhere in the model: the only writes
+     to `recentlyClosed` were appends and the removal a reopen performs. */
+  const initial = createStudyWorkspace(view("ACT", 19), { groupId: "study", passageTabId: "acts-19" });
+  const withJohn = openPassageWorkspaceTab(initial, {
+    id: "john-3", sourceTabId: "acts-19", view: view("JHN", 3),
+  }).state;
+  const closed = closeStudyWorkspaceTab(withJohn, "john-3");
+  assert.equal(closed.outcome, "applied");
+  assert.equal(closed.state.recentlyClosed.length, 1);
+
+  const cleared = clearRecentlyClosedStudyItems(closed.state);
+  assert.equal(cleared.outcome, "applied");
+  assert.deepEqual(cleared.state.recentlyClosed, []);
+  // Nothing else in the workspace is touched: this forgets a recovery path, it
+  // does not close, open or reorder anything.
+  assert.deepEqual(cleared.state.groups, closed.state.groups);
+  assert.deepEqual(cleared.state.tabsById, closed.state.tabsById);
+  assert.equal(cleared.state.activeTabId, closed.state.activeTabId);
+  // Clearing an empty list is not a change, so it cannot spend an undo.
+  assert.equal(clearRecentlyClosedStudyItems(cleared.state).outcome, "unchanged");
+
+  /* THE UNDO EARNS ITS KEEP HERE more than anywhere else in the app: the reader
+     is throwing away the very thing they would reach for if they turn out to be
+     wrong. Cleared for real on the press — the store and the screen never
+     disagree — and offered back for as long as the toast stands. */
+  const restored = restoreRecentlyClosedStudyItems(cleared.state, closed.state.recentlyClosed);
+  assert.equal(restored.outcome, "applied");
+  assert.deepEqual(
+    restored.state.recentlyClosed.map((item) => item.index),
+    closed.state.recentlyClosed.map((item) => item.index),
+  );
+  // And it refuses once something newer has arrived: pasting the old list over
+  // a fresh entry would be an undo that discards a fact the reader just made.
+  const withRomans = openPassageWorkspaceTab(restored.state, {
+    id: "rom-8", sourceTabId: "acts-19", view: view("ROM", 8),
+  }).state;
+  const closedAgain = closeStudyWorkspaceTab(withRomans, "rom-8");
+  assert.equal(closedAgain.outcome, "applied");
+  assert.equal(
+    restoreRecentlyClosedStudyItems(closedAgain.state, closed.state.recentlyClosed).outcome,
+    "unchanged",
+  );
+  assert.equal(restoreRecentlyClosedStudyItems(cleared.state, []).outcome, "unchanged");
+
+  /* THE SWEEP IS NOT A CAPACITY ACTION, which is why its callback sits outside
+     the run tests/workspace-capacity-feedback pins. Inside it, it would have
+     borrowed a neighbour's `notifyWorkspaceCapacity` and passed a check it never
+     satisfied — clearing can only ever remove. */
+  const app = readFileSync(resolve(import.meta.dirname, "../src/renderer/app.tsx"), "utf8");
+  assert.ok(
+    app.indexOf("const clearRecentWorkspaceItems")
+      > app.indexOf("const updateEntityResearchTrail"),
+    "the sweep must sit outside the pinned run of capacity-producing actions",
+  );
+  assert.match(app, /`Cleared \$\{restoring\.length\} recently closed`,\s*"Undo",/);
+  // Captured BEFORE the commit, because after it there is nothing left to
+  // capture — the list it would restore is the one it just emptied.
+  assert.match(app, /cleared = current\.recentlyClosed;/);
 });
 
 test("arrow keys move roving focus without committing a transition", () => {

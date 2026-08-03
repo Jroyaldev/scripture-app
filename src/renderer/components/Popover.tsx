@@ -163,13 +163,27 @@ export function Popover({
    * and hands the rings back. Nothing needs to put it back: the next arrival is
    * a new panel.
    *
-   * The clearing listeners are deliberately broad and deliberately capture-phase
-   * — every key, every pointer press, anywhere in the panel. A reader who has
-   * pressed anything at all has arrived under their own power, and a narrow list
-   * of "navigation keys" is a list that goes stale the first time a surface
-   * invents a gesture. */
+   * WHAT ENDS THE ARRIVAL IS FOCUS MOVING, not a press. This began as two broad
+   * capture listeners — every key, every pointer press — on the reasoning that a
+   * reader who has pressed anything has arrived under their own power. The All
+   * Tabs sheet proved that wrong the first time it grew a button that keeps the
+   * caret where it is: pressing Clear deliberately holds focus in the search
+   * field, and the field the reader never left lit a ring as the press went by.
+   * Typing said the same thing — someone filling in the field the app opened for
+   * them has not asked to see a keyboard mode announced.
+   *
+   * `focusin` states the true condition: the arrival is over the moment focus is
+   * somewhere other than where we put it. Tab moves it and the control it lands
+   * on rings, which is exactly when a ring is owed; a press that leaves focus
+   * alone leaves the arrival standing. The listener goes on AFTER the focus call
+   * returns, because that call dispatches focusin synchronously and that one is
+   * ours — and it forgives focus RETURNING to the same target, which is how the
+   * sheet re-homes the caret when a row the reader closed takes its own focus
+   * out of the document with it. */
   useEffect(() => {
     if (!anchorRect || !position || !initialFocus) return;
+    let owner: HTMLElement | null = null;
+    let depart: ((event: FocusEvent) => void) | null = null;
     const timer = window.setTimeout(() => {
       const panel = panelRef.current;
       if (!panel) return;
@@ -180,21 +194,18 @@ export function Popover({
       const target = preferred && panel.contains(preferred) ? preferred : first ?? panel;
       panel.setAttribute("data-focus-arrival", "");
       target.focus({ preventScroll: true });
+      owner = panel;
+      depart = (event: FocusEvent): void => {
+        if (event.target === target) return;
+        panel.removeAttribute("data-focus-arrival");
+      };
+      panel.addEventListener("focusin", depart);
     }, 0);
-    return () => window.clearTimeout(timer);
-  }, [anchorRect, initialFocus, initialFocusRef, position]);
-
-  useEffect(() => {
-    const panel = panelRef.current;
-    if (!panel || !anchorRect || !initialFocus) return;
-    const depart = (): void => panel.removeAttribute("data-focus-arrival");
-    panel.addEventListener("keydown", depart, true);
-    panel.addEventListener("pointerdown", depart, true);
     return () => {
-      panel.removeEventListener("keydown", depart, true);
-      panel.removeEventListener("pointerdown", depart, true);
+      window.clearTimeout(timer);
+      if (owner && depart) owner.removeEventListener("focusin", depart);
     };
-  }, [anchorRect, initialFocus, position]);
+  }, [anchorRect, initialFocus, initialFocusRef, position]);
 
   useEffect(() => {
     if (!anchorRect) return;
