@@ -1,0 +1,330 @@
+{
+  "startedAt": "2026-08-03T00:06:35.126Z",
+  "requestKey": "1|gpt-5.6-luna-medium|ask-nt-wright:podcast:55146aac-com-06717f9f-d027-3b21-815e-21ad699a4b63|1150|1353|4f38f6335b321c75",
+  "request": {
+    "schemaVersion": 1,
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "ask-nt-wright:podcast:55146aac-com-06717f9f-d027-3b21-815e-21ad699a4b63",
+    "fromSec": 1150,
+    "toSec": 1353,
+    "why": "This clip adds an important qualification rather than treating postmodernism as only a problem. N. T. Wright says one strength of postmodernity is that it has highlighted the “ineradicable nature of story within human life,” while insisting that story still raises the question, “but did it happen?” He distinguishes parables from the Gospel narratives and explains why Christian story is being prese"
+  },
+  "result": {
+    "schemaVersion": 1,
+    "requestKey": "1|gpt-5.6-luna-medium|ask-nt-wright:podcast:55146aac-com-06717f9f-d027-3b21-815e-21ad699a4b63|1150|1353|4f38f6335b321c75",
+    "clip": {
+      "fromSec": 1150,
+      "toSec": 1353,
+      "durationSec": 203
+    },
+    "scenes": [
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "he comes back and he paints crucifixions",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [
+          {
+            "text": "using a Jewish artist’s crucifixions to frame modern Jewish pain",
+            "cue": "trying to find models for the pain of being a Jew in the modern world",
+            "at": 98,
+            "timingSource": "house"
+          },
+          {
+            "text": "The crucifixion is being discussed against the backdrop of…",
+            "cue": "So there's a real fear.",
+            "at": 59,
+            "timingSource": "cue"
+          }
+        ],
+        "at": 34,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "one of the good things about postmodernity",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "But I would say it's one of the strengths of postmodernity that it has highlighted the uh ineradicable nature of story within human life.",
+          "cue": null,
+          "at": 165,
+          "timingSource": "house"
+        },
+        "asides": [],
+        "at": 162,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "does raise the question, but did it happen?",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "But the fact that it is a story then does raise the question, but did it happen?",
+          "cue": "But the fact that it is a story then does raise the question, but did it happen?",
+          "at": 168,
+          "timingSource": "cue"
+        },
+        "asides": [],
+        "at": 168,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "I mean, take Jesus' parables.",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [
+          {
+            "text": "distinguishing parables from narratives judged by historical detail",
+            "cue": "It makes no sense to say of the parable of the Progall Son",
+            "at": 198,
+            "timingSource": "cue"
+          }
+        ],
+        "at": 193,
+        "timingSource": "cue"
+      }
+    ],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 13071,
+      "passes": 2,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 9799,
+          "promptTokens": 2236,
+          "completionTokens": 918,
+          "reasoningTokens": 516,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.000830225,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-scenes:4"
+        },
+        {
+          "role": "fill-1",
+          "latencyMs": 3269,
+          "promptTokens": 413,
+          "completionTokens": 357,
+          "reasoningTokens": 231,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0002555,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:1"
+        }
+      ],
+      "totalUsd": 0.001085725,
+      "tokens": {
+        "prompt": 2649,
+        "completion": 1275,
+        "reasoning": 747,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 1,
+        "dropped": [
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-1",
+            "kind": "highlight",
+            "count": 1
+          }
+        ],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "reassigned": 0,
+        "preludes": 0,
+        "sceneCount": 4,
+        "artifactCount": 5,
+        "artifactCounts": {
+          "group": 0,
+          "footnote": 0,
+          "term": 0,
+          "allusion": 0,
+          "aside": 3,
+          "compare": 0,
+          "chain": 0,
+          "caveat": 0,
+          "highlight": 2
+        },
+        "cadence": {
+          "entranceCount": 9,
+          "uniqueBeatCount": 8,
+          "firstBeatSec": 34,
+          "lastBeatSec": 198,
+          "maxGapSec": 64
+        },
+        "passes": [
+          {
+            "role": "initial",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 1,
+            "clamped": 0,
+            "invented": 5,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 4,
+            "artifactCount": 5,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 3,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 2
+            },
+            "cadence": {
+              "entranceCount": 9,
+              "uniqueBeatCount": 8,
+              "firstBeatSec": 0,
+              "lastBeatSec": 177.7,
+              "maxGapSec": 25.4
+            }
+          },
+          {
+            "role": "house-timeline",
+            "schemaVersion": 1,
+            "dropped": [
+              {
+                "reason": "aside-not-silent",
+                "kind": "aside",
+                "at": 180
+              }
+            ],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 4,
+            "artifactCount": 4,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 2,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 2
+            },
+            "cadence": {
+              "entranceCount": 8,
+              "uniqueBeatCount": 7,
+              "firstBeatSec": 34,
+              "lastBeatSec": 198,
+              "maxGapSec": 64
+            }
+          },
+          {
+            "role": "fill-1",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 4,
+            "artifactCount": 5,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 3,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 2
+            },
+            "cadence": {
+              "entranceCount": 9,
+              "uniqueBeatCount": 8,
+              "firstBeatSec": 34,
+              "lastBeatSec": 198,
+              "maxGapSec": 64
+            }
+          }
+        ]
+      }
+    }
+  },
+  "schemaVersion": 1
+}

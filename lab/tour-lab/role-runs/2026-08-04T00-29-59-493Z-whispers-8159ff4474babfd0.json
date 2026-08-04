@@ -1,0 +1,72 @@
+{
+  "role": "whispers",
+  "startedAt": "2026-08-04T00:29:59.493Z",
+  "request": {
+    "stepCount": 6,
+    "stepsHash": "901ef1a3020f981a"
+  },
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "endpointHost": "openrouter.ai",
+    "endpointStyle": "aggregator",
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "applied": true
+    },
+    "provider": "OpenAI"
+  },
+  "metrics": {
+    "wallMs": 4727,
+    "passes": 1,
+    "calls": [
+      {
+        "role": "whispers",
+        "latencyMs": 4725,
+        "promptTokens": 809,
+        "completionTokens": 387,
+        "reasoningTokens": 293,
+        "cachedPromptTokens": 0,
+        "providerCostUsd": 0.0003131,
+        "finishReason": "stop",
+        "rawModel": "openai/gpt-5.6-luna",
+        "provider": "OpenAI",
+        "model": {
+          "key": "gpt-5.6-luna-medium",
+          "requestedSlug": "openai/gpt-5.6-luna",
+          "resolvedSlug": "openai/gpt-5.6-luna",
+          "endpointHost": "openrouter.ai",
+          "endpointStyle": "aggregator",
+          "reasoning": {
+            "effort": "medium",
+            "source": "per-model default for gpt-5.6-luna-medium",
+            "applied": true
+          },
+          "provider": "OpenAI"
+        },
+        "validation": "accepted"
+      }
+    ],
+    "totalUsd": 0.0003131,
+    "tokens": {
+      "prompt": 809,
+      "completion": 387,
+      "reasoning": 293,
+      "cachedPrompt": 0
+    }
+  },
+  "result": {
+    "whispers": [
+      "Listen for “loyal love” before the sudden turn to judgment.",
+      "Notice the verbs could make God or Moses proclaim the divine name.",
+      "Wait for Moses quoting both forgiveness and “not clearing the guilty.”",
+      "Notice “generations” means those continuing in idolatry, not innocent descendants.",
+      "Listen for Jonah using God’s steadfast love as an accusation.",
+      "Wait for the claim that the cross resolves forgiveness and justice."
+    ]
+  },
+  "schemaVersion": 2,
+  "policyVersion": "magic-director-3"
+}

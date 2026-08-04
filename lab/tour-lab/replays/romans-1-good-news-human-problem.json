@@ -1,0 +1,6254 @@
+{
+  "schemaVersion": 2,
+  "policyVersion": "magic-director-3",
+  "id": "romans-1-good-news-human-problem",
+  "provenance": "luna-medium-evidence",
+  "prompt": "romans 1",
+  "capturedAt": "2026-08-03T23:36:56.292Z",
+  "sourceEvidence": {
+    "tourRun": "2026-08-03T23-35-21-157-gpt-5.6-luna-medium.json",
+    "roleRuns": {
+      "whispers": "2026-08-03T23-35-54-642Z-whispers-0b42d2f1c615617f.json",
+      "form": "2026-08-03T23-35-54-646Z-form-14e7541236b3d0ae.json"
+    },
+    "directorRuns": {
+      "step-1": "2026-08-03T23-35-54-656Z-98de1ccccc9ebb34.json",
+      "step-2": "2026-08-03T23-35-54-659Z-ae6b5a3da6b5b237.json",
+      "step-3": "2026-08-03T23-36-19-942Z-314fd4925558edac.json",
+      "step-4": "2026-08-03T23-36-29-070Z-65e81d25f626ffcb.json",
+      "step-5": "2026-08-03T23-36-56-292Z-61d6d94be5a69d2a.json"
+    },
+    "identity": {
+      "stepsHash": "d416793e84080822",
+      "askHash": "c333e67c8f13f0c8"
+    }
+  },
+  "tour": {
+    "title": "Romans 1: From Good News to the Human Problem",
+    "intro": "This tour walks through Romans 1 in the order Paul builds it: who he is writing as, why the gospel is central, and how he diagnoses humanity’s refusal of God. The final clips treat the chapter’s difficult ethical material directly, while keeping it in the chapter’s larger argument about idolatry, disordered desire, and the need for the gospel.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:9ca9ec4b-com-a6ea48e1-f96c-3968-a3f7-dd692d7aa849",
+        "startSec": 120,
+        "endSec": 420,
+        "why": "Begin with Paul’s identity, audience, and posture. The teacher explains that Paul calls himself a “bondservant of Christ Jesus,” an apostle and representative of Jesus, while the Roman Christians are “beloved of God” and “called as saints”—not an elite group, but people who belong to God. This gives the chapter its relational and pastoral setting.",
+        "episodeTitle": "Romans 1:1-15",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/f4kmzk/romans_11-157qsrz.mp3",
+        "durationSec": 1512,
+        "adInsertionDrift": false,
+        "id": "step-1"
+      },
+      {
+        "recordId": "listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4",
+        "startSec": 100,
+        "endSec": 400,
+        "why": "Now hear the chapter’s thesis in verses 16–17. The teacher says Paul is “not ashamed of the gospel” because it is “the power of God for salvation,” available to Jew and Gentile alike. He also explains the gospel as news about what God has done in Jesus and introduces the debated phrase “the righteousness of God,” preparing you for the argument that follows.",
+        "episodeTitle": "Romans 1:16-17",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/7uc4t3/romans_116-17a8laf.mp3",
+        "durationSec": 1125,
+        "adInsertionDrift": false,
+        "id": "step-2"
+      },
+      {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "startSec": 200,
+        "endSec": 500,
+        "why": "This clip turns from the thesis to the problem Paul says makes salvation necessary. The teacher reads and explains Romans 1:18–23: humanity “suppressed the truth,” refused to honor or thank God, and “exchanged the glory” of the Creator for images. His account of wrath emphasizes that God’s response is “just repayment for sin,” not divine caprice.",
+        "episodeTitle": "Romans 1:18-32",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/na8unf/romans_118-329cdz0.mp3",
+        "durationSec": 1668,
+        "adInsertionDrift": false,
+        "id": "step-3"
+      },
+      {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "startSec": 804,
+        "endSec": 1060,
+        "why": "Stay with Paul’s repeated “God gave them over” language as the teacher connects idolatry with its consequences. He describes people exchanging “the truth of God for the lie,” then carefully frames the chapter’s reference to homosexual behavior as an example Paul gives of desires and practices that, in this teacher’s reading, result from rejecting God’s design. The clip keeps the difficult verses inside the chapter’s stated movement from worshiping the Creator to worshiping the creature.",
+        "episodeTitle": "Romans 1:18-32",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/na8unf/romans_118-329cdz0.mp3",
+        "durationSec": 1668,
+        "adInsertionDrift": false,
+        "id": "step-4"
+      },
+      {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "startSec": 1360,
+        "endSec": 1600,
+        "why": "End with the chapter’s wide-angle conclusion rather than with one disputed example. The teacher says Paul is “throwing the net wide” through a catalog that includes envy, murder, deceit, arrogance, gossip, disobedience, and lack of mercy. He concludes that the root problem is not merely rule-breaking but “our flight from God,” with behavior as the symptom—and explains why an accurate diagnosis matters for presenting the gospel.",
+        "episodeTitle": "Romans 1:18-32",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/na8unf/romans_118-329cdz0.mp3",
+        "durationSec": 1668,
+        "adInsertionDrift": false,
+        "id": "step-5"
+      }
+    ],
+    "closing": "Romans 1 leaves you with both a stark diagnosis and a clear center: the gospel is God’s saving power, while humanity’s deepest problem is alienation from the Creator. As you continue into Romans 2 and 3, listen for how Paul prevents this indictment from becoming a platform for judging other people and presses the argument toward the universal need for God’s righteousness.",
+    "totalSeconds": 1396
+  },
+  "whispers": [
+    "Listen for Paul’s opening identity: “bondservant of Christ Jesus.”",
+    "Notice Paul calls the gospel God’s power for salvation.",
+    "Wait for “suppressed the truth” and refusing to thank God.",
+    "Notice “God gave them over” after people exchange truth for lies.",
+    "Listen for Paul widening the list to envy, gossip, and lack of mercy."
+  ],
+  "form": {
+    "form": "path",
+    "waypoints": [
+      {
+        "step": 0,
+        "marker": "Greeting & calling"
+      },
+      {
+        "step": 1,
+        "marker": "Gospel thesis"
+      },
+      {
+        "step": 2,
+        "marker": "Truth suppressed"
+      },
+      {
+        "step": 3,
+        "marker": "God gave them over"
+      },
+      {
+        "step": 4,
+        "marker": "The net widens"
+      }
+    ]
+  },
+  "directions": {
+    "step-1": {
+      "schemaVersion": 2,
+      "policyVersion": "magic-director-3",
+      "requestKey": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:9ca9ec4b-com-a6ea48e1-f96c-3968-a3f7-dd692d7aa849|120|420|220ed33f6e42ea28|e76f755f5ac9ed87",
+      "requestFingerprint": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:9ca9ec4b-com-a6ea48e1-f96c-3968-a3f7-dd692d7aa849|120|420|e76f755f5ac9ed87",
+      "clip": {
+        "fromSec": 120,
+        "toSec": 420,
+        "durationSec": 300,
+        "transcriptHash": "220ed33f6e42ea28",
+        "sustainedTeachingSec": 290.6
+      },
+      "budget": {
+        "policyVersion": "magic-director-3",
+        "durationSec": 300,
+        "sustainedTeachingSec": 290.6,
+        "targetThoughtEntrances": 10,
+        "hardBeatCeiling": 25,
+        "highlightCeiling": 2,
+        "modelSceneCeiling": 10,
+        "houseSceneReserve": 1,
+        "finalSceneCeiling": 11,
+        "fillGapSec": 36
+      },
+      "scenes": [
+        {
+          "id": "house:prelude",
+          "origin": "house-prelude",
+          "ref": null,
+          "verses": [],
+          "cue": null,
+          "at": 0,
+          "timingSource": "house"
+        },
+        {
+          "id": "scene:initial:0",
+          "origin": "model",
+          "ref": "Romans 1:1",
+          "verses": [
+            {
+              "verse": 1,
+              "text": "Paul, a servant of Jesus Christ, called to be an apostle, set apart for the Good News of God,"
+            }
+          ],
+          "cue": "Paul is the sender of the letter",
+          "at": 25,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:1",
+          "origin": "model",
+          "ref": "Romans 1:7",
+          "verses": [
+            {
+              "verse": 7,
+              "text": "to all who are in Rome, beloved of God, called to be saints: Grace to you and peace from God our Father and the Lord Jesus Christ."
+            }
+          ],
+          "cue": "all who are beloved of God in Rome",
+          "at": 126,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:2",
+          "origin": "model",
+          "ref": "Romans 1:7",
+          "verses": [
+            {
+              "verse": 7,
+              "text": "to all who are in Rome, beloved of God, called to be saints: Grace to you and peace from God our Father and the Lord Jesus Christ."
+            }
+          ],
+          "cue": "Grace to you and peace",
+          "at": 190,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:4",
+          "origin": "model",
+          "ref": null,
+          "verses": [],
+          "cue": "Paul has never been there",
+          "at": 281,
+          "timingSource": "cue"
+        }
+      ],
+      "beats": [
+        {
+          "id": "beat:initial:0",
+          "proposalId": "initial:0",
+          "sceneId": "scene:initial:0",
+          "kind": "term",
+          "cue": "bondservant of Christ Jesus",
+          "at": 35,
+          "timingSource": "cue",
+          "data": {
+            "term": "bondservant",
+            "gloss": "one who belongs to Jesus and is available for hi"
+          }
+        },
+        {
+          "id": "beat:initial:1",
+          "proposalId": "initial:1",
+          "sceneId": "scene:initial:0",
+          "kind": "term",
+          "cue": "an official representative of somebody else",
+          "at": 71,
+          "timingSource": "cue",
+          "data": {
+            "term": "apostle",
+            "gloss": "one sent as an official representative on anothe"
+          }
+        },
+        {
+          "id": "beat:initial:2",
+          "proposalId": "initial:2",
+          "sceneId": "scene:initial:0",
+          "kind": "term",
+          "cue": "set apart for the gospel of God",
+          "at": 94,
+          "timingSource": "cue",
+          "data": {
+            "term": "set apart",
+            "gloss": "dedicated to God's purposes in gospel work"
+          }
+        },
+        {
+          "id": "beat:initial:3",
+          "proposalId": "initial:3",
+          "sceneId": "scene:initial:1",
+          "kind": "caveat",
+          "cue": "doesn't mean somebody who has been deemed",
+          "at": 146,
+          "timingSource": "cue",
+          "data": {
+            "text": "Saint does not mean a super-spiritual person honored by the church; it refers to the Chris"
+          }
+        },
+        {
+          "id": "beat:initial:4",
+          "proposalId": "initial:4",
+          "sceneId": "scene:initial:1",
+          "kind": "footnote",
+          "cue": "The word saint, as used here, is in the plural",
+          "at": 160,
+          "timingSource": "cue",
+          "data": {
+            "word": "saints",
+            "note": "The term is plural, refers to all the Christians there, and is consistently plural in the ",
+            "occurrence": 0
+          }
+        },
+        {
+          "id": "beat:initial:5",
+          "proposalId": "initial:5",
+          "sceneId": "scene:initial:2",
+          "kind": "aside",
+          "cue": "adapts the standard greeting of the day",
+          "at": 198,
+          "timingSource": "cue",
+          "data": {
+            "text": "Paul adapts the ordinary letter greeting for Christian purposes."
+          }
+        },
+        {
+          "id": "beat:initial:7",
+          "proposalId": "initial:7",
+          "sceneId": "scene:initial:2",
+          "kind": "term",
+          "cue": "Shalom, which means peace",
+          "at": 237,
+          "timingSource": "cue",
+          "data": {
+            "term": "shalom",
+            "gloss": "peace, the standard Jewish greeting"
+          }
+        },
+        {
+          "id": "beat:initial:8",
+          "proposalId": "initial:8",
+          "sceneId": "scene:initial:4",
+          "kind": "aside",
+          "cue": "he has to kind of build some rapport",
+          "at": 281,
+          "timingSource": "cue",
+          "data": {
+            "text": "Because Paul has never been to Rome, he establishes rapport and…"
+          }
+        },
+        {
+          "id": "beat:initial:9",
+          "proposalId": "initial:9",
+          "sceneId": "scene:initial:4",
+          "kind": "aside",
+          "cue": "building on another man's foundation",
+          "at": 291,
+          "timingSource": "cue",
+          "data": {
+            "text": "Paul is careful not to barge in and assert apostolic authority over…"
+          }
+        }
+      ],
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "metrics": {
+        "wallMs": 25261,
+        "passes": 2,
+        "calls": [
+          {
+            "role": "initial",
+            "latencyMs": 17145,
+            "promptTokens": 2408,
+            "completionTokens": 2193,
+            "reasoningTokens": 1552,
+            "cachedPromptTokens": 0,
+            "providerCostUsd": 0.001616725,
+            "finishReason": "stop",
+            "rawModel": "openai/gpt-5.6-luna",
+            "provider": "OpenAI",
+            "model": {
+              "key": "gpt-5.6-luna-medium",
+              "requestedSlug": "openai/gpt-5.6-luna",
+              "resolvedSlug": "openai/gpt-5.6-luna",
+              "endpointHost": "openrouter.ai",
+              "endpointStyle": "aggregator",
+              "reasoning": {
+                "effort": "medium",
+                "source": "per-model default for gpt-5.6-luna-medium",
+                "applied": true
+              },
+              "provider": "OpenAI"
+            },
+            "validation": "json-parsed;semantic-scenes:4;semantic-beats:9"
+          },
+          {
+            "role": "fill",
+            "latencyMs": 8084,
+            "promptTokens": 1959,
+            "completionTokens": 761,
+            "reasoningTokens": 693,
+            "cachedPromptTokens": 0,
+            "providerCostUsd": 0.0007014,
+            "finishReason": "stop",
+            "rawModel": "openai/gpt-5.6-luna",
+            "provider": "OpenAI",
+            "model": {
+              "key": "gpt-5.6-luna-medium",
+              "requestedSlug": "openai/gpt-5.6-luna",
+              "resolvedSlug": "openai/gpt-5.6-luna",
+              "endpointHost": "openrouter.ai",
+              "endpointStyle": "aggregator",
+              "reasoning": {
+                "effort": "medium",
+                "source": "per-model default for gpt-5.6-luna-medium",
+                "applied": true
+              },
+              "provider": "OpenAI"
+            },
+            "validation": "json-parsed;semantic-intervals:4;semantic-beats:0"
+          }
+        ],
+        "totalUsd": 0.002318125,
+        "tokens": {
+          "prompt": 4367,
+          "completion": 2954,
+          "reasoning": 2245,
+          "cachedPrompt": 0
+        },
+        "normalization": {
+          "schemaVersion": 2,
+          "policyVersion": "magic-director-3",
+          "dropped": [
+            {
+              "id": "scene:initial:3",
+              "kind": "scene",
+              "reason": "canonical-range-too-wide",
+              "modelId": "s4",
+              "detail": "director references may contain at most 3 verses"
+            }
+          ],
+          "shifted": 0,
+          "clamped": 0,
+          "invented": 0,
+          "reassigned": 0,
+          "preludes": 0,
+          "sceneCount": 5,
+          "beatCount": 9,
+          "artifactCount": 9,
+          "artifactCounts": {
+            "group": 0,
+            "footnote": 1,
+            "term": 4,
+            "allusion": 0,
+            "compare": 0,
+            "chain": 0,
+            "caveat": 1,
+            "aside": 3,
+            "highlight": 0
+          },
+          "sceneCadence": {
+            "entranceCount": 5,
+            "uniqueEntranceCount": 5,
+            "uniqueBeatCount": 5,
+            "firstEntranceSec": 0,
+            "lastEntranceSec": 281,
+            "firstBeatSec": 0,
+            "lastBeatSec": 281,
+            "maxGapSec": 101,
+            "largestGap": {
+              "start": 25,
+              "end": 126,
+              "len": 101
+            },
+            "gaps": [
+              {
+                "start": 25,
+                "end": 126,
+                "len": 101
+              },
+              {
+                "start": 190,
+                "end": 281,
+                "len": 91
+              },
+              {
+                "start": 126,
+                "end": 190,
+                "len": 64
+              },
+              {
+                "start": 0,
+                "end": 25,
+                "len": 25
+              },
+              {
+                "start": 281,
+                "end": 300,
+                "len": 19
+              }
+            ]
+          },
+          "thoughtCadence": {
+            "entranceCount": 9,
+            "uniqueEntranceCount": 9,
+            "uniqueBeatCount": 9,
+            "firstEntranceSec": 35,
+            "lastEntranceSec": 291,
+            "firstBeatSec": 35,
+            "lastBeatSec": 291,
+            "maxGapSec": 52,
+            "largestGap": {
+              "start": 94,
+              "end": 146,
+              "len": 52
+            },
+            "gaps": [
+              {
+                "start": 94,
+                "end": 146,
+                "len": 52
+              },
+              {
+                "start": 237,
+                "end": 281,
+                "len": 44
+              },
+              {
+                "start": 198,
+                "end": 237,
+                "len": 39
+              },
+              {
+                "start": 160,
+                "end": 198,
+                "len": 38
+              },
+              {
+                "start": 35,
+                "end": 71,
+                "len": 36
+              },
+              {
+                "start": 0,
+                "end": 35,
+                "len": 35
+              },
+              {
+                "start": 71,
+                "end": 94,
+                "len": 23
+              },
+              {
+                "start": 146,
+                "end": 160,
+                "len": 14
+              },
+              {
+                "start": 281,
+                "end": 291,
+                "len": 10
+              },
+              {
+                "start": 291,
+                "end": 300,
+                "len": 9
+              }
+            ],
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 1,
+              "term": 4,
+              "allusion": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 1,
+              "aside": 3,
+              "highlight": 0
+            }
+          },
+          "visualCadence": {
+            "entranceCount": 9,
+            "uniqueEntranceCount": 9,
+            "uniqueBeatCount": 9,
+            "firstEntranceSec": 35,
+            "lastEntranceSec": 291,
+            "firstBeatSec": 35,
+            "lastBeatSec": 291,
+            "maxGapSec": 52,
+            "largestGap": {
+              "start": 94,
+              "end": 146,
+              "len": 52
+            },
+            "gaps": [
+              {
+                "start": 94,
+                "end": 146,
+                "len": 52
+              },
+              {
+                "start": 237,
+                "end": 281,
+                "len": 44
+              },
+              {
+                "start": 198,
+                "end": 237,
+                "len": 39
+              },
+              {
+                "start": 160,
+                "end": 198,
+                "len": 38
+              },
+              {
+                "start": 35,
+                "end": 71,
+                "len": 36
+              },
+              {
+                "start": 0,
+                "end": 35,
+                "len": 35
+              },
+              {
+                "start": 71,
+                "end": 94,
+                "len": 23
+              },
+              {
+                "start": 146,
+                "end": 160,
+                "len": 14
+              },
+              {
+                "start": 281,
+                "end": 291,
+                "len": 10
+              },
+              {
+                "start": 291,
+                "end": 300,
+                "len": 9
+              }
+            ],
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 1,
+              "term": 4,
+              "allusion": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 1,
+              "aside": 3,
+              "highlight": 0
+            }
+          },
+          "projection": {
+            "focusMasked": [],
+            "superseded": [],
+            "projectedVisible": [
+              {
+                "beatId": "beat:initial:0",
+                "kind": "term"
+              },
+              {
+                "beatId": "beat:initial:1",
+                "kind": "term"
+              },
+              {
+                "beatId": "beat:initial:2",
+                "kind": "term"
+              },
+              {
+                "beatId": "beat:initial:3",
+                "kind": "caveat"
+              },
+              {
+                "beatId": "beat:initial:4",
+                "kind": "footnote"
+              },
+              {
+                "beatId": "beat:initial:5",
+                "kind": "aside"
+              },
+              {
+                "beatId": "beat:initial:7",
+                "kind": "term"
+              },
+              {
+                "beatId": "beat:initial:8",
+                "kind": "aside"
+              },
+              {
+                "beatId": "beat:initial:9",
+                "kind": "aside"
+              }
+            ]
+          },
+          "passes": [
+            {
+              "role": "initial",
+              "schemaVersion": 2,
+              "policyVersion": "magic-director-3",
+              "dropped": [],
+              "shifted": 0,
+              "clamped": 0,
+              "invented": 0,
+              "reassigned": 0,
+              "preludes": 0,
+              "sceneCount": 5,
+              "beatCount": 9,
+              "artifactCount": 9,
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 1,
+                "term": 4,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 1,
+                "aside": 3,
+                "highlight": 0
+              },
+              "sceneCadence": {
+                "entranceCount": 5,
+                "uniqueEntranceCount": 5,
+                "uniqueBeatCount": 5,
+                "firstEntranceSec": 0,
+                "lastEntranceSec": 281,
+                "firstBeatSec": 0,
+                "lastBeatSec": 281,
+                "maxGapSec": 101,
+                "largestGap": {
+                  "start": 25,
+                  "end": 126,
+                  "len": 101
+                },
+                "gaps": [
+                  {
+                    "start": 25,
+                    "end": 126,
+                    "len": 101
+                  },
+                  {
+                    "start": 190,
+                    "end": 281,
+                    "len": 91
+                  },
+                  {
+                    "start": 126,
+                    "end": 190,
+                    "len": 64
+                  },
+                  {
+                    "start": 0,
+                    "end": 25,
+                    "len": 25
+                  },
+                  {
+                    "start": 281,
+                    "end": 300,
+                    "len": 19
+                  }
+                ]
+              },
+              "thoughtCadence": {
+                "entranceCount": 9,
+                "uniqueEntranceCount": 9,
+                "uniqueBeatCount": 9,
+                "firstEntranceSec": 35,
+                "lastEntranceSec": 291,
+                "firstBeatSec": 35,
+                "lastBeatSec": 291,
+                "maxGapSec": 52,
+                "largestGap": {
+                  "start": 94,
+                  "end": 146,
+                  "len": 52
+                },
+                "gaps": [
+                  {
+                    "start": 94,
+                    "end": 146,
+                    "len": 52
+                  },
+                  {
+                    "start": 237,
+                    "end": 281,
+                    "len": 44
+                  },
+                  {
+                    "start": 198,
+                    "end": 237,
+                    "len": 39
+                  },
+                  {
+                    "start": 160,
+                    "end": 198,
+                    "len": 38
+                  },
+                  {
+                    "start": 35,
+                    "end": 71,
+                    "len": 36
+                  },
+                  {
+                    "start": 0,
+                    "end": 35,
+                    "len": 35
+                  },
+                  {
+                    "start": 71,
+                    "end": 94,
+                    "len": 23
+                  },
+                  {
+                    "start": 146,
+                    "end": 160,
+                    "len": 14
+                  },
+                  {
+                    "start": 281,
+                    "end": 291,
+                    "len": 10
+                  },
+                  {
+                    "start": 291,
+                    "end": 300,
+                    "len": 9
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 0,
+                  "footnote": 1,
+                  "term": 4,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 1,
+                  "aside": 3,
+                  "highlight": 0
+                }
+              },
+              "visualCadence": {
+                "entranceCount": 9,
+                "uniqueEntranceCount": 9,
+                "uniqueBeatCount": 9,
+                "firstEntranceSec": 35,
+                "lastEntranceSec": 291,
+                "firstBeatSec": 35,
+                "lastBeatSec": 291,
+                "maxGapSec": 52,
+                "largestGap": {
+                  "start": 94,
+                  "end": 146,
+                  "len": 52
+                },
+                "gaps": [
+                  {
+                    "start": 94,
+                    "end": 146,
+                    "len": 52
+                  },
+                  {
+                    "start": 237,
+                    "end": 281,
+                    "len": 44
+                  },
+                  {
+                    "start": 198,
+                    "end": 237,
+                    "len": 39
+                  },
+                  {
+                    "start": 160,
+                    "end": 198,
+                    "len": 38
+                  },
+                  {
+                    "start": 35,
+                    "end": 71,
+                    "len": 36
+                  },
+                  {
+                    "start": 0,
+                    "end": 35,
+                    "len": 35
+                  },
+                  {
+                    "start": 71,
+                    "end": 94,
+                    "len": 23
+                  },
+                  {
+                    "start": 146,
+                    "end": 160,
+                    "len": 14
+                  },
+                  {
+                    "start": 281,
+                    "end": 291,
+                    "len": 10
+                  },
+                  {
+                    "start": 291,
+                    "end": 300,
+                    "len": 9
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 0,
+                  "footnote": 1,
+                  "term": 4,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 1,
+                  "aside": 3,
+                  "highlight": 0
+                }
+              },
+              "projection": {
+                "focusMasked": [],
+                "superseded": [],
+                "projectedVisible": [
+                  {
+                    "beatId": "beat:initial:0",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:1",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:2",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:3",
+                    "kind": "caveat"
+                  },
+                  {
+                    "beatId": "beat:initial:4",
+                    "kind": "footnote"
+                  },
+                  {
+                    "beatId": "beat:initial:5",
+                    "kind": "aside"
+                  },
+                  {
+                    "beatId": "beat:initial:7",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:8",
+                    "kind": "aside"
+                  },
+                  {
+                    "beatId": "beat:initial:9",
+                    "kind": "aside"
+                  }
+                ]
+              }
+            },
+            {
+              "role": "fill",
+              "schemaVersion": 2,
+              "policyVersion": "magic-director-3",
+              "dropped": [],
+              "shifted": 0,
+              "clamped": 0,
+              "invented": 0,
+              "reassigned": 0,
+              "preludes": 0,
+              "sceneCount": 5,
+              "beatCount": 9,
+              "artifactCount": 9,
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 1,
+                "term": 4,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 1,
+                "aside": 3,
+                "highlight": 0
+              },
+              "sceneCadence": {
+                "entranceCount": 5,
+                "uniqueEntranceCount": 5,
+                "uniqueBeatCount": 5,
+                "firstEntranceSec": 0,
+                "lastEntranceSec": 281,
+                "firstBeatSec": 0,
+                "lastBeatSec": 281,
+                "maxGapSec": 101,
+                "largestGap": {
+                  "start": 25,
+                  "end": 126,
+                  "len": 101
+                },
+                "gaps": [
+                  {
+                    "start": 25,
+                    "end": 126,
+                    "len": 101
+                  },
+                  {
+                    "start": 190,
+                    "end": 281,
+                    "len": 91
+                  },
+                  {
+                    "start": 126,
+                    "end": 190,
+                    "len": 64
+                  },
+                  {
+                    "start": 0,
+                    "end": 25,
+                    "len": 25
+                  },
+                  {
+                    "start": 281,
+                    "end": 300,
+                    "len": 19
+                  }
+                ]
+              },
+              "thoughtCadence": {
+                "entranceCount": 9,
+                "uniqueEntranceCount": 9,
+                "uniqueBeatCount": 9,
+                "firstEntranceSec": 35,
+                "lastEntranceSec": 291,
+                "firstBeatSec": 35,
+                "lastBeatSec": 291,
+                "maxGapSec": 52,
+                "largestGap": {
+                  "start": 94,
+                  "end": 146,
+                  "len": 52
+                },
+                "gaps": [
+                  {
+                    "start": 94,
+                    "end": 146,
+                    "len": 52
+                  },
+                  {
+                    "start": 237,
+                    "end": 281,
+                    "len": 44
+                  },
+                  {
+                    "start": 198,
+                    "end": 237,
+                    "len": 39
+                  },
+                  {
+                    "start": 160,
+                    "end": 198,
+                    "len": 38
+                  },
+                  {
+                    "start": 35,
+                    "end": 71,
+                    "len": 36
+                  },
+                  {
+                    "start": 0,
+                    "end": 35,
+                    "len": 35
+                  },
+                  {
+                    "start": 71,
+                    "end": 94,
+                    "len": 23
+                  },
+                  {
+                    "start": 146,
+                    "end": 160,
+                    "len": 14
+                  },
+                  {
+                    "start": 281,
+                    "end": 291,
+                    "len": 10
+                  },
+                  {
+                    "start": 291,
+                    "end": 300,
+                    "len": 9
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 0,
+                  "footnote": 1,
+                  "term": 4,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 1,
+                  "aside": 3,
+                  "highlight": 0
+                }
+              },
+              "visualCadence": {
+                "entranceCount": 9,
+                "uniqueEntranceCount": 9,
+                "uniqueBeatCount": 9,
+                "firstEntranceSec": 35,
+                "lastEntranceSec": 291,
+                "firstBeatSec": 35,
+                "lastBeatSec": 291,
+                "maxGapSec": 52,
+                "largestGap": {
+                  "start": 94,
+                  "end": 146,
+                  "len": 52
+                },
+                "gaps": [
+                  {
+                    "start": 94,
+                    "end": 146,
+                    "len": 52
+                  },
+                  {
+                    "start": 237,
+                    "end": 281,
+                    "len": 44
+                  },
+                  {
+                    "start": 198,
+                    "end": 237,
+                    "len": 39
+                  },
+                  {
+                    "start": 160,
+                    "end": 198,
+                    "len": 38
+                  },
+                  {
+                    "start": 35,
+                    "end": 71,
+                    "len": 36
+                  },
+                  {
+                    "start": 0,
+                    "end": 35,
+                    "len": 35
+                  },
+                  {
+                    "start": 71,
+                    "end": 94,
+                    "len": 23
+                  },
+                  {
+                    "start": 146,
+                    "end": 160,
+                    "len": 14
+                  },
+                  {
+                    "start": 281,
+                    "end": 291,
+                    "len": 10
+                  },
+                  {
+                    "start": 291,
+                    "end": 300,
+                    "len": 9
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 0,
+                  "footnote": 1,
+                  "term": 4,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 1,
+                  "aside": 3,
+                  "highlight": 0
+                }
+              },
+              "projection": {
+                "focusMasked": [],
+                "superseded": [],
+                "projectedVisible": [
+                  {
+                    "beatId": "beat:initial:0",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:1",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:2",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:3",
+                    "kind": "caveat"
+                  },
+                  {
+                    "beatId": "beat:initial:4",
+                    "kind": "footnote"
+                  },
+                  {
+                    "beatId": "beat:initial:5",
+                    "kind": "aside"
+                  },
+                  {
+                    "beatId": "beat:initial:7",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:8",
+                    "kind": "aside"
+                  },
+                  {
+                    "beatId": "beat:initial:9",
+                    "kind": "aside"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "outcomes": {
+          "completeness": "complete",
+          "proposed": [
+            {
+              "proposalId": "initial:0",
+              "pass": "initial",
+              "kind": "term"
+            },
+            {
+              "proposalId": "initial:1",
+              "pass": "initial",
+              "kind": "term"
+            },
+            {
+              "proposalId": "initial:2",
+              "pass": "initial",
+              "kind": "term"
+            },
+            {
+              "proposalId": "initial:3",
+              "pass": "initial",
+              "kind": "caveat"
+            },
+            {
+              "proposalId": "initial:4",
+              "pass": "initial",
+              "kind": "footnote"
+            },
+            {
+              "proposalId": "initial:5",
+              "pass": "initial",
+              "kind": "aside"
+            },
+            {
+              "proposalId": "initial:6",
+              "pass": "initial",
+              "kind": "compare"
+            },
+            {
+              "proposalId": "initial:7",
+              "pass": "initial",
+              "kind": "term"
+            },
+            {
+              "proposalId": "initial:8",
+              "pass": "initial",
+              "kind": "aside"
+            },
+            {
+              "proposalId": "initial:9",
+              "pass": "initial",
+              "kind": "aside"
+            },
+            {
+              "proposalId": "fill:gap:2:0",
+              "pass": "fill",
+              "kind": "compare",
+              "gapId": "gap:2"
+            }
+          ],
+          "rejected": [
+            {
+              "proposalId": "initial:6",
+              "pass": "initial",
+              "kind": "compare",
+              "reason": "canonical-unparsable-reference",
+              "detail": "expected \"Book chapter:verse\" or a same-chapter verse range"
+            },
+            {
+              "proposalId": "fill:gap:2:0",
+              "pass": "fill",
+              "kind": "compare",
+              "reason": "canonical-unparsable-reference",
+              "gapId": "gap:2",
+              "detail": "expected \"Book chapter:verse\" or a same-chapter verse range"
+            }
+          ],
+          "accepted": [
+            {
+              "proposalId": "initial:0",
+              "beatId": "beat:initial:0",
+              "kind": "term",
+              "sceneId": "scene:initial:0"
+            },
+            {
+              "proposalId": "initial:1",
+              "beatId": "beat:initial:1",
+              "kind": "term",
+              "sceneId": "scene:initial:0"
+            },
+            {
+              "proposalId": "initial:2",
+              "beatId": "beat:initial:2",
+              "kind": "term",
+              "sceneId": "scene:initial:0"
+            },
+            {
+              "proposalId": "initial:3",
+              "beatId": "beat:initial:3",
+              "kind": "caveat",
+              "sceneId": "scene:initial:1"
+            },
+            {
+              "proposalId": "initial:4",
+              "beatId": "beat:initial:4",
+              "kind": "footnote",
+              "sceneId": "scene:initial:1"
+            },
+            {
+              "proposalId": "initial:5",
+              "beatId": "beat:initial:5",
+              "kind": "aside",
+              "sceneId": "scene:initial:2"
+            },
+            {
+              "proposalId": "initial:7",
+              "beatId": "beat:initial:7",
+              "kind": "term",
+              "sceneId": "scene:initial:2"
+            },
+            {
+              "proposalId": "initial:8",
+              "beatId": "beat:initial:8",
+              "kind": "aside",
+              "sceneId": "scene:initial:4"
+            },
+            {
+              "proposalId": "initial:9",
+              "beatId": "beat:initial:9",
+              "kind": "aside",
+              "sceneId": "scene:initial:4"
+            }
+          ],
+          "focusMasked": [],
+          "superseded": [],
+          "projectedVisible": [
+            {
+              "beatId": "beat:initial:0",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:initial:1",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:initial:2",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:initial:3",
+              "kind": "caveat"
+            },
+            {
+              "beatId": "beat:initial:4",
+              "kind": "footnote"
+            },
+            {
+              "beatId": "beat:initial:5",
+              "kind": "aside"
+            },
+            {
+              "beatId": "beat:initial:7",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:initial:8",
+              "kind": "aside"
+            },
+            {
+              "beatId": "beat:initial:9",
+              "kind": "aside"
+            }
+          ]
+        }
+      }
+    },
+    "step-2": {
+      "schemaVersion": 2,
+      "policyVersion": "magic-director-3",
+      "requestKey": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4|100|400|1b6fbfe35a199010|0c12a5ad6f3ca3b9",
+      "requestFingerprint": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4|100|400|0c12a5ad6f3ca3b9",
+      "clip": {
+        "fromSec": 100,
+        "toSec": 400,
+        "durationSec": 300,
+        "transcriptHash": "1b6fbfe35a199010",
+        "sustainedTeachingSec": 290.3
+      },
+      "budget": {
+        "policyVersion": "magic-director-3",
+        "durationSec": 300,
+        "sustainedTeachingSec": 290.3,
+        "targetThoughtEntrances": 10,
+        "hardBeatCeiling": 25,
+        "highlightCeiling": 2,
+        "modelSceneCeiling": 10,
+        "houseSceneReserve": 1,
+        "finalSceneCeiling": 11,
+        "fillGapSec": 36
+      },
+      "scenes": [
+        {
+          "id": "scene:initial:0",
+          "origin": "model",
+          "ref": null,
+          "verses": [],
+          "cue": "preceding introduction to Paul's ministry",
+          "at": 5,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:2",
+          "origin": "model",
+          "ref": "Romans 1:16–17",
+          "verses": [
+            {
+              "verse": 16,
+              "text": "For I am not ashamed of the Good News of Christ, because it is the power of God for salvation for everyone who believes, for the Jew first, and also for the Greek."
+            },
+            {
+              "verse": 17,
+              "text": "For in it is revealed God’s righteousness from faith to faith. As it is written, “But the righteous shall live by faith.”"
+            }
+          ],
+          "cue": "I'm not ashamed of that gospel",
+          "at": 19,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:1",
+          "origin": "model",
+          "ref": null,
+          "verses": [],
+          "cue": "ancient world was an honor and shame culture",
+          "at": 40,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:3",
+          "origin": "model",
+          "ref": "Romans 1:16",
+          "verses": [
+            {
+              "verse": 16,
+              "text": "For I am not ashamed of the Good News of Christ, because it is the power of God for salvation for everyone who believes, for the Jew first, and also for the Greek."
+            }
+          ],
+          "cue": "power of God for salvation",
+          "at": 124,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:4",
+          "origin": "model",
+          "ref": null,
+          "verses": [],
+          "cue": "gospel is news",
+          "at": 162,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:5",
+          "origin": "model",
+          "ref": "Romans 1:16",
+          "verses": [
+            {
+              "verse": 16,
+              "text": "For I am not ashamed of the Good News of Christ, because it is the power of God for salvation for everyone who believes, for the Jew first, and also for the Greek."
+            }
+          ],
+          "cue": "Jew first and to the Greek",
+          "at": 190,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:6",
+          "origin": "model",
+          "ref": "Romans 1:16–17",
+          "verses": [
+            {
+              "verse": 16,
+              "text": "For I am not ashamed of the Good News of Christ, because it is the power of God for salvation for everyone who believes, for the Jew first, and also for the Greek."
+            },
+            {
+              "verse": 17,
+              "text": "For in it is revealed God’s righteousness from faith to faith. As it is written, “But the righteous shall live by faith.”"
+            }
+          ],
+          "cue": "faith in Jesus the Messiah",
+          "at": 224,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:7",
+          "origin": "model",
+          "ref": "Romans 1:17",
+          "verses": [
+            {
+              "verse": 17,
+              "text": "For in it is revealed God’s righteousness from faith to faith. As it is written, “But the righteous shall live by faith.”"
+            }
+          ],
+          "cue": "righteousness of God is revealed",
+          "at": 250,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:8",
+          "origin": "model",
+          "ref": "Romans 1:17",
+          "verses": [
+            {
+              "verse": 17,
+              "text": "For in it is revealed God’s righteousness from faith to faith. As it is written, “But the righteous shall live by faith.”"
+            }
+          ],
+          "cue": "What is the righteousness of God",
+          "at": 264,
+          "timingSource": "cue"
+        }
+      ],
+      "beats": [
+        {
+          "id": "beat:initial:0",
+          "proposalId": "initial:0",
+          "sceneId": "scene:initial:1",
+          "kind": "aside",
+          "cue": "ancient world was an honor and shame culture",
+          "at": 40,
+          "timingSource": "cue",
+          "data": {
+            "text": "The ancient world treated shame as the opposite of honor, involving…"
+          }
+        },
+        {
+          "id": "beat:fill:gap:1:0",
+          "proposalId": "fill:gap:1:0",
+          "sceneId": "scene:initial:1",
+          "kind": "caveat",
+          "cue": "it's more than just being embarrassed",
+          "at": 82,
+          "timingSource": "cue",
+          "data": {
+            "text": "Shame and honor are not merely embarrassment; they are deep states of disgrace and dishono"
+          }
+        },
+        {
+          "id": "beat:initial:1",
+          "proposalId": "initial:1",
+          "sceneId": "scene:initial:1",
+          "kind": "aside",
+          "cue": "Caesar is in charge and appears to be winning",
+          "at": 106,
+          "timingSource": "cue",
+          "data": {
+            "text": "Caesar's apparent supremacy, kingship, and lordship do not bring…"
+          }
+        },
+        {
+          "id": "beat:fill:gap:2:1",
+          "proposalId": "fill:gap:2:1",
+          "sceneId": "scene:initial:3",
+          "kind": "highlight",
+          "cue": "somehow telling this story unleashes God's power and incites faith and draws people to God Himself so that they can be saved.",
+          "at": 157,
+          "timingSource": "cue",
+          "data": {
+            "quote": "somehow telling this story unleashes God's power and incites faith and draws people to God Himself so that they can be saved."
+          }
+        },
+        {
+          "id": "beat:initial:2",
+          "proposalId": "initial:2",
+          "sceneId": "scene:initial:4",
+          "kind": "term",
+          "cue": "gospel is news",
+          "at": 162,
+          "timingSource": "cue",
+          "data": {
+            "term": "gospel",
+            "gloss": "news about what God has done in Jesus"
+          }
+        },
+        {
+          "id": "beat:initial:3",
+          "proposalId": "initial:3",
+          "sceneId": "scene:initial:5",
+          "kind": "group",
+          "cue": "Jew first and to the Greek",
+          "at": 190,
+          "timingSource": "cue",
+          "data": {
+            "words": [
+              "Jew",
+              "Greek"
+            ],
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "label": "the two main categ"
+          }
+        },
+        {
+          "id": "beat:initial:4",
+          "proposalId": "initial:4",
+          "sceneId": "scene:initial:6",
+          "kind": "term",
+          "cue": "faith in Jesus the Messiah",
+          "at": 224,
+          "timingSource": "cue",
+          "data": {
+            "term": "faith",
+            "gloss": "faith in Jesus the Messiah"
+          }
+        },
+        {
+          "id": "beat:initial:5",
+          "proposalId": "initial:5",
+          "sceneId": "scene:initial:7",
+          "kind": "term",
+          "cue": "righteousness of God is revealed",
+          "at": 250,
+          "timingSource": "cue",
+          "data": {
+            "term": "righteousness of God",
+            "gloss": "what the gospel reveals"
+          }
+        },
+        {
+          "id": "beat:initial:6",
+          "proposalId": "initial:6",
+          "sceneId": "scene:initial:8",
+          "kind": "caveat",
+          "cue": "could refer to either",
+          "at": 276,
+          "timingSource": "cue",
+          "data": {
+            "text": "The phrase can grammatically refer either to the righteousness God gives or to the righteo"
+          }
+        },
+        {
+          "id": "beat:initial:7",
+          "proposalId": "initial:7",
+          "sceneId": "scene:initial:8",
+          "kind": "aside",
+          "cue": "particularly in chapter 4",
+          "at": 293,
+          "timingSource": "cue",
+          "data": {
+            "text": "Paul later describes Abraham as declared righteous because of faith."
+          }
+        }
+      ],
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "metrics": {
+        "wallMs": 34400,
+        "passes": 2,
+        "calls": [
+          {
+            "role": "initial",
+            "latencyMs": 22529,
+            "promptTokens": 2232,
+            "completionTokens": 2737,
+            "reasoningTokens": 2070,
+            "cachedPromptTokens": 0,
+            "providerCostUsd": 0.001921125,
+            "finishReason": "stop",
+            "rawModel": "openai/gpt-5.6-luna",
+            "provider": "OpenAI",
+            "model": {
+              "key": "gpt-5.6-luna-medium",
+              "requestedSlug": "openai/gpt-5.6-luna",
+              "resolvedSlug": "openai/gpt-5.6-luna",
+              "endpointHost": "openrouter.ai",
+              "endpointStyle": "aggregator",
+              "reasoning": {
+                "effort": "medium",
+                "source": "per-model default for gpt-5.6-luna-medium",
+                "applied": true
+              },
+              "provider": "OpenAI"
+            },
+            "validation": "json-parsed;semantic-scenes:9;semantic-beats:8"
+          },
+          {
+            "role": "fill",
+            "latencyMs": 11846,
+            "promptTokens": 1812,
+            "completionTokens": 1418,
+            "reasoningTokens": 1310,
+            "cachedPromptTokens": 0,
+            "providerCostUsd": 0.001077225,
+            "finishReason": "stop",
+            "rawModel": "openai/gpt-5.6-luna",
+            "provider": "OpenAI",
+            "model": {
+              "key": "gpt-5.6-luna-medium",
+              "requestedSlug": "openai/gpt-5.6-luna",
+              "resolvedSlug": "openai/gpt-5.6-luna",
+              "endpointHost": "openrouter.ai",
+              "endpointStyle": "aggregator",
+              "reasoning": {
+                "effort": "medium",
+                "source": "per-model default for gpt-5.6-luna-medium",
+                "applied": true
+              },
+              "provider": "OpenAI"
+            },
+            "validation": "json-parsed;semantic-intervals:3;semantic-beats:2"
+          }
+        ],
+        "totalUsd": 0.0029983500000000003,
+        "tokens": {
+          "prompt": 4044,
+          "completion": 4155,
+          "reasoning": 3380,
+          "cachedPrompt": 0
+        },
+        "normalization": {
+          "schemaVersion": 2,
+          "policyVersion": "magic-director-3",
+          "dropped": [
+            {
+              "id": "scene:initial:9",
+              "kind": "scene",
+              "reason": "scene-cue-not-located",
+              "modelId": "s10"
+            }
+          ],
+          "shifted": 0,
+          "clamped": 0,
+          "invented": 0,
+          "reassigned": 0,
+          "preludes": 0,
+          "sceneCount": 9,
+          "beatCount": 10,
+          "artifactCount": 10,
+          "artifactCounts": {
+            "group": 1,
+            "footnote": 0,
+            "term": 3,
+            "allusion": 0,
+            "compare": 0,
+            "chain": 0,
+            "caveat": 2,
+            "aside": 3,
+            "highlight": 1
+          },
+          "sceneCadence": {
+            "entranceCount": 9,
+            "uniqueEntranceCount": 9,
+            "uniqueBeatCount": 9,
+            "firstEntranceSec": 5,
+            "lastEntranceSec": 264,
+            "firstBeatSec": 5,
+            "lastBeatSec": 264,
+            "maxGapSec": 84,
+            "largestGap": {
+              "start": 40,
+              "end": 124,
+              "len": 84
+            },
+            "gaps": [
+              {
+                "start": 40,
+                "end": 124,
+                "len": 84
+              },
+              {
+                "start": 124,
+                "end": 162,
+                "len": 38
+              },
+              {
+                "start": 264,
+                "end": 300,
+                "len": 36
+              },
+              {
+                "start": 190,
+                "end": 224,
+                "len": 34
+              },
+              {
+                "start": 162,
+                "end": 190,
+                "len": 28
+              },
+              {
+                "start": 224,
+                "end": 250,
+                "len": 26
+              },
+              {
+                "start": 19,
+                "end": 40,
+                "len": 21
+              },
+              {
+                "start": 5,
+                "end": 19,
+                "len": 14
+              },
+              {
+                "start": 250,
+                "end": 264,
+                "len": 14
+              },
+              {
+                "start": 0,
+                "end": 5,
+                "len": 5
+              }
+            ]
+          },
+          "thoughtCadence": {
+            "entranceCount": 9,
+            "uniqueEntranceCount": 9,
+            "uniqueBeatCount": 9,
+            "firstEntranceSec": 40,
+            "lastEntranceSec": 293,
+            "firstBeatSec": 40,
+            "lastBeatSec": 293,
+            "maxGapSec": 56,
+            "largestGap": {
+              "start": 106,
+              "end": 162,
+              "len": 56
+            },
+            "gaps": [
+              {
+                "start": 106,
+                "end": 162,
+                "len": 56
+              },
+              {
+                "start": 40,
+                "end": 82,
+                "len": 42
+              },
+              {
+                "start": 0,
+                "end": 40,
+                "len": 40
+              },
+              {
+                "start": 190,
+                "end": 224,
+                "len": 34
+              },
+              {
+                "start": 162,
+                "end": 190,
+                "len": 28
+              },
+              {
+                "start": 224,
+                "end": 250,
+                "len": 26
+              },
+              {
+                "start": 250,
+                "end": 276,
+                "len": 26
+              },
+              {
+                "start": 82,
+                "end": 106,
+                "len": 24
+              },
+              {
+                "start": 276,
+                "end": 293,
+                "len": 17
+              },
+              {
+                "start": 293,
+                "end": 300,
+                "len": 7
+              }
+            ],
+            "artifactCounts": {
+              "group": 1,
+              "footnote": 0,
+              "term": 3,
+              "allusion": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 2,
+              "aside": 3,
+              "highlight": 1
+            }
+          },
+          "visualCadence": {
+            "entranceCount": 10,
+            "uniqueEntranceCount": 10,
+            "uniqueBeatCount": 10,
+            "firstEntranceSec": 40,
+            "lastEntranceSec": 293,
+            "firstBeatSec": 40,
+            "lastBeatSec": 293,
+            "maxGapSec": 51,
+            "largestGap": {
+              "start": 106,
+              "end": 157,
+              "len": 51
+            },
+            "gaps": [
+              {
+                "start": 106,
+                "end": 157,
+                "len": 51
+              },
+              {
+                "start": 40,
+                "end": 82,
+                "len": 42
+              },
+              {
+                "start": 0,
+                "end": 40,
+                "len": 40
+              },
+              {
+                "start": 190,
+                "end": 224,
+                "len": 34
+              },
+              {
+                "start": 162,
+                "end": 190,
+                "len": 28
+              },
+              {
+                "start": 224,
+                "end": 250,
+                "len": 26
+              },
+              {
+                "start": 250,
+                "end": 276,
+                "len": 26
+              },
+              {
+                "start": 82,
+                "end": 106,
+                "len": 24
+              },
+              {
+                "start": 276,
+                "end": 293,
+                "len": 17
+              },
+              {
+                "start": 293,
+                "end": 300,
+                "len": 7
+              },
+              {
+                "start": 157,
+                "end": 162,
+                "len": 5
+              }
+            ],
+            "artifactCounts": {
+              "group": 1,
+              "footnote": 0,
+              "term": 3,
+              "allusion": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 2,
+              "aside": 3,
+              "highlight": 1
+            }
+          },
+          "projection": {
+            "focusMasked": [],
+            "superseded": [],
+            "projectedVisible": [
+              {
+                "beatId": "beat:initial:0",
+                "kind": "aside"
+              },
+              {
+                "beatId": "beat:fill:gap:1:0",
+                "kind": "caveat"
+              },
+              {
+                "beatId": "beat:initial:1",
+                "kind": "aside"
+              },
+              {
+                "beatId": "beat:fill:gap:2:1",
+                "kind": "highlight"
+              },
+              {
+                "beatId": "beat:initial:2",
+                "kind": "term"
+              },
+              {
+                "beatId": "beat:initial:3",
+                "kind": "group"
+              },
+              {
+                "beatId": "beat:initial:4",
+                "kind": "term"
+              },
+              {
+                "beatId": "beat:initial:5",
+                "kind": "term"
+              },
+              {
+                "beatId": "beat:initial:6",
+                "kind": "caveat"
+              },
+              {
+                "beatId": "beat:initial:7",
+                "kind": "aside"
+              }
+            ]
+          },
+          "passes": [
+            {
+              "role": "initial",
+              "schemaVersion": 2,
+              "policyVersion": "magic-director-3",
+              "dropped": [],
+              "shifted": 0,
+              "clamped": 0,
+              "invented": 0,
+              "reassigned": 0,
+              "preludes": 0,
+              "sceneCount": 9,
+              "beatCount": 8,
+              "artifactCount": 8,
+              "artifactCounts": {
+                "group": 1,
+                "footnote": 0,
+                "term": 3,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 1,
+                "aside": 3,
+                "highlight": 0
+              },
+              "sceneCadence": {
+                "entranceCount": 9,
+                "uniqueEntranceCount": 9,
+                "uniqueBeatCount": 9,
+                "firstEntranceSec": 5,
+                "lastEntranceSec": 264,
+                "firstBeatSec": 5,
+                "lastBeatSec": 264,
+                "maxGapSec": 84,
+                "largestGap": {
+                  "start": 40,
+                  "end": 124,
+                  "len": 84
+                },
+                "gaps": [
+                  {
+                    "start": 40,
+                    "end": 124,
+                    "len": 84
+                  },
+                  {
+                    "start": 124,
+                    "end": 162,
+                    "len": 38
+                  },
+                  {
+                    "start": 264,
+                    "end": 300,
+                    "len": 36
+                  },
+                  {
+                    "start": 190,
+                    "end": 224,
+                    "len": 34
+                  },
+                  {
+                    "start": 162,
+                    "end": 190,
+                    "len": 28
+                  },
+                  {
+                    "start": 224,
+                    "end": 250,
+                    "len": 26
+                  },
+                  {
+                    "start": 19,
+                    "end": 40,
+                    "len": 21
+                  },
+                  {
+                    "start": 5,
+                    "end": 19,
+                    "len": 14
+                  },
+                  {
+                    "start": 250,
+                    "end": 264,
+                    "len": 14
+                  },
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "len": 5
+                  }
+                ]
+              },
+              "thoughtCadence": {
+                "entranceCount": 8,
+                "uniqueEntranceCount": 8,
+                "uniqueBeatCount": 8,
+                "firstEntranceSec": 40,
+                "lastEntranceSec": 293,
+                "firstBeatSec": 40,
+                "lastBeatSec": 293,
+                "maxGapSec": 66,
+                "largestGap": {
+                  "start": 40,
+                  "end": 106,
+                  "len": 66
+                },
+                "gaps": [
+                  {
+                    "start": 40,
+                    "end": 106,
+                    "len": 66
+                  },
+                  {
+                    "start": 106,
+                    "end": 162,
+                    "len": 56
+                  },
+                  {
+                    "start": 0,
+                    "end": 40,
+                    "len": 40
+                  },
+                  {
+                    "start": 190,
+                    "end": 224,
+                    "len": 34
+                  },
+                  {
+                    "start": 162,
+                    "end": 190,
+                    "len": 28
+                  },
+                  {
+                    "start": 224,
+                    "end": 250,
+                    "len": 26
+                  },
+                  {
+                    "start": 250,
+                    "end": 276,
+                    "len": 26
+                  },
+                  {
+                    "start": 276,
+                    "end": 293,
+                    "len": 17
+                  },
+                  {
+                    "start": 293,
+                    "end": 300,
+                    "len": 7
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 1,
+                  "footnote": 0,
+                  "term": 3,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 1,
+                  "aside": 3,
+                  "highlight": 0
+                }
+              },
+              "visualCadence": {
+                "entranceCount": 8,
+                "uniqueEntranceCount": 8,
+                "uniqueBeatCount": 8,
+                "firstEntranceSec": 40,
+                "lastEntranceSec": 293,
+                "firstBeatSec": 40,
+                "lastBeatSec": 293,
+                "maxGapSec": 66,
+                "largestGap": {
+                  "start": 40,
+                  "end": 106,
+                  "len": 66
+                },
+                "gaps": [
+                  {
+                    "start": 40,
+                    "end": 106,
+                    "len": 66
+                  },
+                  {
+                    "start": 106,
+                    "end": 162,
+                    "len": 56
+                  },
+                  {
+                    "start": 0,
+                    "end": 40,
+                    "len": 40
+                  },
+                  {
+                    "start": 190,
+                    "end": 224,
+                    "len": 34
+                  },
+                  {
+                    "start": 162,
+                    "end": 190,
+                    "len": 28
+                  },
+                  {
+                    "start": 224,
+                    "end": 250,
+                    "len": 26
+                  },
+                  {
+                    "start": 250,
+                    "end": 276,
+                    "len": 26
+                  },
+                  {
+                    "start": 276,
+                    "end": 293,
+                    "len": 17
+                  },
+                  {
+                    "start": 293,
+                    "end": 300,
+                    "len": 7
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 1,
+                  "footnote": 0,
+                  "term": 3,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 1,
+                  "aside": 3,
+                  "highlight": 0
+                }
+              },
+              "projection": {
+                "focusMasked": [],
+                "superseded": [],
+                "projectedVisible": [
+                  {
+                    "beatId": "beat:initial:0",
+                    "kind": "aside"
+                  },
+                  {
+                    "beatId": "beat:initial:1",
+                    "kind": "aside"
+                  },
+                  {
+                    "beatId": "beat:initial:2",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:3",
+                    "kind": "group"
+                  },
+                  {
+                    "beatId": "beat:initial:4",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:5",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:6",
+                    "kind": "caveat"
+                  },
+                  {
+                    "beatId": "beat:initial:7",
+                    "kind": "aside"
+                  }
+                ]
+              }
+            },
+            {
+              "role": "fill",
+              "schemaVersion": 2,
+              "policyVersion": "magic-director-3",
+              "dropped": [],
+              "shifted": 0,
+              "clamped": 0,
+              "invented": 0,
+              "reassigned": 0,
+              "preludes": 0,
+              "sceneCount": 9,
+              "beatCount": 10,
+              "artifactCount": 10,
+              "artifactCounts": {
+                "group": 1,
+                "footnote": 0,
+                "term": 3,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 2,
+                "aside": 3,
+                "highlight": 1
+              },
+              "sceneCadence": {
+                "entranceCount": 9,
+                "uniqueEntranceCount": 9,
+                "uniqueBeatCount": 9,
+                "firstEntranceSec": 5,
+                "lastEntranceSec": 264,
+                "firstBeatSec": 5,
+                "lastBeatSec": 264,
+                "maxGapSec": 84,
+                "largestGap": {
+                  "start": 40,
+                  "end": 124,
+                  "len": 84
+                },
+                "gaps": [
+                  {
+                    "start": 40,
+                    "end": 124,
+                    "len": 84
+                  },
+                  {
+                    "start": 124,
+                    "end": 162,
+                    "len": 38
+                  },
+                  {
+                    "start": 264,
+                    "end": 300,
+                    "len": 36
+                  },
+                  {
+                    "start": 190,
+                    "end": 224,
+                    "len": 34
+                  },
+                  {
+                    "start": 162,
+                    "end": 190,
+                    "len": 28
+                  },
+                  {
+                    "start": 224,
+                    "end": 250,
+                    "len": 26
+                  },
+                  {
+                    "start": 19,
+                    "end": 40,
+                    "len": 21
+                  },
+                  {
+                    "start": 5,
+                    "end": 19,
+                    "len": 14
+                  },
+                  {
+                    "start": 250,
+                    "end": 264,
+                    "len": 14
+                  },
+                  {
+                    "start": 0,
+                    "end": 5,
+                    "len": 5
+                  }
+                ]
+              },
+              "thoughtCadence": {
+                "entranceCount": 9,
+                "uniqueEntranceCount": 9,
+                "uniqueBeatCount": 9,
+                "firstEntranceSec": 40,
+                "lastEntranceSec": 293,
+                "firstBeatSec": 40,
+                "lastBeatSec": 293,
+                "maxGapSec": 56,
+                "largestGap": {
+                  "start": 106,
+                  "end": 162,
+                  "len": 56
+                },
+                "gaps": [
+                  {
+                    "start": 106,
+                    "end": 162,
+                    "len": 56
+                  },
+                  {
+                    "start": 40,
+                    "end": 82,
+                    "len": 42
+                  },
+                  {
+                    "start": 0,
+                    "end": 40,
+                    "len": 40
+                  },
+                  {
+                    "start": 190,
+                    "end": 224,
+                    "len": 34
+                  },
+                  {
+                    "start": 162,
+                    "end": 190,
+                    "len": 28
+                  },
+                  {
+                    "start": 224,
+                    "end": 250,
+                    "len": 26
+                  },
+                  {
+                    "start": 250,
+                    "end": 276,
+                    "len": 26
+                  },
+                  {
+                    "start": 82,
+                    "end": 106,
+                    "len": 24
+                  },
+                  {
+                    "start": 276,
+                    "end": 293,
+                    "len": 17
+                  },
+                  {
+                    "start": 293,
+                    "end": 300,
+                    "len": 7
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 1,
+                  "footnote": 0,
+                  "term": 3,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 2,
+                  "aside": 3,
+                  "highlight": 1
+                }
+              },
+              "visualCadence": {
+                "entranceCount": 10,
+                "uniqueEntranceCount": 10,
+                "uniqueBeatCount": 10,
+                "firstEntranceSec": 40,
+                "lastEntranceSec": 293,
+                "firstBeatSec": 40,
+                "lastBeatSec": 293,
+                "maxGapSec": 51,
+                "largestGap": {
+                  "start": 106,
+                  "end": 157,
+                  "len": 51
+                },
+                "gaps": [
+                  {
+                    "start": 106,
+                    "end": 157,
+                    "len": 51
+                  },
+                  {
+                    "start": 40,
+                    "end": 82,
+                    "len": 42
+                  },
+                  {
+                    "start": 0,
+                    "end": 40,
+                    "len": 40
+                  },
+                  {
+                    "start": 190,
+                    "end": 224,
+                    "len": 34
+                  },
+                  {
+                    "start": 162,
+                    "end": 190,
+                    "len": 28
+                  },
+                  {
+                    "start": 224,
+                    "end": 250,
+                    "len": 26
+                  },
+                  {
+                    "start": 250,
+                    "end": 276,
+                    "len": 26
+                  },
+                  {
+                    "start": 82,
+                    "end": 106,
+                    "len": 24
+                  },
+                  {
+                    "start": 276,
+                    "end": 293,
+                    "len": 17
+                  },
+                  {
+                    "start": 293,
+                    "end": 300,
+                    "len": 7
+                  },
+                  {
+                    "start": 157,
+                    "end": 162,
+                    "len": 5
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 1,
+                  "footnote": 0,
+                  "term": 3,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 2,
+                  "aside": 3,
+                  "highlight": 1
+                }
+              },
+              "projection": {
+                "focusMasked": [],
+                "superseded": [],
+                "projectedVisible": [
+                  {
+                    "beatId": "beat:initial:0",
+                    "kind": "aside"
+                  },
+                  {
+                    "beatId": "beat:fill:gap:1:0",
+                    "kind": "caveat"
+                  },
+                  {
+                    "beatId": "beat:initial:1",
+                    "kind": "aside"
+                  },
+                  {
+                    "beatId": "beat:fill:gap:2:1",
+                    "kind": "highlight"
+                  },
+                  {
+                    "beatId": "beat:initial:2",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:3",
+                    "kind": "group"
+                  },
+                  {
+                    "beatId": "beat:initial:4",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:5",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:6",
+                    "kind": "caveat"
+                  },
+                  {
+                    "beatId": "beat:initial:7",
+                    "kind": "aside"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "outcomes": {
+          "completeness": "complete",
+          "proposed": [
+            {
+              "proposalId": "initial:0",
+              "pass": "initial",
+              "kind": "aside"
+            },
+            {
+              "proposalId": "initial:1",
+              "pass": "initial",
+              "kind": "aside"
+            },
+            {
+              "proposalId": "initial:2",
+              "pass": "initial",
+              "kind": "term"
+            },
+            {
+              "proposalId": "initial:3",
+              "pass": "initial",
+              "kind": "group"
+            },
+            {
+              "proposalId": "initial:4",
+              "pass": "initial",
+              "kind": "term"
+            },
+            {
+              "proposalId": "initial:5",
+              "pass": "initial",
+              "kind": "term"
+            },
+            {
+              "proposalId": "initial:6",
+              "pass": "initial",
+              "kind": "caveat"
+            },
+            {
+              "proposalId": "initial:7",
+              "pass": "initial",
+              "kind": "aside"
+            },
+            {
+              "proposalId": "initial:8",
+              "pass": "initial",
+              "kind": "term"
+            },
+            {
+              "proposalId": "fill:gap:1:0",
+              "pass": "fill",
+              "kind": "caveat",
+              "gapId": "gap:1"
+            },
+            {
+              "proposalId": "fill:gap:2:1",
+              "pass": "fill",
+              "kind": "highlight",
+              "gapId": "gap:2"
+            }
+          ],
+          "rejected": [
+            {
+              "proposalId": "initial:8",
+              "pass": "initial",
+              "kind": "term",
+              "reason": "cue-not-located"
+            }
+          ],
+          "accepted": [
+            {
+              "proposalId": "initial:0",
+              "beatId": "beat:initial:0",
+              "kind": "aside",
+              "sceneId": "scene:initial:1"
+            },
+            {
+              "proposalId": "fill:gap:1:0",
+              "beatId": "beat:fill:gap:1:0",
+              "kind": "caveat",
+              "sceneId": "scene:initial:1"
+            },
+            {
+              "proposalId": "initial:1",
+              "beatId": "beat:initial:1",
+              "kind": "aside",
+              "sceneId": "scene:initial:1"
+            },
+            {
+              "proposalId": "fill:gap:2:1",
+              "beatId": "beat:fill:gap:2:1",
+              "kind": "highlight",
+              "sceneId": "scene:initial:3"
+            },
+            {
+              "proposalId": "initial:2",
+              "beatId": "beat:initial:2",
+              "kind": "term",
+              "sceneId": "scene:initial:4"
+            },
+            {
+              "proposalId": "initial:3",
+              "beatId": "beat:initial:3",
+              "kind": "group",
+              "sceneId": "scene:initial:5"
+            },
+            {
+              "proposalId": "initial:4",
+              "beatId": "beat:initial:4",
+              "kind": "term",
+              "sceneId": "scene:initial:6"
+            },
+            {
+              "proposalId": "initial:5",
+              "beatId": "beat:initial:5",
+              "kind": "term",
+              "sceneId": "scene:initial:7"
+            },
+            {
+              "proposalId": "initial:6",
+              "beatId": "beat:initial:6",
+              "kind": "caveat",
+              "sceneId": "scene:initial:8"
+            },
+            {
+              "proposalId": "initial:7",
+              "beatId": "beat:initial:7",
+              "kind": "aside",
+              "sceneId": "scene:initial:8"
+            }
+          ],
+          "focusMasked": [],
+          "superseded": [],
+          "projectedVisible": [
+            {
+              "beatId": "beat:initial:0",
+              "kind": "aside"
+            },
+            {
+              "beatId": "beat:fill:gap:1:0",
+              "kind": "caveat"
+            },
+            {
+              "beatId": "beat:initial:1",
+              "kind": "aside"
+            },
+            {
+              "beatId": "beat:fill:gap:2:1",
+              "kind": "highlight"
+            },
+            {
+              "beatId": "beat:initial:2",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:initial:3",
+              "kind": "group"
+            },
+            {
+              "beatId": "beat:initial:4",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:initial:5",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:initial:6",
+              "kind": "caveat"
+            },
+            {
+              "beatId": "beat:initial:7",
+              "kind": "aside"
+            }
+          ]
+        }
+      }
+    },
+    "step-3": {
+      "schemaVersion": 2,
+      "policyVersion": "magic-director-3",
+      "requestKey": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134|200|500|bb94ca091eb3bdee|dce1ccec1aabaf7a",
+      "requestFingerprint": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134|200|500|dce1ccec1aabaf7a",
+      "clip": {
+        "fromSec": 200,
+        "toSec": 500,
+        "durationSec": 300,
+        "transcriptHash": "bb94ca091eb3bdee",
+        "sustainedTeachingSec": 279.4
+      },
+      "budget": {
+        "policyVersion": "magic-director-3",
+        "durationSec": 300,
+        "sustainedTeachingSec": 279.4,
+        "targetThoughtEntrances": 9,
+        "hardBeatCeiling": 24,
+        "highlightCeiling": 2,
+        "modelSceneCeiling": 10,
+        "houseSceneReserve": 1,
+        "finalSceneCeiling": 11,
+        "fillGapSec": 36
+      },
+      "scenes": [
+        {
+          "id": "scene:initial:0",
+          "origin": "model",
+          "ref": null,
+          "verses": [],
+          "cue": "you can have it",
+          "at": 14,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:1",
+          "origin": "model",
+          "ref": null,
+          "verses": [],
+          "cue": "God handing them over",
+          "at": 45,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:2",
+          "origin": "model",
+          "ref": "Romans 1:18–20",
+          "verses": [
+            {
+              "verse": 18,
+              "text": "For the wrath of God is revealed from heaven against all ungodliness and unrighteousness of men who suppress the truth in unrighteousness,"
+            },
+            {
+              "verse": 19,
+              "text": "because that which is known of God is revealed in them, for God revealed it to them."
+            },
+            {
+              "verse": 20,
+              "text": "For the invisible things of him since the creation of the world are clearly seen, being perceived through the things that are made, even his everlasting power and divinity, that they may be without excuse."
+            }
+          ],
+          "cue": "the wrath of God is revealed",
+          "at": 123,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:6",
+          "origin": "model",
+          "ref": "Romans 1:21–23",
+          "verses": [
+            {
+              "verse": 21,
+              "text": "Because knowing God, they didn’t glorify him as God, and didn’t give thanks, but became vain in their reasoning, and their senseless heart was darkened."
+            },
+            {
+              "verse": 22,
+              "text": "Professing themselves to be wise, they became fools,"
+            },
+            {
+              "verse": 23,
+              "text": "and traded the glory of the incorruptible God for the likeness of an image of corruptible man, and of birds, four-footed animals, and creeping things."
+            }
+          ],
+          "cue": "they became futile in their speculations",
+          "at": 150,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:3",
+          "origin": "model",
+          "ref": null,
+          "verses": [],
+          "cue": "God's wrath refers to",
+          "at": 204,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:4",
+          "origin": "model",
+          "ref": "Romans 1:18–19",
+          "verses": [
+            {
+              "verse": 18,
+              "text": "For the wrath of God is revealed from heaven against all ungodliness and unrighteousness of men who suppress the truth in unrighteousness,"
+            },
+            {
+              "verse": 19,
+              "text": "because that which is known of God is revealed in them, for God revealed it to them."
+            }
+          ],
+          "cue": "suppress the truth",
+          "at": 254,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:5",
+          "origin": "model",
+          "ref": "Romans 1:19",
+          "verses": [
+            {
+              "verse": 19,
+              "text": "because that which is known of God is revealed in them, for God revealed it to them."
+            }
+          ],
+          "cue": "here's what he means",
+          "at": 278,
+          "timingSource": "cue"
+        }
+      ],
+      "beats": [
+        {
+          "id": "beat:initial:0",
+          "proposalId": "initial:0",
+          "sceneId": "scene:initial:1",
+          "kind": "highlight",
+          "cue": "allowing them to reap what they sow",
+          "at": 51,
+          "timingSource": "cue",
+          "data": {
+            "quote": "The basic idea is God really allowing them to reap what they sow."
+          }
+        },
+        {
+          "id": "beat:initial:1",
+          "proposalId": "initial:1",
+          "sceneId": "scene:initial:2",
+          "kind": "group",
+          "cue": "all ungodliness and unrighteousness",
+          "at": 123,
+          "timingSource": "cue",
+          "data": {
+            "words": [
+              "ungodliness",
+              "unrighteousness"
+            ],
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "label": "human wrongdoing"
+          }
+        },
+        {
+          "id": "beat:fill:gap:2:0",
+          "proposalId": "fill:gap:2:0",
+          "sceneId": "scene:initial:6",
+          "kind": "caveat",
+          "cue": "It's not like God was so hidden man couldn't know him.",
+          "at": 178,
+          "timingSource": "cue",
+          "data": {
+            "text": "The passage does not portray God as hidden from humanity; it presents humanity as culpable"
+          }
+        },
+        {
+          "id": "beat:initial:5",
+          "proposalId": "initial:5",
+          "sceneId": "scene:initial:3",
+          "kind": "caveat",
+          "cue": "Some days he's in a good mood",
+          "at": 210,
+          "timingSource": "cue",
+          "data": {
+            "text": "God's wrath is not fickle or unpredictable."
+          }
+        },
+        {
+          "id": "beat:initial:4",
+          "proposalId": "initial:4",
+          "sceneId": "scene:initial:3",
+          "kind": "highlight",
+          "cue": "God's just repayment for sin",
+          "at": 217,
+          "timingSource": "cue",
+          "data": {
+            "quote": "The wrath of God in Scripture refers to God's just repayment for sin."
+          }
+        },
+        {
+          "id": "beat:initial:6",
+          "proposalId": "initial:6",
+          "sceneId": "scene:initial:4",
+          "kind": "term",
+          "cue": "They're pushing it down",
+          "at": 265,
+          "timingSource": "cue",
+          "data": {
+            "term": "suppress",
+            "gloss": "push down, squelch, hide, or cover up the truth"
+          }
+        },
+        {
+          "id": "beat:initial:7",
+          "proposalId": "initial:7",
+          "sceneId": "scene:initial:5",
+          "kind": "footnote",
+          "cue": "probably better among them",
+          "at": 284,
+          "timingSource": "cue",
+          "data": {
+            "word": "in them",
+            "note": "The word can mean within or among; the teacher prefers among them.",
+            "occurrence": 0
+          }
+        }
+      ],
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "metrics": {
+        "wallMs": 41953,
+        "passes": 3,
+        "calls": [
+          {
+            "role": "initial",
+            "latencyMs": 26233,
+            "promptTokens": 2336,
+            "completionTokens": 3292,
+            "reasoningTokens": 2741,
+            "cachedPromptTokens": 0,
+            "providerCostUsd": 0.002267125,
+            "finishReason": "stop",
+            "rawModel": "openai/gpt-5.6-luna",
+            "provider": "OpenAI",
+            "model": {
+              "key": "gpt-5.6-luna-medium",
+              "requestedSlug": "openai/gpt-5.6-luna",
+              "resolvedSlug": "openai/gpt-5.6-luna",
+              "endpointHost": "openrouter.ai",
+              "endpointStyle": "aggregator",
+              "reasoning": {
+                "effort": "medium",
+                "source": "per-model default for gpt-5.6-luna-medium",
+                "applied": true
+              },
+              "provider": "OpenAI"
+            },
+            "validation": "json-parsed"
+          },
+          {
+            "role": "repair",
+            "latencyMs": 2953,
+            "promptTokens": 117,
+            "completionTokens": 44,
+            "reasoningTokens": 31,
+            "cachedPromptTokens": 0,
+            "providerCostUsd": 0.0000381,
+            "finishReason": "stop",
+            "rawModel": "openai/gpt-5.6-luna",
+            "provider": "OpenAI",
+            "model": {
+              "key": "gpt-5.6-luna-medium",
+              "requestedSlug": "openai/gpt-5.6-luna",
+              "resolvedSlug": "openai/gpt-5.6-luna",
+              "endpointHost": "openrouter.ai",
+              "endpointStyle": "aggregator",
+              "reasoning": {
+                "effort": "medium",
+                "source": "per-model default for gpt-5.6-luna-medium",
+                "applied": true
+              },
+              "provider": "OpenAI"
+            },
+            "validation": "json-parsed;semantic-repairs:1/1;semantic-scenes:7;semantic-beats:6"
+          },
+          {
+            "role": "fill",
+            "latencyMs": 12756,
+            "promptTokens": 2354,
+            "completionTokens": 1432,
+            "reasoningTokens": 1352,
+            "cachedPromptTokens": 0,
+            "providerCostUsd": 0.001153375,
+            "finishReason": "stop",
+            "rawModel": "openai/gpt-5.6-luna",
+            "provider": "OpenAI",
+            "model": {
+              "key": "gpt-5.6-luna-medium",
+              "requestedSlug": "openai/gpt-5.6-luna",
+              "resolvedSlug": "openai/gpt-5.6-luna",
+              "endpointHost": "openrouter.ai",
+              "endpointStyle": "aggregator",
+              "reasoning": {
+                "effort": "medium",
+                "source": "per-model default for gpt-5.6-luna-medium",
+                "applied": true
+              },
+              "provider": "OpenAI"
+            },
+            "validation": "json-parsed;semantic-intervals:4;semantic-beats:1"
+          }
+        ],
+        "totalUsd": 0.0034586,
+        "tokens": {
+          "prompt": 4807,
+          "completion": 4768,
+          "reasoning": 4124,
+          "cachedPrompt": 0
+        },
+        "normalization": {
+          "schemaVersion": 2,
+          "policyVersion": "magic-director-3",
+          "dropped": [],
+          "shifted": 0,
+          "clamped": 0,
+          "invented": 0,
+          "reassigned": 0,
+          "preludes": 0,
+          "sceneCount": 7,
+          "beatCount": 7,
+          "artifactCount": 7,
+          "artifactCounts": {
+            "group": 1,
+            "footnote": 1,
+            "term": 1,
+            "allusion": 0,
+            "compare": 0,
+            "chain": 0,
+            "caveat": 2,
+            "aside": 0,
+            "highlight": 2
+          },
+          "sceneCadence": {
+            "entranceCount": 7,
+            "uniqueEntranceCount": 7,
+            "uniqueBeatCount": 7,
+            "firstEntranceSec": 14,
+            "lastEntranceSec": 278,
+            "firstBeatSec": 14,
+            "lastBeatSec": 278,
+            "maxGapSec": 78,
+            "largestGap": {
+              "start": 45,
+              "end": 123,
+              "len": 78
+            },
+            "gaps": [
+              {
+                "start": 45,
+                "end": 123,
+                "len": 78
+              },
+              {
+                "start": 150,
+                "end": 204,
+                "len": 54
+              },
+              {
+                "start": 204,
+                "end": 254,
+                "len": 50
+              },
+              {
+                "start": 14,
+                "end": 45,
+                "len": 31
+              },
+              {
+                "start": 123,
+                "end": 150,
+                "len": 27
+              },
+              {
+                "start": 254,
+                "end": 278,
+                "len": 24
+              },
+              {
+                "start": 278,
+                "end": 300,
+                "len": 22
+              },
+              {
+                "start": 0,
+                "end": 14,
+                "len": 14
+              }
+            ]
+          },
+          "thoughtCadence": {
+            "entranceCount": 5,
+            "uniqueEntranceCount": 5,
+            "uniqueBeatCount": 5,
+            "firstEntranceSec": 123,
+            "lastEntranceSec": 284,
+            "firstBeatSec": 123,
+            "lastBeatSec": 284,
+            "maxGapSec": 123,
+            "largestGap": {
+              "start": 0,
+              "end": 123,
+              "len": 123
+            },
+            "gaps": [
+              {
+                "start": 0,
+                "end": 123,
+                "len": 123
+              },
+              {
+                "start": 123,
+                "end": 178,
+                "len": 55
+              },
+              {
+                "start": 210,
+                "end": 265,
+                "len": 55
+              },
+              {
+                "start": 178,
+                "end": 210,
+                "len": 32
+              },
+              {
+                "start": 265,
+                "end": 284,
+                "len": 19
+              },
+              {
+                "start": 284,
+                "end": 300,
+                "len": 16
+              }
+            ],
+            "artifactCounts": {
+              "group": 1,
+              "footnote": 1,
+              "term": 1,
+              "allusion": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 2,
+              "aside": 0,
+              "highlight": 2
+            }
+          },
+          "visualCadence": {
+            "entranceCount": 7,
+            "uniqueEntranceCount": 7,
+            "uniqueBeatCount": 7,
+            "firstEntranceSec": 51,
+            "lastEntranceSec": 284,
+            "firstBeatSec": 51,
+            "lastBeatSec": 284,
+            "maxGapSec": 72,
+            "largestGap": {
+              "start": 51,
+              "end": 123,
+              "len": 72
+            },
+            "gaps": [
+              {
+                "start": 51,
+                "end": 123,
+                "len": 72
+              },
+              {
+                "start": 123,
+                "end": 178,
+                "len": 55
+              },
+              {
+                "start": 0,
+                "end": 51,
+                "len": 51
+              },
+              {
+                "start": 217,
+                "end": 265,
+                "len": 48
+              },
+              {
+                "start": 178,
+                "end": 210,
+                "len": 32
+              },
+              {
+                "start": 265,
+                "end": 284,
+                "len": 19
+              },
+              {
+                "start": 284,
+                "end": 300,
+                "len": 16
+              },
+              {
+                "start": 210,
+                "end": 217,
+                "len": 7
+              }
+            ],
+            "artifactCounts": {
+              "group": 1,
+              "footnote": 1,
+              "term": 1,
+              "allusion": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 2,
+              "aside": 0,
+              "highlight": 2
+            }
+          },
+          "projection": {
+            "focusMasked": [],
+            "superseded": [],
+            "projectedVisible": [
+              {
+                "beatId": "beat:initial:0",
+                "kind": "highlight"
+              },
+              {
+                "beatId": "beat:initial:1",
+                "kind": "group"
+              },
+              {
+                "beatId": "beat:fill:gap:2:0",
+                "kind": "caveat"
+              },
+              {
+                "beatId": "beat:initial:5",
+                "kind": "caveat"
+              },
+              {
+                "beatId": "beat:initial:4",
+                "kind": "highlight"
+              },
+              {
+                "beatId": "beat:initial:6",
+                "kind": "term"
+              },
+              {
+                "beatId": "beat:initial:7",
+                "kind": "footnote"
+              }
+            ]
+          },
+          "passes": [
+            {
+              "role": "initial",
+              "schemaVersion": 2,
+              "policyVersion": "magic-director-3",
+              "dropped": [],
+              "shifted": 0,
+              "clamped": 0,
+              "invented": 0,
+              "reassigned": 0,
+              "preludes": 0,
+              "sceneCount": 7,
+              "beatCount": 6,
+              "artifactCount": 6,
+              "artifactCounts": {
+                "group": 1,
+                "footnote": 1,
+                "term": 1,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 1,
+                "aside": 0,
+                "highlight": 2
+              },
+              "sceneCadence": {
+                "entranceCount": 7,
+                "uniqueEntranceCount": 7,
+                "uniqueBeatCount": 7,
+                "firstEntranceSec": 14,
+                "lastEntranceSec": 278,
+                "firstBeatSec": 14,
+                "lastBeatSec": 278,
+                "maxGapSec": 78,
+                "largestGap": {
+                  "start": 45,
+                  "end": 123,
+                  "len": 78
+                },
+                "gaps": [
+                  {
+                    "start": 45,
+                    "end": 123,
+                    "len": 78
+                  },
+                  {
+                    "start": 150,
+                    "end": 204,
+                    "len": 54
+                  },
+                  {
+                    "start": 204,
+                    "end": 254,
+                    "len": 50
+                  },
+                  {
+                    "start": 14,
+                    "end": 45,
+                    "len": 31
+                  },
+                  {
+                    "start": 123,
+                    "end": 150,
+                    "len": 27
+                  },
+                  {
+                    "start": 254,
+                    "end": 278,
+                    "len": 24
+                  },
+                  {
+                    "start": 278,
+                    "end": 300,
+                    "len": 22
+                  },
+                  {
+                    "start": 0,
+                    "end": 14,
+                    "len": 14
+                  }
+                ]
+              },
+              "thoughtCadence": {
+                "entranceCount": 4,
+                "uniqueEntranceCount": 4,
+                "uniqueBeatCount": 4,
+                "firstEntranceSec": 123,
+                "lastEntranceSec": 284,
+                "firstBeatSec": 123,
+                "lastBeatSec": 284,
+                "maxGapSec": 123,
+                "largestGap": {
+                  "start": 0,
+                  "end": 123,
+                  "len": 123
+                },
+                "gaps": [
+                  {
+                    "start": 0,
+                    "end": 123,
+                    "len": 123
+                  },
+                  {
+                    "start": 123,
+                    "end": 210,
+                    "len": 87
+                  },
+                  {
+                    "start": 210,
+                    "end": 265,
+                    "len": 55
+                  },
+                  {
+                    "start": 265,
+                    "end": 284,
+                    "len": 19
+                  },
+                  {
+                    "start": 284,
+                    "end": 300,
+                    "len": 16
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 1,
+                  "footnote": 1,
+                  "term": 1,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 1,
+                  "aside": 0,
+                  "highlight": 2
+                }
+              },
+              "visualCadence": {
+                "entranceCount": 6,
+                "uniqueEntranceCount": 6,
+                "uniqueBeatCount": 6,
+                "firstEntranceSec": 51,
+                "lastEntranceSec": 284,
+                "firstBeatSec": 51,
+                "lastBeatSec": 284,
+                "maxGapSec": 87,
+                "largestGap": {
+                  "start": 123,
+                  "end": 210,
+                  "len": 87
+                },
+                "gaps": [
+                  {
+                    "start": 123,
+                    "end": 210,
+                    "len": 87
+                  },
+                  {
+                    "start": 51,
+                    "end": 123,
+                    "len": 72
+                  },
+                  {
+                    "start": 0,
+                    "end": 51,
+                    "len": 51
+                  },
+                  {
+                    "start": 217,
+                    "end": 265,
+                    "len": 48
+                  },
+                  {
+                    "start": 265,
+                    "end": 284,
+                    "len": 19
+                  },
+                  {
+                    "start": 284,
+                    "end": 300,
+                    "len": 16
+                  },
+                  {
+                    "start": 210,
+                    "end": 217,
+                    "len": 7
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 1,
+                  "footnote": 1,
+                  "term": 1,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 1,
+                  "aside": 0,
+                  "highlight": 2
+                }
+              },
+              "projection": {
+                "focusMasked": [],
+                "superseded": [],
+                "projectedVisible": [
+                  {
+                    "beatId": "beat:initial:0",
+                    "kind": "highlight"
+                  },
+                  {
+                    "beatId": "beat:initial:1",
+                    "kind": "group"
+                  },
+                  {
+                    "beatId": "beat:initial:5",
+                    "kind": "caveat"
+                  },
+                  {
+                    "beatId": "beat:initial:4",
+                    "kind": "highlight"
+                  },
+                  {
+                    "beatId": "beat:initial:6",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:7",
+                    "kind": "footnote"
+                  }
+                ]
+              }
+            },
+            {
+              "role": "fill",
+              "schemaVersion": 2,
+              "policyVersion": "magic-director-3",
+              "dropped": [],
+              "shifted": 0,
+              "clamped": 0,
+              "invented": 0,
+              "reassigned": 0,
+              "preludes": 0,
+              "sceneCount": 7,
+              "beatCount": 7,
+              "artifactCount": 7,
+              "artifactCounts": {
+                "group": 1,
+                "footnote": 1,
+                "term": 1,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 2,
+                "aside": 0,
+                "highlight": 2
+              },
+              "sceneCadence": {
+                "entranceCount": 7,
+                "uniqueEntranceCount": 7,
+                "uniqueBeatCount": 7,
+                "firstEntranceSec": 14,
+                "lastEntranceSec": 278,
+                "firstBeatSec": 14,
+                "lastBeatSec": 278,
+                "maxGapSec": 78,
+                "largestGap": {
+                  "start": 45,
+                  "end": 123,
+                  "len": 78
+                },
+                "gaps": [
+                  {
+                    "start": 45,
+                    "end": 123,
+                    "len": 78
+                  },
+                  {
+                    "start": 150,
+                    "end": 204,
+                    "len": 54
+                  },
+                  {
+                    "start": 204,
+                    "end": 254,
+                    "len": 50
+                  },
+                  {
+                    "start": 14,
+                    "end": 45,
+                    "len": 31
+                  },
+                  {
+                    "start": 123,
+                    "end": 150,
+                    "len": 27
+                  },
+                  {
+                    "start": 254,
+                    "end": 278,
+                    "len": 24
+                  },
+                  {
+                    "start": 278,
+                    "end": 300,
+                    "len": 22
+                  },
+                  {
+                    "start": 0,
+                    "end": 14,
+                    "len": 14
+                  }
+                ]
+              },
+              "thoughtCadence": {
+                "entranceCount": 5,
+                "uniqueEntranceCount": 5,
+                "uniqueBeatCount": 5,
+                "firstEntranceSec": 123,
+                "lastEntranceSec": 284,
+                "firstBeatSec": 123,
+                "lastBeatSec": 284,
+                "maxGapSec": 123,
+                "largestGap": {
+                  "start": 0,
+                  "end": 123,
+                  "len": 123
+                },
+                "gaps": [
+                  {
+                    "start": 0,
+                    "end": 123,
+                    "len": 123
+                  },
+                  {
+                    "start": 123,
+                    "end": 178,
+                    "len": 55
+                  },
+                  {
+                    "start": 210,
+                    "end": 265,
+                    "len": 55
+                  },
+                  {
+                    "start": 178,
+                    "end": 210,
+                    "len": 32
+                  },
+                  {
+                    "start": 265,
+                    "end": 284,
+                    "len": 19
+                  },
+                  {
+                    "start": 284,
+                    "end": 300,
+                    "len": 16
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 1,
+                  "footnote": 1,
+                  "term": 1,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 2,
+                  "aside": 0,
+                  "highlight": 2
+                }
+              },
+              "visualCadence": {
+                "entranceCount": 7,
+                "uniqueEntranceCount": 7,
+                "uniqueBeatCount": 7,
+                "firstEntranceSec": 51,
+                "lastEntranceSec": 284,
+                "firstBeatSec": 51,
+                "lastBeatSec": 284,
+                "maxGapSec": 72,
+                "largestGap": {
+                  "start": 51,
+                  "end": 123,
+                  "len": 72
+                },
+                "gaps": [
+                  {
+                    "start": 51,
+                    "end": 123,
+                    "len": 72
+                  },
+                  {
+                    "start": 123,
+                    "end": 178,
+                    "len": 55
+                  },
+                  {
+                    "start": 0,
+                    "end": 51,
+                    "len": 51
+                  },
+                  {
+                    "start": 217,
+                    "end": 265,
+                    "len": 48
+                  },
+                  {
+                    "start": 178,
+                    "end": 210,
+                    "len": 32
+                  },
+                  {
+                    "start": 265,
+                    "end": 284,
+                    "len": 19
+                  },
+                  {
+                    "start": 284,
+                    "end": 300,
+                    "len": 16
+                  },
+                  {
+                    "start": 210,
+                    "end": 217,
+                    "len": 7
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 1,
+                  "footnote": 1,
+                  "term": 1,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 2,
+                  "aside": 0,
+                  "highlight": 2
+                }
+              },
+              "projection": {
+                "focusMasked": [],
+                "superseded": [],
+                "projectedVisible": [
+                  {
+                    "beatId": "beat:initial:0",
+                    "kind": "highlight"
+                  },
+                  {
+                    "beatId": "beat:initial:1",
+                    "kind": "group"
+                  },
+                  {
+                    "beatId": "beat:fill:gap:2:0",
+                    "kind": "caveat"
+                  },
+                  {
+                    "beatId": "beat:initial:5",
+                    "kind": "caveat"
+                  },
+                  {
+                    "beatId": "beat:initial:4",
+                    "kind": "highlight"
+                  },
+                  {
+                    "beatId": "beat:initial:6",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:7",
+                    "kind": "footnote"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "outcomes": {
+          "completeness": "complete",
+          "proposed": [
+            {
+              "proposalId": "initial:0",
+              "pass": "initial",
+              "kind": "highlight"
+            },
+            {
+              "proposalId": "initial:1",
+              "pass": "initial",
+              "kind": "group"
+            },
+            {
+              "proposalId": "initial:2",
+              "pass": "initial",
+              "kind": "group"
+            },
+            {
+              "proposalId": "initial:3",
+              "pass": "initial",
+              "kind": "group"
+            },
+            {
+              "proposalId": "initial:4",
+              "pass": "initial",
+              "kind": "highlight"
+            },
+            {
+              "proposalId": "initial:5",
+              "pass": "initial",
+              "kind": "caveat"
+            },
+            {
+              "proposalId": "initial:6",
+              "pass": "initial",
+              "kind": "term"
+            },
+            {
+              "proposalId": "initial:7",
+              "pass": "initial",
+              "kind": "footnote"
+            },
+            {
+              "proposalId": "fill:gap:2:0",
+              "pass": "fill",
+              "kind": "caveat",
+              "gapId": "gap:2"
+            }
+          ],
+          "rejected": [
+            {
+              "proposalId": "initial:2",
+              "pass": "initial",
+              "kind": "group",
+              "reason": "group-word-shape"
+            },
+            {
+              "proposalId": "initial:3",
+              "pass": "initial",
+              "kind": "group",
+              "reason": "group-word-count"
+            }
+          ],
+          "accepted": [
+            {
+              "proposalId": "initial:0",
+              "beatId": "beat:initial:0",
+              "kind": "highlight",
+              "sceneId": "scene:initial:1"
+            },
+            {
+              "proposalId": "initial:1",
+              "beatId": "beat:initial:1",
+              "kind": "group",
+              "sceneId": "scene:initial:2"
+            },
+            {
+              "proposalId": "fill:gap:2:0",
+              "beatId": "beat:fill:gap:2:0",
+              "kind": "caveat",
+              "sceneId": "scene:initial:6"
+            },
+            {
+              "proposalId": "initial:5",
+              "beatId": "beat:initial:5",
+              "kind": "caveat",
+              "sceneId": "scene:initial:3"
+            },
+            {
+              "proposalId": "initial:4",
+              "beatId": "beat:initial:4",
+              "kind": "highlight",
+              "sceneId": "scene:initial:3"
+            },
+            {
+              "proposalId": "initial:6",
+              "beatId": "beat:initial:6",
+              "kind": "term",
+              "sceneId": "scene:initial:4"
+            },
+            {
+              "proposalId": "initial:7",
+              "beatId": "beat:initial:7",
+              "kind": "footnote",
+              "sceneId": "scene:initial:5"
+            }
+          ],
+          "focusMasked": [],
+          "superseded": [],
+          "projectedVisible": [
+            {
+              "beatId": "beat:initial:0",
+              "kind": "highlight"
+            },
+            {
+              "beatId": "beat:initial:1",
+              "kind": "group"
+            },
+            {
+              "beatId": "beat:fill:gap:2:0",
+              "kind": "caveat"
+            },
+            {
+              "beatId": "beat:initial:5",
+              "kind": "caveat"
+            },
+            {
+              "beatId": "beat:initial:4",
+              "kind": "highlight"
+            },
+            {
+              "beatId": "beat:initial:6",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:initial:7",
+              "kind": "footnote"
+            }
+          ]
+        }
+      }
+    },
+    "step-4": {
+      "schemaVersion": 2,
+      "policyVersion": "magic-director-3",
+      "requestKey": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134|804|1060|a76663459034a938|7346d8eedec91219",
+      "requestFingerprint": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134|804|1060|7346d8eedec91219",
+      "clip": {
+        "fromSec": 804,
+        "toSec": 1060,
+        "durationSec": 256,
+        "transcriptHash": "a76663459034a938",
+        "sustainedTeachingSec": 249.8
+      },
+      "budget": {
+        "policyVersion": "magic-director-3",
+        "durationSec": 256,
+        "sustainedTeachingSec": 249.8,
+        "targetThoughtEntrances": 8,
+        "hardBeatCeiling": 21,
+        "highlightCeiling": 2,
+        "modelSceneCeiling": 9,
+        "houseSceneReserve": 1,
+        "finalSceneCeiling": 10,
+        "fillGapSec": 36
+      },
+      "scenes": [
+        {
+          "id": "house:prelude",
+          "origin": "house-prelude",
+          "ref": null,
+          "verses": [],
+          "cue": null,
+          "at": 0,
+          "timingSource": "house"
+        },
+        {
+          "id": "scene:initial:0",
+          "origin": "model",
+          "ref": "Romans 1:23–25",
+          "verses": [
+            {
+              "verse": 23,
+              "text": "and traded the glory of the incorruptible God for the likeness of an image of corruptible man, and of birds, four-footed animals, and creeping things."
+            },
+            {
+              "verse": 24,
+              "text": "Therefore God also gave them up in the lusts of their hearts to uncleanness, that their bodies should be dishonored among themselves;"
+            },
+            {
+              "verse": 25,
+              "text": "who exchanged the truth of God for a lie, and worshiped and served the creature rather than the Creator, who is blessed forever. Amen."
+            }
+          ],
+          "cue": "worship the creation and the creature",
+          "at": 26,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:1",
+          "origin": "model",
+          "ref": "Romans 1:24",
+          "verses": [
+            {
+              "verse": 24,
+              "text": "Therefore God also gave them up in the lusts of their hearts to uncleanness, that their bodies should be dishonored among themselves;"
+            }
+          ],
+          "cue": "God gave them over phrases",
+          "at": 33,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:2",
+          "origin": "model",
+          "ref": "Romans 1:25",
+          "verses": [
+            {
+              "verse": 25,
+              "text": "who exchanged the truth of God for a lie, and worshiped and served the creature rather than the Creator, who is blessed forever. Amen."
+            }
+          ],
+          "cue": "they exchanged the truth of God",
+          "at": 94,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:3",
+          "origin": "model",
+          "ref": null,
+          "verses": [],
+          "cue": "idolatry is the great lie",
+          "at": 147,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:4",
+          "origin": "model",
+          "ref": null,
+          "verses": [],
+          "cue": "an example of what happens",
+          "at": 167,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:5",
+          "origin": "model",
+          "ref": null,
+          "verses": [],
+          "cue": "It was quite rampant in the Greco-Roman world",
+          "at": 201,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:6",
+          "origin": "model",
+          "ref": "Romans 1:26–27",
+          "verses": [
+            {
+              "verse": 26,
+              "text": "For this reason, God gave them up to vile passions. For their women changed the natural function into that which is against nature."
+            },
+            {
+              "verse": 27,
+              "text": "Likewise also the men, leaving the natural function of the woman, burned in their lust toward one another, men doing what is inappropriate with men, and receiving in themselves the due penalty of their error."
+            }
+          ],
+          "cue": "verses 26 and 27",
+          "at": 234,
+          "timingSource": "cue"
+        }
+      ],
+      "beats": [
+        {
+          "id": "beat:initial:1",
+          "proposalId": "initial:1",
+          "sceneId": "scene:initial:1",
+          "kind": "caveat",
+          "cue": "It's not like God's being unjust",
+          "at": 53,
+          "timingSource": "cue",
+          "data": {
+            "text": "The teacher frames the handover as God allowing people to follow their own chosen way, not"
+          }
+        },
+        {
+          "id": "beat:initial:2",
+          "proposalId": "initial:2",
+          "sceneId": "scene:initial:1",
+          "kind": "term",
+          "cue": "lust just means desires",
+          "at": 66,
+          "timingSource": "cue",
+          "data": {
+            "term": "lust",
+            "gloss": "desires"
+          }
+        },
+        {
+          "id": "beat:initial:3",
+          "proposalId": "initial:3",
+          "sceneId": "scene:initial:2",
+          "kind": "footnote",
+          "cue": "There's an article, definitive article",
+          "at": 98,
+          "timingSource": "cue",
+          "data": {
+            "word": "lie",
+            "note": "The teacher says the definite article makes it 'the lie,' not merely any lie.",
+            "occurrence": 0
+          }
+        },
+        {
+          "id": "beat:initial:4",
+          "proposalId": "initial:4",
+          "sceneId": "scene:initial:3",
+          "kind": "highlight",
+          "cue": "idolatry is the great lie",
+          "at": 147,
+          "timingSource": "cue",
+          "data": {
+            "quote": "idolatry is the great lie, and it is the root cause of all of mankind's problems."
+          }
+        },
+        {
+          "id": "beat:initial:5",
+          "proposalId": "initial:5",
+          "sceneId": "scene:initial:5",
+          "kind": "aside",
+          "cue": "It was quite rampant in the Greco-Roman world",
+          "at": 201,
+          "timingSource": "cue",
+          "data": {
+            "text": "The teacher supplies historical context about the prevalence of…"
+          }
+        },
+        {
+          "id": "beat:initial:6",
+          "proposalId": "initial:6",
+          "sceneId": "scene:initial:5",
+          "kind": "caveat",
+          "cue": "emphasize the word behavior with this",
+          "at": 231,
+          "timingSource": "cue",
+          "data": {
+            "text": "The teacher specifically frames Paul's reference as addressing behavior."
+          }
+        }
+      ],
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "metrics": {
+        "wallMs": 27209,
+        "passes": 2,
+        "calls": [
+          {
+            "role": "initial",
+            "latencyMs": 19614,
+            "promptTokens": 2100,
+            "completionTokens": 2321,
+            "reasoningTokens": 1752,
+            "cachedPromptTokens": 0,
+            "providerCostUsd": 0.001655025,
+            "finishReason": "stop",
+            "rawModel": "openai/gpt-5.6-luna",
+            "provider": "OpenAI",
+            "model": {
+              "key": "gpt-5.6-luna-medium",
+              "requestedSlug": "openai/gpt-5.6-luna",
+              "resolvedSlug": "openai/gpt-5.6-luna",
+              "endpointHost": "openrouter.ai",
+              "endpointStyle": "aggregator",
+              "reasoning": {
+                "effort": "medium",
+                "source": "per-model default for gpt-5.6-luna-medium",
+                "applied": true
+              },
+              "provider": "OpenAI"
+            },
+            "validation": "json-parsed;semantic-scenes:7;semantic-beats:6"
+          },
+          {
+            "role": "fill",
+            "latencyMs": 7587,
+            "promptTokens": 1724,
+            "completionTokens": 798,
+            "reasoningTokens": 717,
+            "cachedPromptTokens": 0,
+            "providerCostUsd": 0.000694225,
+            "finishReason": "stop",
+            "rawModel": "openai/gpt-5.6-luna",
+            "provider": "OpenAI",
+            "model": {
+              "key": "gpt-5.6-luna-medium",
+              "requestedSlug": "openai/gpt-5.6-luna",
+              "resolvedSlug": "openai/gpt-5.6-luna",
+              "endpointHost": "openrouter.ai",
+              "endpointStyle": "aggregator",
+              "reasoning": {
+                "effort": "medium",
+                "source": "per-model default for gpt-5.6-luna-medium",
+                "applied": true
+              },
+              "provider": "OpenAI"
+            },
+            "validation": "json-parsed;semantic-intervals:3;semantic-beats:0"
+          }
+        ],
+        "totalUsd": 0.00234925,
+        "tokens": {
+          "prompt": 3824,
+          "completion": 3119,
+          "reasoning": 2469,
+          "cachedPrompt": 0
+        },
+        "normalization": {
+          "schemaVersion": 2,
+          "policyVersion": "magic-director-3",
+          "dropped": [],
+          "shifted": 0,
+          "clamped": 0,
+          "invented": 0,
+          "reassigned": 0,
+          "preludes": 0,
+          "sceneCount": 8,
+          "beatCount": 6,
+          "artifactCount": 6,
+          "artifactCounts": {
+            "group": 0,
+            "footnote": 1,
+            "term": 1,
+            "allusion": 0,
+            "compare": 0,
+            "chain": 0,
+            "caveat": 2,
+            "aside": 1,
+            "highlight": 1
+          },
+          "sceneCadence": {
+            "entranceCount": 8,
+            "uniqueEntranceCount": 8,
+            "uniqueBeatCount": 8,
+            "firstEntranceSec": 0,
+            "lastEntranceSec": 234,
+            "firstBeatSec": 0,
+            "lastBeatSec": 234,
+            "maxGapSec": 61,
+            "largestGap": {
+              "start": 33,
+              "end": 94,
+              "len": 61
+            },
+            "gaps": [
+              {
+                "start": 33,
+                "end": 94,
+                "len": 61
+              },
+              {
+                "start": 94,
+                "end": 147,
+                "len": 53
+              },
+              {
+                "start": 167,
+                "end": 201,
+                "len": 34
+              },
+              {
+                "start": 201,
+                "end": 234,
+                "len": 33
+              },
+              {
+                "start": 0,
+                "end": 26,
+                "len": 26
+              },
+              {
+                "start": 234,
+                "end": 256,
+                "len": 22
+              },
+              {
+                "start": 147,
+                "end": 167,
+                "len": 20
+              },
+              {
+                "start": 26,
+                "end": 33,
+                "len": 7
+              }
+            ]
+          },
+          "thoughtCadence": {
+            "entranceCount": 5,
+            "uniqueEntranceCount": 5,
+            "uniqueBeatCount": 5,
+            "firstEntranceSec": 53,
+            "lastEntranceSec": 231,
+            "firstBeatSec": 53,
+            "lastBeatSec": 231,
+            "maxGapSec": 103,
+            "largestGap": {
+              "start": 98,
+              "end": 201,
+              "len": 103
+            },
+            "gaps": [
+              {
+                "start": 98,
+                "end": 201,
+                "len": 103
+              },
+              {
+                "start": 0,
+                "end": 53,
+                "len": 53
+              },
+              {
+                "start": 66,
+                "end": 98,
+                "len": 32
+              },
+              {
+                "start": 201,
+                "end": 231,
+                "len": 30
+              },
+              {
+                "start": 231,
+                "end": 256,
+                "len": 25
+              },
+              {
+                "start": 53,
+                "end": 66,
+                "len": 13
+              }
+            ],
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 1,
+              "term": 1,
+              "allusion": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 2,
+              "aside": 1,
+              "highlight": 1
+            }
+          },
+          "visualCadence": {
+            "entranceCount": 6,
+            "uniqueEntranceCount": 6,
+            "uniqueBeatCount": 6,
+            "firstEntranceSec": 53,
+            "lastEntranceSec": 231,
+            "firstBeatSec": 53,
+            "lastBeatSec": 231,
+            "maxGapSec": 54,
+            "largestGap": {
+              "start": 147,
+              "end": 201,
+              "len": 54
+            },
+            "gaps": [
+              {
+                "start": 147,
+                "end": 201,
+                "len": 54
+              },
+              {
+                "start": 0,
+                "end": 53,
+                "len": 53
+              },
+              {
+                "start": 98,
+                "end": 147,
+                "len": 49
+              },
+              {
+                "start": 66,
+                "end": 98,
+                "len": 32
+              },
+              {
+                "start": 201,
+                "end": 231,
+                "len": 30
+              },
+              {
+                "start": 231,
+                "end": 256,
+                "len": 25
+              },
+              {
+                "start": 53,
+                "end": 66,
+                "len": 13
+              }
+            ],
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 1,
+              "term": 1,
+              "allusion": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 2,
+              "aside": 1,
+              "highlight": 1
+            }
+          },
+          "projection": {
+            "focusMasked": [],
+            "superseded": [],
+            "projectedVisible": [
+              {
+                "beatId": "beat:initial:1",
+                "kind": "caveat"
+              },
+              {
+                "beatId": "beat:initial:2",
+                "kind": "term"
+              },
+              {
+                "beatId": "beat:initial:3",
+                "kind": "footnote"
+              },
+              {
+                "beatId": "beat:initial:4",
+                "kind": "highlight"
+              },
+              {
+                "beatId": "beat:initial:5",
+                "kind": "aside"
+              },
+              {
+                "beatId": "beat:initial:6",
+                "kind": "caveat"
+              }
+            ]
+          },
+          "passes": [
+            {
+              "role": "initial",
+              "schemaVersion": 2,
+              "policyVersion": "magic-director-3",
+              "dropped": [],
+              "shifted": 0,
+              "clamped": 0,
+              "invented": 0,
+              "reassigned": 0,
+              "preludes": 0,
+              "sceneCount": 8,
+              "beatCount": 6,
+              "artifactCount": 6,
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 1,
+                "term": 1,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 2,
+                "aside": 1,
+                "highlight": 1
+              },
+              "sceneCadence": {
+                "entranceCount": 8,
+                "uniqueEntranceCount": 8,
+                "uniqueBeatCount": 8,
+                "firstEntranceSec": 0,
+                "lastEntranceSec": 234,
+                "firstBeatSec": 0,
+                "lastBeatSec": 234,
+                "maxGapSec": 61,
+                "largestGap": {
+                  "start": 33,
+                  "end": 94,
+                  "len": 61
+                },
+                "gaps": [
+                  {
+                    "start": 33,
+                    "end": 94,
+                    "len": 61
+                  },
+                  {
+                    "start": 94,
+                    "end": 147,
+                    "len": 53
+                  },
+                  {
+                    "start": 167,
+                    "end": 201,
+                    "len": 34
+                  },
+                  {
+                    "start": 201,
+                    "end": 234,
+                    "len": 33
+                  },
+                  {
+                    "start": 0,
+                    "end": 26,
+                    "len": 26
+                  },
+                  {
+                    "start": 234,
+                    "end": 256,
+                    "len": 22
+                  },
+                  {
+                    "start": 147,
+                    "end": 167,
+                    "len": 20
+                  },
+                  {
+                    "start": 26,
+                    "end": 33,
+                    "len": 7
+                  }
+                ]
+              },
+              "thoughtCadence": {
+                "entranceCount": 5,
+                "uniqueEntranceCount": 5,
+                "uniqueBeatCount": 5,
+                "firstEntranceSec": 53,
+                "lastEntranceSec": 231,
+                "firstBeatSec": 53,
+                "lastBeatSec": 231,
+                "maxGapSec": 103,
+                "largestGap": {
+                  "start": 98,
+                  "end": 201,
+                  "len": 103
+                },
+                "gaps": [
+                  {
+                    "start": 98,
+                    "end": 201,
+                    "len": 103
+                  },
+                  {
+                    "start": 0,
+                    "end": 53,
+                    "len": 53
+                  },
+                  {
+                    "start": 66,
+                    "end": 98,
+                    "len": 32
+                  },
+                  {
+                    "start": 201,
+                    "end": 231,
+                    "len": 30
+                  },
+                  {
+                    "start": 231,
+                    "end": 256,
+                    "len": 25
+                  },
+                  {
+                    "start": 53,
+                    "end": 66,
+                    "len": 13
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 0,
+                  "footnote": 1,
+                  "term": 1,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 2,
+                  "aside": 1,
+                  "highlight": 1
+                }
+              },
+              "visualCadence": {
+                "entranceCount": 6,
+                "uniqueEntranceCount": 6,
+                "uniqueBeatCount": 6,
+                "firstEntranceSec": 53,
+                "lastEntranceSec": 231,
+                "firstBeatSec": 53,
+                "lastBeatSec": 231,
+                "maxGapSec": 54,
+                "largestGap": {
+                  "start": 147,
+                  "end": 201,
+                  "len": 54
+                },
+                "gaps": [
+                  {
+                    "start": 147,
+                    "end": 201,
+                    "len": 54
+                  },
+                  {
+                    "start": 0,
+                    "end": 53,
+                    "len": 53
+                  },
+                  {
+                    "start": 98,
+                    "end": 147,
+                    "len": 49
+                  },
+                  {
+                    "start": 66,
+                    "end": 98,
+                    "len": 32
+                  },
+                  {
+                    "start": 201,
+                    "end": 231,
+                    "len": 30
+                  },
+                  {
+                    "start": 231,
+                    "end": 256,
+                    "len": 25
+                  },
+                  {
+                    "start": 53,
+                    "end": 66,
+                    "len": 13
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 0,
+                  "footnote": 1,
+                  "term": 1,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 2,
+                  "aside": 1,
+                  "highlight": 1
+                }
+              },
+              "projection": {
+                "focusMasked": [],
+                "superseded": [],
+                "projectedVisible": [
+                  {
+                    "beatId": "beat:initial:1",
+                    "kind": "caveat"
+                  },
+                  {
+                    "beatId": "beat:initial:2",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:3",
+                    "kind": "footnote"
+                  },
+                  {
+                    "beatId": "beat:initial:4",
+                    "kind": "highlight"
+                  },
+                  {
+                    "beatId": "beat:initial:5",
+                    "kind": "aside"
+                  },
+                  {
+                    "beatId": "beat:initial:6",
+                    "kind": "caveat"
+                  }
+                ]
+              }
+            },
+            {
+              "role": "fill",
+              "schemaVersion": 2,
+              "policyVersion": "magic-director-3",
+              "dropped": [],
+              "shifted": 0,
+              "clamped": 0,
+              "invented": 0,
+              "reassigned": 0,
+              "preludes": 0,
+              "sceneCount": 8,
+              "beatCount": 6,
+              "artifactCount": 6,
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 1,
+                "term": 1,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 2,
+                "aside": 1,
+                "highlight": 1
+              },
+              "sceneCadence": {
+                "entranceCount": 8,
+                "uniqueEntranceCount": 8,
+                "uniqueBeatCount": 8,
+                "firstEntranceSec": 0,
+                "lastEntranceSec": 234,
+                "firstBeatSec": 0,
+                "lastBeatSec": 234,
+                "maxGapSec": 61,
+                "largestGap": {
+                  "start": 33,
+                  "end": 94,
+                  "len": 61
+                },
+                "gaps": [
+                  {
+                    "start": 33,
+                    "end": 94,
+                    "len": 61
+                  },
+                  {
+                    "start": 94,
+                    "end": 147,
+                    "len": 53
+                  },
+                  {
+                    "start": 167,
+                    "end": 201,
+                    "len": 34
+                  },
+                  {
+                    "start": 201,
+                    "end": 234,
+                    "len": 33
+                  },
+                  {
+                    "start": 0,
+                    "end": 26,
+                    "len": 26
+                  },
+                  {
+                    "start": 234,
+                    "end": 256,
+                    "len": 22
+                  },
+                  {
+                    "start": 147,
+                    "end": 167,
+                    "len": 20
+                  },
+                  {
+                    "start": 26,
+                    "end": 33,
+                    "len": 7
+                  }
+                ]
+              },
+              "thoughtCadence": {
+                "entranceCount": 5,
+                "uniqueEntranceCount": 5,
+                "uniqueBeatCount": 5,
+                "firstEntranceSec": 53,
+                "lastEntranceSec": 231,
+                "firstBeatSec": 53,
+                "lastBeatSec": 231,
+                "maxGapSec": 103,
+                "largestGap": {
+                  "start": 98,
+                  "end": 201,
+                  "len": 103
+                },
+                "gaps": [
+                  {
+                    "start": 98,
+                    "end": 201,
+                    "len": 103
+                  },
+                  {
+                    "start": 0,
+                    "end": 53,
+                    "len": 53
+                  },
+                  {
+                    "start": 66,
+                    "end": 98,
+                    "len": 32
+                  },
+                  {
+                    "start": 201,
+                    "end": 231,
+                    "len": 30
+                  },
+                  {
+                    "start": 231,
+                    "end": 256,
+                    "len": 25
+                  },
+                  {
+                    "start": 53,
+                    "end": 66,
+                    "len": 13
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 0,
+                  "footnote": 1,
+                  "term": 1,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 2,
+                  "aside": 1,
+                  "highlight": 1
+                }
+              },
+              "visualCadence": {
+                "entranceCount": 6,
+                "uniqueEntranceCount": 6,
+                "uniqueBeatCount": 6,
+                "firstEntranceSec": 53,
+                "lastEntranceSec": 231,
+                "firstBeatSec": 53,
+                "lastBeatSec": 231,
+                "maxGapSec": 54,
+                "largestGap": {
+                  "start": 147,
+                  "end": 201,
+                  "len": 54
+                },
+                "gaps": [
+                  {
+                    "start": 147,
+                    "end": 201,
+                    "len": 54
+                  },
+                  {
+                    "start": 0,
+                    "end": 53,
+                    "len": 53
+                  },
+                  {
+                    "start": 98,
+                    "end": 147,
+                    "len": 49
+                  },
+                  {
+                    "start": 66,
+                    "end": 98,
+                    "len": 32
+                  },
+                  {
+                    "start": 201,
+                    "end": 231,
+                    "len": 30
+                  },
+                  {
+                    "start": 231,
+                    "end": 256,
+                    "len": 25
+                  },
+                  {
+                    "start": 53,
+                    "end": 66,
+                    "len": 13
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 0,
+                  "footnote": 1,
+                  "term": 1,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 2,
+                  "aside": 1,
+                  "highlight": 1
+                }
+              },
+              "projection": {
+                "focusMasked": [],
+                "superseded": [],
+                "projectedVisible": [
+                  {
+                    "beatId": "beat:initial:1",
+                    "kind": "caveat"
+                  },
+                  {
+                    "beatId": "beat:initial:2",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:3",
+                    "kind": "footnote"
+                  },
+                  {
+                    "beatId": "beat:initial:4",
+                    "kind": "highlight"
+                  },
+                  {
+                    "beatId": "beat:initial:5",
+                    "kind": "aside"
+                  },
+                  {
+                    "beatId": "beat:initial:6",
+                    "kind": "caveat"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "outcomes": {
+          "completeness": "complete",
+          "proposed": [
+            {
+              "proposalId": "initial:0",
+              "pass": "initial",
+              "kind": "group"
+            },
+            {
+              "proposalId": "initial:1",
+              "pass": "initial",
+              "kind": "caveat"
+            },
+            {
+              "proposalId": "initial:2",
+              "pass": "initial",
+              "kind": "term"
+            },
+            {
+              "proposalId": "initial:3",
+              "pass": "initial",
+              "kind": "footnote"
+            },
+            {
+              "proposalId": "initial:4",
+              "pass": "initial",
+              "kind": "highlight"
+            },
+            {
+              "proposalId": "initial:5",
+              "pass": "initial",
+              "kind": "aside"
+            },
+            {
+              "proposalId": "initial:6",
+              "pass": "initial",
+              "kind": "caveat"
+            },
+            {
+              "proposalId": "initial:7",
+              "pass": "initial",
+              "kind": "group"
+            },
+            {
+              "proposalId": "fill:gap:0:0",
+              "pass": "fill",
+              "kind": "group",
+              "gapId": "gap:0"
+            }
+          ],
+          "rejected": [
+            {
+              "proposalId": "initial:0",
+              "pass": "initial",
+              "kind": "group",
+              "reason": "group-word-count"
+            },
+            {
+              "proposalId": "initial:7",
+              "pass": "initial",
+              "kind": "group",
+              "reason": "group-word-shape"
+            },
+            {
+              "proposalId": "fill:gap:0:0",
+              "pass": "fill",
+              "kind": "group",
+              "reason": "cue-outside-scene",
+              "gapId": "gap:0"
+            }
+          ],
+          "accepted": [
+            {
+              "proposalId": "initial:1",
+              "beatId": "beat:initial:1",
+              "kind": "caveat",
+              "sceneId": "scene:initial:1"
+            },
+            {
+              "proposalId": "initial:2",
+              "beatId": "beat:initial:2",
+              "kind": "term",
+              "sceneId": "scene:initial:1"
+            },
+            {
+              "proposalId": "initial:3",
+              "beatId": "beat:initial:3",
+              "kind": "footnote",
+              "sceneId": "scene:initial:2"
+            },
+            {
+              "proposalId": "initial:4",
+              "beatId": "beat:initial:4",
+              "kind": "highlight",
+              "sceneId": "scene:initial:3"
+            },
+            {
+              "proposalId": "initial:5",
+              "beatId": "beat:initial:5",
+              "kind": "aside",
+              "sceneId": "scene:initial:5"
+            },
+            {
+              "proposalId": "initial:6",
+              "beatId": "beat:initial:6",
+              "kind": "caveat",
+              "sceneId": "scene:initial:5"
+            }
+          ],
+          "focusMasked": [],
+          "superseded": [],
+          "projectedVisible": [
+            {
+              "beatId": "beat:initial:1",
+              "kind": "caveat"
+            },
+            {
+              "beatId": "beat:initial:2",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:initial:3",
+              "kind": "footnote"
+            },
+            {
+              "beatId": "beat:initial:4",
+              "kind": "highlight"
+            },
+            {
+              "beatId": "beat:initial:5",
+              "kind": "aside"
+            },
+            {
+              "beatId": "beat:initial:6",
+              "kind": "caveat"
+            }
+          ]
+        }
+      }
+    },
+    "step-5": {
+      "schemaVersion": 2,
+      "policyVersion": "magic-director-3",
+      "requestKey": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134|1360|1600|f659e7cd36080225|07302756894de7ff",
+      "requestFingerprint": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134|1360|1600|07302756894de7ff",
+      "clip": {
+        "fromSec": 1360,
+        "toSec": 1600,
+        "durationSec": 240,
+        "transcriptHash": "f659e7cd36080225",
+        "sustainedTeachingSec": 215
+      },
+      "budget": {
+        "policyVersion": "magic-director-3",
+        "durationSec": 240,
+        "sustainedTeachingSec": 215,
+        "targetThoughtEntrances": 7,
+        "hardBeatCeiling": 18,
+        "highlightCeiling": 2,
+        "modelSceneCeiling": 8,
+        "houseSceneReserve": 1,
+        "finalSceneCeiling": 9,
+        "fillGapSec": 36
+      },
+      "scenes": [
+        {
+          "id": "scene:initial:0",
+          "origin": "model",
+          "ref": "Romans 1:32",
+          "verses": [
+            {
+              "verse": 32,
+              "text": "who, knowing the ordinance of God, that those who practice such things are worthy of death, not only do the same, but also approve of those who practice them."
+            }
+          ],
+          "cue": "those who practice such things",
+          "at": 7,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:1",
+          "origin": "model",
+          "ref": "Romans 1:29–31",
+          "verses": [
+            {
+              "verse": 29,
+              "text": "being filled with all unrighteousness, sexual immorality, wickedness, covetousness, malice; full of envy, murder, strife, deceit, evil habits, secret slanderers,"
+            },
+            {
+              "verse": 30,
+              "text": "backbiters, hateful to God, insolent, arrogant, boastful, inventors of evil things, disobedient to parents,"
+            },
+            {
+              "verse": 31,
+              "text": "without understanding, covenant breakers, without natural affection, unforgiving, unmerciful;"
+            }
+          ],
+          "cue": "a catalog of the kinds of things",
+          "at": 19,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:2",
+          "origin": "model",
+          "ref": null,
+          "verses": [],
+          "cue": "This is the stuff that fractures our world",
+          "at": 58,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:3",
+          "origin": "model",
+          "ref": null,
+          "verses": [],
+          "cue": "the easiest biblical doctrine to prove",
+          "at": 97,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:4",
+          "origin": "model",
+          "ref": null,
+          "verses": [],
+          "cue": "the origin of it is mankind's flight",
+          "at": 131,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:5",
+          "origin": "model",
+          "ref": null,
+          "verses": [],
+          "cue": "If we're going to present the gospel",
+          "at": 181,
+          "timingSource": "cue"
+        },
+        {
+          "id": "scene:initial:6",
+          "origin": "model",
+          "ref": null,
+          "verses": [],
+          "cue": "God's wrath is his just repayment",
+          "at": 203,
+          "timingSource": "cue"
+        }
+      ],
+      "beats": [
+        {
+          "id": "beat:initial:1",
+          "proposalId": "initial:1",
+          "sceneId": "scene:initial:2",
+          "kind": "aside",
+          "cue": "fractures our world, destroys relationships",
+          "at": 58,
+          "timingSource": "cue",
+          "data": {
+            "text": "The consequences of rejecting God appear in fractured communities,…"
+          }
+        },
+        {
+          "id": "beat:initial:2",
+          "proposalId": "initial:2",
+          "sceneId": "scene:initial:2",
+          "kind": "term",
+          "cue": "human depravity, that this section really describes",
+          "at": 92,
+          "timingSource": "cue",
+          "data": {
+            "term": "human depravity",
+            "gloss": "mankind's brokenness, wrongness, and corruption"
+          }
+        },
+        {
+          "id": "beat:fill:gap:1:1",
+          "proposalId": "fill:gap:1:1",
+          "sceneId": "scene:initial:4",
+          "kind": "highlight",
+          "cue": "Our real problem isn't so much sinful behavior and breaking the rules as it is severing ourselves from God.",
+          "at": 147,
+          "timingSource": "cue",
+          "data": {
+            "quote": "Our real problem isn't so much sinful behavior and breaking the rules as it is severing ourselves from God."
+          }
+        },
+        {
+          "id": "beat:initial:3",
+          "proposalId": "initial:3",
+          "sceneId": "scene:initial:4",
+          "kind": "highlight",
+          "cue": "The root cause is rejecting God",
+          "at": 164,
+          "timingSource": "cue",
+          "data": {
+            "quote": "The root cause is rejecting God."
+          }
+        },
+        {
+          "id": "beat:initial:4",
+          "proposalId": "initial:4",
+          "sceneId": "scene:initial:5",
+          "kind": "caveat",
+          "cue": "the problem isn't just breaking rules",
+          "at": 186,
+          "timingSource": "cue",
+          "data": {
+            "text": "The human problem is not merely breaking rules or being bad; ultimately it is our flight f"
+          }
+        },
+        {
+          "id": "beat:initial:5",
+          "proposalId": "initial:5",
+          "sceneId": "scene:initial:6",
+          "kind": "term",
+          "cue": "God's wrath is his just repayment",
+          "at": 203,
+          "timingSource": "cue",
+          "data": {
+            "term": "God's wrath",
+            "gloss": "his just repayment for our wrongdoing"
+          }
+        },
+        {
+          "id": "beat:initial:6",
+          "proposalId": "initial:6",
+          "sceneId": "scene:initial:6",
+          "kind": "caveat",
+          "cue": "It's not capricious, it's not unpredictable",
+          "at": 211,
+          "timingSource": "cue",
+          "data": {
+            "text": "God's wrath is motivated by justice, not by caprice, unpredictability, or a bad mood."
+          }
+        }
+      ],
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "metrics": {
+        "wallMs": 30498,
+        "passes": 2,
+        "calls": [
+          {
+            "role": "initial",
+            "latencyMs": 23664,
+            "promptTokens": 2007,
+            "completionTokens": 2817,
+            "reasoningTokens": 2285,
+            "cachedPromptTokens": 0,
+            "providerCostUsd": 0.001941,
+            "finishReason": "stop",
+            "rawModel": "openai/gpt-5.6-luna",
+            "provider": "OpenAI",
+            "model": {
+              "key": "gpt-5.6-luna-medium",
+              "requestedSlug": "openai/gpt-5.6-luna",
+              "resolvedSlug": "openai/gpt-5.6-luna",
+              "endpointHost": "openrouter.ai",
+              "endpointStyle": "aggregator",
+              "reasoning": {
+                "effort": "medium",
+                "source": "per-model default for gpt-5.6-luna-medium",
+                "applied": true
+              },
+              "provider": "OpenAI"
+            },
+            "validation": "json-parsed;semantic-scenes:7;semantic-beats:6"
+          },
+          {
+            "role": "fill",
+            "latencyMs": 6826,
+            "promptTokens": 1581,
+            "completionTokens": 780,
+            "reasoningTokens": 516,
+            "cachedPromptTokens": 0,
+            "providerCostUsd": 0.00066555,
+            "finishReason": "stop",
+            "rawModel": "openai/gpt-5.6-luna",
+            "provider": "OpenAI",
+            "model": {
+              "key": "gpt-5.6-luna-medium",
+              "requestedSlug": "openai/gpt-5.6-luna",
+              "resolvedSlug": "openai/gpt-5.6-luna",
+              "endpointHost": "openrouter.ai",
+              "endpointStyle": "aggregator",
+              "reasoning": {
+                "effort": "medium",
+                "source": "per-model default for gpt-5.6-luna-medium",
+                "applied": true
+              },
+              "provider": "OpenAI"
+            },
+            "validation": "json-parsed;semantic-intervals:2;semantic-beats:1"
+          }
+        ],
+        "totalUsd": 0.00260655,
+        "tokens": {
+          "prompt": 3588,
+          "completion": 3597,
+          "reasoning": 2801,
+          "cachedPrompt": 0
+        },
+        "normalization": {
+          "schemaVersion": 2,
+          "policyVersion": "magic-director-3",
+          "dropped": [],
+          "shifted": 0,
+          "clamped": 0,
+          "invented": 0,
+          "reassigned": 0,
+          "preludes": 0,
+          "sceneCount": 7,
+          "beatCount": 7,
+          "artifactCount": 7,
+          "artifactCounts": {
+            "group": 0,
+            "footnote": 0,
+            "term": 2,
+            "allusion": 0,
+            "compare": 0,
+            "chain": 0,
+            "caveat": 2,
+            "aside": 1,
+            "highlight": 2
+          },
+          "sceneCadence": {
+            "entranceCount": 7,
+            "uniqueEntranceCount": 7,
+            "uniqueBeatCount": 7,
+            "firstEntranceSec": 7,
+            "lastEntranceSec": 203,
+            "firstBeatSec": 7,
+            "lastBeatSec": 203,
+            "maxGapSec": 50,
+            "largestGap": {
+              "start": 131,
+              "end": 181,
+              "len": 50
+            },
+            "gaps": [
+              {
+                "start": 131,
+                "end": 181,
+                "len": 50
+              },
+              {
+                "start": 19,
+                "end": 58,
+                "len": 39
+              },
+              {
+                "start": 58,
+                "end": 97,
+                "len": 39
+              },
+              {
+                "start": 203,
+                "end": 240,
+                "len": 37
+              },
+              {
+                "start": 97,
+                "end": 131,
+                "len": 34
+              },
+              {
+                "start": 181,
+                "end": 203,
+                "len": 22
+              },
+              {
+                "start": 7,
+                "end": 19,
+                "len": 12
+              },
+              {
+                "start": 0,
+                "end": 7,
+                "len": 7
+              }
+            ]
+          },
+          "thoughtCadence": {
+            "entranceCount": 5,
+            "uniqueEntranceCount": 5,
+            "uniqueBeatCount": 5,
+            "firstEntranceSec": 58,
+            "lastEntranceSec": 211,
+            "firstBeatSec": 58,
+            "lastBeatSec": 211,
+            "maxGapSec": 94,
+            "largestGap": {
+              "start": 92,
+              "end": 186,
+              "len": 94
+            },
+            "gaps": [
+              {
+                "start": 92,
+                "end": 186,
+                "len": 94
+              },
+              {
+                "start": 0,
+                "end": 58,
+                "len": 58
+              },
+              {
+                "start": 58,
+                "end": 92,
+                "len": 34
+              },
+              {
+                "start": 211,
+                "end": 240,
+                "len": 29
+              },
+              {
+                "start": 186,
+                "end": 203,
+                "len": 17
+              },
+              {
+                "start": 203,
+                "end": 211,
+                "len": 8
+              }
+            ],
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 2,
+              "allusion": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 2,
+              "aside": 1,
+              "highlight": 2
+            }
+          },
+          "visualCadence": {
+            "entranceCount": 7,
+            "uniqueEntranceCount": 7,
+            "uniqueBeatCount": 7,
+            "firstEntranceSec": 58,
+            "lastEntranceSec": 211,
+            "firstBeatSec": 58,
+            "lastBeatSec": 211,
+            "maxGapSec": 58,
+            "largestGap": {
+              "start": 0,
+              "end": 58,
+              "len": 58
+            },
+            "gaps": [
+              {
+                "start": 0,
+                "end": 58,
+                "len": 58
+              },
+              {
+                "start": 92,
+                "end": 147,
+                "len": 55
+              },
+              {
+                "start": 58,
+                "end": 92,
+                "len": 34
+              },
+              {
+                "start": 211,
+                "end": 240,
+                "len": 29
+              },
+              {
+                "start": 164,
+                "end": 186,
+                "len": 22
+              },
+              {
+                "start": 147,
+                "end": 164,
+                "len": 17
+              },
+              {
+                "start": 186,
+                "end": 203,
+                "len": 17
+              },
+              {
+                "start": 203,
+                "end": 211,
+                "len": 8
+              }
+            ],
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 2,
+              "allusion": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 2,
+              "aside": 1,
+              "highlight": 2
+            }
+          },
+          "projection": {
+            "focusMasked": [],
+            "superseded": [],
+            "projectedVisible": [
+              {
+                "beatId": "beat:initial:1",
+                "kind": "aside"
+              },
+              {
+                "beatId": "beat:initial:2",
+                "kind": "term"
+              },
+              {
+                "beatId": "beat:fill:gap:1:1",
+                "kind": "highlight"
+              },
+              {
+                "beatId": "beat:initial:3",
+                "kind": "highlight"
+              },
+              {
+                "beatId": "beat:initial:4",
+                "kind": "caveat"
+              },
+              {
+                "beatId": "beat:initial:5",
+                "kind": "term"
+              },
+              {
+                "beatId": "beat:initial:6",
+                "kind": "caveat"
+              }
+            ]
+          },
+          "passes": [
+            {
+              "role": "initial",
+              "schemaVersion": 2,
+              "policyVersion": "magic-director-3",
+              "dropped": [],
+              "shifted": 0,
+              "clamped": 0,
+              "invented": 0,
+              "reassigned": 0,
+              "preludes": 0,
+              "sceneCount": 7,
+              "beatCount": 6,
+              "artifactCount": 6,
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 0,
+                "term": 2,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 2,
+                "aside": 1,
+                "highlight": 1
+              },
+              "sceneCadence": {
+                "entranceCount": 7,
+                "uniqueEntranceCount": 7,
+                "uniqueBeatCount": 7,
+                "firstEntranceSec": 7,
+                "lastEntranceSec": 203,
+                "firstBeatSec": 7,
+                "lastBeatSec": 203,
+                "maxGapSec": 50,
+                "largestGap": {
+                  "start": 131,
+                  "end": 181,
+                  "len": 50
+                },
+                "gaps": [
+                  {
+                    "start": 131,
+                    "end": 181,
+                    "len": 50
+                  },
+                  {
+                    "start": 19,
+                    "end": 58,
+                    "len": 39
+                  },
+                  {
+                    "start": 58,
+                    "end": 97,
+                    "len": 39
+                  },
+                  {
+                    "start": 203,
+                    "end": 240,
+                    "len": 37
+                  },
+                  {
+                    "start": 97,
+                    "end": 131,
+                    "len": 34
+                  },
+                  {
+                    "start": 181,
+                    "end": 203,
+                    "len": 22
+                  },
+                  {
+                    "start": 7,
+                    "end": 19,
+                    "len": 12
+                  },
+                  {
+                    "start": 0,
+                    "end": 7,
+                    "len": 7
+                  }
+                ]
+              },
+              "thoughtCadence": {
+                "entranceCount": 5,
+                "uniqueEntranceCount": 5,
+                "uniqueBeatCount": 5,
+                "firstEntranceSec": 58,
+                "lastEntranceSec": 211,
+                "firstBeatSec": 58,
+                "lastBeatSec": 211,
+                "maxGapSec": 94,
+                "largestGap": {
+                  "start": 92,
+                  "end": 186,
+                  "len": 94
+                },
+                "gaps": [
+                  {
+                    "start": 92,
+                    "end": 186,
+                    "len": 94
+                  },
+                  {
+                    "start": 0,
+                    "end": 58,
+                    "len": 58
+                  },
+                  {
+                    "start": 58,
+                    "end": 92,
+                    "len": 34
+                  },
+                  {
+                    "start": 211,
+                    "end": 240,
+                    "len": 29
+                  },
+                  {
+                    "start": 186,
+                    "end": 203,
+                    "len": 17
+                  },
+                  {
+                    "start": 203,
+                    "end": 211,
+                    "len": 8
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 0,
+                  "footnote": 0,
+                  "term": 2,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 2,
+                  "aside": 1,
+                  "highlight": 1
+                }
+              },
+              "visualCadence": {
+                "entranceCount": 6,
+                "uniqueEntranceCount": 6,
+                "uniqueBeatCount": 6,
+                "firstEntranceSec": 58,
+                "lastEntranceSec": 211,
+                "firstBeatSec": 58,
+                "lastBeatSec": 211,
+                "maxGapSec": 72,
+                "largestGap": {
+                  "start": 92,
+                  "end": 164,
+                  "len": 72
+                },
+                "gaps": [
+                  {
+                    "start": 92,
+                    "end": 164,
+                    "len": 72
+                  },
+                  {
+                    "start": 0,
+                    "end": 58,
+                    "len": 58
+                  },
+                  {
+                    "start": 58,
+                    "end": 92,
+                    "len": 34
+                  },
+                  {
+                    "start": 211,
+                    "end": 240,
+                    "len": 29
+                  },
+                  {
+                    "start": 164,
+                    "end": 186,
+                    "len": 22
+                  },
+                  {
+                    "start": 186,
+                    "end": 203,
+                    "len": 17
+                  },
+                  {
+                    "start": 203,
+                    "end": 211,
+                    "len": 8
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 0,
+                  "footnote": 0,
+                  "term": 2,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 2,
+                  "aside": 1,
+                  "highlight": 1
+                }
+              },
+              "projection": {
+                "focusMasked": [],
+                "superseded": [],
+                "projectedVisible": [
+                  {
+                    "beatId": "beat:initial:1",
+                    "kind": "aside"
+                  },
+                  {
+                    "beatId": "beat:initial:2",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:3",
+                    "kind": "highlight"
+                  },
+                  {
+                    "beatId": "beat:initial:4",
+                    "kind": "caveat"
+                  },
+                  {
+                    "beatId": "beat:initial:5",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:6",
+                    "kind": "caveat"
+                  }
+                ]
+              }
+            },
+            {
+              "role": "fill",
+              "schemaVersion": 2,
+              "policyVersion": "magic-director-3",
+              "dropped": [],
+              "shifted": 0,
+              "clamped": 0,
+              "invented": 0,
+              "reassigned": 0,
+              "preludes": 0,
+              "sceneCount": 7,
+              "beatCount": 7,
+              "artifactCount": 7,
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 0,
+                "term": 2,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 2,
+                "aside": 1,
+                "highlight": 2
+              },
+              "sceneCadence": {
+                "entranceCount": 7,
+                "uniqueEntranceCount": 7,
+                "uniqueBeatCount": 7,
+                "firstEntranceSec": 7,
+                "lastEntranceSec": 203,
+                "firstBeatSec": 7,
+                "lastBeatSec": 203,
+                "maxGapSec": 50,
+                "largestGap": {
+                  "start": 131,
+                  "end": 181,
+                  "len": 50
+                },
+                "gaps": [
+                  {
+                    "start": 131,
+                    "end": 181,
+                    "len": 50
+                  },
+                  {
+                    "start": 19,
+                    "end": 58,
+                    "len": 39
+                  },
+                  {
+                    "start": 58,
+                    "end": 97,
+                    "len": 39
+                  },
+                  {
+                    "start": 203,
+                    "end": 240,
+                    "len": 37
+                  },
+                  {
+                    "start": 97,
+                    "end": 131,
+                    "len": 34
+                  },
+                  {
+                    "start": 181,
+                    "end": 203,
+                    "len": 22
+                  },
+                  {
+                    "start": 7,
+                    "end": 19,
+                    "len": 12
+                  },
+                  {
+                    "start": 0,
+                    "end": 7,
+                    "len": 7
+                  }
+                ]
+              },
+              "thoughtCadence": {
+                "entranceCount": 5,
+                "uniqueEntranceCount": 5,
+                "uniqueBeatCount": 5,
+                "firstEntranceSec": 58,
+                "lastEntranceSec": 211,
+                "firstBeatSec": 58,
+                "lastBeatSec": 211,
+                "maxGapSec": 94,
+                "largestGap": {
+                  "start": 92,
+                  "end": 186,
+                  "len": 94
+                },
+                "gaps": [
+                  {
+                    "start": 92,
+                    "end": 186,
+                    "len": 94
+                  },
+                  {
+                    "start": 0,
+                    "end": 58,
+                    "len": 58
+                  },
+                  {
+                    "start": 58,
+                    "end": 92,
+                    "len": 34
+                  },
+                  {
+                    "start": 211,
+                    "end": 240,
+                    "len": 29
+                  },
+                  {
+                    "start": 186,
+                    "end": 203,
+                    "len": 17
+                  },
+                  {
+                    "start": 203,
+                    "end": 211,
+                    "len": 8
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 0,
+                  "footnote": 0,
+                  "term": 2,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 2,
+                  "aside": 1,
+                  "highlight": 2
+                }
+              },
+              "visualCadence": {
+                "entranceCount": 7,
+                "uniqueEntranceCount": 7,
+                "uniqueBeatCount": 7,
+                "firstEntranceSec": 58,
+                "lastEntranceSec": 211,
+                "firstBeatSec": 58,
+                "lastBeatSec": 211,
+                "maxGapSec": 58,
+                "largestGap": {
+                  "start": 0,
+                  "end": 58,
+                  "len": 58
+                },
+                "gaps": [
+                  {
+                    "start": 0,
+                    "end": 58,
+                    "len": 58
+                  },
+                  {
+                    "start": 92,
+                    "end": 147,
+                    "len": 55
+                  },
+                  {
+                    "start": 58,
+                    "end": 92,
+                    "len": 34
+                  },
+                  {
+                    "start": 211,
+                    "end": 240,
+                    "len": 29
+                  },
+                  {
+                    "start": 164,
+                    "end": 186,
+                    "len": 22
+                  },
+                  {
+                    "start": 147,
+                    "end": 164,
+                    "len": 17
+                  },
+                  {
+                    "start": 186,
+                    "end": 203,
+                    "len": 17
+                  },
+                  {
+                    "start": 203,
+                    "end": 211,
+                    "len": 8
+                  }
+                ],
+                "artifactCounts": {
+                  "group": 0,
+                  "footnote": 0,
+                  "term": 2,
+                  "allusion": 0,
+                  "compare": 0,
+                  "chain": 0,
+                  "caveat": 2,
+                  "aside": 1,
+                  "highlight": 2
+                }
+              },
+              "projection": {
+                "focusMasked": [],
+                "superseded": [],
+                "projectedVisible": [
+                  {
+                    "beatId": "beat:initial:1",
+                    "kind": "aside"
+                  },
+                  {
+                    "beatId": "beat:initial:2",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:fill:gap:1:1",
+                    "kind": "highlight"
+                  },
+                  {
+                    "beatId": "beat:initial:3",
+                    "kind": "highlight"
+                  },
+                  {
+                    "beatId": "beat:initial:4",
+                    "kind": "caveat"
+                  },
+                  {
+                    "beatId": "beat:initial:5",
+                    "kind": "term"
+                  },
+                  {
+                    "beatId": "beat:initial:6",
+                    "kind": "caveat"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "outcomes": {
+          "completeness": "complete",
+          "proposed": [
+            {
+              "proposalId": "initial:0",
+              "pass": "initial",
+              "kind": "group"
+            },
+            {
+              "proposalId": "initial:1",
+              "pass": "initial",
+              "kind": "aside"
+            },
+            {
+              "proposalId": "initial:2",
+              "pass": "initial",
+              "kind": "term"
+            },
+            {
+              "proposalId": "initial:3",
+              "pass": "initial",
+              "kind": "highlight"
+            },
+            {
+              "proposalId": "initial:4",
+              "pass": "initial",
+              "kind": "caveat"
+            },
+            {
+              "proposalId": "initial:5",
+              "pass": "initial",
+              "kind": "term"
+            },
+            {
+              "proposalId": "initial:6",
+              "pass": "initial",
+              "kind": "caveat"
+            },
+            {
+              "proposalId": "fill:gap:0:0",
+              "pass": "fill",
+              "kind": "group",
+              "gapId": "gap:0"
+            },
+            {
+              "proposalId": "fill:gap:1:1",
+              "pass": "fill",
+              "kind": "highlight",
+              "gapId": "gap:1"
+            }
+          ],
+          "rejected": [
+            {
+              "proposalId": "initial:0",
+              "pass": "initial",
+              "kind": "group",
+              "reason": "group-word-count"
+            },
+            {
+              "proposalId": "fill:gap:0:0",
+              "pass": "fill",
+              "kind": "group",
+              "reason": "cue-length",
+              "gapId": "gap:0"
+            }
+          ],
+          "accepted": [
+            {
+              "proposalId": "initial:1",
+              "beatId": "beat:initial:1",
+              "kind": "aside",
+              "sceneId": "scene:initial:2"
+            },
+            {
+              "proposalId": "initial:2",
+              "beatId": "beat:initial:2",
+              "kind": "term",
+              "sceneId": "scene:initial:2"
+            },
+            {
+              "proposalId": "fill:gap:1:1",
+              "beatId": "beat:fill:gap:1:1",
+              "kind": "highlight",
+              "sceneId": "scene:initial:4"
+            },
+            {
+              "proposalId": "initial:3",
+              "beatId": "beat:initial:3",
+              "kind": "highlight",
+              "sceneId": "scene:initial:4"
+            },
+            {
+              "proposalId": "initial:4",
+              "beatId": "beat:initial:4",
+              "kind": "caveat",
+              "sceneId": "scene:initial:5"
+            },
+            {
+              "proposalId": "initial:5",
+              "beatId": "beat:initial:5",
+              "kind": "term",
+              "sceneId": "scene:initial:6"
+            },
+            {
+              "proposalId": "initial:6",
+              "beatId": "beat:initial:6",
+              "kind": "caveat",
+              "sceneId": "scene:initial:6"
+            }
+          ],
+          "focusMasked": [],
+          "superseded": [],
+          "projectedVisible": [
+            {
+              "beatId": "beat:initial:1",
+              "kind": "aside"
+            },
+            {
+              "beatId": "beat:initial:2",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:fill:gap:1:1",
+              "kind": "highlight"
+            },
+            {
+              "beatId": "beat:initial:3",
+              "kind": "highlight"
+            },
+            {
+              "beatId": "beat:initial:4",
+              "kind": "caveat"
+            },
+            {
+              "beatId": "beat:initial:5",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:initial:6",
+              "kind": "caveat"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
+

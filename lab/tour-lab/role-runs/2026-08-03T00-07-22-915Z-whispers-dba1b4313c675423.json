@@ -1,0 +1,69 @@
+{
+  "role": "whispers",
+  "startedAt": "2026-08-03T00:07:22.915Z",
+  "request": {
+    "stepCount": 4,
+    "stepsHash": "07e99fa2ef986c91"
+  },
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "endpointHost": "openrouter.ai",
+    "endpointStyle": "aggregator",
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "applied": true
+    },
+    "provider": "OpenAI"
+  },
+  "metrics": {
+    "wallMs": 6235,
+    "passes": 1,
+    "calls": [
+      {
+        "role": "whispers",
+        "latencyMs": 6235,
+        "promptTokens": 473,
+        "completionTokens": 819,
+        "reasoningTokens": 739,
+        "cachedPromptTokens": 0,
+        "providerCostUsd": 0.0005387,
+        "finishReason": "stop",
+        "rawModel": "openai/gpt-5.6-luna",
+        "provider": "OpenAI",
+        "model": {
+          "key": "gpt-5.6-luna-medium",
+          "requestedSlug": "openai/gpt-5.6-luna",
+          "resolvedSlug": "openai/gpt-5.6-luna",
+          "endpointHost": "openrouter.ai",
+          "endpointStyle": "aggregator",
+          "reasoning": {
+            "effort": "medium",
+            "source": "per-model default for gpt-5.6-luna-medium",
+            "applied": true
+          },
+          "provider": "OpenAI"
+        },
+        "validation": "accepted"
+      }
+    ],
+    "totalUsd": 0.0005387,
+    "tokens": {
+      "prompt": 473,
+      "completion": 819,
+      "reasoning": 739,
+      "cachedPrompt": 0
+    }
+  },
+  "result": {
+    "whispers": [
+      "Notice Exodus 34:6–7, called Scripture’s most quoted verse, holding love beside judgment.",
+      "Listen for goodness passing Moses as the name joins glory with truth.",
+      "Wait for “you shall see my back,” followed by “merciful and gracious.”",
+      "Listen for “hate” defining which generations remain accountable for the same covenant-breaking."
+    ]
+  },
+  "schemaVersion": 1
+}

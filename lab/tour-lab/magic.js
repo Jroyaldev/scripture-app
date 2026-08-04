@@ -13,17 +13,29 @@
 // geometry — lanes, collisions, layout — is the house's arithmetic alone.
 
 import {
+  MAGIC_DIRECTOR_POLICY_VERSION,
   MAGIC_DIRECTOR_SCHEMA_VERSION,
   MAGIC_MODEL_ROLES,
-  directorCacheKey,
+  buildVisualTimeline,
+  directorRequestFingerprint,
+  findScriptureOccurrence,
+  planLoomGeometry,
+  summarizeVisualProjection,
+  upgradeReplayFixture,
   validateDirectorPayload,
   validateReplayFixture,
 } from './magic-contract.mjs';
+import {
+  compileEditorialPlan,
+  resolveEditorialShot,
+  validateEditorialPlan,
+} from './magic-editorial.mjs';
 import { retireOwnedDirectorEntry } from './magic-jobs.mjs';
 
 const $ = (s) => document.querySelector(s);
 const TH = () => $('#theater');
 const testParams = new URLSearchParams(window.location.search);
+const qaIsEnabled = testParams.get('qa') === '1';
 const forcedTheme = testParams.get('theme');
 if (forcedTheme === 'light' || forcedTheme === 'dark') document.documentElement.dataset.theme = forcedTheme;
 const forcedMotion = testParams.get('motion');
@@ -32,6 +44,203 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 const motionIsReduced = () => forcedMotion === 'reduce' || reducedMotion.matches;
 const motionMs = (ms) => (motionIsReduced() ? 0 : ms);
 const nextFrame = (fn) => motionIsReduced() ? fn() : requestAnimationFrame(() => requestAnimationFrame(fn));
+
+const MAX_VISUAL_OBSERVATIONS = 256;
+const MAX_REFUSALS_PER_BEAT = 8;
+const visualObservations = [];
+const editorialObservations = [];
+let visualObservationSequence = 0;
+let editorialObservationSequence = 0;
+let lastVisualOutcomeSnapshot = null;
+let lastEditorialSnapshot = null;
+/* QA-only: when a capture harness drives the program, playback state opens
+   without touching the publisher audio stream, so whole-program QA is
+   hermetic — local replay data, zero media or model traffic. Never set by
+   any reader gesture; only the __magicQA drive methods below may set it. */
+let qaSilentDrive = false;
+
+function copyForQa(value) {
+  return typeof structuredClone === 'function'
+    ? structuredClone(value)
+    : JSON.parse(JSON.stringify(value));
+}
+
+function visualOutcomeSnapshot(owner) {
+  if (!owner?.visualOutcomes) return null;
+  return {
+    playToken: owner.playToken,
+    stepId: owner.step?.id || `step-${owner.index + 1}`,
+    outcomes: [...owner.visualOutcomes.values()].map((outcome) => copyForQa(outcome)),
+  };
+}
+
+function editorialSnapshot(owner) {
+  if (!owner?.editorialPlan) return null;
+  return copyForQa({
+    playToken: owner.playToken,
+    stepId: owner.step?.id || `step-${owner.index + 1}`,
+    activeShot: owner.activeEditorialShot || null,
+    metrics: owner.editorialPlan.metrics,
+    shots: owner.editorialPlan.shots,
+  });
+}
+
+function appendEditorialObservation(owner, shot, phase, detail = {}) {
+  if (!owner || !shot?.id) return;
+  const atSec = Number.isFinite(Number(owner.visualRel))
+    ? Math.round(Number(owner.visualRel) * 1000) / 1000
+    : Number(shot.fromSec) || 0;
+  editorialObservations.push({
+    sequence: ++editorialObservationSequence,
+    playToken: owner.playToken,
+    stepId: owner.step?.id || `step-${owner.index + 1}`,
+    shotId: shot.id,
+    role: shot.role,
+    family: shot.family,
+    component: shot.component,
+    phase,
+    editorialPhase: shot.phase,
+    variant: shot.variant,
+    sourceBeatIds: [...(shot.sourceBeatIds || [])],
+    sourceSceneIds: [...(shot.sourceSceneIds || [])],
+    atSec,
+    ...detail,
+  });
+  if (editorialObservations.length > MAX_VISUAL_OBSERVATIONS * 2) editorialObservations.shift();
+}
+
+function appendVisualObservation(owner, beat, phase, detail = {}) {
+  if (!owner || !beat?.beatId) return;
+  const outcome = owner.visualOutcomes?.get(beat.beatId);
+  if (!outcome) return;
+  const atSec = Number.isFinite(Number(owner.visualRel))
+    ? Math.round(Number(owner.visualRel) * 1000) / 1000
+    : Number(beat.at) || 0;
+  if (phase === 'mounted') {
+    outcome.actual.mounts += 1;
+    outcome.actual.lastMountedAtSec = atSec;
+  } else if (phase === 'revealed') {
+    outcome.actual.reveals += 1;
+    outcome.actual.lastRevealedAtSec = atSec;
+  } else if (phase === 'refused') {
+    outcome.actual.refusals.push({ atSec, reason: detail.reason || 'render-refused' });
+    if (outcome.actual.refusals.length > MAX_REFUSALS_PER_BEAT) outcome.actual.refusals.shift();
+  }
+  visualObservations.push({
+    sequence: ++visualObservationSequence,
+    playToken: owner.playToken,
+    stepId: owner.step?.id || `step-${owner.index + 1}`,
+    beatId: beat.beatId,
+    kind: beat.kind,
+    phase,
+    atSec,
+    ...detail,
+  });
+  if (visualObservations.length > MAX_VISUAL_OBSERVATIONS) visualObservations.shift();
+}
+
+function initializeVisualOutcomes(owner, direction, projection) {
+  const masked = new Map((projection?.focusMasked || []).map((entry) => [entry.beatId, entry]));
+  const superseded = new Map((projection?.superseded || []).map((entry) => [entry.beatId, entry]));
+  const projectedVisible = new Set((projection?.projectedVisible || []).map((entry) => entry.beatId));
+  owner.visualOutcomes = new Map((direction.beats || []).map((beat) => {
+    const mask = masked.get(beat.id) || null;
+    const replacement = superseded.get(beat.id) || null;
+    return [beat.id, {
+      beatId: beat.id,
+      proposalId: beat.proposalId || null,
+      kind: beat.kind,
+      sceneId: beat.sceneId,
+      at: beat.at,
+      projection: {
+        visible: projectedVisible.has(beat.id),
+        focusMasked: Boolean(mask),
+        maskedByBeatId: mask?.byBeatId || null,
+        superseded: Boolean(replacement),
+        supersededByBeatId: replacement?.byBeatId || null,
+        reason: mask?.reason || replacement?.reason || null,
+      },
+      actual: {
+        mounts: 0,
+        reveals: 0,
+        refusals: [],
+        lastMountedAtSec: null,
+        lastRevealedAtSec: null,
+      },
+    }];
+  }));
+}
+
+if (qaIsEnabled) {
+  window.__magicQA = Object.freeze({
+    getVisualOutcomes() {
+      return copyForQa({
+        current: visualOutcomeSnapshot(current),
+        last: lastVisualOutcomeSnapshot,
+        observations: visualObservations,
+      });
+    },
+    getEditorialState() {
+      return copyForQa({
+        current: editorialSnapshot(current),
+        last: lastEditorialSnapshot,
+        observations: editorialObservations,
+      });
+    },
+    /* Whole-program drive for the maintained capture/parity command. The
+       compiled shot list is deterministic, so the harness can walk every
+       shot boundary of every step and reconcile the shot the stage actually
+       resolves against the plan — the same media-time projection a reader's
+       own seek would produce. */
+    program() {
+      const tour = activeRun?.tour;
+      if (!tour) return null;
+      return copyForQa({
+        title: tour.title,
+        mode: activeRun?.mode || null,
+        steps: tour.steps.map((step, index) => {
+          const entry = directorEntry(step);
+          const direction = entry?.status === 'resolved' ? entry.value : null;
+          const plan = direction
+            ? compileEditorialPlan(direction, {
+              durationSec: Number(step.endSec) - Number(step.startSec),
+              stepIndex: index,
+              stepCount: tour.steps.length,
+            })
+            : null;
+          return {
+            index,
+            id: step.id,
+            title: step.episodeTitle,
+            source: step.source || step.sourceId,
+            startSec: step.startSec,
+            endSec: step.endSec,
+            directed: Boolean(direction),
+            shots: plan?.shots || null,
+          };
+        }),
+      });
+    },
+    openStepSilent(index) {
+      const tour = activeRun?.tour;
+      const step = tour?.steps?.[index];
+      const li = document.querySelectorAll('#steps .step')[index];
+      if (!step || !li) return false;
+      qaSilentDrive = true;
+      toggleStep(li, step, index);
+      return current?.step === step && Boolean(current?.editorialPlan);
+    },
+    seekSilent(atMediaSec) {
+      if (!current) return false;
+      seekTo(Number(atMediaSec));
+      return true;
+    },
+    closeStepSilent() {
+      stopAudio({ restoreFocus: false });
+      return true;
+    },
+  });
+}
 
 // ----------------------------------------------------------------- scenes
 
@@ -316,6 +525,7 @@ let stageDirections = {};
 
 function presentTour(tour, prompt, run, { replayFixture = null } = {}) {
   if (!runIsActive(run)) return;
+  run.tour = tour;
   delete $('#tour').dataset.form;
   document.querySelector('.lexicon')?.remove();
   stageDirections = {};
@@ -482,16 +692,20 @@ function applyForm(plan) {
 const DIRECTOR_PREFETCH_CONCURRENCY = 2;
 const directorCache = new Map();
 
-function requireValidDirection(payload) {
+function requireValidDirection(payload, expectedFingerprint = null) {
   const check = validateDirectorPayload(payload);
   if (!check.ok) throw new Error(`director payload refused: ${check.errors.join('; ')}`);
+  if (expectedFingerprint != null && payload.requestFingerprint !== expectedFingerprint) {
+    throw new Error('director payload refused: response belongs to a different tour step');
+  }
   return payload;
 }
 
 function keyForStep(step) {
-  return directorCacheKey({
+  return directorRequestFingerprint({
     modelKey: MAGIC_MODEL_ROLES.director,
     schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
+    policyVersion: MAGIC_DIRECTOR_POLICY_VERSION,
     recordId: step.recordId,
     fromSec: step.startSec,
     toSec: step.endSec,
@@ -505,7 +719,7 @@ function directorEntry(step) {
 
 function cacheResolvedDirection(step, index, payload) {
   const key = keyForStep(step);
-  const value = requireValidDirection(payload);
+  const value = requireValidDirection(payload, key);
   const entry = { key, index, status: 'resolved', value, promise: Promise.resolve(value) };
   directorCache.set(key, entry);
   return entry;
@@ -518,10 +732,17 @@ function cacheDirectionFallback(step, index, note) {
   return entry;
 }
 
+function surfaceDirectionNote(li, entry) {
+  const payloadNote = typeof entry?.value?.note === 'string' ? entry.value.note.trim() : '';
+  const fallbackNote = typeof entry?.note === 'string' ? entry.note.trim() : '';
+  const note = payloadNote || fallbackNote;
+  if (!note) return;
+  honestNote(li, `${payloadNote ? 'Visual direction was partial.' : 'Visual direction was unavailable.'} ${note}`);
+}
+
 function seedReplayDirections(tour, fixture) {
   tour.steps.forEach((step, index) => {
-    const key = keyForStep(step);
-    cacheResolvedDirection(step, index, fixture.directions[key]);
+    cacheResolvedDirection(step, index, fixture.directions[step.id]);
   });
 }
 
@@ -541,6 +762,7 @@ function fetchDirector(step, index, run = activeRun) {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
       schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
+      policyVersion: MAGIC_DIRECTOR_POLICY_VERSION,
       model: MAGIC_MODEL_ROLES.director,
       recordId: step.recordId,
       fromSec: step.startSec,
@@ -555,7 +777,7 @@ function fetchDirector(step, index, run = activeRun) {
     })
     .then((data) => {
       if (!runIsActive(run)) throw new DOMException('stale tour', 'AbortError');
-      const value = requireValidDirection(data);
+      const value = requireValidDirection(data, key);
       entry.status = 'resolved';
       entry.value = value;
       return value;
@@ -603,61 +825,390 @@ function beginDirection(li, index, payload) {
   if (!current || current.li !== li) return;
   if (!payload) return;
   let direction;
+  let timeline;
+  let projection;
+  let editorialPlan;
   try {
     direction = requireValidDirection(payload);
+    timeline = buildVisualTimeline({ scenes: direction.scenes, beats: direction.beats }, direction.clip.durationSec);
+    projection = summarizeVisualProjection(
+      { scenes: direction.scenes, beats: direction.beats },
+      direction.clip.durationSec,
+    );
+    editorialPlan = compileEditorialPlan(direction, {
+      durationSec: direction.clip.durationSec,
+      stepIndex: index,
+      stepCount: current.run?.tour?.steps?.length || 1,
+    });
+    const editorialCheck = validateEditorialPlan(editorialPlan, direction);
+    if (!editorialCheck.ok) {
+      throw new Error(`editorial plan refused: ${editorialCheck.errors.join('; ')}`);
+    }
   } catch (error) {
     honestNote(li, error.message);
     return;
   }
-  if (!direction.scenes.length) return;
-  const timeline = [];
-  let order = 0;
-  const add = (event, priority) => timeline.push({ ...event, priority, order: order++ });
-  const copy = direction.scenes.map((s, i) => {
-    const sc = {
-      ...s,
-      groups: (s.groups || []).map((g) => ({ ...g })),
-      footnotes: (s.footnotes || []).map((f) => ({ ...f })),
-      allusions: (s.allusions || []).map((a) => ({ ...a })),
-      terms: (s.terms || []).map((t) => ({ ...t })),
-      asides: (s.asides || []).map((a) => ({ ...a })),
-      compare: s.compare ? { ...s.compare } : null,
-      chain: s.chain ? { ...s.chain } : null,
-      caveat: s.caveat ? { ...s.caveat } : null,
-      highlight: s.highlight ? { ...s.highlight } : null,
-    };
-    add({ at: sc.at ?? 0, kind: 'scene', scene: sc, idx: i }, 0);
-    for (const g of sc.groups) {
-      for (const wt of g.wordTimes || []) {
-        if (wt.at != null && wt.at < (g.at ?? Infinity)) {
-          add({
-            at: wt.at,
-            kind: 'word',
-            scene: sc,
-            word: wt.word,
-            occurrence: Number.isInteger(wt.occurrence) && wt.occurrence >= 0 ? wt.occurrence : 0,
-          }, 1);
-        }
-      }
-      add({ at: g.at ?? sc.at ?? 0, kind: 'group', scene: sc, a: g }, 3);
-    }
-    for (const [kind, list] of [['footnote', sc.footnotes], ['term', sc.terms], ['allusion', sc.allusions], ['aside', sc.asides || []]]) {
-      for (const a of list) add({ at: a.at ?? sc.at ?? 0, kind, scene: sc, a }, 2);
-    }
-    for (const [kind, a] of [['compare', sc.compare], ['chain', sc.chain], ['caveat', sc.caveat], ['highlight', sc.highlight]]) {
-      if (a) add({ at: a.at ?? sc.at ?? 0, kind, scene: sc, a }, 2);
-    }
-    return sc;
-  });
-  timeline.sort((x, y) => x.at - y.at || x.priority - y.priority || x.order - y.order);
-  current.scenes = copy;
+  current.direction = direction;
+  current.scenes = timeline.scenes;
   current.timeline = timeline;
+  current.editorialPlan = editorialPlan;
+  current.beatById = new Map(direction.beats.map((beat) => [beat.id, beat]));
+  current.sceneById = new Map(timeline.scenes.map((scene) => [scene.id, scene]));
+  current.eventByBeatId = new Map(timeline
+    .filter((event) => event.beatId && event.kind !== 'word')
+    .map((event) => [event.beatId, event]));
+  current.activeVisualEvent = null;
+  current.refusedVisualEvent = null;
+  current.activeEditorialShot = null;
+  current.refusedEditorialShotId = null;
   current.fired = 0;
   current.sceneIdx = -1;
+  initializeVisualOutcomes(current, direction, projection);
+  exposeEditorialMetrics(current);
   rebuildStageAt(player.currentTime, { reason: 'direction' });
 }
 
-const TH_BOXES = ['.compare', '.chain', '.terms', '.allusions', '.footnotes', '.caveats', '.asides'];
+const stageIsNarrow = () => window.innerWidth <= 620;
+
+const editorialFrame = () => TH()?.querySelector('.shot-frame');
+
+function exposeEditorialMetrics(owner) {
+  const theater = TH();
+  const metrics = owner?.editorialPlan?.metrics;
+  if (!theater || !metrics) return;
+  theater.dataset.editorialPolicy = owner.editorialPlan.policyVersion;
+  theater.dataset.editorialShotCount = String(metrics.shotCount);
+  theater.dataset.editorialSemanticOccupancy = String(metrics.semanticOccupancy);
+  theater.dataset.editorialMaxRestSec = String(metrics.maxExplicitRestSec);
+  theater.dataset.editorialMaxFamilyRun = String(metrics.maxSameFamilyRun);
+  theater.dataset.editorialSceneCoverage = String(metrics.sceneCoverage);
+}
+
+function clearEditorialTrace() {
+  const frame = editorialFrame();
+  if (!frame) return;
+  for (const key of [
+    'shotId', 'shotRole', 'shotFamily', 'shotComponent', 'shotPhase',
+    'shotVariant', 'shotTransition', 'sourceBeatIds', 'sourceSceneIds',
+    'sourceSegmentIds',
+  ]) delete frame.dataset[key];
+}
+
+function applyEditorialTrace(shot, element = null) {
+  const frame = editorialFrame();
+  if (!frame || !shot) return;
+  const values = {
+    shotId: shot.id,
+    shotRole: shot.role,
+    shotFamily: shot.family,
+    shotComponent: shot.component,
+    shotPhase: shot.phase,
+    shotVariant: shot.variant,
+    shotTransition: shot.transition,
+    sourceBeatIds: (shot.sourceBeatIds || []).join(','),
+    sourceSceneIds: (shot.sourceSceneIds || []).join(','),
+  };
+  for (const [key, value] of Object.entries(values)) frame.dataset[key] = String(value ?? '');
+  const segmentId = current?.captionSegmentId || frame.dataset.sourceSegmentIds || '';
+  frame.dataset.sourceSegmentIds = segmentId;
+  if (element) {
+    for (const [key, value] of Object.entries(values)) element.dataset[key] = String(value ?? '');
+    element.dataset.sourceSegmentIds = segmentId;
+  }
+}
+
+function currentEditorialCopy() {
+  const owner = current;
+  const tour = owner?.run?.tour || {};
+  const step = owner?.step || {};
+  const nextStep = tour.steps?.[owner ? owner.index + 1 : 1] || null;
+  return {
+    tourTitle: String(tour.title || ''),
+    tourClosing: String(tour.closing || ''),
+    source: String(step.source || step.sourceId || ''),
+    episodeTitle: String(step.episodeTitle || ''),
+    nextEpisodeTitle: String(nextStep?.episodeTitle || ''),
+    movementTitle: String(owner?.li?.querySelector('.step-marker')?.textContent || ''),
+    movementIndex: owner ? owner.index + 1 : 1,
+    movementCount: tour.steps?.length || 1,
+    totalMinutes: Math.max(1, Math.round(Number(tour.totalSeconds) / 60) || 1),
+  };
+}
+
+function firstCompleteSentence(value) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  if (!text) return '';
+  const match = text.match(/^.*?[.!?](?=\s|$)/u);
+  return match?.[0] || text;
+}
+
+function bookendTitleMarkup(value) {
+  const text = String(value || '').trim();
+  const reference = text.match(/^(.+?\s+\d+:\d+(?:\s*[–—-]\s*\d+)?)(.*)$/u);
+  if (!reference) return escapeHtml(text);
+  return `<span class="bookend-title-ref">${escapeHtml(reference[1])}</span>${escapeHtml(reference[2])}`;
+}
+
+function bookendComposition(shot) {
+  const copy = currentEditorialCopy();
+  const element = compositionElement('bookend');
+  element.dataset.bookendRole = shot.role;
+  if (shot.role === 'opening') {
+    const movements = `${copy.movementCount} movement${copy.movementCount === 1 ? '' : 's'}`;
+    element.innerHTML = `<span class="bookend-position">A listening path · ${movements} · ${copy.totalMinutes} minutes</span>
+      <h2 class="bookend-title">${bookendTitleMarkup(copy.tourTitle || copy.movementTitle || copy.episodeTitle)}</h2>
+      <p class="bookend-reference">Begins with · ${escapeHtml(copy.episodeTitle)}</p>`;
+  } else if (shot.role === 'transition') {
+    element.innerHTML = `<span class="bookend-position">Movement ${copy.movementIndex} of ${copy.movementCount}</span>
+      <h2 class="bookend-title">${bookendTitleMarkup(copy.movementTitle || copy.episodeTitle)}</h2>
+      ${copy.movementTitle && copy.episodeTitle ? `<p class="bookend-reference">${escapeHtml(copy.episodeTitle)}</p>` : ''}`;
+  } else if (shot.role === 'movement-close') {
+    element.innerHTML = `<span class="bookend-position">Movement ${copy.movementIndex} complete</span>
+      <h2 class="bookend-title">${bookendTitleMarkup(copy.episodeTitle || copy.movementTitle)}</h2>
+      <span class="bookend-endpoint" aria-hidden="true"></span>
+      ${copy.nextEpisodeTitle ? `<div class="bookend-next"><span>Next · movement ${copy.movementIndex + 1}</span><p>${escapeHtml(copy.nextEpisodeTitle)}</p></div>` : ''}`;
+  } else {
+    const coda = firstCompleteSentence(copy.tourClosing);
+    const movements = `${copy.movementCount} movement${copy.movementCount === 1 ? '' : 's'}`;
+    element.innerHTML = `<span class="bookend-position">Tour complete</span>
+      <h2 class="bookend-title">${bookendTitleMarkup(copy.tourTitle || copy.movementTitle || copy.episodeTitle)}</h2>
+      ${coda ? `<p class="bookend-coda">${escapeHtml(coda)}</p>` : ''}
+      <p class="bookend-tour">${copy.totalMinutes} minutes · ${movements}</p>`;
+  }
+  return element;
+}
+
+function listeningComposition(shot) {
+  const copy = currentEditorialCopy();
+  const element = compositionElement('listening');
+  const arrival = shot.role === 'scene-arrival';
+  const scene = current?.sceneById?.get(shot.sceneId);
+  element.dataset.listeningRole = shot.role;
+  element.dataset.listeningVariant = shot.variant;
+  element.innerHTML = arrival
+    ? `<div class="listening-meta">${kicker(scene?.ref ? 'Passage arriving' : `Movement ${copy.movementIndex}`)}
+      ${scene?.ref ? `<p class="listening-reference">${escapeHtml(scene.ref)}</p>` : ''}</div>
+      <blockquote class="listening-line">${escapeHtml(current?.captionText || '')}</blockquote>`
+    : `<div class="listening-meta">${kicker(shot.variant === 'listening-punctuation' ? 'A turn in the thought' : 'Listening')}</div>
+      <blockquote class="listening-line">${escapeHtml(current?.captionText || '')}</blockquote>`;
+  return element;
+}
+
+function retireWhisper() {
+  if (!current) return;
+  TH().querySelector('.th-whisper')?.classList.remove('show');
+  clearTimeout(current.whisperTimer);
+  current.timers.delete(current.whisperTimer);
+  current.whisperTimer = null;
+}
+
+function clearVerseAnnotations() {
+  const verses = TH()?.querySelector('.verses');
+  if (!verses) return;
+  verses.querySelector('svg.smarks')?.remove();
+  for (const mark of verses.querySelectorAll('.fnmark')) mark.remove();
+  for (const span of [...verses.querySelectorAll('.sword')]) span.replaceWith(...span.childNodes);
+  verses.normalize();
+}
+
+function clearStageComposition({ immediate = false } = {}) {
+  const th = TH();
+  if (!th) return;
+  const owner = current;
+  const host = th.querySelector('.thought-current');
+  const outgoing = th.querySelector('.thought-outgoing');
+  if (!host || !outgoing) return;
+  for (const timer of owner?.compositionTimers || []) {
+    clearTimeout(timer);
+    owner.timers.delete(timer);
+  }
+  owner?.compositionTimers?.clear();
+  outgoing.replaceChildren();
+  const departing = host.firstElementChild;
+  if (departing && !immediate && !motionIsReduced() && owner) {
+    outgoing.appendChild(departing);
+    departing.classList.remove('is-entering');
+    departing.classList.add('is-leaving');
+    const timer = playDelay(owner, () => {
+      owner.compositionTimers.delete(timer);
+      if (outgoing.contains(departing)) departing.remove();
+    }, 320);
+    if (timer) owner.compositionTimers.add(timer);
+  } else {
+    host.replaceChildren();
+  }
+  clearVerseAnnotations();
+  th.querySelector('.th-body')?.classList.remove('spot');
+  th.classList.remove('focus-mode');
+  th.querySelector('.th-body')?.removeAttribute('data-active-kind');
+}
+
+function clearAllVisualChannels({ immediate = true } = {}) {
+  clearStageComposition({ immediate });
+  if (current) {
+    current.activeVisualEvent = null;
+    current.refusedVisualEvent = null;
+    current.activeEditorialShot = null;
+    current.refusedEditorialShotId = null;
+  }
+}
+
+function mountComposition(element, event, { immediate = false } = {}) {
+  const owner = current;
+  if (!owner || !element) return { mounted: false, reason: 'composition-unavailable' };
+  const th = TH();
+  const host = th.querySelector('.thought-current');
+  if (!host) return { mounted: false, reason: 'thought-slot-missing' };
+  element.classList.add('th-composition');
+  element.dataset.visualKind = event.kind;
+  if (event.beatId) element.dataset.beatId = event.beatId;
+  const shot = event.editorialShot || null;
+  if (shot) {
+    applyEditorialTrace(shot, element);
+    element.classList.add(`shot-family--${shot.family}`, `shot-component--${shot.component}`);
+    element.classList.add(`shot-phase--${shot.phase}`, `shot-transition--${shot.transition}`);
+  }
+  if (!immediate && !motionIsReduced()) element.classList.add('is-entering');
+  host.replaceChildren(element);
+  appendVisualObservation(owner, event, 'mounted');
+  if (shot) appendEditorialObservation(owner, shot, 'mounted');
+  th.querySelector('.th-body')?.setAttribute('data-active-kind', event.kind);
+  if (event.kind === 'highlight' || shot?.family === 'focus') {
+    th.querySelector('.th-body')?.classList.add('spot');
+    th.classList.add('focus-mode');
+  }
+  const reveal = () => {
+    if (current !== owner || !element.isConnected || host.firstElementChild !== element) return;
+    element.classList.remove('is-entering');
+    appendVisualObservation(owner, event, 'revealed');
+    if (shot) appendEditorialObservation(owner, shot, 'revealed');
+  };
+  if (element.classList.contains('is-entering')) playNextFrame(owner, reveal);
+  else reveal();
+  // Editorial shots are composed to the frame. Automatic scrolling would be
+  // an unplanned camera move, so retain it only for the legacy fallback.
+  if (!owner.editorialPlan) keepVisualInFrame(element, { immediate });
+  return { mounted: true, element };
+}
+
+function semanticEventForShot(owner, shot) {
+  const beatId = shot?.sourceBeatIds?.[0];
+  if (!beatId || shot.sourceBeatIds.length !== 1) return null;
+  const event = owner.eventByBeatId?.get(beatId);
+  const beat = owner.beatById?.get(beatId);
+  if (!event || !beat) return null;
+  return {
+    ...event,
+    beat,
+    a: beat.data,
+    scene: owner.sceneById?.get(shot.sceneId) || event.scene,
+    editorialShot: shot,
+    editorialPhase: shot.phase,
+    editorialVariant: shot.variant,
+  };
+}
+
+function renderHouseShot(shot, { reconstruct = false } = {}) {
+  const owner = current;
+  if (!owner) return { mounted: false, reason: 'playback-unavailable' };
+  if (shot.sceneId && owner.mountedScene?.id !== shot.sceneId) {
+    return { mounted: false, reason: 'scene-not-mounted', pending: true };
+  }
+  applyEditorialTrace(shot);
+  const body = TH().querySelector('.th-body');
+  body?.setAttribute('data-active-kind', shot.component);
+  if (shot.component === 'PassageFrame') {
+    appendEditorialObservation(owner, shot, 'mounted');
+    appendEditorialObservation(owner, shot, 'revealed');
+    return { mounted: true, passive: true };
+  }
+  if (shot.component === 'BookendSlate') {
+    return mountComposition(bookendComposition(shot), {
+      kind: 'bookend', editorialShot: shot,
+    }, { immediate: reconstruct });
+  }
+  if (shot.component === 'ListeningFrame') {
+    return mountComposition(listeningComposition(shot), {
+      kind: 'listening', editorialShot: shot,
+    }, { immediate: reconstruct });
+  }
+  return { mounted: false, reason: 'unsupported-house-shot' };
+}
+
+function syncGroundedWordCues(owner, shot, rel) {
+  const verses = TH().querySelector('.verses');
+  for (const span of verses.querySelectorAll('.sword.lit')) span.classList.remove('lit');
+  if (!shot || shot.family === 'focus') return;
+
+  if (shot.semanticKind === 'group') {
+    if (shot.phase === 'anchors') {
+      const beat = owner.beatById?.get(shot.sourceBeatIds?.[0]);
+      for (const [index, word] of (beat?.data?.words || []).entries()) {
+        getOrWrap(verses, word, beat.data.occurrences?.[index] || 0)?.classList.add('lit');
+      }
+    }
+    return;
+  }
+
+  for (const event of owner.timeline || []) {
+    const exitAt = Number(event?.[stageIsNarrow() ? 'exitAtNarrow' : 'exitAtWide']);
+    if (event?.kind !== 'word' || Number(event.at) > rel || !Number.isFinite(exitAt) || rel >= exitAt) continue;
+    getOrWrap(verses, event.word, event.occurrence)?.classList.add('lit');
+  }
+}
+
+function syncVisualLifecycles(rel, { immediate = false } = {}) {
+  if (!current?.timeline || !current.editorialPlan) return;
+  const owner = current;
+  owner.visualRel = rel;
+  const desired = resolveEditorialShot(owner.editorialPlan, rel);
+  if (!desired) return;
+  if (desired.sceneId && owner.mountedScene?.id !== desired.sceneId) return;
+  if (owner.refusedEditorialShotId && desired.id !== owner.refusedEditorialShotId) {
+    owner.refusedEditorialShotId = null;
+  }
+  if (desired.id !== owner.activeEditorialShot?.id && desired.id !== owner.refusedEditorialShotId) {
+    const focusBoundary = desired.family === 'focus' || owner.activeEditorialShot?.family === 'focus';
+    const componentBoundary = Boolean(owner.activeEditorialShot?.component
+      && owner.activeEditorialShot.component !== desired.component);
+    const cutBoundary = desired.transition === 'cut';
+    if ((desired.component === 'BookendSlate' || desired.component === 'ListeningFrame')
+      && (componentBoundary || cutBoundary)) TH().scrollTop = 0;
+    clearStageComposition({ immediate: immediate || focusBoundary || componentBoundary || cutBoundary });
+    applyEditorialTrace(desired);
+    owner.activeEditorialShot = null;
+    owner.activeVisualEvent = null;
+    let event = null;
+    let result;
+    try {
+      if (desired.role === 'semantic') {
+        event = semanticEventForShot(owner, desired);
+        result = event
+          ? renderEventNow(event, { reconstruct: immediate })
+          : { mounted: false, reason: 'semantic-source-unavailable' };
+      } else {
+        result = renderHouseShot(desired, { reconstruct: immediate });
+      }
+    } catch {
+      result = { mounted: false, reason: 'render-error' };
+    }
+    if (result?.mounted) {
+      owner.activeEditorialShot = desired;
+      owner.activeVisualEvent = event;
+      owner.refusedVisualEvent = null;
+    } else if (!result?.pending) {
+      owner.refusedEditorialShotId = desired.id;
+      owner.refusedVisualEvent = event;
+      if (event) appendVisualObservation(owner, event, 'refused', {
+        reason: result?.reason || 'render-refused',
+      });
+      appendEditorialObservation(owner, desired, 'refused', {
+        reason: result?.reason || 'render-refused',
+      });
+    }
+  }
+  syncGroundedWordCues(owner, desired, rel);
+}
 
 function playDelay(owner, fn, ms) {
   if (!owner || current !== owner || owner.controller.signal.aborted) return null;
@@ -674,7 +1225,6 @@ function cancelPlayFrame(owner, ticket) {
   if (ticket.outer != null) cancelAnimationFrame(ticket.outer);
   if (ticket.inner != null) cancelAnimationFrame(ticket.inner);
   owner.frameTickets.delete(ticket);
-  if (owner.hlFrame === ticket) owner.hlFrame = null;
 }
 
 function cancelAllPlayFrames(owner) {
@@ -705,7 +1255,6 @@ function playNextFrame(owner, fn) {
   owner.frameTickets.add(ticket);
   const finish = () => {
     owner.frameTickets.delete(ticket);
-    if (owner.hlFrame === ticket) owner.hlFrame = null;
     if (valid()) fn();
   };
   ticket.outer = requestAnimationFrame(() => {
@@ -720,6 +1269,29 @@ function playNextFrame(owner, fn) {
     });
   });
   return ticket;
+}
+
+function keepVisualInFrame(element, { immediate = false } = {}) {
+  const owner = current;
+  if (!owner || !element) return;
+  const reveal = () => {
+    if (current !== owner || !element.isConnected) return;
+    const theater = TH();
+    const rect = element.getBoundingClientRect();
+    const topGuard = window.innerWidth <= 620 ? 112 : 96;
+    const railRects = [theater.querySelector('.caption'), theater.querySelector('.th-controls')]
+      .map((rail) => rail?.getBoundingClientRect())
+      .filter((rail) => rail && rail.height > 0);
+    const railTop = railRects.length ? Math.min(...railRects.map((rail) => rail.top)) : window.innerHeight;
+    const bottomGuard = railTop - 16;
+    if (rect.top >= topGuard && rect.bottom <= bottomGuard) return;
+    const top = rect.bottom > bottomGuard
+      ? theater.scrollTop + (rect.bottom - bottomGuard) + 16
+      : theater.scrollTop - (topGuard - rect.top) - 16;
+    theater.scrollTo({ top, behavior: immediate || motionIsReduced() ? 'auto' : 'smooth' });
+  };
+  if (immediate || motionIsReduced()) reveal();
+  else playNextFrame(owner, reveal);
 }
 
 function activateScene(scene, idx, { force = false, immediate = false, onMounted = null } = {}) {
@@ -737,12 +1309,10 @@ function activateScene(scene, idx, { force = false, immediate = false, onMounted
   const firstScene = idx === 0 && !body.classList.contains('turning');
   body.classList.add('turning');
   body.setAttribute('aria-busy', 'true');
-  releaseHighlight();
   playDelay(owner, () => {
     if (owner.sceneGeneration !== generation || owner.scenes?.[owner.sceneIdx] !== scene) return;
-    for (const sel of TH_BOXES) th.querySelector(sel).innerHTML = '';
-    owner.compareEl = null;
-    owner.compareWords = null;
+    clearAllVisualChannels({ immediate: true });
+    th.scrollTop = 0;
     const q = th.querySelector('.verses');
     if (scene.verses?.length) {
       q.innerHTML = scene.verses.map((v) => `<sup>${v.verse}</sup>${escapeHtml(v.text)}`).join(' ')
@@ -765,6 +1335,7 @@ function activateScene(scene, idx, { force = false, immediate = false, onMounted
     const queued = owner.eventQueue;
     owner.eventQueue = [];
     for (const event of queued) renderEvent(event);
+    syncVisualLifecycles(owner.visualRel, { immediate });
   }, immediate ? 0 : motionMs(firstScene ? 40 : 420));
 }
 
@@ -781,174 +1352,307 @@ function renderEvent(ev) {
     if (!current.rebuilding && !current.eventQueue.includes(ev)) current.eventQueue.push(ev);
     return;
   }
-  renderEventNow(ev);
+  syncVisualLifecycles(player.currentTime - current.step.startSec);
 }
 
-function renderEventNow(ev, { reconstruct = false, elapsedSince = 0 } = {}) {
-  if (!current || current.mountedScene !== ev.scene) return;
+function compositionElement(kind, tag = 'article') {
+  const element = document.createElement(tag);
+  element.className = `th-composition--${kind}`;
+  return element;
+}
+
+function kicker(text) {
+  return `<span class="thought-kicker">${escapeHtml(text)}</span>`;
+}
+
+function completeEditorialDisplay(value) {
+  // The director contract already accepts compact semantic copy whole or
+  // refuses it. The renderer may normalize whitespace, but never edits the
+  // end of a stored gloss, note, caveat, or margin sentence.
+  return String(value || '').replace(/\s+/g, ' ').trim();
+}
+
+/* Machine transcripts carry spoken disfluencies that should never become
+   display type. This is presentation hygiene on house-owned transcript copy
+   only — the stored segment and every cue verified against it stay raw. */
+function transcriptDisplay(value) {
+  let text = String(value || '').replace(/\s+/g, ' ').trim();
+  text = text.replace(/\b(um|uh|er|ah|mm-hm|mm),?\s+/giu, '');
+  text = text.replace(/\b([A-Za-z']+),?\s+\1\b/giu, '$1');
+  text = text.replace(/\s+([,.!?;:])/gu, '$1');
+  text = text.replace(/,\s*,+/gu, ' ').replace(/\s{2,}/gu, ' ').trim();
+  return text ? `${text[0].toLocaleUpperCase()}${text.slice(1)}` : '';
+}
+
+/* The caption is the program's subtitle track: the sentence the teacher is
+   speaking, shown whole. Segments carry no intra-segment clock, so the
+   current sentence is estimated by interpolating the playback position
+   across the segment's character span — deterministic, monotonic, and it
+   always returns a complete sentence rather than a sliced fragment. */
+function captionSentenceFor(seg, t) {
+  const text = transcriptDisplay(seg?.t);
+  if (!text) return '';
+  const boundaries = [...text.matchAll(/[.!?…]+["'”’)]*\s+/gu)].map((match) => match.index + match[0].length);
+  if (!boundaries.length) return text;
+  const spans = [];
+  let start = 0;
+  for (const boundary of boundaries) {
+    if (boundary < text.length) spans.push([start, boundary]);
+    start = boundary;
+  }
+  if (start < text.length) spans.push([start, text.length]);
+  if (spans.length <= 1) return text;
+  const proportion = Math.min(0.9999, Math.max(0, (Number(t) - seg.s) / Math.max(0.1, seg.e - seg.s)));
+  const target = proportion * text.length;
+  const [from, to] = spans.find(([spanStart, spanEnd]) => target >= spanStart && target < spanEnd) || spans.at(-1);
+  return text.slice(from, to).trim();
+}
+
+function groupTitle(mark, sourceSpan = '') {
+  // Policy-2/3 used a destructive 18-character slice. Exact-cap labels in
+  // saved evidence may therefore end mid-word and are deliberately hidden.
+  // SourceSpan remains available as provenance, never as repeated display.
+  const label = String(mark.label || '').replace(/\s+/g, ' ').trim();
+  if (label && label.length !== 18 && label.length <= 36) return label;
+  return '';
+}
+
+function loomComposition(mark, anchoredWords, sourceSpan) {
+  const element = compositionElement('loom');
+  const title = groupTitle({ ...mark, words: anchoredWords }, sourceSpan);
+  const count = Math.max(2, Math.min(4, anchoredWords.length));
+  const countWord = ['', '', 'Two', 'Three', 'Four'][count] || String(count);
+  element.dataset.loomAnchors = JSON.stringify(anchoredWords);
+  element.dataset.sourceSpan = sourceSpan;
+  const nodes = anchoredWords.map(() => '<i></i>').join('');
+  element.innerHTML = `<div class="loom-caption">${kicker('Textual pattern')}<span class="loom-count">${count} anchors</span></div>
+    <div class="loom-readout"><span class="loom-thread-map" style="--loom-count:${count}" aria-hidden="true">${nodes}</span>
+    <p class="loom-title${title ? '' : ' loom-title--fallback'}">${escapeHtml(title || `${countWord}-part wording`)}</p></div>`;
+  return element;
+}
+
+function displayQuote(value) {
+  const text = String(value || '').trim();
+  const balanced = (text.startsWith('“') && text.endsWith('”'))
+    || (text.startsWith('"') && text.endsWith('"'))
+    || (text.startsWith('‘') && text.endsWith('’'));
+  return balanced ? text : `“${text}”`;
+}
+
+/* Compare and chain passages are already bounded at admission to one to
+   three canonical verses. The display chooses the complete span that carries
+   the claim — a whole sentence, or one whole semicolon/em-dash clause of an
+   exceptionally long sentence — scored by the words the composition is about
+   to mark. It never appends an ellipsis: a quoted excerpt is a complete
+   thought on screen or it is not quoted at all. */
+function editorialClause(value, anchorWords = []) {
+  let text = String(value || '').replace(/\s+/g, ' ').trim();
+  const curlyOpen = text.indexOf('“');
+  const straightOpen = text.indexOf('"');
+  const open = [curlyOpen, straightOpen].filter((index) => index >= 0).sort((a, b) => a - b)[0];
+  if (open != null) {
+    const closing = text[open] === '“' ? '”' : '"';
+    text = text.slice(open + 1);
+    const close = text.indexOf(closing);
+    if (close >= 0) text = text.slice(0, close);
+  }
+  const anchors = anchorWords.map((word) => normalize(word)).filter(Boolean);
+  const score = (part) => {
+    if (!anchors.length) return 0;
+    const lex = ` ${normalize(part)} `;
+    return anchors.reduce((hits, anchor) => hits + (anchor && lex.includes(` ${anchor} `) ? 1 : 0), 0);
+  };
+  // Equal scores prefer the later span, preserving the claim-bearing final
+  // clause bias the excerpt has always had.
+  const pick = (spans) => {
+    let best = spans[0] || '';
+    let bestScore = score(best);
+    for (const span of spans.slice(1)) {
+      const spanScore = score(span);
+      if (spanScore >= bestScore) { best = span; bestScore = spanScore; }
+    }
+    return best;
+  };
+  const sentences = text.split(/(?<=[.!?])\s+/u).map((part) => part.trim()).filter(Boolean);
+  let chosen = sentences.length > 1 ? pick(sentences) : (sentences[0] || text);
+  if (chosen.split(/\s+/u).filter(Boolean).length > 44) {
+    const clauses = chosen.split(/(?<=[;:])\s+|\s+[—–]\s+/u).map((part) => part.trim()).filter(Boolean);
+    if (clauses.length > 1) chosen = pick(clauses);
+  }
+  return displayQuote(chosen.replace(/^[“”"']+|[“”"']+$/gu, '').trim());
+}
+
+function sentenceDisplay(value) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  if (!text) return '';
+  const sentence = `${text[0].toLocaleUpperCase()}${text.slice(1)}`;
+  return /[.!?…]$/u.test(sentence) ? sentence : `${sentence}.`;
+}
+
+function referenceParts(value) {
+  const match = String(value || '').trim().match(/^(.+?)\s+(\d+):(\d+)(?:\s*[–—-]\s*(\d+))?$/u);
+  if (!match) return null;
+  return {
+    book: normalize(match[1]),
+    chapter: Number(match[2]),
+    from: Number(match[3]),
+    to: Number(match[4] || match[3]),
+  };
+}
+
+function referenceIsOnStage(reference, sceneReference) {
+  const candidate = referenceParts(reference);
+  const stage = referenceParts(sceneReference);
+  return Boolean(candidate && stage
+    && candidate.book === stage.book
+    && candidate.chapter === stage.chapter
+    && candidate.from >= stage.from
+    && candidate.to <= stage.to);
+}
+
+function termAnchorFor(root, gloss) {
+  const text = scriptureTextMap(root).text;
+  const phrase = String(gloss || '').trim();
+  if (!phrase || !findScriptureOccurrence(text, phrase, 0) || findScriptureOccurrence(text, phrase, 1)) return null;
+  return getOrWrap(root, phrase, 0);
+}
+
+function renderEventNow(ev, { reconstruct = false } = {}) {
+  if (!current) return { mounted: false, reason: 'playback-unavailable' };
+  if (current.mountedScene !== ev.scene) return { mounted: false, reason: 'scene-not-mounted' };
   const th = TH();
+  const verses = th.querySelector('.verses');
+  const phase = ev.editorialPhase || 'full';
+  if (ev.kind !== 'word') retireWhisper();
   switch (ev.kind) {
-    case 'word': {
-      /* A word lights the moment it is said; its bracket completes when
-         the group does. */
-      const span = getOrWrap(th.querySelector('.verses'), ev.word, ev.occurrence);
-      span?.classList.add('lit');
-      break;
+    case 'word':
+      getOrWrap(verses, ev.word, ev.occurrence)?.classList.add('lit');
+      return { mounted: false, reason: 'word-cue-only' };
+    case 'group': {
+      if (phase === 'anchors') {
+        const anchors = ev.a.words.map((word, index) => (
+          getOrWrap(verses, word, ev.a.occurrences?.[index] || 0)
+        ));
+        if (anchors.some((anchor) => !anchor)) return { mounted: false, reason: 'scripture-anchor-missing' };
+        anchors.forEach((anchor) => anchor.classList.add('lit', 'group-target'));
+        const element = loomComposition(ev.a, anchors.map((anchor) => anchor.textContent), '');
+        element.classList.add('is-anchor-phase');
+        return mountComposition(element, ev, { immediate: reconstruct });
+      }
+      const loom = drawMark(ev.a, { immediate: reconstruct });
+      if (loom?.refused) return { mounted: false, reason: loom.refused };
+      return mountComposition(
+        loomComposition(ev.a, loom.words, loom.sourceSpan),
+        ev,
+        { immediate: reconstruct },
+      );
     }
-    case 'group':
-      drawMark(ev.a, { immediate: reconstruct });
-      break;
     case 'term': {
-      const el = document.createElement('p');
-      el.className = `term-chip${reconstruct ? '' : ' appear'}`;
-      el.innerHTML = `<i>${escapeHtml(ev.a.term)}</i> — ${escapeHtml(ev.a.gloss)}`;
-      th.querySelector('.terms').appendChild(el);
-      break;
-    }
-    case 'allusion': {
-      for (const prev of th.querySelectorAll('.allusion')) prev.classList.add('past');
-      const el = document.createElement('div');
-      el.className = `allusion${reconstruct ? '' : ' appear'}`;
-      el.innerHTML = `<span class="box-ref">${escapeHtml(ev.a.ref)}</span>${wrapBoxWords(ev.a.text)}`
-        + (ev.a.note ? `<span class="box-note">${escapeHtml(ev.a.note)}</span>` : '');
-      th.querySelector('.allusions').appendChild(el);
-      break;
-    }
-    case 'aside': {
-      /* One quiet line naming what the teacher is doing — presence for the
-         stretches where no verse language is in play. Only ever one. */
-      const box = th.querySelector('.asides');
-      box.innerHTML = `<p class="aside${reconstruct ? '' : ' appear'}">${escapeHtml(ev.a.text)}</p>`;
-      break;
+      const anchor = termAnchorFor(verses, ev.a.gloss);
+      if (anchor) {
+        anchor.classList.add('term-target');
+        anchor.dataset.anchorFor = 'term';
+      }
+      const el = compositionElement('term');
+      el.dataset.phase = phase;
+      el.innerHTML = `${kicker(anchor ? `Word in the passage · ${anchor.textContent}` : 'Word in view')}
+        <div class="term-lockup"><i class="term-form">${escapeHtml(ev.a.term)}</i>
+        ${phase === 'term' ? '' : `<span class="term-rule"></span><span class="term-gloss">${escapeHtml(completeEditorialDisplay(ev.a.gloss))}</span>`}</div>`;
+      return mountComposition(el, ev, { immediate: reconstruct });
     }
     case 'footnote': {
-      /* Print's own answer to two notes on one page: the glyphs take
-         turns — dagger, double dagger, section. */
-      const glyph = ['†', '‡', '§'][th.querySelectorAll('.footnote').length % 3];
-      const q = th.querySelector('.verses');
-      const span = getOrWrap(q, ev.a.word, ev.a.occurrence);
-      if (span && !span.querySelector('.fnmark')) span.insertAdjacentHTML('beforeend', `<sup class="fnmark">${glyph}</sup>`);
-      const el = document.createElement('p');
-      el.className = `footnote${reconstruct ? '' : ' appear'}`;
-      el.innerHTML = `<sup>${glyph}</sup> <b>${escapeHtml(ev.a.word)}</b> — ${escapeHtml(ev.a.note)}`;
-      th.querySelector('.footnotes').appendChild(el);
-      break;
+      const glyph = '†';
+      const anchor = getOrWrap(verses, ev.a.word, ev.a.occurrence);
+      if (!anchor) return { mounted: false, reason: 'scripture-anchor-missing' };
+      anchor.classList.add('footnote-target');
+      anchor.dataset.anchorFor = 'footnote';
+      anchor.insertAdjacentHTML('beforeend', `<sup class="fnmark">${glyph}</sup>`);
+      const el = compositionElement('footnote');
+      el.dataset.phase = phase;
+      el.innerHTML = `<span class="footnote-glyph" aria-hidden="true">${glyph}</span><div>
+        ${kicker('Textual note')}<p><b class="footnote-word">${escapeHtml(ev.a.word)}</b>
+        ${phase === 'anchor' ? '' : `<span class="footnote-copy">${escapeHtml(completeEditorialDisplay(ev.a.note))}</span>`}</p></div>`;
+      return mountComposition(el, ev, { immediate: reconstruct });
+    }
+    case 'allusion': {
+      const stageText = scriptureTextMap(verses).text;
+      const showConnection = phase !== 'source';
+      const shared = showConnection ? sharedWords(stageText, ev.a.text).slice(0, 3) : [];
+      const el = compositionElement('allusion');
+      const onStage = referenceIsOnStage(ev.a.ref, ev.scene?.ref);
+      if (onStage) el.classList.add('is-stage-reference');
+      el.dataset.phase = phase;
+      el.innerHTML = `<header class="allusion-meta">${kicker(onStage ? 'Echo in view' : 'Echo')}<span class="thought-ref">${escapeHtml(ev.a.ref)}</span></header>
+        <div class="allusion-copy">${onStage ? '' : `<blockquote class="allusion-passage">${markRelevant(ev.a.text, shared)}</blockquote>`}
+        ${showConnection && ev.a.note ? `<p class="thought-note">${escapeHtml(completeEditorialDisplay(ev.a.note))}</p>` : ''}</div>`;
+      return mountComposition(el, ev, { immediate: reconstruct });
     }
     case 'compare': {
       const { a, b, note, axis } = ev.a;
-      /* When one side IS the verse already on stage, the box shows only
-         its counterpart, full width — a compare that repeats the scene
-         verse is furniture pretending to be information. */
-      const sceneRef = normalize(ev.scene?.ref || '');
-      const sides = [[a, b.text], [b, a.text]].filter(([side]) => normalize(side.ref) !== sceneRef);
-      if (sides.length === 0) break;
-      /* likeness underlines what binds the two texts; difference underlines
-         each side's own pivots — the same box, cutting the other way. */
-      const common = sharedWords(a.text, b.text);
-      const marksFor = (own, other) => axis === 'difference'
-        ? sharedWords(own, own).filter((w) => !sharedWords(other, other).includes(w)).slice(0, 5)
+      const showAxis = phase !== 'sources';
+      const common = showAxis ? sharedWords(a.text, b.text).slice(0, 5) : [];
+      const marksFor = (own, other) => !showAxis ? [] : axis === 'difference'
+        ? sharedWords(own, own).filter((word) => !sharedWords(other, other).includes(word)).slice(0, 4)
         : common;
-      const el = document.createElement('div');
-      el.className = `compare-grid${reconstruct ? '' : ' appear'}`;
-      if (sides.length === 1) el.classList.add('single');
-      el.innerHTML = sides.map(([side, otherText]) =>
-        `<div class="cmp"><span class="box-ref">${escapeHtml(side.ref)}</span>${markRelevant(side.text, marksFor(side.text, otherText))}</div>`
-      ).join('') + (note ? `<span class="box-note cmp-note">${escapeHtml(note)}</span>` : '');
-      th.querySelector('.compare').appendChild(el);
-      current.compareEl = el;
-      current.compareWords = new Set(common.map(normalize));
-      break;
+      const sideMarkup = (side, other) => {
+        const onStage = referenceIsOnStage(side.ref, ev.scene?.ref);
+        return `<section class="compare-side${onStage ? ' compare-side--stage' : ''}">
+          <div class="compare-meta"><span class="thought-ref">${escapeHtml(side.ref)}</span>
+          ${onStage ? '<span class="compare-stage-label">Current passage</span>' : ''}</div>
+          <blockquote class="compare-excerpt">${markRelevant(editorialExcerpt(side.text, 14), marksFor(side.text, other.text))}</blockquote>
+        </section>`;
+      };
+      const axisTitle = axis === 'difference' ? 'The distinction' : 'A shared claim';
+      const el = compositionElement('compare');
+      el.dataset.axis = axis;
+      el.dataset.phase = phase;
+      el.innerHTML = `<header>${kicker('Comparison')}${showAxis ? `<h3 class="compare-heading">${axisTitle}</h3>` : ''}</header>
+        <div class="compare-sides">${sideMarkup(a, b)}<span class="compare-axis" aria-hidden="true"></span>${sideMarkup(b, a)}</div>
+        ${showAxis && note ? `<p class="thought-note">${escapeHtml(completeEditorialDisplay(note))}</p>` : ''}`;
+      return mountComposition(el, ev, { immediate: reconstruct });
     }
     case 'chain': {
-      /* Links assemble one at a time — a chain that appears is a list. */
-      const el = document.createElement('div');
-      el.className = `chain-box${reconstruct ? '' : ' appear'}`;
-      th.querySelector('.chain').appendChild(el);
-      const owner = current;
-      ev.a.links.forEach((l, i) => {
-        playDelay(owner, () => {
-          if (!el.isConnected || owner.mountedScene !== ev.scene) return;
-          const link = document.createElement('div');
-          link.className = `chain-link${reconstruct ? '' : ' appear'}`;
-          /* A link that IS the verse on stage is the chain's terminus —
-             its reference gathers the line; repeating its text teaches
-             nothing twice. */
-          const isStage = normalize(l.ref) === normalize(ev.scene?.ref || '');
-          link.innerHTML = isStage
-            ? `<span class="box-ref">${escapeHtml(l.ref)} — the verse above</span>`
-            : `<span class="box-ref">${escapeHtml(l.ref)}</span>${wrapBoxWords(trim(l.text, 110))}`;
-          el.appendChild(link);
-          if (i === ev.a.links.length - 1 && ev.a.note) {
-            el.insertAdjacentHTML('beforeend', `<span class="box-note">${escapeHtml(ev.a.note)}</span>`);
-          }
-        }, reconstruct ? 0 : motionMs(i * 900));
-      });
-      break;
+      const stageIndex = ev.a.links.findIndex((link) => referenceIsOnStage(link.ref, ev.scene?.ref));
+      const direction = stageIndex === ev.a.links.length - 1
+        ? 'Earlier → here'
+        : (stageIndex >= 0 ? 'Here in the sequence' : 'Passage to passage');
+      const links = ev.a.links.map((link, index) => {
+        const onStage = referenceIsOnStage(link.ref, ev.scene?.ref);
+        return `<li class="chain-node${onStage ? ' chain-node--stage' : ''}" data-chain-link="${index}">
+          <span class="chain-dot" aria-hidden="true"></span><div><span class="thought-ref">${escapeHtml(link.ref)}</span>
+          <blockquote class="chain-excerpt">${escapeHtml(editorialExcerpt(link.text, 18))}</blockquote>
+          ${onStage ? '<span class="chain-stage-label">In the passage above</span>' : ''}</div></li>`;
+      }).join('');
+      const el = compositionElement('chain');
+      const showClaim = phase !== 'route';
+      el.dataset.stageIndex = String(stageIndex);
+      el.dataset.phase = phase;
+      el.style.setProperty('--chain-count', String(Math.max(1, ev.a.links.length)));
+      el.innerHTML = `<header>${kicker('A line through Scripture')}${showClaim ? `<span class="chain-direction">${escapeHtml(direction)}</span>` : ''}</header>
+        <ol class="chain-route" data-chain-edge>${links}</ol>
+        ${showClaim && ev.a.note ? `<p class="thought-note">${escapeHtml(completeEditorialDisplay(ev.a.note))}</p>` : ''}`;
+      return mountComposition(el, ev, { immediate: reconstruct });
     }
     case 'caveat': {
-      const el = document.createElement('p');
-      el.className = `caveat${reconstruct ? '' : ' appear'}`;
-      el.innerHTML = `<span class="box-ref">what it does not say</span>${escapeHtml(ev.a.text)}`;
-      th.querySelector('.caveats').appendChild(el);
-      break;
+      const el = compositionElement('caveat');
+      el.dataset.phase = phase;
+      el.innerHTML = `<span class="caveat-boundary" aria-hidden="true"></span><div>
+        ${kicker('Reading limit')}${phase === 'boundary' ? '' : `<p>${escapeHtml(completeEditorialDisplay(ev.a.text))}</p>`}</div>`;
+      return mountComposition(el, ev, { immediate: reconstruct });
+    }
+    case 'aside': {
+      const el = compositionElement('aside', 'p');
+      if (th.querySelector('.th-body').classList.contains('bare')) el.classList.add('is-bare');
+      el.innerHTML = `<span class="aside-mark" aria-hidden="true"></span><span class="aside-copy">${escapeHtml(sentenceDisplay(ev.a.text))}</span>`;
+      return mountComposition(el, ev, { immediate: reconstruct });
     }
     case 'highlight': {
-      /* A spotlight that doesn't lower the room isn't one: the verse dims a
-         step while the sentence holds, then the room comes back. */
-      const bq = th.querySelector('.big-quote');
-      const owner = current;
-      cancelPlayFrame(owner, owner.hlFrame);
-      bq.textContent = `“${ev.a.quote}”`;
-      bq.classList.add('mounted');
-      if (reconstruct) bq.classList.add('show');
-      else owner.hlFrame = playNextFrame(owner, () => bq.classList.add('show'));
-      th.querySelector('.th-body').classList.add('spot');
-      clearTimeout(owner.hlTimer);
-      owner.timers.delete(owner.hlTimer);
-      const remainingMs = Math.max(0, 11000 - elapsedSince * 1000);
-      if (remainingMs === 0) releaseHighlight({ immediate: true });
-      else owner.hlTimer = playDelay(owner, releaseHighlight, remainingMs);
-      break;
+      const el = compositionElement('highlight', 'blockquote');
+      el.textContent = displayQuote(ev.a.quote);
+      return mountComposition(el, ev, { immediate: reconstruct });
     }
-  }
-}
-
-/* Boxes light their words as the teacher says them: significant words in
-   an allusion or chain text are wrapped so the caption clock can find and
-   gild them the moment they are spoken — the teacher usually alludes to a
-   word, and the box should answer. */
-function wrapBoxWords(text) {
-  return escapeHtml(text).replace(/(?<![\w>])([A-Za-z][\w'’-]{2,})(?![\w])/g, (w) => {
-    const n = normalize(w);
-    if (n.length < 3 || STOP.has(n)) return w;
-    return `<span class="bw" data-bw="${escapeHtml(n)}">${w}</span>`;
-  });
-}
-
-function lightBoxWords(segText) {
-  const said = new Set(normalize(segText).split(' '));
-  if (!said.size) return;
-  for (const el of TH().querySelectorAll('.bw:not(.lit-word)')) {
-    if (said.has(el.dataset.bw)) el.classList.add('lit-word');
-  }
-}
-
-function releaseHighlight({ immediate = false } = {}) {
-  const th = TH();
-  const bq = th.querySelector('.big-quote');
-  const owner = current;
-  cancelPlayFrame(owner, owner?.hlFrame);
-  bq.classList.remove('show');
-  if (immediate || !owner) {
-    bq.classList.remove('mounted');
-  } else {
-    playDelay(owner, () => { if (!bq.classList.contains('show')) bq.classList.remove('mounted'); }, motionMs(950));
-  }
-  th.querySelector('.th-body').classList.remove('spot');
-  if (owner) {
-    clearTimeout(owner.hlTimer);
-    owner.timers.delete(owner.hlTimer);
-    owner.hlTimer = null;
+    default:
+      return { mounted: false, reason: 'unsupported-visual-kind' };
   }
 }
 
@@ -976,56 +1680,8 @@ function getOrWrap(root, word, occurrence = 0) {
 }
 
 // ------------------------------------- the loom, performed in the theater
-// All geometry is house arithmetic: each group is assigned the first
-// gutter lane whose occupied span it does not intersect, so brackets
-// share lanes when they can and step outward only when they must.
 
-function wrapWord(root, word, occurrence = 0) {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
-  const source = `(?<![A-Za-z])${word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?![A-Za-z])`;
-  const re = new RegExp(source, 'gi');
-  const countedSwords = new Set();
-  let seen = 0;
-  let node;
-  while ((node = walker.nextNode())) {
-    const parent = node.parentElement;
-    if (!parent || parent.closest('sup, .verses-ref, svg')) continue;
-    const sword = parent.closest('.sword');
-    if (sword) {
-      if (!countedSwords.has(sword)) {
-        countedSwords.add(sword);
-        if ((sword.dataset.lex || normalize(sword.dataset.w || sword.textContent)) === normalize(word)) {
-          if (seen === occurrence) return sword;
-          seen += 1;
-        }
-      }
-      continue;
-    }
-    re.lastIndex = 0;
-    const matches = [...node.textContent.matchAll(re)];
-    if (seen + matches.length <= occurrence) {
-      seen += matches.length;
-      continue;
-    }
-    const m = matches[occurrence - seen];
-    const hit = node.splitText(m.index);
-    hit.splitText(m[0].length);
-    const span = document.createElement('span');
-    span.className = 'sword';
-    hit.parentNode.insertBefore(span, hit);
-    span.appendChild(hit);
-    return span;
-  }
-  return null;
-}
-
-/* Geometry reads the laid-out text through a Range instead of wrapping it.
-   A short phrase can break across two lines, and getClientRects preserves
-   those fragments. Keeping this lookup read-only also means one group's
-   phrase never creates markup that prevents a later overlapping phrase
-   from being found. */
-function textRangeFor(root, phrase, occurrence = 0) {
-  if (!root || !phrase) return null;
+function scriptureTextMap(root) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
   const nodes = [];
   let text = '';
@@ -1037,18 +1693,21 @@ function textRangeFor(root, phrase, occurrence = 0) {
     text += node.data;
     nodes.push({ node, start, end: text.length });
   }
-  const source = String(phrase).trim().split(/\s+/)
-    .map((part) => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
-    .join('\\s+');
-  if (!source) return null;
-  const re = new RegExp(`(?<![A-Za-z])${source}(?![A-Za-z])`, 'gi');
-  let match = null;
-  for (let i = 0; i <= occurrenceIndex(occurrence); i++) {
-    match = re.exec(text);
-    if (!match) return null;
-  }
-  const startOffset = match.index;
-  const endOffset = match.index + match[0].length;
+  return { text, nodes };
+}
+
+/* Geometry reads the laid-out text through a Range instead of wrapping it.
+   A short phrase can break across two lines, and getClientRects preserves
+   those fragments. Keeping this lookup read-only also means one group's
+   phrase never creates markup that prevents a later overlapping phrase
+   from being found. */
+function textRangeFor(root, phrase, occurrence = 0) {
+  if (!root || !phrase) return null;
+  const { text, nodes } = scriptureTextMap(root);
+  const match = findScriptureOccurrence(text, phrase, occurrenceIndex(occurrence));
+  if (!match) return null;
+  const startOffset = match.start;
+  const endOffset = match.end;
   const startNode = nodes.find((entry) => startOffset >= entry.start && startOffset < entry.end);
   const endNode = nodes.find((entry) => endOffset > entry.start && endOffset <= entry.end);
   if (!startNode || !endNode) return null;
@@ -1058,137 +1717,123 @@ function textRangeFor(root, phrase, occurrence = 0) {
   return range;
 }
 
+function wrapWord(root, word, occurrence = 0) {
+  const range = textRangeFor(root, word, occurrence);
+  if (!range) return null;
+  const span = document.createElement('span');
+  span.className = 'sword';
+  try {
+    span.appendChild(range.extractContents());
+    range.insertNode(span);
+    return span;
+  } catch {
+    return null;
+  }
+}
+
+function animateLoomPath(path, immediate) {
+  if (immediate || motionIsReduced()) return;
+  const length = path.getTotalLength();
+  path.style.strokeDasharray = String(length);
+  path.style.strokeDashoffset = String(length);
+  requestAnimationFrame(() => { path.style.strokeDashoffset = '0'; });
+}
+
+function scriptureLineRects(root, bounds) {
+  return scriptureTextMap(root).nodes.flatMap(({ node }) => {
+    const range = document.createRange();
+    range.selectNodeContents(node);
+    return [...range.getClientRects()]
+      .filter((rect) => rect.width > 0 && rect.height > 0)
+      .map((rect) => ({
+        x1: rect.left - bounds.left,
+        x2: rect.right - bounds.left,
+        top: rect.top - bounds.top,
+        bottom: rect.bottom - bounds.top,
+      }));
+  });
+}
+
 function drawMark(mark, { immediate = false } = {}) {
   const q = TH().querySelector('.verses');
-  if (!q?.classList.contains('has')) return;
-  const targets = mark.words.map((word, index) =>
+  if (!q?.classList.contains('has') || !Array.isArray(mark?.words) || mark.words.length < 2) {
+    return { refused: 'invalid-group-stage' };
+  }
+  const scriptureText = scriptureTextMap(q).text;
+  const offsets = mark.words.map((word, index) => (
+    findScriptureOccurrence(scriptureText, word, mark.occurrences?.[index] ?? mark.wordTimes?.[index]?.occurrence ?? 0)
+  ));
+  const ranges = mark.words.map((word, index) =>
     textRangeFor(q, word, mark.occurrences?.[index] ?? mark.wordTimes?.[index]?.occurrence ?? 0)
-  ).filter(Boolean);
-  if (targets.length < 2) return;
+  );
+  // A named relationship is all-or-nothing: a partial weave would make a
+  // stronger visual claim than the verified Scripture anchors support.
+  if (ranges.some((range) => !range) || offsets.some((offset) => !offset)) {
+    return { refused: 'scripture-anchor-missing' };
+  }
+  const anchoredWords = ranges.map((range) => range.toString());
 
   const NS = 'http://www.w3.org/2000/svg';
-  let svg = q.querySelector('svg.smarks');
-  if (!svg) {
-    svg = document.createElementNS(NS, 'svg');
-    svg.setAttribute('class', 'smarks');
-    svg._lanes = [];
-    q.appendChild(svg);
-  }
-  for (const g of svg.querySelectorAll('g.markg')) g.classList.add('past');
-
   const qr = q.getBoundingClientRect();
-  const runs = targets.flatMap((target) => [...target.getClientRects()]
+  const targetRuns = ranges.map((range) => [...range.getClientRects()]
     .filter((rect) => rect.width > 0 && rect.height > 0)
     .map((rect) => ({
       x1: rect.left - qr.left,
       x2: rect.right - qr.left,
-      y: rect.bottom - qr.top + 1.5,
-    })))
-    .sort((a, b) => a.y - b.y || a.x1 - b.x1);
-  if (runs.length < 2) return;
-  const first = runs[0];
-  const last = runs[runs.length - 1];
+      top: rect.top - qr.top,
+      bottom: rect.bottom - qr.top,
+    })));
+  if (targetRuns.some((runs) => runs.length === 0)) return { refused: 'geometry-unavailable' };
+  const plan = planLoomGeometry({
+    targets: targetRuns.flat(),
+    lineRects: scriptureLineRects(q, qr),
+    boundsWidth: q.clientWidth,
+    safeInset: 8,
+  });
+  if (!plan) return { refused: 'geometry-unavailable' };
 
-  /* Lane assignment by interval overlap — never by arrival order. */
-  const span = [first.y - 14, last.y + 14];
-  const lanes = svg._lanes;
-  let laneIndex = lanes.findIndex((occupied) => occupied.every(([y1, y2]) => span[1] < y1 || span[0] > y2));
-  if (laneIndex === -1) { laneIndex = lanes.length; lanes.push([]); }
-  lanes[laneIndex].push(span);
-  const gutter = Number.parseFloat(getComputedStyle(q).paddingLeft) || 64;
-  const lane = Math.max(8, gutter - 24 - laneIndex * 11);
+  q.querySelector('svg.smarks')?.remove();
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('class', 'smarks');
+  svg.setAttribute('viewBox', `0 0 ${q.clientWidth} ${q.clientHeight}`);
+  svg.setAttribute('aria-hidden', 'true');
+  q.appendChild(svg);
 
-
-  const g = document.createElementNS(NS, 'g');
-  g.setAttribute('class', 'markg');
-  svg.appendChild(g);
-  /* Stage grammar, learned the hard way: a connector that travels to the
-     word at underline height reads as underlining the whole line. On this
-     wide stage the words carry their own underlines, and the lane carries
-     the gathering — one soft corner into a short leader at the top, a
-     short tick at each other run — nothing ever runs beneath the text. */
-  const R = 8;
-  const leader = 10;
-  /* The label's slot is settled BEFORE the geometry is drawn, and the
-     geometry attaches to it — a dash at one group's line was striking
-     through another group's slotted label because the two systems never
-     spoke. */
-  svg._labelSlots = svg._labelSlots || [];
-  const narrow = window.innerWidth < 900;
-  const labelExtent = narrow && mark.label ? Math.min(72, Math.max(18, mark.label.length * 5.2)) : 16;
-  const labelX = narrow ? lane - 5 : Math.max(8, gutter - 14);
-  const slotForY = (wantY) => {
-    const half = labelExtent / 2;
-    const low = half + 2;
-    const high = Math.max(low, q.clientHeight - half - 2);
-    const base = Math.max(low, Math.min(high, wantY));
-    let y = base;
-    let step = 0;
-    while (svg._labelSlots.some((slot) =>
-      Math.abs(slot.x - labelX) < 10 && y + half > slot.y1 && y - half < slot.y2
-    ) && step < 16) {
-      step += 1;
-      y = Math.max(low, Math.min(high, base + (step % 2 ? 1 : -1) * Math.ceil(step / 2) * (labelExtent + 4)));
-    }
-    svg._labelSlots.push({ x: labelX, y1: y - half, y2: y + half });
-    return y;
+  const addPath = (className, d, dataName = null) => {
+    const path = document.createElementNS(NS, 'path');
+    path.setAttribute('class', className);
+    path.setAttribute('d', d);
+    if (dataName) path.setAttribute(dataName, '');
+    svg.appendChild(path);
+    animateLoomPath(path, immediate);
   };
-  const midY = (first.y + last.y) / 2;
-  const labelY = mark.label ? slotForY(midY + 3) : null;
-  const parts = [];
-  for (const run of runs) parts.push(`M ${run.x1} ${run.y} H ${run.x2}`);
-  if (last.y - first.y > R + 2) {
-    parts.push(`M ${lane + R + leader} ${first.y} H ${lane + R} Q ${lane} ${first.y} ${lane} ${first.y + R} V ${last.y}`);
-    for (const run of runs) {
-      if (run !== first) parts.push(`M ${lane} ${run.y} H ${lane + leader}`);
-    }
-    /* A label slotted beyond the bracket extends the lane to reach it. */
-    if (labelY != null && labelY > last.y + 4) parts.push(`M ${lane} ${last.y} V ${labelY}`);
-    if (labelY != null && labelY < first.y - 4) parts.push(`M ${lane} ${first.y} V ${labelY}`);
-  } else {
-    /* One line: a tick at the words' line, the dash at the label's own
-       slot, and a stub joining them when they differ. */
-    const dashY = labelY ?? first.y;
-    parts.push(`M ${lane} ${dashY} H ${lane + R + leader}`);
-    if (Math.abs(dashY - first.y) > 4) {
-      parts.push(`M ${lane} ${first.y} H ${lane + leader}`);
-      parts.push(`M ${lane} ${Math.min(dashY, first.y)} V ${Math.max(dashY, first.y)}`);
-    }
-  }
-  const path = document.createElementNS(NS, 'path');
-  path.setAttribute('d', parts.join(' '));
-  g.appendChild(path);
-  if (mark.label) {
-    /* Horizontal, right-aligned against the lane — the rotated label was
-       the only sideways text anywhere and the hardest to read exactly when
-       it mattered. Rotation survives only as the narrow-viewport fallback,
-       where the left margin cannot hold a word. */
-    const label = document.createElementNS(NS, 'text');
-    if (!narrow) {
-      /* One ledger column for every label, outside the deepest common
-         lanes — per-lane alignment scattered stacked labels diagonally
-         into each other's dashes. */
-      label.setAttribute('x', labelX);
-      label.setAttribute('y', labelY);
-      label.setAttribute('text-anchor', 'end');
-    } else {
-      label.setAttribute('x', labelX);
-      label.setAttribute('y', labelY);
-      label.setAttribute('text-anchor', 'middle');
-      label.setAttribute('transform', `rotate(-90 ${labelX} ${labelY})`);
-      if (mark.label.length > 13) {
-        label.setAttribute('textLength', String(labelExtent));
-        label.setAttribute('lengthAdjust', 'spacingAndGlyphs');
-      }
-    }
-    label.textContent = mark.label;
-    g.appendChild(label);
-  }
-  const len = path.getTotalLength();
-  path.style.strokeDasharray = String(len);
-  path.style.strokeDashoffset = String(len);
-  if (immediate || motionIsReduced()) path.style.strokeDashoffset = '0';
-  else requestAnimationFrame(() => { path.style.strokeDashoffset = '0'; });
+  plan.contacts.forEach((contact) => {
+    addPath('loom-contact', `M ${contact.x1} ${contact.contactY} H ${contact.x2}`, 'data-loom-contact');
+    addPath('loom-pin', `M ${contact.pinX} ${contact.contactY + 1.5} V ${contact.corridorY}`);
+  });
+  plan.wefts.forEach((weft) => addPath('loom-weft', `M ${weft.x1} ${weft.y} H ${weft.x2}`));
+  if (plan.warp) addPath('loom-warp', `M ${plan.warp.x} ${plan.warp.y1} V ${plan.warp.y2}`);
+  plan.knots.forEach((knot) => {
+    const circle = document.createElementNS(NS, 'circle');
+    circle.setAttribute('class', 'loom-knot');
+    circle.setAttribute('cx', knot.x);
+    circle.setAttribute('cy', knot.y);
+    circle.setAttribute('r', '1.8');
+    svg.appendChild(circle);
+  });
+  mark.words.forEach((word, index) => {
+    const anchor = getOrWrap(q, word, mark.occurrences?.[index] ?? mark.wordTimes?.[index]?.occurrence ?? 0);
+    if (!anchor) return;
+    anchor.classList.add('group-target');
+    anchor.dataset.anchorIndex = String(index);
+    anchor.dataset.anchorWord = word;
+    anchor.dataset.anchorOccurrence = String(mark.occurrences?.[index] ?? mark.wordTimes?.[index]?.occurrence ?? 0);
+  });
+  const sourceSpan = scriptureText.slice(
+    Math.min(...offsets.map((offset) => offset.start)),
+    Math.max(...offsets.map((offset) => offset.end)),
+  );
+  return { words: anchoredWords, sourceSpan };
 }
 
 /* The fallback layer when the director has no scenes: the plan's stage
@@ -1225,9 +1870,20 @@ function cueMarks(segText) {
     if (mark.drawn) continue;
     if (mark.words.some((w) => said.includes(` ${normalize(w)} `))) {
       mark.drawn = true;
-      drawMark(mark);
+      showFallbackMark(mark);
     }
   }
+}
+
+function showFallbackMark(mark, { immediate = false } = {}) {
+  if (!current) return false;
+  clearStageComposition({ immediate });
+  const loom = drawMark(mark, { immediate });
+  if (loom?.refused) return false;
+  const event = { kind: 'group' };
+  current.activeVisualEvent = event;
+  mountComposition(loomComposition(mark, loom.words, loom.sourceSpan), event, { immediate });
+  return true;
 }
 
 // ------------------------------------------- the voices, measured honestly
@@ -1295,6 +1951,7 @@ function toggleStep(li, step, index) {
     fetchDirector(step, index, activeRun).then((direction) => {
       if (pendingPlay !== intent || !runIsActive(intent.run)) return;
       cancelPendingPlay();
+      surfaceDirectionNote(li, directorEntry(step));
       startStepPlayback(li, step, index, direction);
     }).catch((error) => {
       if (pendingPlay === intent) cancelPendingPlay();
@@ -1302,6 +1959,7 @@ function toggleStep(li, step, index) {
     });
     return;
   }
+  surfaceDirectionNote(li, entry);
   startStepPlayback(li, step, index, entry.value);
 }
 
@@ -1313,13 +1971,20 @@ function startStepPlayback(li, step, index, direction) {
     run: activeRun,
     controller: new AbortController(),
     timers: new Set(),
+    compositionTimers: new Set(),
     frameTickets: new Set(),
-    hlFrame: null,
     segments: null,
     phrases: quotedPhrases(step.why),
     capKey: null,
+    captionText: '',
+    captionSegmentId: '',
+    direction: null,
     scenes: null,
     timeline: null,
+    editorialPlan: null,
+    beatById: new Map(),
+    sceneById: new Map(),
+    eventByBeatId: new Map(),
     fired: 0,
     sceneIdx: -1,
     sceneGeneration: 0,
@@ -1328,6 +1993,12 @@ function startStepPlayback(li, step, index, direction) {
     mountedScene: null,
     eventQueue: [],
     rebuilding: false,
+    activeVisualEvent: null,
+    refusedVisualEvent: null,
+    activeEditorialShot: null,
+    refusedEditorialShotId: null,
+    visualOutcomes: new Map(),
+    visualRel: 0,
     playToken: ++playCounter,
     returnFocus: playButton,
   };
@@ -1336,16 +2007,17 @@ function startStepPlayback(li, step, index, direction) {
   li.classList.add('playing');
 
   const th = TH();
+  th.scrollTop = 0;
   th.querySelector('.th-source').textContent = step.source || step.sourceId;
   th.querySelector('.th-title').textContent = step.episodeTitle;
   th.querySelector('.th-whisper').textContent = '';
   th.querySelector('.verses').classList.remove('has');
   th.querySelector('.verses').innerHTML = '';
-  th.querySelector('.big-quote').classList.remove('show');
   th.querySelector('.caption').classList.remove('show');
   th.querySelector('.th-body').classList.remove('turning', 'spot', 'bare');
   th.querySelector('.th-body').setAttribute('aria-busy', 'false');
-  for (const sel of TH_BOXES) th.querySelector(sel).innerHTML = '';
+  clearEditorialTrace();
+  clearAllVisualChannels({ immediate: true });
   updateProgress(step.startSec);
   th.classList.add('on');
   th.setAttribute('aria-hidden', 'false');
@@ -1354,32 +2026,38 @@ function startStepPlayback(li, step, index, direction) {
   document.body.classList.add('in-theater');
   nextFrame(() => { if (current === owner) $('#th-stop').focus({ preventScroll: true }); });
 
-  player.onended = () => {
-    if (current === owner) stopAudio();
-  };
-  player.onerror = () => {
-    if (current !== owner) return;
-    honestNote(li, 'The audio stopped before this reading was finished.');
-    stopAudio();
-  };
-  player.src = step.audioUrl;
-  player.currentTime = step.startSec;
-  player.volume = 0;
+  const silentDrive = qaIsEnabled && qaSilentDrive;
+  if (!silentDrive) {
+    player.onended = () => {
+      if (current === owner) stopAudio();
+    };
+    player.onerror = () => {
+      if (current !== owner) return;
+      honestNote(li, 'The audio stopped before this reading was finished.');
+      stopAudio();
+    };
+    player.src = step.audioUrl;
+    player.currentTime = step.startSec;
+    player.volume = 0;
+  }
   beginDirection(li, index, direction);
   if (!owner.scenes) fallbackVerse(step, index);
 
-  player.play().then(() => {
-    if (current === owner) fadeTo(1, 420);
-  }).catch(() => {
-    if (current !== owner) return;
-    honestNote(li, 'This publisher asks you to listen on their own site — the tour will still be here.');
-    stopAudio();
-  });
+  if (!silentDrive) {
+    player.play().then(() => {
+      if (current === owner) fadeTo(1, 420);
+    }).catch(() => {
+      if (current !== owner) return;
+      honestNote(li, 'This publisher asks you to listen on their own site — the tour will still be here.');
+      stopAudio();
+    });
+  }
 
   const w = whispers[index];
   if (w) {
     th.querySelector('.th-whisper').textContent = w;
     playDelay(owner, () => th.querySelector('.th-whisper').classList.add('show'), motionMs(700));
+    owner.whisperTimer = playDelay(owner, () => th.querySelector('.th-whisper').classList.remove('show'), 8700);
   }
 
   fetch(`/api/window?recordId=${encodeURIComponent(step.recordId)}&from=${step.startSec}&to=${step.endSec}`, {
@@ -1404,11 +2082,12 @@ function startStepPlayback(li, step, index, direction) {
           owner.fired += 1;
           if (current !== owner) return;
         }
+        syncVisualLifecycles(rel);
       }
     } else if (frac > 0.7) {
       const dir = stageDirections[index];
       for (const mark of dir?.marks || []) {
-        if (!mark.drawn) { mark.drawn = true; drawMark(mark); }
+        if (!mark.drawn) { mark.drawn = true; showFallbackMark(mark); }
       }
     }
     const remaining = step.endSec - t;
@@ -1424,13 +2103,16 @@ function startStepPlayback(li, step, index, direction) {
 // transients skipped, and the schedule pointer set to the next future beat.
 
 function rebuildStageAt(t, { reason = 'seek', immediate = false } = {}) {
-  if (!current?.timeline || !current.scenes?.length) return;
+  if (!current?.timeline || !current.editorialPlan) return;
   const owner = current;
   const { step, scenes } = owner;
   const rel = Math.max(0, Math.min(step.endSec - step.startSec, t - step.startSec));
+  owner.visualRel = rel;
   const generation = ++owner.seekGeneration;
   owner.rebuilding = true;
   owner.eventQueue = [];
+  owner.activeEditorialShot = null;
+  owner.refusedEditorialShotId = null;
   let k = -1;
   for (let i = 0; i < scenes.length; i++) if ((scenes[i].at ?? 0) <= rel) k = i;
   owner.fired = owner.timeline.findIndex((event) => event.at > rel);
@@ -1442,16 +2124,16 @@ function rebuildStageAt(t, { reason = 'seek', immediate = false } = {}) {
     owner.mountedScene = null;
     owner.eventQueue = [];
     const th = TH();
-    for (const sel of TH_BOXES) th.querySelector(sel).innerHTML = '';
+    clearAllVisualChannels();
     const q = th.querySelector('.verses');
     q.classList.remove('has');
     q.innerHTML = '';
     th.querySelector('.th-body').classList.remove('turning', 'spot', 'bare');
     th.querySelector('.th-body').setAttribute('aria-busy', 'false');
-    releaseHighlight({ immediate: true });
     owner.rebuilding = false;
     owner.capKey = null;
     updateCaption(t);
+    syncVisualLifecycles(rel, { immediate: true });
     return;
   }
   const scene = scenes[k];
@@ -1460,15 +2142,10 @@ function rebuildStageAt(t, { reason = 'seek', immediate = false } = {}) {
     immediate: immediate || reason === 'resize',
     onMounted: () => {
       if (current !== owner || owner.seekGeneration !== generation || owner.mountedScene !== scene) return;
-      for (const ev of owner.timeline) {
-        if (ev.scene !== scene || ev.kind === 'scene' || ev.at > rel) continue;
-        /* A spent spotlight stays spent. */
-        if (ev.kind === 'highlight' && rel >= ev.at + 11) continue;
-        renderEventNow(ev, { reconstruct: true, elapsedSince: Math.max(0, rel - ev.at) });
-      }
+      updateCaption(t);
+      syncVisualLifecycles(rel, { immediate: true });
       owner.rebuilding = false;
       owner.capKey = null;
-      updateCaption(t);
     },
   });
 }
@@ -1483,7 +2160,7 @@ function resetFallbackStage(t) {
   for (const mark of q.querySelectorAll('.fnmark')) mark.remove();
   const frac = (t - current.step.startSec) / (current.step.endSec - current.step.startSec);
   if (frac > 0.7) {
-    for (const mark of dir?.marks || []) { mark.drawn = true; drawMark(mark, { immediate: true }); }
+    for (const mark of dir?.marks || []) { mark.drawn = true; showFallbackMark(mark, { immediate: true }); }
   }
 }
 
@@ -1594,29 +2271,31 @@ function updateCaption(t) {
   for (const s of current.segments) { if (s.s <= t) seg = s; else break; }
   const silent = !seg || t > seg.e + 1.5;
   const key = silent ? null : seg.s;
-  if (key === current.capKey) return;
-  current.capKey = key;
+  const segmentId = silent ? '' : `segment:${seg.s}:${seg.e}`;
+  const fullCaptionText = silent ? '' : String(seg.t || '');
   const cap = TH().querySelector('.caption');
-  if (silent) { cap.classList.remove('show'); return; }
-  cap.textContent = seg.t;
-  cap.classList.add('show');
-  if (current.timeline) {
-    lightBoxWords(seg.t);
-    /* The compare box breathes with the tape: when the teacher says one of
-       the words that binds the two texts, it pulses once. */
-    if (current.compareEl?.isConnected && current.compareWords) {
-      const said = new Set(normalize(seg.t).split(' '));
-      if ([...current.compareWords].some((w) => said.has(w))) {
-        for (const em of current.compareEl.querySelectorAll('em.rel')) {
-          em.classList.remove('pulse');
-          void em.offsetWidth;
-          em.classList.add('pulse');
-        }
-      }
-    }
-  } else {
-    cueMarks(seg.t);
+  current.captionText = fullCaptionText;
+  if (!silent) cap.textContent = wordBoundaryExcerpt(fullCaptionText, stageIsNarrow() ? 88 : 116);
+  current.captionSegmentId = segmentId;
+  const syncSegmentProvenance = () => {
+    const composition = TH().querySelector('.thought-current > .th-composition');
+    if (composition) composition.dataset.sourceSegmentIds = segmentId;
+    if (editorialFrame()) editorialFrame().dataset.sourceSegmentIds = segmentId;
+    const listeningLine = composition?.querySelector('.listening-line');
+    if (listeningLine) listeningLine.textContent = current.captionText;
+  };
+  if (key === current.capKey) {
+    syncSegmentProvenance();
+    return;
   }
+  current.capKey = key;
+  if (silent) cap.classList.remove('show');
+  else {
+    cap.classList.add('show');
+  }
+  syncSegmentProvenance();
+  if (silent) return;
+  if (!current.timeline) cueMarks(seg.t);
 }
 
 function honestNote(li, text) {
@@ -1636,8 +2315,13 @@ function fadeTo(target, ms) {
   const t0 = performance.now();
   const tick = (t) => {
     if (current !== owner) return;
-    const k = Math.min(1, (t - t0) / ms);
-    player.volume = startVol + (target - startVol) * k;
+    // Some WebKit/embedded-browser clocks can hand the first animation frame
+    // a timestamp just before this performance.now() sample. Clamp both the
+    // interpolation and the media value so a fade never writes outside the
+    // HTMLMediaElement [0, 1] volume contract.
+    const k = Math.max(0, Math.min(1, (t - t0) / ms));
+    const volume = startVol + (target - startVol) * k;
+    player.volume = Math.max(0, Math.min(1, volume));
     if (k < 1) owner.fadeRaf = requestAnimationFrame(tick);
   };
   owner.fadeRaf = requestAnimationFrame(tick);
@@ -1646,9 +2330,8 @@ function fadeTo(target, ms) {
 function stopAudio({ restoreFocus = true } = {}) {
   if (!current) return;
   const owner = current;
-  const { li, fadeRaf, hlTimer, returnFocus } = owner;
+  const { li, fadeRaf, returnFocus } = owner;
   cancelAnimationFrame(fadeRaf);
-  clearTimeout(hlTimer);
   cancelAllPlayFrames(owner);
   owner.controller.abort();
   for (const timer of owner.timers) clearTimeout(timer);
@@ -1658,7 +2341,6 @@ function stopAudio({ restoreFocus = true } = {}) {
   player.onended = null;
   player.onerror = null;
   li.classList.remove('playing');
-  releaseHighlight({ immediate: true });
   const th = TH();
   th.classList.remove('on');
   th.setAttribute('aria-hidden', 'true');
@@ -1671,7 +2353,14 @@ function stopAudio({ restoreFocus = true } = {}) {
   th.querySelector('.th-body').classList.remove('turning', 'spot', 'bare');
   th.querySelector('.th-body').setAttribute('aria-busy', 'false');
   th.querySelector('.th-progress').classList.remove('dragging');
-  for (const sel of TH_BOXES) th.querySelector(sel).innerHTML = '';
+  lastVisualOutcomeSnapshot = visualOutcomeSnapshot(owner);
+  lastEditorialSnapshot = editorialSnapshot(owner);
+  clearAllVisualChannels({ immediate: true });
+  clearEditorialTrace();
+  for (const key of [
+    'editorialPolicy', 'editorialShotCount', 'editorialSemanticOccupancy',
+    'editorialMaxRestSec', 'editorialMaxFamilyRun', 'editorialSceneCoverage',
+  ]) delete th.dataset[key];
   document.body.classList.remove('in-theater');
   $('#main').inert = false;
   $('#main').removeAttribute('aria-hidden');
@@ -1701,11 +2390,9 @@ function scheduleStageRedraw() {
       rebuildStageAt(player.currentTime, { reason: 'resize', immediate: true });
       return;
     }
-    const q = TH().querySelector('.verses');
-    q.querySelector('svg.smarks')?.remove();
-    for (const mark of stageDirections[owner.index]?.marks || []) {
-      if (mark.drawn) drawMark(mark, { immediate: true });
-    }
+    const drawn = (stageDirections[owner.index]?.marks || []).filter((mark) => mark.drawn);
+    const mark = drawn.at(-1);
+    if (mark) showFallbackMark(mark, { immediate: true });
   }, motionMs(140));
 }
 
@@ -1744,7 +2431,7 @@ async function loadReplay(id) {
     const response = await fetch(`/api/replay/${encodeURIComponent(id)}`, { signal: run.controller.signal });
     if (!response.ok) throw new Error(`replay request returned ${response.status}`);
     const data = await response.json();
-    const fixture = data.fixture || data;
+    const fixture = upgradeReplayFixture(data.fixture || data);
     const check = validateReplayFixture(fixture);
     if (!check.ok) throw new Error(`replay refused: ${check.errors.join('; ')}`);
     if (!runIsActive(run)) return;

@@ -91,7 +91,9 @@
     "verify:alignment-conformance": "node scripts/verify-alignment-conformance.mjs",
     "verify:alignment": "npm run verify:alignment-freshness && npm run verify:alignment-conformance",
     "lab:tour": "node lab/tour-lab/server.mjs",
-    "lab:tour:run": "node lab/tour-lab/run-cli.mjs"
+    "lab:tour:run": "node lab/tour-lab/run-cli.mjs",
+    "lab:tour:audit-program": "node lab/tour-lab/program-audit.mjs",
+    "lab:tour:capture": "node lab/tour-lab/program-capture.mjs"
   },
   "main": "dist/electron/main.cjs",
   "bin": {

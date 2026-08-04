@@ -1,0 +1,354 @@
+{
+  "startedAt": "2026-08-02T19:40:41.907Z",
+  "requestKey": "1|gpt-5.6-luna-medium|forty-minutes-ot:podcast:6e2330f5bb45617d7406fb920c40990e|1870|2165|04d10f2fe4c2019f",
+  "request": {
+    "schemaVersion": 1,
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "forty-minutes-ot:podcast:6e2330f5bb45617d7406fb920c40990e",
+    "fromSec": 1870,
+    "toSec": 2165,
+    "why": "This is the clearest direct comparison of the two scenes. The speaker contrasts Babel’s people gathered “for an evil purpose” to “make a name for themselves” with Pentecost, where God comes down, gives the Spirit, and people hear the gospel in a unified way. It also adds the Pentecost/Sinai connection: the festival associated with receiving the law becomes a proclamation of its fulfillment in Chri"
+  },
+  "result": {
+    "schemaVersion": 1,
+    "requestKey": "1|gpt-5.6-luna-medium|forty-minutes-ot:podcast:6e2330f5bb45617d7406fb920c40990e|1870|2165|04d10f2fe4c2019f",
+    "clip": {
+      "fromSec": 1870,
+      "toSec": 2165,
+      "durationSec": 295
+    },
+    "scenes": [
+      {
+        "ref": "Acts 2:4–6",
+        "verses": [
+          {
+            "verse": 4,
+            "text": "They were all filled with the Holy Spirit, and began to speak with other languages, as the Spirit gave them the ability to speak."
+          },
+          {
+            "verse": 5,
+            "text": "Now there were dwelling in Jerusalem Jews, devout men, from every nation under the sky."
+          },
+          {
+            "verse": 6,
+            "text": "When this sound was heard, the multitude came together and were bewildered, because everyone heard them speaking in his own language."
+          }
+        ],
+        "cue": "with the result being that as they hear",
+        "groups": [
+          {
+            "words": [
+              "filled",
+              "Spirit"
+            ],
+            "label": "Spirit given",
+            "cue": "God comes down once more",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 37,
+            "timingSource": "house"
+          }
+        ],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "At Pentecost you have the undoing of the curse that was given at the Tower of Babel",
+          "at": 32,
+          "timingSource": "house"
+        },
+        "asides": [],
+        "at": 26,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Genesis 11:1–3",
+        "verses": [
+          {
+            "verse": 1,
+            "text": "The whole earth was of one language and of one speech."
+          },
+          {
+            "verse": 2,
+            "text": "As they traveled from the east, they found a plain in the land of Shinar, and they lived there."
+          },
+          {
+            "verse": 3,
+            "text": "They said to one another, “Come, let’s make bricks, and burn them thoroughly.” They had brick for stone, and they used tar for mortar."
+          }
+        ],
+        "cue": "In the Tower of Babel you have",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [],
+        "at": 47,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Proverbs 10:24",
+        "verses": [
+          {
+            "verse": 24,
+            "text": "What the wicked fear, will overtake them, but the desire of the righteous will be granted."
+          }
+        ],
+        "cue": "what the wicked dreads will come upon him",
+        "groups": [
+          {
+            "words": [
+              "wicked",
+              "fear"
+            ],
+            "label": "dread fulfilled",
+            "cue": "what the wicked dreads",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [
+              {
+                "word": "wicked",
+                "occurrence": 0,
+                "at": 53,
+                "timingSource": "word"
+              }
+            ],
+            "at": 53,
+            "timingSource": "cue"
+          },
+          {
+            "words": [
+              "desire",
+              "righteous"
+            ],
+            "label": "righteous desire",
+            "cue": null,
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 174,
+            "timingSource": "house"
+          }
+        ],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [
+          {
+            "text": "contrasts judgment with blessing",
+            "cue": "there's a great contrast between these two stories",
+            "at": 142,
+            "timingSource": "cue"
+          }
+        ],
+        "at": 53,
+        "timingSource": "cue"
+      }
+    ],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 39737,
+      "passes": 3,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 31853,
+          "promptTokens": 1898,
+          "completionTokens": 3736,
+          "reasoningTokens": 3305,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.002478775,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-scenes:3"
+        },
+        {
+          "role": "repair",
+          "latencyMs": 2713,
+          "promptTokens": 133,
+          "completionTokens": 64,
+          "reasoningTokens": 52,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0000517,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-repairs:1/1"
+        },
+        {
+          "role": "fill-1",
+          "latencyMs": 5164,
+          "promptTokens": 560,
+          "completionTokens": 599,
+          "reasoningTokens": 516,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0004154,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:1"
+        }
+      ],
+      "totalUsd": 0.0029458749999999997,
+      "tokens": {
+        "prompt": 2591,
+        "completion": 4399,
+        "reasoning": 3873,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 1,
+        "dropped": [
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "group",
+            "count": 2
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "group",
+            "count": 1
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "compare",
+            "count": 1
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-1",
+            "kind": "group",
+            "count": 2
+          }
+        ],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "sceneCount": 3,
+        "artifactCount": 5,
+        "passes": [
+          {
+            "role": "initial",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 2,
+            "clamped": 0,
+            "invented": 5,
+            "sceneCount": 3,
+            "artifactCount": 5
+          },
+          {
+            "role": "repair",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 2,
+            "clamped": 0,
+            "invented": 5,
+            "sceneCount": 3,
+            "artifactCount": 5
+          },
+          {
+            "role": "house-timeline",
+            "schemaVersion": 1,
+            "dropped": [
+              {
+                "reason": "anchored-outside-scene",
+                "kind": "allusion",
+                "at": 53
+              }
+            ],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "sceneCount": 3,
+            "artifactCount": 4
+          },
+          {
+            "role": "fill-1",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "sceneCount": 3,
+            "artifactCount": 5
+          }
+        ]
+      }
+    }
+  },
+  "schemaVersion": 1
+}

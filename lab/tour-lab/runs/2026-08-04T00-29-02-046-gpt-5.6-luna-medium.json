@@ -1,0 +1,581 @@
+{
+  "runId": "2026-08-04T00-29-02-046-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-04T00:29:02.046Z",
+  "promptId": null,
+  "prompt": "Build a 25–40 minute continuous-feeling listening episode on Exodus 34:6–7 as the Bible’s most quoted passage. Prefer 4–6 substantial 4–8 minute clips that work through the wording closely, explain key Hebrew or translation choices, trace where later biblical writers quote or adapt it, compare genuinely different readings, flag important cautions, and land a clear thesis. Avoid short mentions; make the sequence feel like one edited episode.",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "qwen/qwen3.8-max",
+        "~deepseek/deepseek-v4-flash-latest",
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Exodus 34:6–7: Mercy, Judgment, and the Bible’s Core Portrait of God",
+    "intro": "This roughly half-hour tour treats Exodus 34:6–7 as a carefully balanced self-description rather than a slogan. It starts with the wording and literary tension, moves through Hebrew and translation choices, watches Moses and later biblical writers reuse the passage, addresses the danger of “generational curse” readings, and ends with a clear claim about how mercy and accountability belong together—even when the Bible’s own characters struggle with that mercy.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:most-quoted-verse-bible",
+        "startSec": 400,
+        "endSec": 700,
+        "why": "Begin with the passage itself and its shape. The speakers read a translation foregrounding “loyal love,” “faithfulness,” and the threefold “iniquity, transgression, and sin,” then openly name the shock of the turn to judgment—“it just all of a sudden takes a turn.” Their discussion of the two chiasms and the “balance” between compassion and accountability gives the tour its governing tension, while also establishing why this is plausibly the Bible’s most reused description of God.",
+        "episodeTitle": "The Most Quoted Verse in the Bible",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/89fa8e74-dcb8-481a-b907-f92abaee334d/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=89fa8e74-dcb8-481a-b907-f92abaee334d",
+        "durationSec": 3354,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "naked-bible:podcast:2693",
+        "startSec": 1725,
+        "endSec": 2000,
+        "why": "Now slow down over textual and translation questions. The speaker notes that the verbs can grammatically be read as either God or Moses proclaiming the divine name, argues that Exodus 33:19 should guide the reading, and compares Exodus 34’s emphasis on God’s “magnanimous qualities” with Exodus 20’s emphasis on jealousy and punishment. This supplies a genuinely different, more text-critical angle and places the words after the golden calf, where the emphasis on mercy serves covenant renewal.",
+        "episodeTitle": "Naked Bible 310: Exodus 33-34",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2020/02/NakedBible310_Exodus33_34.mp3",
+        "durationSec": 4477,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:most-quoted-verse-bible",
+        "startSec": 1000,
+        "endSec": 1300,
+        "why": "This is the tour’s pivot from close reading to reception within Scripture. The speakers explain that the passage is reused at least 27 times and that quotation reveals how later biblical authors understood it. In Numbers 14, Moses quotes not only “forgiving iniquity” but also the difficult line about not clearing the guilty—and then asks, “So forgive the people.” That surprising reuse challenges a purely negative reading of verse 7 and shows the passage functioning as an argument for mercy.",
+        "episodeTitle": "The Most Quoted Verse in the Bible",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/89fa8e74-dcb8-481a-b907-f92abaee334d/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=89fa8e74-dcb8-481a-b907-f92abaee334d",
+        "durationSec": 3354,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:does-god-curse-generations",
+        "startSec": 900,
+        "endSec": 1200,
+        "why": "Hear the crucial caution about “generational curses.” The speakers connect Exodus 34:7 with Exodus 20:5–6, where the pattern is explicitly tied to generations that continue in idolatry, and distinguish God’s just accountability of each generation from punishing innocent descendants for someone else’s sin. This clip also brings in Ezekiel 18 and John 9, showing that later biblical reflection resists simplistic inherited-guilt explanations while still acknowledging real intergenerational consequences.",
+        "episodeTitle": "Does God Curse Generations?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/53fe3c6a-be2a-44c5-a7cc-bbb4ca05fbcb/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=53fe3c6a-be2a-44c5-a7cc-bbb4ca05fbcb",
+        "durationSec": 3239,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:3d57222c-7586-425a-bd99-65fdf7245a46",
+        "startSec": 480,
+        "endSec": 740,
+        "why": "The tour now tests the theology emotionally through Jonah. Jonah throws God’s covenant name back at him—“abounding in steadfast love”—because he cannot accept mercy shown to enemies. The discussion’s comparison with the laborers paid equally exposes a genuinely different reading pressure: mercy can look unjust from the viewpoint of those who believe they have earned God’s favor. This keeps the passage from becoming a comfortable list of attributes and shows why its mercy is morally disruptive.",
+        "episodeTitle": "Jonah 4: Is God's Mercy Evil?",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG5623589978.mp3?updated=1664486081",
+        "durationSec": 3001,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:c416445833e65b5f726afb158ec92353",
+        "startSec": 1650,
+        "endSec": 1950,
+        "why": "Land here on the tour’s Christian synthesis, while recognizing it as this speaker’s theological reading rather than the only possible conclusion. The speaker calls Exodus 34:6–7 an apparent tension between forgiveness and justice, then argues that “the cross resolves the tension,” allowing guilt to be dealt with without the guilty person being abandoned. Whether or not one adopts that exact formulation, it gives the sequence a clear thesis: the passage presents mercy as primary and abundant, but not as moral indifference, and its later interpretation turns on how those two claims can both remain true.",
+        "episodeTitle": "Episode 105 (Exodus 33:18-34:16)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_Min_ep_105.mp3?dest-id=245197",
+        "durationSec": 2488,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips present Exodus 34:6–7 as Scripture’s durable grammar for speaking about God: compassion, grace, patience, loyal love, and forgiveness are not detachable from judgment and accountability. The passage does not authorize a fatalistic curse over innocent descendants, nor does it permit mercy to become sentimental approval. Its force comes from holding those truths in tension—and from watching the Bible’s own writers repeatedly return to that tension to plead for forgiveness, challenge easy explanations of suffering, and confront our resistance to mercy when it reaches the people we would rather see judged.",
+    "totalSeconds": 1735
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 5600,
+      "promptTokens": 1682,
+      "completionTokens": 261,
+      "reasoningTokens": 40,
+      "cachedPromptTokens": 0,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000366775,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 1,
+      "latencyMs": 4424,
+      "promptTokens": 17652,
+      "completionTokens": 436,
+      "reasoningTokens": 132,
+      "cachedPromptTokens": 0,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.020268,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "Azure",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "Azure"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 2,
+      "latencyMs": 7335,
+      "promptTokens": 22635,
+      "completionTokens": 588,
+      "reasoningTokens": 209,
+      "cachedPromptTokens": 17649,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001152465,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 3,
+      "latencyMs": 11057,
+      "promptTokens": 32208,
+      "completionTokens": 809,
+      "reasoningTokens": 752,
+      "cachedPromptTokens": 22632,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001908645,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 4,
+      "latencyMs": 5721,
+      "promptTokens": 32938,
+      "completionTokens": 217,
+      "reasoningTokens": 174,
+      "cachedPromptTokens": 32205,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0005438,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 5,
+      "latencyMs": 21506,
+      "promptTokens": 34126,
+      "completionTokens": 1918,
+      "reasoningTokens": 853,
+      "cachedPromptTokens": 32935,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00162895,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 5,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Exodus",
+        "chapter": 34,
+        "verse": 6,
+        "limit": 40
+      },
+      "ms": 1,
+      "summary": "40 of 155 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Exodus",
+        "chapter": 34,
+        "verse": 7,
+        "limit": 40
+      },
+      "ms": 2,
+      "summary": "40 of 155 moments"
+    },
+    {
+      "at": 0,
+      "name": "read_passage",
+      "args": {
+        "book": "Exodus",
+        "chapter": 34,
+        "fromVerse": 6,
+        "toVerse": 7
+      },
+      "ms": 1,
+      "summary": "Exodus 34:6–7 (WEB)"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "merciful gracious slow to anger steadfast love iniquity transgression sin",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 196,
+      "summary": "15 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Exodus 34 six seven name of the LORD",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 156,
+      "summary": "15 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "visiting iniquity fathers children forgiveness guilt",
+        "sourceId": "",
+        "limit": 15
+      },
+      "ms": 140,
+      "summary": "15 hits"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:most-quoted-verse-bible",
+        "fromSec": 300,
+        "toSec": 1100
+      },
+      "ms": 1,
+      "summary": "16 skim lines, 300s–1100s of The Most Quoted Verse in the Bible"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:does-god-curse-generations",
+        "fromSec": 700,
+        "toSec": 1800
+      },
+      "ms": 0,
+      "summary": "23 skim lines, 700s–1800s of Does God Curse Generations?"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:2693",
+        "fromSec": 500,
+        "toSec": 1800
+      },
+      "ms": 0,
+      "summary": "27 skim lines, 500s–1800s of Naked Bible 310: Exodus 33-34"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:c416445833e65b5f726afb158ec92353",
+        "fromSec": 1050,
+        "toSec": 2100
+      },
+      "ms": 0,
+      "summary": "21 skim lines, 1050s–2100s of Episode 105 (Exodus 33:18-34:16)"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:1602ff17-da24-4265-9329-6d02116eb83c",
+        "fromSec": 1050,
+        "toSec": 2100
+      },
+      "ms": 0,
+      "summary": "22 skim lines, 1050s–2100s of Exodus 33-34: Cleft of the Rock"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:3d57222c-7586-425a-bd99-65fdf7245a46",
+        "fromSec": 300,
+        "toSec": 1100
+      },
+      "ms": 6,
+      "summary": "16 skim lines, 300s–1100s of Jonah 4: Is God's Mercy Evil?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:most-quoted-verse-bible",
+        "fromSec": 400,
+        "toSec": 700
+      },
+      "ms": 0,
+      "summary": "400s–700s of The Most Quoted Verse in the Bible"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:most-quoted-verse-bible",
+        "fromSec": 700,
+        "toSec": 1000
+      },
+      "ms": 0,
+      "summary": "700s–1000s of The Most Quoted Verse in the Bible"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:most-quoted-verse-bible",
+        "fromSec": 1000,
+        "toSec": 1300
+      },
+      "ms": 0,
+      "summary": "1000s–1300s of The Most Quoted Verse in the Bible"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:does-god-curse-generations",
+        "fromSec": 900,
+        "toSec": 1200
+      },
+      "ms": 0,
+      "summary": "900s–1200s of Does God Curse Generations?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:does-god-curse-generations",
+        "fromSec": 1500,
+        "toSec": 1800
+      },
+      "ms": 0,
+      "summary": "1500s–1800s of Does God Curse Generations?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:c416445833e65b5f726afb158ec92353",
+        "fromSec": 1350,
+        "toSec": 1650
+      },
+      "ms": 0,
+      "summary": "1350s–1650s of Episode 105 (Exodus 33:18-34:16)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:c416445833e65b5f726afb158ec92353",
+        "fromSec": 1650,
+        "toSec": 1950
+      },
+      "ms": 0,
+      "summary": "1650s–1950s of Episode 105 (Exodus 33:18-34:16)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:3d57222c-7586-425a-bd99-65fdf7245a46",
+        "fromSec": 480,
+        "toSec": 780
+      },
+      "ms": 0,
+      "summary": "480s–780s of Jonah 4: Is God's Mercy Evil?"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:c416445833e65b5f726afb158ec92353",
+        "fromSec": 1950,
+        "toSec": 2100
+      },
+      "ms": 0,
+      "summary": "1950s–2100s of Episode 105 (Exodus 33:18-34:16)"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2693",
+        "fromSec": 1700,
+        "toSec": 2050
+      },
+      "ms": 0,
+      "summary": "1700s–2000s of Naked Bible 310: Exodus 33-34"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 6,
+    "toolCalls": 24,
+    "tapeSec": 2850,
+    "deniedWindows": 0,
+    "promptTokens": 141241,
+    "completionTokens": 4229,
+    "reasoningTokens": 2160,
+    "cachedPromptTokens": 105421,
+    "wallMs": 56158,
+    "modelLatencyMs": 55643,
+    "toolMs": 508
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.025869,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-04T00:29:58.204Z"
+}

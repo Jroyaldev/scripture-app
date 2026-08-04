@@ -1,0 +1,431 @@
+{
+  "startedAt": "2026-08-03T00:06:14.721Z",
+  "requestKey": "1|gpt-5.6-luna-medium|radically-christian:podcast:9c8cccb3-https-radicallychristian-com-p-10729|1689|1950|c3a9e247899c3b74",
+  "request": {
+    "schemaVersion": 1,
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "radically-christian:podcast:9c8cccb3-https-radicallychristian-com-p-10729",
+    "fromSec": 1689,
+    "toSec": 1950,
+    "why": "Next, hear a direct account of the shift in how people talk about truth. The speakers contrast a modern world where reality is what “can be measured, what can be weighed, what can be tested” with a postmodern world where “everybody has their own reality.” They then argue that Scripture presents a reality that transcends both laboratory testing and personal feeling, centered on Jesus."
+  },
+  "result": {
+    "schemaVersion": 1,
+    "requestKey": "1|gpt-5.6-luna-medium|radically-christian:podcast:9c8cccb3-https-radicallychristian-com-p-10729|1689|1950|c3a9e247899c3b74",
+    "clip": {
+      "fromSec": 1689,
+      "toSec": 1950,
+      "durationSec": 261
+    },
+    "scenes": [
+      {
+        "ref": null,
+        "verses": [],
+        "cue": null,
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [
+          {
+            "text": "The speaker identifies pride in treating our own feelings and…",
+            "cue": "And it's like that there's a lot of pridefulness wrapped up in that.",
+            "at": 41,
+            "timingSource": "cue"
+          }
+        ],
+        "at": 0,
+        "timingSource": "house"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "our own feelings and our own emotions",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [
+          {
+            "text": "framing subjective emotion as an attempted authority",
+            "cue": null,
+            "at": 75,
+            "timingSource": "house"
+          },
+          {
+            "text": "contrasting modern reality with laboratory verification",
+            "cue": "Reality was what can be measured",
+            "at": 100,
+            "timingSource": "cue"
+          }
+        ],
+        "at": 50,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "reality is subjective",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [],
+        "at": 106,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "reality is more than what can be tested",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "It is a reality that transcends the seen world.",
+          "cue": "It is a reality that transcends the seen world.",
+          "at": 152,
+          "timingSource": "cue"
+        },
+        "asides": [
+          {
+            "text": "The speaker frames apocalypse as the unveiling of a transcendent…",
+            "cue": null,
+            "at": 201,
+            "timingSource": "house"
+          }
+        ],
+        "at": 135,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "John 14:6",
+        "verses": [
+          {
+            "verse": 6,
+            "text": "Jesus said to him, “I am the way, the truth, and the life. No one comes to the Father, except through me."
+          }
+        ],
+        "cue": "Jesus is the way and the truth and the life",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "When I make my feelings or what I can test in a laboratory the totality of truth, well, we're missing out on so much more than that.",
+          "cue": null,
+          "at": 256,
+          "timingSource": "house"
+        },
+        "asides": [],
+        "at": 250,
+        "timingSource": "cue"
+      }
+    ],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 20757,
+      "passes": 3,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 11275,
+          "promptTokens": 2413,
+          "completionTokens": 1509,
+          "reasoningTokens": 1034,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.00120695,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-scenes:5"
+        },
+        {
+          "role": "fill-1",
+          "latencyMs": 4188,
+          "promptTokens": 514,
+          "completionTokens": 332,
+          "reasoningTokens": 206,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0002506,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:1"
+        },
+        {
+          "role": "fill-2",
+          "latencyMs": 5290,
+          "promptTokens": 354,
+          "completionTokens": 332,
+          "reasoningTokens": 212,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0002346,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:1"
+        }
+      ],
+      "totalUsd": 0.0016921500000000001,
+      "tokens": {
+        "prompt": 3281,
+        "completion": 2173,
+        "reasoning": 1452,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 1,
+        "dropped": [
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "group",
+            "count": 2
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-1",
+            "kind": "highlight",
+            "count": 1
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-2",
+            "kind": "highlight",
+            "count": 1
+          }
+        ],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "reassigned": 0,
+        "preludes": 0,
+        "sceneCount": 5,
+        "artifactCount": 6,
+        "artifactCounts": {
+          "group": 0,
+          "footnote": 0,
+          "term": 0,
+          "allusion": 0,
+          "aside": 4,
+          "compare": 0,
+          "chain": 0,
+          "caveat": 0,
+          "highlight": 2
+        },
+        "cadence": {
+          "entranceCount": 11,
+          "uniqueBeatCount": 10,
+          "firstBeatSec": 0,
+          "lastBeatSec": 256,
+          "maxGapSec": 49
+        },
+        "passes": [
+          {
+            "role": "initial",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 1,
+            "clamped": 0,
+            "invented": 6,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 6,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 4,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 2
+            },
+            "cadence": {
+              "entranceCount": 11,
+              "uniqueBeatCount": 9,
+              "firstBeatSec": 0,
+              "lastBeatSec": 234.9,
+              "maxGapSec": 26.2
+            }
+          },
+          {
+            "role": "house-timeline",
+            "schemaVersion": 1,
+            "dropped": [
+              {
+                "reason": "aside-not-silent",
+                "kind": "aside",
+                "at": 111
+              },
+              {
+                "reason": "aside-not-silent",
+                "kind": "aside",
+                "at": 167
+              }
+            ],
+            "shifted": 1,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 1,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 4,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 2,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 2
+            },
+            "cadence": {
+              "entranceCount": 9,
+              "uniqueBeatCount": 8,
+              "firstBeatSec": 0,
+              "lastBeatSec": 256,
+              "maxGapSec": 98
+            }
+          },
+          {
+            "role": "fill-1",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 5,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 3,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 2
+            },
+            "cadence": {
+              "entranceCount": 10,
+              "uniqueBeatCount": 9,
+              "firstBeatSec": 0,
+              "lastBeatSec": 256,
+              "maxGapSec": 50
+            }
+          },
+          {
+            "role": "fill-2",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 1,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 6,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 4,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 2
+            },
+            "cadence": {
+              "entranceCount": 11,
+              "uniqueBeatCount": 10,
+              "firstBeatSec": 0,
+              "lastBeatSec": 256,
+              "maxGapSec": 49
+            }
+          }
+        ]
+      }
+    }
+  },
+  "schemaVersion": 1
+}

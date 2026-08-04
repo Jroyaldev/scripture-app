@@ -1,0 +1,441 @@
+{
+  "runId": "2026-08-03T00-07-04-387-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-03T00:07:04.387Z",
+  "promptId": null,
+  "prompt": "exodus 34:6-7",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "~deepseek/deepseek-v4-flash-latest",
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Exodus 34:6–7 — The Name God Proclaims",
+    "intro": "This tour follows Exodus 34:6–7 in its own setting: Moses is hidden in the rock while God reveals his glory and declares his name. You’ll hear the passage’s rich portrait of mercy, patience, loyal love, and justice, then spend time with the difficult final line about “visiting” iniquity across generations.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:most-quoted-verse-bible",
+        "startSec": 30,
+        "endSec": 161,
+        "why": "Begin with the passage’s larger biblical importance. The hosts call Exodus 34:6–7 “the most quoted verse by biblical authors in the Bible,” and name the tension between “gracious, slow to anger, abounding with loyal love” and the line about punishing children for their fathers’ sins.",
+        "episodeTitle": "The Most Quoted Verse in the Bible",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/89fa8e74-dcb8-481a-b907-f92abaee334d/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=89fa8e74-dcb8-481a-b907-f92abaee334d",
+        "durationSec": 3354,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:1602ff17-da24-4265-9329-6d02116eb83c",
+        "startSec": 1210,
+        "endSec": 1510,
+        "why": "This clip puts the declaration in the scene of Moses asking to see God’s glory. The hosts explain that God makes his “goodness pass before” Moses and that the name must be accompanied by truth: “glory that doesn’t have truth to it can just go to the emotions.” They then read verses 6–7 and connect Yahweh’s name with covenant-keeping love.",
+        "episodeTitle": "Exodus 33-34: Cleft of the Rock",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG5927350510.mp3?updated=1664486144",
+        "durationSec": 3288,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "naked-bible:podcast:2693",
+        "startSec": 635,
+        "endSec": 806,
+        "why": "Stay with the immediate context and hear the passage read as the climax of Moses’ encounter in the rock. The discussion emphasizes the contrast between God’s protected, partial self-disclosure—“you shall see my back”—and the revealed name: “a God merciful and gracious, slow to anger, and abounding in steadfast love and faithfulness.”",
+        "episodeTitle": "Naked Bible 310: Exodus 33-34",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2020/02/NakedBible310_Exodus33_34.mp3",
+        "durationSec": 4477,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "bibleproject:podcast:does-god-curse-generations",
+        "startSec": 930,
+        "endSec": 1215,
+        "why": "Finish by addressing the hardest phrase without minimizing it. The hosts compare Exodus 34:7 with Exodus 20:5–6, where the generations are specified as those who continue to “hate” God, and conclude that the text is not describing God punishing innocent descendants for a parent’s sin, but generations perpetuating and being held accountable for the same covenant-breaking.",
+        "episodeTitle": "Does God Curse Generations?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/53fe3c6a-be2a-44c5-a7cc-bbb4ca05fbcb/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=53fe3c6a-be2a-44c5-a7cc-bbb4ca05fbcb",
+        "durationSec": 3239,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips present Exodus 34:6–7 as God’s own account of who he is: not an abstract list of attributes, but a name proclaimed in the aftermath of Israel’s failure. Listen for how the passage holds mercy and justice together—and how its emphasis falls on enduring loyal love even while refusing to call guilt innocent.",
+    "totalSeconds": 887
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2526,
+      "promptTokens": 1597,
+      "completionTokens": 230,
+      "reasoningTokens": 19,
+      "cachedPromptTokens": 1574,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00015654,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 1,
+      "latencyMs": 3141,
+      "promptTokens": 12117,
+      "completionTokens": 291,
+      "reasoningTokens": 44,
+      "cachedPromptTokens": 1594,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00150584,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 2,
+      "latencyMs": 4373,
+      "promptTokens": 17906,
+      "completionTokens": 316,
+      "reasoningTokens": 44,
+      "cachedPromptTokens": 12114,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001034665,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 3,
+      "latencyMs": 6996,
+      "promptTokens": 23924,
+      "completionTokens": 820,
+      "reasoningTokens": 217,
+      "cachedPromptTokens": 17903,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00142358,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Exodus",
+        "chapter": 34,
+        "verse": 6,
+        "limit": 25
+      },
+      "ms": 1,
+      "summary": "25 of 155 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Exodus",
+        "chapter": 34,
+        "verse": 7,
+        "limit": 25
+      },
+      "ms": 0,
+      "summary": "25 of 155 moments"
+    },
+    {
+      "at": 0,
+      "name": "read_passage",
+      "args": {
+        "book": "Exodus",
+        "chapter": 34,
+        "fromVerse": 6,
+        "toVerse": 7
+      },
+      "ms": 2,
+      "summary": "Exodus 34:6–7 (WEB)"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "merciful gracious slow to anger abounding in loving kindness truth",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 119,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "visiting the iniquity fathers children third fourth generation",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 77,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "name of Yahweh Exodus 34 Moses cleft rock",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 79,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:most-quoted-verse-bible",
+        "fromSec": 0,
+        "toSec": 3354
+      },
+      "ms": 0,
+      "summary": "31 skim lines, 0s–1500s of The Most Quoted Verse in the Bible"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:does-god-curse-generations",
+        "fromSec": 700,
+        "toSec": 2500
+      },
+      "ms": 1,
+      "summary": "31 skim lines, 700s–2200s of Does God Curse Generations?"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:2693",
+        "fromSec": 500,
+        "toSec": 2500
+      },
+      "ms": 0,
+      "summary": "31 skim lines, 500s–2000s of Naked Bible 310: Exodus 33-34"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:1602ff17-da24-4265-9329-6d02116eb83c",
+        "fromSec": 1000,
+        "toSec": 2400
+      },
+      "ms": 0,
+      "summary": "29 skim lines, 1000s–2400s of Exodus 33-34: Cleft of the Rock"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:c416445833e65b5f726afb158ec92353",
+        "fromSec": 350,
+        "toSec": 2100
+      },
+      "ms": 0,
+      "summary": "31 skim lines, 350s–1850s of Episode 105 (Exodus 33:18-34:16)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:most-quoted-verse-bible",
+        "fromSec": 30,
+        "toSec": 180
+      },
+      "ms": 0,
+      "summary": "30s–180s of The Most Quoted Verse in the Bible"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:most-quoted-verse-bible",
+        "fromSec": 1420,
+        "toSec": 1775
+      },
+      "ms": 0,
+      "summary": "1420s–1720s of The Most Quoted Verse in the Bible"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:does-god-curse-generations",
+        "fromSec": 930,
+        "toSec": 1215
+      },
+      "ms": 1,
+      "summary": "930s–1215s of Does God Curse Generations?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:does-god-curse-generations",
+        "fromSec": 1540,
+        "toSec": 1745
+      },
+      "ms": 0,
+      "summary": "1540s–1745s of Does God Curse Generations?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2693",
+        "fromSec": 635,
+        "toSec": 825
+      },
+      "ms": 0,
+      "summary": "635s–825s of Naked Bible 310: Exodus 33-34"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:1602ff17-da24-4265-9329-6d02116eb83c",
+        "fromSec": 1210,
+        "toSec": 1615
+      },
+      "ms": 0,
+      "summary": "1210s–1510s of Exodus 33-34: Cleft of the Rock"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 4,
+    "toolCalls": 18,
+    "tapeSec": 1430,
+    "deniedWindows": 0,
+    "promptTokens": 55544,
+    "completionTokens": 1657,
+    "reasoningTokens": 324,
+    "cachedPromptTokens": 33185,
+    "wallMs": 17316,
+    "modelLatencyMs": 17036,
+    "toolMs": 280
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004121,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-03T00:07:21.703Z"
+}

@@ -1,0 +1,551 @@
+{
+  "runId": "2026-08-02T21-48-16-095-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-02T21:48:16.095Z",
+  "promptId": null,
+  "prompt": "ruth",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "~deepseek/deepseek-v4-flash-latest",
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Ruth: From Emptiness to Redemption",
+    "intro": "This tour walks through Ruth as a short story of grief, loyal love, providence, and redemption. It begins by sitting with Naomi’s loss, then follows Ruth’s surprising faithfulness and Boaz’s provision, before showing how the book’s risky midnight appeal and public legal action lead to restoration—and to a family line that reaches David.",
+    "steps": [
+      {
+        "recordId": "bibleproject:podcast:ruth-naomi-boaz-and-a-cosmic-redemption",
+        "startSec": 1266,
+        "endSec": 1510,
+        "why": "Begin here because the teachers refuse to rush past Naomi’s grief: “It’s described quickly, but you’re really supposed to sit in the tragedy.” The clip names the losses—husband, sons, land, and future—then lets Ruth’s vow, “Wherever you go, I’m gonna go,” become the first sign of unexpected loyalty and hope. It also highlights the book’s reversal of insider and outsider: Ruth is the Moabite who trusts Israel’s God.",
+        "episodeTitle": "Redemption E4: Ruth, Naomi, Boaz, and a Cosmic Redemption",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/58d67011-2f75-4ae0-addc-00b1c62d8cb9/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=58d67011-2f75-4ae0-addc-00b1c62d8cb9",
+        "durationSec": 3880,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+        "startSec": 1944,
+        "endSec": 2180,
+        "why": "This makes the move from commitment to daily provision. The hosts explain the irony that Naomi leaves “the house of bread” and hears that God has given Bethlehem food, then describe gleaning as a concrete provision for “poor people or foreigners.” Most importantly, they portray Ruth as actively filling Naomi’s emptiness: she knows the law, goes out herself, and is “acting as Naomi’s redeemer.”",
+        "episodeTitle": "Ruth 1-2: God Fills What's Empty",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG9761838334.mp3?updated=1664486106",
+        "durationSec": 3645,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "spoken-gospel:podcast:8a6fe9e7-ddcb-42f0-bd84-14320f3456ab",
+        "startSec": 820,
+        "endSec": 1110,
+        "why": "Now the tour widens the lens from one family to the book’s theology of redemption. The hosts say Israel itself is spiritually poor in the days of the judges and needs a redeemer, then explain that “the first redeemer in the Bible…is God Himself.” That framework makes Boaz’s actions more than romance or economics: family redeemers are meant to embody the character of a God who wants people free, housed, and restored.",
+        "episodeTitle": "Ruth 3-4: Money, Sex and Redemption",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG2273792024.mp3?updated=1664486106",
+        "durationSec": 3708,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:da52963b-c8b7-4635-af2b-02dbd0701bc0",
+        "startSec": 1930,
+        "endSec": 2200,
+        "why": "End with the public resolution and the book’s surprising reach. The teacher explains that Boaz steps forward to take both the land and the widow, while the nearer redeemer wants the land but not “this outsider, this Moabite widow.” The clip lands on the birth of the child, the link to David, and the claim that Ruth comforts outsiders because “we are brought into the fold by our redeemer.”",
+        "episodeTitle": "Ruth 3:10-4:21 (Episode 223)",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_min_ep_223.mp3?dest-id=245197",
+        "durationSec": 2797,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "As you listen, notice how Ruth’s restoration is not presented as magic or as a denial of pain. It comes through ordinary loyalty, food gathered in a field, courageous initiative, and a redeemer willing to bear the cost. The story begins with Naomi saying, “I went out full…[and] came home empty,” and ends with a son, a future, and a place in the story of David.",
+    "totalSeconds": 1040
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2469,
+      "promptTokens": 1591,
+      "completionTokens": 244,
+      "reasoningTokens": 26,
+      "cachedPromptTokens": 0,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0003452,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 1,
+      "latencyMs": 5086,
+      "promptTokens": 9888,
+      "completionTokens": 436,
+      "reasoningTokens": 77,
+      "cachedPromptTokens": 1588,
+      "toolCalls": 8,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001314905,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 2,
+      "latencyMs": 3601,
+      "promptTokens": 18617,
+      "completionTokens": 398,
+      "reasoningTokens": 47,
+      "cachedPromptTokens": 9885,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001429075,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 3,
+      "latencyMs": 8369,
+      "promptTokens": 25484,
+      "completionTokens": 985,
+      "reasoningTokens": 259,
+      "cachedPromptTokens": 18614,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001635815,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 4,
+      "latencyMs": 6508,
+      "promptTokens": 26304,
+      "completionTokens": 757,
+      "reasoningTokens": 32,
+      "cachedPromptTokens": 25481,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00081181,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 14,
+      "summary": "8 shows"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Ruth Naomi Boaz story book of Ruth",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 139,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Ruth hesed redemption kinsman redeemer",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 83,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Ruth",
+        "chapter": 1,
+        "verse": 0,
+        "limit": 25
+      },
+      "ms": 99,
+      "summary": "12 of 36 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Ruth",
+        "chapter": 2,
+        "verse": 0,
+        "limit": 25
+      },
+      "ms": 0,
+      "summary": "13 of 19 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Ruth",
+        "chapter": 3,
+        "verse": 0,
+        "limit": 25
+      },
+      "ms": 0,
+      "summary": "8 of 15 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Ruth",
+        "chapter": 4,
+        "verse": 0,
+        "limit": 25
+      },
+      "ms": 0,
+      "summary": "12 of 41 moments"
+    },
+    {
+      "at": 1,
+      "name": "read_passage",
+      "args": {
+        "book": "Ruth",
+        "chapter": 1,
+        "fromVerse": 1,
+        "toVerse": 22
+      },
+      "ms": 4,
+      "summary": "Ruth 1:1–22 (WEB)"
+    },
+    {
+      "at": 1,
+      "name": "read_passage",
+      "args": {
+        "book": "Ruth",
+        "chapter": 2,
+        "fromVerse": 1,
+        "toVerse": 23
+      },
+      "ms": 1,
+      "summary": "Ruth 2:1–23 (WEB)"
+    },
+    {
+      "at": 1,
+      "name": "read_passage",
+      "args": {
+        "book": "Ruth",
+        "chapter": 3,
+        "fromVerse": 1,
+        "toVerse": 18
+      },
+      "ms": 0,
+      "summary": "Ruth 3:1–18 (WEB)"
+    },
+    {
+      "at": 1,
+      "name": "read_passage",
+      "args": {
+        "book": "Ruth",
+        "chapter": 4,
+        "fromVerse": 1,
+        "toVerse": 22
+      },
+      "ms": 0,
+      "summary": "Ruth 4:1–22 (WEB)"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:ruth-naomi-boaz-and-a-cosmic-redemption",
+        "fromSec": 0,
+        "toSec": 1500
+      },
+      "ms": 0,
+      "summary": "31 skim lines, 0s–1500s of Redemption E4: Ruth, Naomi, Boaz, and a Cosmic Redemption"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+        "fromSec": 0,
+        "toSec": 3645
+      },
+      "ms": 0,
+      "summary": "32 skim lines, 0s–1500s of Ruth 1-2: God Fills What's Empty"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:8a6fe9e7-ddcb-42f0-bd84-14320f3456ab",
+        "fromSec": 0,
+        "toSec": 1500
+      },
+      "ms": 0,
+      "summary": "32 skim lines, 0s–1500s of Ruth 3-4: Money, Sex and Redemption"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:da52963b-c8b7-4635-af2b-02dbd0701bc0",
+        "fromSec": 700,
+        "toSec": 2500
+      },
+      "ms": 0,
+      "summary": "29 skim lines, 700s–2200s of Ruth 3:10-4:21 (Episode 223)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:ruth-naomi-boaz-and-a-cosmic-redemption",
+        "fromSec": 1260,
+        "toSec": 1510
+      },
+      "ms": 1,
+      "summary": "1260s–1510s of Redemption E4: Ruth, Naomi, Boaz, and a Cosmic Redemption"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+        "fromSec": 880,
+        "toSec": 1145
+      },
+      "ms": 0,
+      "summary": "880s–1145s of Ruth 1-2: God Fills What's Empty"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+        "fromSec": 1900,
+        "toSec": 2180
+      },
+      "ms": 0,
+      "summary": "1900s–2180s of Ruth 1-2: God Fills What's Empty"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:8a6fe9e7-ddcb-42f0-bd84-14320f3456ab",
+        "fromSec": 820,
+        "toSec": 1110
+      },
+      "ms": 0,
+      "summary": "820s–1110s of Ruth 3-4: Money, Sex and Redemption"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:da52963b-c8b7-4635-af2b-02dbd0701bc0",
+        "fromSec": 1340,
+        "toSec": 1555
+      },
+      "ms": 0,
+      "summary": "1340s–1555s of Ruth 3:10-4:21 (Episode 223)"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:da52963b-c8b7-4635-af2b-02dbd0701bc0",
+        "fromSec": 1930,
+        "toSec": 2200
+      },
+      "ms": 0,
+      "summary": "1930s–2200s of Ruth 3:10-4:21 (Episode 223)"
+    }
+  ],
+  "rejections": [
+    {
+      "at": 3,
+      "errors": [
+        "steps[2].recordId: \"spoken-gospel:podcast:8a6fe9e7-fdcb-42f0-bd84-14320f3456ab\" is not an episode in this corpus"
+      ],
+      "submitted": {
+        "title": "Ruth: From Emptiness to Redemption",
+        "intro": "This tour walks through Ruth as a short story of grief, loyal love, providence, and redemption. It begins by sitting with Naomi’s loss, then follows Ruth’s surprising faithfulness and Boaz’s provision, before showing how the book’s risky midnight appeal and public legal action lead to restoration—and to a family line that reaches David.",
+        "steps": [
+          {
+            "recordId": "bibleproject:podcast:ruth-naomi-boaz-and-a-cosmic-redemption",
+            "startSec": 1266,
+            "endSec": 1510,
+            "why": "Begin here because the teachers refuse to rush past Naomi’s grief: “It’s described quickly, but you’re really supposed to sit in the tragedy.” The clip names the losses—husband, sons, land, and future—then lets Ruth’s vow, “Wherever you go, I’m gonna go,” become the first sign of unexpected loyalty and hope. It also highlights the book’s reversal of insider and outsider: Ruth is the Moabite who trusts Israel’s God."
+          },
+          {
+            "recordId": "spoken-gospel:podcast:a88b1fb7-fd1c-415f-b24c-98322c767992",
+            "startSec": 1944,
+            "endSec": 2180,
+            "why": "This makes the move from commitment to daily provision. The hosts explain the irony that Naomi leaves “the house of bread” and hears that God has given Bethlehem food, then describe gleaning as a concrete provision for “poor people or foreigners.” Most importantly, they portray Ruth as actively filling Naomi’s emptiness: she knows the law, goes out herself, and is “acting as Naomi’s redeemer.”"
+          },
+          {
+            "recordId": "spoken-gospel:podcast:8a6fe9e7-fdcb-42f0-bd84-14320f3456ab",
+            "startSec": 820,
+            "endSec": 1110,
+            "why": "Now the tour widens the lens from one family to the book’s theology of redemption. The hosts say Israel itself is spiritually poor in the days of the judges and needs a redeemer, then explain that “the first redeemer in the Bible…is God Himself.” That framework makes Boaz’s actions more than romance or economics: family redeemers are meant to embody the character of a God who wants people free, housed, and restored."
+          },
+          {
+            "recordId": "forty-minutes-ot:podcast:da52963b-c8b7-4635-af2b-02dbd0701bc0",
+            "startSec": 1930,
+            "endSec": 2200,
+            "why": "End with the public resolution and the book’s surprising reach. The teacher explains that Boaz steps forward to take both the land and the widow, while the nearer redeemer wants the land but not “this outsider, this Moabite widow.” The clip lands on the birth of the child, the link to David, and the claim that Ruth comforts outsiders because “we are brought into the fold by our redeemer.”"
+          }
+        ],
+        "closing": "As you listen, notice how Ruth’s restoration is not presented as magic or as a denial of pain. It comes through ordinary loyalty, food gathered in a field, courageous initiative, and a redeemer willing to bear the cost. The story begins with Naomi saying, “I went out full…[and] came home empty,” and ends with a son, a future, and a place in the story of David."
+      }
+    }
+  ],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 23,
+    "tapeSec": 1570,
+    "deniedWindows": 0,
+    "promptTokens": 81884,
+    "completionTokens": 2820,
+    "reasoningTokens": 441,
+    "cachedPromptTokens": 55568,
+    "wallMs": 26380,
+    "modelLatencyMs": 26033,
+    "toolMs": 341
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.005537,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-02T21:48:42.475Z"
+}

@@ -1,0 +1,1073 @@
+{
+  "startedAt": "2026-08-04T00:30:30.411Z",
+  "requestKey": "2|magic-director-3|gpt-5.6-luna-medium|bibleproject:podcast:most-quoted-verse-bible|1000|1300|e96add1a03ecc24c|93d52764007fb438",
+  "request": {
+    "schemaVersion": 2,
+    "policyVersion": "magic-director-3",
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "bibleproject:podcast:most-quoted-verse-bible",
+    "fromSec": 1000,
+    "toSec": 1300,
+    "why": "This is the tour’s pivot from close reading to reception within Scripture. The speakers explain that the passage is reused at least 27 times and that quotation reveals how later biblical authors understood it. In Numbers 14, Moses quotes not only “forgiving iniquity” but also the difficult line about not clearing the guilty—and then asks, “So forgive the people.” That surprising reuse challenges a purely negative reading of verse 7 and shows the passage functioning as an argument for mercy.",
+    "transcriptHash": "e96add1a03ecc24c",
+    "requestFingerprint": "2|magic-director-3|gpt-5.6-luna-medium|bibleproject:podcast:most-quoted-verse-bible|1000|1300|93d52764007fb438",
+    "budget": {
+      "policyVersion": "magic-director-3",
+      "durationSec": 300,
+      "sustainedTeachingSec": 248.7,
+      "targetThoughtEntrances": 8,
+      "hardBeatCeiling": 21,
+      "highlightCeiling": 2,
+      "modelSceneCeiling": 9,
+      "houseSceneReserve": 1,
+      "finalSceneCeiling": 10,
+      "fillGapSec": 36
+    }
+  },
+  "result": {
+    "schemaVersion": 2,
+    "policyVersion": "magic-director-3",
+    "requestKey": "2|magic-director-3|gpt-5.6-luna-medium|bibleproject:podcast:most-quoted-verse-bible|1000|1300|e96add1a03ecc24c|93d52764007fb438",
+    "requestFingerprint": "2|magic-director-3|gpt-5.6-luna-medium|bibleproject:podcast:most-quoted-verse-bible|1000|1300|93d52764007fb438",
+    "clip": {
+      "fromSec": 1000,
+      "toSec": 1300,
+      "durationSec": 300,
+      "transcriptHash": "e96add1a03ecc24c",
+      "sustainedTeachingSec": 248.7
+    },
+    "budget": {
+      "policyVersion": "magic-director-3",
+      "durationSec": 300,
+      "sustainedTeachingSec": 248.7,
+      "targetThoughtEntrances": 8,
+      "hardBeatCeiling": 21,
+      "highlightCeiling": 2,
+      "modelSceneCeiling": 9,
+      "houseSceneReserve": 1,
+      "finalSceneCeiling": 10,
+      "fillGapSec": 36
+    },
+    "scenes": [
+      {
+        "id": "scene:initial:0",
+        "origin": "model",
+        "ref": null,
+        "verses": [],
+        "cue": "reuses of these verses",
+        "at": 10,
+        "timingSource": "cue"
+      },
+      {
+        "id": "scene:initial:1",
+        "origin": "model",
+        "ref": null,
+        "verses": [],
+        "cue": "Numbers chapter 14, this is the story",
+        "at": 63,
+        "timingSource": "cue"
+      },
+      {
+        "id": "scene:initial:2",
+        "origin": "model",
+        "ref": "Numbers 14:17–19",
+        "verses": [
+          {
+            "verse": 17,
+            "text": "Now please let the power of the Lord be great, according as you have spoken, saying,"
+          },
+          {
+            "verse": 18,
+            "text": "‘Yahweh is slow to anger, and abundant in loving kindness, forgiving iniquity and disobedience; and he will by no means clear the guilty, visiting the iniquity of the fathers on the children, on the third and on the fourth generation.’"
+          },
+          {
+            "verse": 19,
+            "text": "Please pardon the iniquity of this people according to the greatness of your loving kindness, and just as you have forgiven this people, from Egypt even until now.”"
+          }
+        ],
+        "cue": "starting in verse 17",
+        "at": 154,
+        "timingSource": "cue"
+      },
+      {
+        "id": "scene:initial:3",
+        "origin": "model",
+        "ref": "Exodus 34:6–7",
+        "verses": [
+          {
+            "verse": 6,
+            "text": "Yahweh passed by before him, and proclaimed, “Yahweh! Yahweh, a merciful and gracious God, slow to anger, and abundant in loving kindness and truth,"
+          },
+          {
+            "verse": 7,
+            "text": "keeping loving kindness for thousands, forgiving iniquity and disobedience and sin; and who will by no means clear the guilty, visiting the iniquity of the fathers on the children, and on the children’s children, on the third and on the fourth generation.”"
+          }
+        ],
+        "cue": "Yahweh himself saying this",
+        "at": 273,
+        "timingSource": "cue"
+      }
+    ],
+    "beats": [
+      {
+        "id": "beat:initial:0",
+        "proposalId": "initial:0",
+        "sceneId": "scene:initial:1",
+        "kind": "allusion",
+        "cue": "descendants of the Nephilim",
+        "at": 89,
+        "timingSource": "cue",
+        "data": {
+          "ref": "Genesis 6:4",
+          "text": "The Nephilim were in the earth in those days, and also after that, when God’s sons came in to men’s daughters and had children with them. Those were the mighty men who were of old, men of renown.",
+          "note": "The Anakites are connected to the Nephilim from the flood st"
+        }
+      },
+      {
+        "id": "beat:fill:gap:1:0",
+        "proposalId": "fill:gap:1:0",
+        "sceneId": "scene:initial:1",
+        "kind": "caveat",
+        "cue": "they don't say that, but that's that's the way the design pattern works.",
+        "at": 114,
+        "timingSource": "cue",
+        "data": {
+          "text": "Joshua and Caleb do not explicitly say that God has dealt with giants before; that conclus"
+        }
+      },
+      {
+        "id": "beat:initial:1",
+        "proposalId": "initial:1",
+        "sceneId": "scene:initial:1",
+        "kind": "allusion",
+        "cue": "God says is exactly what he says",
+        "at": 136,
+        "timingSource": "cue",
+        "data": {
+          "ref": "Exodus 32:10",
+          "text": "Now therefore leave me alone, that my wrath may burn hot against them, and that I may consume them; and I will make of you a great nation.”",
+          "note": "God's threat to destroy the people and start over recalls th"
+        }
+      },
+      {
+        "id": "beat:initial:2",
+        "proposalId": "initial:2",
+        "sceneId": "scene:initial:2",
+        "kind": "highlight",
+        "cue": "missing what that second half means",
+        "at": 226,
+        "timingSource": "cue",
+        "data": {
+          "quote": "But I think that also shows us that we're maybe missing what that second half means if we're reading it as a fully negative statement."
+        }
+      },
+      {
+        "id": "beat:initial:3",
+        "proposalId": "initial:3",
+        "sceneId": "scene:initial:2",
+        "kind": "compare",
+        "cue": "he condenses the first half",
+        "at": 235,
+        "timingSource": "cue",
+        "data": {
+          "a": {
+            "ref": "Exodus 34:6–7",
+            "text": "Yahweh passed by before him, and proclaimed, “Yahweh! Yahweh, a merciful and gracious God, slow to anger, and abundant in loving kindness and truth, keeping loving kindness for thousands, forgiving iniquity and disobedience and sin; and who will by no means clear the guilty, visiting the iniquity of the fathers on the children, and on the children’s children, on the third and on the fourth generation.”"
+          },
+          "b": {
+            "ref": "Numbers 14:17–19",
+            "text": "Now please let the power of the Lord be great, according as you have spoken, saying, ‘Yahweh is slow to anger, and abundant in loving kindness, forgiving iniquity and disobedience; and he will by no means clear the guilty, visiting the iniquity of the fathers on the children, on the third and on the fourth generation.’ Please pardon the iniquity of this people according to the greatness of your loving kindness, and just as you have forgiven this people, from Egypt even until now.”"
+          },
+          "axis": "difference",
+          "note": "Moses condenses the Exodus declaration, quoting two of its f"
+        }
+      },
+      {
+        "id": "beat:initial:4",
+        "proposalId": "initial:4",
+        "sceneId": "scene:initial:2",
+        "kind": "allusion",
+        "cue": "God's own proclamation of himself",
+        "at": 264,
+        "timingSource": "cue",
+        "data": {
+          "ref": "Exodus 34:6–7",
+          "text": "Yahweh passed by before him, and proclaimed, “Yahweh! Yahweh, a merciful and gracious God, slow to anger, and abundant in loving kindness and truth, keeping loving kindness for thousands, forgiving iniquity and disobedience and sin; and who will by no means clear the guilty, visiting the iniquity of the fathers on the children, and on the children’s children, on the third and on the fourth generation.”",
+          "note": "The Numbers quotation is identified as Moses quoting Yahweh'"
+        }
+      }
+    ],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 33321,
+      "passes": 3,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 19831,
+          "promptTokens": 2453,
+          "completionTokens": 2007,
+          "reasoningTokens": 1552,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.00151075,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed"
+        },
+        {
+          "role": "repair",
+          "latencyMs": 2137,
+          "promptTokens": 196,
+          "completionTokens": 43,
+          "reasoningTokens": 26,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0000454,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-repairs:1/1;semantic-scenes:4;semantic-beats:6"
+        },
+        {
+          "role": "fill",
+          "latencyMs": 11334,
+          "promptTokens": 2317,
+          "completionTokens": 1201,
+          "reasoningTokens": 1034,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.00101015,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-intervals:4;semantic-beats:1"
+        }
+      ],
+      "totalUsd": 0.0025662999999999997,
+      "tokens": {
+        "prompt": 4966,
+        "completion": 3251,
+        "reasoning": 2612,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 2,
+        "policyVersion": "magic-director-3",
+        "dropped": [
+          {
+            "id": "beat:initial:5",
+            "proposalId": "initial:5",
+            "kind": "group",
+            "reason": "anchored-outside-clip",
+            "at": 300,
+            "count": 1
+          }
+        ],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "reassigned": 0,
+        "preludes": 0,
+        "sceneCount": 4,
+        "beatCount": 6,
+        "artifactCount": 6,
+        "artifactCounts": {
+          "group": 0,
+          "footnote": 0,
+          "term": 0,
+          "allusion": 3,
+          "compare": 1,
+          "chain": 0,
+          "caveat": 1,
+          "aside": 0,
+          "highlight": 1
+        },
+        "sceneCadence": {
+          "entranceCount": 4,
+          "uniqueEntranceCount": 4,
+          "uniqueBeatCount": 4,
+          "firstEntranceSec": 10,
+          "lastEntranceSec": 273,
+          "firstBeatSec": 10,
+          "lastBeatSec": 273,
+          "maxGapSec": 119,
+          "largestGap": {
+            "start": 154,
+            "end": 273,
+            "len": 119
+          },
+          "gaps": [
+            {
+              "start": 154,
+              "end": 273,
+              "len": 119
+            },
+            {
+              "start": 63,
+              "end": 154,
+              "len": 91
+            },
+            {
+              "start": 10,
+              "end": 63,
+              "len": 53
+            },
+            {
+              "start": 273,
+              "end": 300,
+              "len": 27
+            },
+            {
+              "start": 0,
+              "end": 10,
+              "len": 10
+            }
+          ]
+        },
+        "thoughtCadence": {
+          "entranceCount": 4,
+          "uniqueEntranceCount": 4,
+          "uniqueBeatCount": 4,
+          "firstEntranceSec": 89,
+          "lastEntranceSec": 264,
+          "firstBeatSec": 89,
+          "lastBeatSec": 264,
+          "maxGapSec": 128,
+          "largestGap": {
+            "start": 136,
+            "end": 264,
+            "len": 128
+          },
+          "gaps": [
+            {
+              "start": 136,
+              "end": 264,
+              "len": 128
+            },
+            {
+              "start": 0,
+              "end": 89,
+              "len": 89
+            },
+            {
+              "start": 264,
+              "end": 300,
+              "len": 36
+            },
+            {
+              "start": 89,
+              "end": 114,
+              "len": 25
+            },
+            {
+              "start": 114,
+              "end": 136,
+              "len": 22
+            }
+          ],
+          "artifactCounts": {
+            "group": 0,
+            "footnote": 0,
+            "term": 0,
+            "allusion": 3,
+            "compare": 0,
+            "chain": 0,
+            "caveat": 1,
+            "aside": 0,
+            "highlight": 1
+          }
+        },
+        "visualCadence": {
+          "entranceCount": 5,
+          "uniqueEntranceCount": 5,
+          "uniqueBeatCount": 5,
+          "firstEntranceSec": 89,
+          "lastEntranceSec": 264,
+          "firstBeatSec": 89,
+          "lastBeatSec": 264,
+          "maxGapSec": 90,
+          "largestGap": {
+            "start": 136,
+            "end": 226,
+            "len": 90
+          },
+          "gaps": [
+            {
+              "start": 136,
+              "end": 226,
+              "len": 90
+            },
+            {
+              "start": 0,
+              "end": 89,
+              "len": 89
+            },
+            {
+              "start": 226,
+              "end": 264,
+              "len": 38
+            },
+            {
+              "start": 264,
+              "end": 300,
+              "len": 36
+            },
+            {
+              "start": 89,
+              "end": 114,
+              "len": 25
+            },
+            {
+              "start": 114,
+              "end": 136,
+              "len": 22
+            }
+          ],
+          "artifactCounts": {
+            "group": 0,
+            "footnote": 0,
+            "term": 0,
+            "allusion": 3,
+            "compare": 0,
+            "chain": 0,
+            "caveat": 1,
+            "aside": 0,
+            "highlight": 1
+          }
+        },
+        "projection": {
+          "focusMasked": [
+            {
+              "beatId": "beat:initial:3",
+              "byBeatId": "beat:initial:2",
+              "reason": "entered-during-highlight"
+            }
+          ],
+          "superseded": [],
+          "projectedVisible": [
+            {
+              "beatId": "beat:initial:0",
+              "kind": "allusion"
+            },
+            {
+              "beatId": "beat:fill:gap:1:0",
+              "kind": "caveat"
+            },
+            {
+              "beatId": "beat:initial:1",
+              "kind": "allusion"
+            },
+            {
+              "beatId": "beat:initial:2",
+              "kind": "highlight"
+            },
+            {
+              "beatId": "beat:initial:4",
+              "kind": "allusion"
+            }
+          ]
+        },
+        "passes": [
+          {
+            "role": "initial",
+            "schemaVersion": 2,
+            "policyVersion": "magic-director-3",
+            "dropped": [
+              {
+                "id": "beat:initial:5",
+                "proposalId": "initial:5",
+                "kind": "group",
+                "reason": "anchored-outside-clip",
+                "at": 300,
+                "count": 1
+              }
+            ],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 4,
+            "beatCount": 5,
+            "artifactCount": 5,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 3,
+              "compare": 1,
+              "chain": 0,
+              "caveat": 0,
+              "aside": 0,
+              "highlight": 1
+            },
+            "sceneCadence": {
+              "entranceCount": 4,
+              "uniqueEntranceCount": 4,
+              "uniqueBeatCount": 4,
+              "firstEntranceSec": 10,
+              "lastEntranceSec": 273,
+              "firstBeatSec": 10,
+              "lastBeatSec": 273,
+              "maxGapSec": 119,
+              "largestGap": {
+                "start": 154,
+                "end": 273,
+                "len": 119
+              },
+              "gaps": [
+                {
+                  "start": 154,
+                  "end": 273,
+                  "len": 119
+                },
+                {
+                  "start": 63,
+                  "end": 154,
+                  "len": 91
+                },
+                {
+                  "start": 10,
+                  "end": 63,
+                  "len": 53
+                },
+                {
+                  "start": 273,
+                  "end": 300,
+                  "len": 27
+                },
+                {
+                  "start": 0,
+                  "end": 10,
+                  "len": 10
+                }
+              ]
+            },
+            "thoughtCadence": {
+              "entranceCount": 3,
+              "uniqueEntranceCount": 3,
+              "uniqueBeatCount": 3,
+              "firstEntranceSec": 89,
+              "lastEntranceSec": 264,
+              "firstBeatSec": 89,
+              "lastBeatSec": 264,
+              "maxGapSec": 128,
+              "largestGap": {
+                "start": 136,
+                "end": 264,
+                "len": 128
+              },
+              "gaps": [
+                {
+                  "start": 136,
+                  "end": 264,
+                  "len": 128
+                },
+                {
+                  "start": 0,
+                  "end": 89,
+                  "len": 89
+                },
+                {
+                  "start": 89,
+                  "end": 136,
+                  "len": 47
+                },
+                {
+                  "start": 264,
+                  "end": 300,
+                  "len": 36
+                }
+              ],
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 0,
+                "term": 0,
+                "allusion": 3,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 0,
+                "aside": 0,
+                "highlight": 1
+              }
+            },
+            "visualCadence": {
+              "entranceCount": 4,
+              "uniqueEntranceCount": 4,
+              "uniqueBeatCount": 4,
+              "firstEntranceSec": 89,
+              "lastEntranceSec": 264,
+              "firstBeatSec": 89,
+              "lastBeatSec": 264,
+              "maxGapSec": 90,
+              "largestGap": {
+                "start": 136,
+                "end": 226,
+                "len": 90
+              },
+              "gaps": [
+                {
+                  "start": 136,
+                  "end": 226,
+                  "len": 90
+                },
+                {
+                  "start": 0,
+                  "end": 89,
+                  "len": 89
+                },
+                {
+                  "start": 89,
+                  "end": 136,
+                  "len": 47
+                },
+                {
+                  "start": 226,
+                  "end": 264,
+                  "len": 38
+                },
+                {
+                  "start": 264,
+                  "end": 300,
+                  "len": 36
+                }
+              ],
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 0,
+                "term": 0,
+                "allusion": 3,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 0,
+                "aside": 0,
+                "highlight": 1
+              }
+            },
+            "projection": {
+              "focusMasked": [
+                {
+                  "beatId": "beat:initial:3",
+                  "byBeatId": "beat:initial:2",
+                  "reason": "entered-during-highlight"
+                }
+              ],
+              "superseded": [],
+              "projectedVisible": [
+                {
+                  "beatId": "beat:initial:0",
+                  "kind": "allusion"
+                },
+                {
+                  "beatId": "beat:initial:1",
+                  "kind": "allusion"
+                },
+                {
+                  "beatId": "beat:initial:2",
+                  "kind": "highlight"
+                },
+                {
+                  "beatId": "beat:initial:4",
+                  "kind": "allusion"
+                }
+              ]
+            }
+          },
+          {
+            "role": "fill",
+            "schemaVersion": 2,
+            "policyVersion": "magic-director-3",
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 4,
+            "beatCount": 6,
+            "artifactCount": 6,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 3,
+              "compare": 1,
+              "chain": 0,
+              "caveat": 1,
+              "aside": 0,
+              "highlight": 1
+            },
+            "sceneCadence": {
+              "entranceCount": 4,
+              "uniqueEntranceCount": 4,
+              "uniqueBeatCount": 4,
+              "firstEntranceSec": 10,
+              "lastEntranceSec": 273,
+              "firstBeatSec": 10,
+              "lastBeatSec": 273,
+              "maxGapSec": 119,
+              "largestGap": {
+                "start": 154,
+                "end": 273,
+                "len": 119
+              },
+              "gaps": [
+                {
+                  "start": 154,
+                  "end": 273,
+                  "len": 119
+                },
+                {
+                  "start": 63,
+                  "end": 154,
+                  "len": 91
+                },
+                {
+                  "start": 10,
+                  "end": 63,
+                  "len": 53
+                },
+                {
+                  "start": 273,
+                  "end": 300,
+                  "len": 27
+                },
+                {
+                  "start": 0,
+                  "end": 10,
+                  "len": 10
+                }
+              ]
+            },
+            "thoughtCadence": {
+              "entranceCount": 4,
+              "uniqueEntranceCount": 4,
+              "uniqueBeatCount": 4,
+              "firstEntranceSec": 89,
+              "lastEntranceSec": 264,
+              "firstBeatSec": 89,
+              "lastBeatSec": 264,
+              "maxGapSec": 128,
+              "largestGap": {
+                "start": 136,
+                "end": 264,
+                "len": 128
+              },
+              "gaps": [
+                {
+                  "start": 136,
+                  "end": 264,
+                  "len": 128
+                },
+                {
+                  "start": 0,
+                  "end": 89,
+                  "len": 89
+                },
+                {
+                  "start": 264,
+                  "end": 300,
+                  "len": 36
+                },
+                {
+                  "start": 89,
+                  "end": 114,
+                  "len": 25
+                },
+                {
+                  "start": 114,
+                  "end": 136,
+                  "len": 22
+                }
+              ],
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 0,
+                "term": 0,
+                "allusion": 3,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 1,
+                "aside": 0,
+                "highlight": 1
+              }
+            },
+            "visualCadence": {
+              "entranceCount": 5,
+              "uniqueEntranceCount": 5,
+              "uniqueBeatCount": 5,
+              "firstEntranceSec": 89,
+              "lastEntranceSec": 264,
+              "firstBeatSec": 89,
+              "lastBeatSec": 264,
+              "maxGapSec": 90,
+              "largestGap": {
+                "start": 136,
+                "end": 226,
+                "len": 90
+              },
+              "gaps": [
+                {
+                  "start": 136,
+                  "end": 226,
+                  "len": 90
+                },
+                {
+                  "start": 0,
+                  "end": 89,
+                  "len": 89
+                },
+                {
+                  "start": 226,
+                  "end": 264,
+                  "len": 38
+                },
+                {
+                  "start": 264,
+                  "end": 300,
+                  "len": 36
+                },
+                {
+                  "start": 89,
+                  "end": 114,
+                  "len": 25
+                },
+                {
+                  "start": 114,
+                  "end": 136,
+                  "len": 22
+                }
+              ],
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 0,
+                "term": 0,
+                "allusion": 3,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 1,
+                "aside": 0,
+                "highlight": 1
+              }
+            },
+            "projection": {
+              "focusMasked": [
+                {
+                  "beatId": "beat:initial:3",
+                  "byBeatId": "beat:initial:2",
+                  "reason": "entered-during-highlight"
+                }
+              ],
+              "superseded": [],
+              "projectedVisible": [
+                {
+                  "beatId": "beat:initial:0",
+                  "kind": "allusion"
+                },
+                {
+                  "beatId": "beat:fill:gap:1:0",
+                  "kind": "caveat"
+                },
+                {
+                  "beatId": "beat:initial:1",
+                  "kind": "allusion"
+                },
+                {
+                  "beatId": "beat:initial:2",
+                  "kind": "highlight"
+                },
+                {
+                  "beatId": "beat:initial:4",
+                  "kind": "allusion"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "outcomes": {
+        "completeness": "complete",
+        "proposed": [
+          {
+            "proposalId": "initial:0",
+            "pass": "initial",
+            "kind": "allusion"
+          },
+          {
+            "proposalId": "initial:1",
+            "pass": "initial",
+            "kind": "allusion"
+          },
+          {
+            "proposalId": "initial:2",
+            "pass": "initial",
+            "kind": "highlight"
+          },
+          {
+            "proposalId": "initial:3",
+            "pass": "initial",
+            "kind": "compare"
+          },
+          {
+            "proposalId": "initial:4",
+            "pass": "initial",
+            "kind": "allusion"
+          },
+          {
+            "proposalId": "initial:5",
+            "pass": "initial",
+            "kind": "group"
+          },
+          {
+            "proposalId": "fill:gap:1:0",
+            "pass": "fill",
+            "kind": "caveat",
+            "gapId": "gap:1"
+          },
+          {
+            "proposalId": "fill:gap:2:1",
+            "pass": "fill",
+            "kind": "group",
+            "gapId": "gap:2"
+          }
+        ],
+        "rejected": [
+          {
+            "proposalId": "fill:gap:2:1",
+            "pass": "fill",
+            "kind": "group",
+            "reason": "group-word-count",
+            "gapId": "gap:2"
+          },
+          {
+            "proposalId": "initial:5",
+            "pass": "initial",
+            "kind": "group",
+            "reason": "anchored-outside-clip",
+            "at": 300
+          }
+        ],
+        "accepted": [
+          {
+            "proposalId": "initial:0",
+            "beatId": "beat:initial:0",
+            "kind": "allusion",
+            "sceneId": "scene:initial:1"
+          },
+          {
+            "proposalId": "fill:gap:1:0",
+            "beatId": "beat:fill:gap:1:0",
+            "kind": "caveat",
+            "sceneId": "scene:initial:1"
+          },
+          {
+            "proposalId": "initial:1",
+            "beatId": "beat:initial:1",
+            "kind": "allusion",
+            "sceneId": "scene:initial:1"
+          },
+          {
+            "proposalId": "initial:2",
+            "beatId": "beat:initial:2",
+            "kind": "highlight",
+            "sceneId": "scene:initial:2"
+          },
+          {
+            "proposalId": "initial:3",
+            "beatId": "beat:initial:3",
+            "kind": "compare",
+            "sceneId": "scene:initial:2"
+          },
+          {
+            "proposalId": "initial:4",
+            "beatId": "beat:initial:4",
+            "kind": "allusion",
+            "sceneId": "scene:initial:2"
+          }
+        ],
+        "focusMasked": [
+          {
+            "beatId": "beat:initial:3",
+            "byBeatId": "beat:initial:2",
+            "reason": "entered-during-highlight"
+          }
+        ],
+        "superseded": [],
+        "projectedVisible": [
+          {
+            "beatId": "beat:initial:0",
+            "kind": "allusion"
+          },
+          {
+            "beatId": "beat:fill:gap:1:0",
+            "kind": "caveat"
+          },
+          {
+            "beatId": "beat:initial:1",
+            "kind": "allusion"
+          },
+          {
+            "beatId": "beat:initial:2",
+            "kind": "highlight"
+          },
+          {
+            "beatId": "beat:initial:4",
+            "kind": "allusion"
+          }
+        ]
+      }
+    }
+  },
+  "schemaVersion": 2,
+  "policyVersion": "magic-director-3"
+}

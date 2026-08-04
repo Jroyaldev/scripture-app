@@ -1,0 +1,110 @@
+{
+  "startedAt": "2026-08-03T00:06:45.845Z",
+  "requestKey": "1|gpt-5.6-luna-medium|radically-christian:podcast:2af7b996-https-radicallychristian-com-p-10410|2390|2655|aeb177a3ffff105b",
+  "request": {
+    "schemaVersion": 1,
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "radically-christian:podcast:2af7b996-https-radicallychristian-com-p-10410",
+    "fromSec": 2390,
+    "toSec": 2655,
+    "why": "End with practical Christian posture. The speaker says the first approach should be friendship and asks, “how can I become your friend?” rather than trying to manipulate someone into belief. He connects this to “sacrificial love,” kindness, empathy, and belonging, then acknowledges that deconstruction can be “necessary and very healthy” if it leads to reconstruction. The tour lands on witness as a"
+  },
+  "result": {
+    "schemaVersion": 1,
+    "requestKey": "1|gpt-5.6-luna-medium|radically-christian:podcast:2af7b996-https-radicallychristian-com-p-10410|2390|2655|aeb177a3ffff105b",
+    "clip": {
+      "fromSec": 2390,
+      "toSec": 2655,
+      "durationSec": 265
+    },
+    "scenes": [],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "unreported"
+    },
+    "metrics": {
+      "wallMs": 12795,
+      "passes": 1,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 12795,
+          "promptTokens": 0,
+          "completionTokens": 0,
+          "reasoningTokens": 0,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": null,
+          "finishReason": null,
+          "rawModel": null,
+          "provider": null,
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "unreported"
+          },
+          "validation": "call-error",
+          "error": {
+            "code": 20,
+            "message": "This operation was aborted"
+          }
+        }
+      ],
+      "totalUsd": null,
+      "tokens": {
+        "prompt": 0,
+        "completion": 0,
+        "reasoning": 0,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 1,
+        "dropped": [],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "reassigned": 0,
+        "preludes": 0,
+        "sceneCount": 0,
+        "artifactCount": 0,
+        "artifactCounts": {
+          "group": 0,
+          "footnote": 0,
+          "term": 0,
+          "allusion": 0,
+          "aside": 0,
+          "compare": 0,
+          "chain": 0,
+          "caveat": 0,
+          "highlight": 0
+        },
+        "cadence": {
+          "entranceCount": 0,
+          "uniqueBeatCount": 0,
+          "firstBeatSec": null,
+          "lastBeatSec": null,
+          "maxGapSec": 265
+        },
+        "passes": []
+      }
+    },
+    "note": "director job aborted after its last consumer left"
+  },
+  "schemaVersion": 1
+}

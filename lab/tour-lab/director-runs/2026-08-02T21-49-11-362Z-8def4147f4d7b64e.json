@@ -1,0 +1,507 @@
+{
+  "startedAt": "2026-08-02T21:49:11.362Z",
+  "requestKey": "1|gpt-5.6-luna-medium|spoken-gospel:podcast:8a6fe9e7-ddcb-42f0-bd84-14320f3456ab|820|1110|ea3d73de48f11874",
+  "request": {
+    "schemaVersion": 1,
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "spoken-gospel:podcast:8a6fe9e7-ddcb-42f0-bd84-14320f3456ab",
+    "fromSec": 820,
+    "toSec": 1110,
+    "why": "Now the tour widens the lens from one family to the book’s theology of redemption. The hosts say Israel itself is spiritually poor in the days of the judges and needs a redeemer, then explain that “the first redeemer in the Bible…is God Himself.” That framework makes Boaz’s actions more than romance or economics: family redeemers are meant to embody the character of a God who wants people free, ho"
+  },
+  "result": {
+    "schemaVersion": 1,
+    "requestKey": "1|gpt-5.6-luna-medium|spoken-gospel:podcast:8a6fe9e7-ddcb-42f0-bd84-14320f3456ab|820|1110|ea3d73de48f11874",
+    "clip": {
+      "fromSec": 820,
+      "toSec": 1110,
+      "durationSec": 290
+    },
+    "scenes": [
+      {
+        "ref": null,
+        "verses": [],
+        "at": 0,
+        "timingSource": "house",
+        "groups": [],
+        "footnotes": [],
+        "terms": [],
+        "allusions": [],
+        "asides": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null
+      },
+      {
+        "ref": "Judges 21:25",
+        "verses": [
+          {
+            "verse": 25,
+            "text": "In those days there was no king in Israel. Everyone did that which was right in his own eyes."
+          }
+        ],
+        "cue": "everyone's doing what's right in their own eyes",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "the whole nation seems to be poor spiritually, and they need a redeemer.",
+          "cue": "the whole nation seems to be poor spiritually, and they need a redeemer.",
+          "at": 24,
+          "timingSource": "cue"
+        },
+        "asides": [],
+        "at": 24,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Exodus 6:6",
+        "verses": [
+          {
+            "verse": 6,
+            "text": "Therefore tell the children of Israel, ‘I am Yahweh, and I will bring you out from under the burdens of the Egyptians, and I will rid you out of their bondage, and I will redeem you with an outstretched arm, and with great judgments."
+          }
+        ],
+        "cue": "the first redeemer in the Bible",
+        "groups": [
+          {
+            "words": [
+              "redeem you",
+              "great judgments"
+            ],
+            "label": null,
+            "cue": "I will redeem you through uh great acts of judgment",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [
+              {
+                "word": "redeem you",
+                "occurrence": 0,
+                "at": 75,
+                "timingSource": "word"
+              }
+            ],
+            "at": 75,
+            "timingSource": "cue"
+          }
+        ],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [
+          {
+            "term": "Goel",
+            "gloss": "redeemer",
+            "cue": "the first person called a Goel",
+            "at": 50,
+            "timingSource": "cue"
+          }
+        ],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "the first redeemer in the Bible, the first person called a Goel is God Himself.",
+          "cue": "the first redeemer in the Bible, the first person called a Goel is God Himself.",
+          "at": 50,
+          "timingSource": "cue"
+        },
+        "asides": [],
+        "at": 50,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "redeemer laws in general are actually an extension",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "That's why He is a redeeming God.",
+          "cue": "That's why He is a redeeming God.",
+          "at": 108,
+          "timingSource": "cue"
+        },
+        "asides": [
+          {
+            "text": "Chapter 3 is framed by the covenant ceremony at Sinai.",
+            "cue": null,
+            "at": 147,
+            "timingSource": "house"
+          }
+        ],
+        "at": 84,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Ruth 3:1–3",
+        "verses": [
+          {
+            "verse": 1,
+            "text": "Naomi her mother-in-law said to her, “My daughter, shall I not seek rest for you, that it may be well with you?"
+          },
+          {
+            "verse": 2,
+            "text": "Now isn’t Boaz our kinsman, with whose maidens you were? Behold, he will be winnowing barley tonight on the threshing floor."
+          },
+          {
+            "verse": 3,
+            "text": "Therefore wash yourself, anoint yourself, get dressed, and go down to the threshing floor; but don’t make yourself known to the man until he has finished eating and drinking."
+          }
+        ],
+        "cue": "should I not seek rest for you",
+        "groups": [
+          {
+            "words": [
+              "seek rest",
+              "well with you"
+            ],
+            "label": "covenant promises",
+            "cue": "that it might be well with you",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [
+              {
+                "word": "well with you",
+                "occurrence": 0,
+                "at": 195,
+                "timingSource": "word"
+              }
+            ],
+            "at": 195,
+            "timingSource": "cue"
+          }
+        ],
+        "footnotes": [],
+        "allusions": [
+          {
+            "ref": "Exodus 19:10",
+            "text": "Yahweh said to Moses, “Go to the people, and sanctify them today and tomorrow, and let them wash their garments,",
+            "note": "washing prepares the people for the Sinai covenant",
+            "cue": "washing and anointing were ritual preparations",
+            "at": 240,
+            "timingSource": "cue"
+          }
+        ],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "So she's repeating God's covenant promises.",
+          "cue": "So she's repeating God's covenant promises.",
+          "at": 198,
+          "timingSource": "cue"
+        },
+        "asides": [],
+        "at": 186,
+        "timingSource": "cue"
+      }
+    ],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 37477,
+      "passes": 3,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 29153,
+          "promptTokens": 2750,
+          "completionTokens": 3261,
+          "reasoningTokens": 2574,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.002300275,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-scenes:5"
+        },
+        {
+          "role": "fill-1",
+          "latencyMs": 4119,
+          "promptTokens": 432,
+          "completionTokens": 480,
+          "reasoningTokens": 355,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0003312,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:0"
+        },
+        {
+          "role": "fill-2",
+          "latencyMs": 4191,
+          "promptTokens": 432,
+          "completionTokens": 390,
+          "reasoningTokens": 271,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0002772,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:1"
+        }
+      ],
+      "totalUsd": 0.002908675,
+      "tokens": {
+        "prompt": 3614,
+        "completion": 4131,
+        "reasoning": 3200,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 1,
+        "dropped": [
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "group",
+            "count": 2
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "group",
+            "count": 1
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "group",
+            "count": 2
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-1",
+            "kind": "aside",
+            "count": 2
+          }
+        ],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "reassigned": 0,
+        "preludes": 0,
+        "sceneCount": 5,
+        "artifactCount": 9,
+        "artifactCounts": {
+          "group": 2,
+          "footnote": 0,
+          "term": 1,
+          "allusion": 1,
+          "aside": 1,
+          "compare": 0,
+          "chain": 0,
+          "caveat": 0,
+          "highlight": 4
+        },
+        "cadence": {
+          "entranceCount": 14,
+          "uniqueBeatCount": 10,
+          "firstBeatSec": 0,
+          "lastBeatSec": 240,
+          "maxGapSec": 50
+        },
+        "passes": [
+          {
+            "role": "initial",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 6,
+            "clamped": 0,
+            "invented": 11,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 11,
+            "artifactCounts": {
+              "group": 2,
+              "footnote": 0,
+              "term": 1,
+              "allusion": 2,
+              "aside": 1,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 5
+            },
+            "cadence": {
+              "entranceCount": 16,
+              "uniqueBeatCount": 14,
+              "firstBeatSec": 0,
+              "lastBeatSec": 261,
+              "maxGapSec": 29
+            }
+          },
+          {
+            "role": "house-timeline",
+            "schemaVersion": 1,
+            "dropped": [
+              {
+                "reason": "cap",
+                "kind": "scene",
+                "count": 1
+              },
+              {
+                "reason": "aside-not-silent",
+                "kind": "aside",
+                "at": 86
+              }
+            ],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 1,
+            "sceneCount": 5,
+            "artifactCount": 8,
+            "artifactCounts": {
+              "group": 2,
+              "footnote": 0,
+              "term": 1,
+              "allusion": 1,
+              "aside": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 4
+            },
+            "cadence": {
+              "entranceCount": 13,
+              "uniqueBeatCount": 9,
+              "firstBeatSec": 0,
+              "lastBeatSec": 240,
+              "maxGapSec": 78
+            }
+          },
+          {
+            "role": "fill-1",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 8,
+            "artifactCounts": {
+              "group": 2,
+              "footnote": 0,
+              "term": 1,
+              "allusion": 1,
+              "aside": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 4
+            },
+            "cadence": {
+              "entranceCount": 13,
+              "uniqueBeatCount": 9,
+              "firstBeatSec": 0,
+              "lastBeatSec": 240,
+              "maxGapSec": 78
+            }
+          },
+          {
+            "role": "fill-2",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 9,
+            "artifactCounts": {
+              "group": 2,
+              "footnote": 0,
+              "term": 1,
+              "allusion": 1,
+              "aside": 1,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 4
+            },
+            "cadence": {
+              "entranceCount": 14,
+              "uniqueBeatCount": 10,
+              "firstBeatSec": 0,
+              "lastBeatSec": 240,
+              "maxGapSec": 50
+            }
+          }
+        ]
+      }
+    }
+  },
+  "schemaVersion": 1
+}

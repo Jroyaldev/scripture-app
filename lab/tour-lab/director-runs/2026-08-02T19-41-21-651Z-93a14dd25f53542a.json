@@ -1,0 +1,421 @@
+{
+  "startedAt": "2026-08-02T19:41:21.651Z",
+  "requestKey": "1|gpt-5.6-luna-medium|bibleproject:podcast:church-city|2280|2580|1a488b8cee6b247c",
+  "request": {
+    "schemaVersion": 1,
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "bibleproject:podcast:church-city",
+    "fromSec": 2280,
+    "toSec": 2580,
+    "why": "This clip keeps the “reverse Babel” reading from becoming a simplistic story about uniformity. The speakers emphasize that Pentecost gathers Israelites from “all the nations” and that this multicultural renewal produces a community with new economic relationships, care for widows, and a way of resolving cultural conflict—the “opposite of Babylon” embodied in social life."
+  },
+  "result": {
+    "schemaVersion": 1,
+    "requestKey": "1|gpt-5.6-luna-medium|bibleproject:podcast:church-city|2280|2580|1a488b8cee6b247c",
+    "clip": {
+      "fromSec": 2280,
+      "toSec": 2580,
+      "durationSec": 300
+    },
+    "scenes": [
+      {
+        "ref": "Acts 2:5–7",
+        "verses": [
+          {
+            "verse": 5,
+            "text": "Now there were dwelling in Jerusalem Jews, devout men, from every nation under the sky."
+          },
+          {
+            "verse": 6,
+            "text": "When this sound was heard, the multitude came together and were bewildered, because everyone heard them speaking in his own language."
+          },
+          {
+            "verse": 7,
+            "text": "They were all amazed and marveled, saying to one another, “Behold, aren’t all these who speak Galileans?"
+          }
+        ],
+        "cue": "from the diaspora, from all the nations",
+        "groups": [
+          {
+            "words": [
+              "Jews",
+              "every nation"
+            ],
+            "label": null,
+            "cue": "all of the people there in Jerusalem at Pentecost",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 119,
+            "timingSource": "house"
+          }
+        ],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [],
+        "at": 89,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Matthew 5:13–15",
+        "verses": [
+          {
+            "verse": 13,
+            "text": "“You are the salt of the earth, but if the salt has lost its flavor, with what will it be salted? It is then good for nothing, but to be cast out and trodden under the feet of men."
+          },
+          {
+            "verse": 14,
+            "text": "You are the light of the world. A city located on a hill can’t be hidden."
+          },
+          {
+            "verse": 15,
+            "text": "Neither do you light a lamp, and put it under a measuring basket, but on a stand; and it shines to all who are in the house."
+          }
+        ],
+        "cue": "you are the salt and the light",
+        "groups": [
+          {
+            "words": [
+              "salt",
+              "light"
+            ],
+            "label": "public witness",
+            "cue": "the salt and the light",
+            "occurrences": [
+              1,
+              0
+            ],
+            "wordTimes": [
+              {
+                "word": "salt",
+                "occurrence": 1,
+                "at": 148,
+                "timingSource": "word"
+              },
+              {
+                "word": "light",
+                "occurrence": 0,
+                "at": 148,
+                "timingSource": "word"
+              }
+            ],
+            "at": 148,
+            "timingSource": "cue"
+          },
+          {
+            "words": [
+              "city",
+              "hill"
+            ],
+            "label": "visible city",
+            "cue": "and the city",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [
+              {
+                "word": "city",
+                "occurrence": 0,
+                "at": 148,
+                "timingSource": "word"
+              }
+            ],
+            "at": 148,
+            "timingSource": "cue"
+          }
+        ],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "you are the city.",
+          "at": 161,
+          "timingSource": "house"
+        },
+        "asides": [],
+        "at": 148,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Acts 2:44–45",
+        "verses": [
+          {
+            "verse": 44,
+            "text": "All who believed were together, and had all things in common."
+          },
+          {
+            "verse": 45,
+            "text": "They sold their possessions and goods, and distributed them to all, according as anyone had need."
+          }
+        ],
+        "cue": "none of them held their own property",
+        "groups": [
+          {
+            "words": [
+              "all things",
+              "in common"
+            ],
+            "label": "shared possessions",
+            "cue": "selling things, donating them to a common cause",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 177,
+            "timingSource": "cue"
+          },
+          {
+            "words": [
+              "sold",
+              "possessions",
+              "goods"
+            ],
+            "label": "economic sharing",
+            "cue": "the economic kind of embodiment",
+            "occurrences": [
+              0,
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 187,
+            "timingSource": "house"
+          }
+        ],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [],
+        "at": 173,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Acts 6:1–3",
+        "verses": [
+          {
+            "verse": 1,
+            "text": "Now in those days, when the number of the disciples was multiplying, a complaint arose from the Hellenists against the Hebrews, because their widows were neglected in the daily service."
+          },
+          {
+            "verse": 2,
+            "text": "The twelve summoned the multitude of the disciples and said, “It is not appropriate for us to forsake the word of God and serve tables."
+          },
+          {
+            "verse": 3,
+            "text": "Therefore select from among you, brothers, seven men of good report, full of the Holy Spirit and of wisdom, whom we may appoint over this business."
+          }
+        ],
+        "cue": "when there were culture clashes",
+        "groups": [
+          {
+            "words": [
+              "Hellenists",
+              "Hebrews"
+            ],
+            "label": "cultural divide",
+            "cue": "that story he shows how the apostles tackled that",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 196,
+            "timingSource": "cue"
+          },
+          {
+            "words": [
+              "widows",
+              "neglected"
+            ],
+            "label": "widow care",
+            "cue": "poor widows making sure that they get fed",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 248,
+            "timingSource": "house"
+          }
+        ],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [],
+        "at": 196,
+        "timingSource": "cue"
+      }
+    ],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 27461,
+      "passes": 2,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 16829,
+          "promptTokens": 2035,
+          "completionTokens": 2365,
+          "reasoningTokens": 1892,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0016733,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-scenes:4"
+        },
+        {
+          "role": "fill-1",
+          "latencyMs": 10623,
+          "promptTokens": 588,
+          "completionTokens": 1141,
+          "reasoningTokens": 1021,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0007434,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:1"
+        }
+      ],
+      "totalUsd": 0.0024167,
+      "tokens": {
+        "prompt": 2623,
+        "completion": 3506,
+        "reasoning": 2913,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 1,
+        "dropped": [
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "group",
+            "count": 1
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "allusion",
+            "count": 1
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-1",
+            "kind": "group",
+            "count": 1
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-1",
+            "kind": "allusion",
+            "count": 1
+          }
+        ],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "sceneCount": 4,
+        "artifactCount": 8,
+        "passes": [
+          {
+            "role": "initial",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 4,
+            "clamped": 0,
+            "invented": 8,
+            "sceneCount": 4,
+            "artifactCount": 8
+          },
+          {
+            "role": "house-timeline",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "sceneCount": 4,
+            "artifactCount": 8
+          },
+          {
+            "role": "fill-1",
+            "schemaVersion": 1,
+            "dropped": [
+              {
+                "reason": "anchored-outside-scene",
+                "kind": "aside",
+                "at": 73
+              }
+            ],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "sceneCount": 4,
+            "artifactCount": 8
+          }
+        ]
+      }
+    }
+  },
+  "schemaVersion": 1
+}

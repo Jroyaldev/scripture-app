@@ -1,0 +1,450 @@
+{
+  "startedAt": "2026-08-03T00:07:22.924Z",
+  "requestKey": "1|gpt-5.6-luna-medium|spoken-gospel:podcast:1602ff17-da24-4265-9329-6d02116eb83c|1210|1510|88ead67981a52ff2",
+  "request": {
+    "schemaVersion": 1,
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "spoken-gospel:podcast:1602ff17-da24-4265-9329-6d02116eb83c",
+    "fromSec": 1210,
+    "toSec": 1510,
+    "why": "This clip puts the declaration in the scene of Moses asking to see God’s glory. The hosts explain that God makes his “goodness pass before” Moses and that the name must be accompanied by truth: “glory that doesn’t have truth to it can just go to the emotions.” They then read verses 6–7 and connect Yahweh’s name with covenant-keeping love."
+  },
+  "result": {
+    "schemaVersion": 1,
+    "requestKey": "1|gpt-5.6-luna-medium|spoken-gospel:podcast:1602ff17-da24-4265-9329-6d02116eb83c|1210|1510|88ead67981a52ff2",
+    "clip": {
+      "fromSec": 1210,
+      "toSec": 1510,
+      "durationSec": 300
+    },
+    "scenes": [
+      {
+        "ref": null,
+        "verses": [],
+        "at": 0,
+        "timingSource": "house",
+        "groups": [],
+        "footnotes": [],
+        "terms": [],
+        "allusions": [],
+        "asides": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null
+      },
+      {
+        "ref": "Exodus 33:18–19",
+        "verses": [
+          {
+            "verse": 18,
+            "text": "Moses said, “Please show me your glory.”"
+          },
+          {
+            "verse": 19,
+            "text": "He said, “I will make all my goodness pass before you, and will proclaim Yahweh’s name before you. I will be gracious to whom I will be gracious, and will show mercy on whom I will show mercy.”"
+          }
+        ],
+        "cue": "make all my goodness pass before you",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "It's all his goodness.",
+          "cue": "It's all his goodness.",
+          "at": 26,
+          "timingSource": "cue"
+        },
+        "asides": [],
+        "at": 24,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "Moses goes up in the cleft of the rock",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [
+          {
+            "text": "Contrasting Moses’ request with his overwhelmed response",
+            "cue": "I don't think he knew what he was even asking for",
+            "at": 87,
+            "timingSource": "cue"
+          }
+        ],
+        "at": 75,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "revelation, you know, I think is two things in one",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "You need both in order to have a holistic revelation of who God is.",
+          "cue": "You need both in order to have a holistic revelation of who God is.",
+          "at": 150,
+          "timingSource": "cue"
+        },
+        "asides": [
+          {
+            "text": "Framing revelation as glory joined to truth",
+            "cue": "It has to be accompanied with truth",
+            "at": 125,
+            "timingSource": "cue"
+          },
+          {
+            "text": "Jesus’ miracles are signs: each immediate act points beyond itself to…",
+            "cue": null,
+            "at": 190,
+            "timingSource": "house"
+          }
+        ],
+        "at": 120,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Exodus 34:6–7",
+        "verses": [
+          {
+            "verse": 6,
+            "text": "Yahweh passed by before him, and proclaimed, “Yahweh! Yahweh, a merciful and gracious God, slow to anger, and abundant in loving kindness and truth,"
+          },
+          {
+            "verse": 7,
+            "text": "keeping loving kindness for thousands, forgiving iniquity and disobedience and sin; and who will by no means clear the guilty, visiting the iniquity of the fathers on the children, and on the children’s children, on the third and on the fourth generation.”"
+          }
+        ],
+        "cue": "The Lord passed before him and proclaimed",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [
+          {
+            "term": "chesed",
+            "gloss": "steadfast covenant love",
+            "cue": "steadfast love is this Hebrew word chesed",
+            "at": 242,
+            "timingSource": "house"
+          }
+        ],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "This is God saying, like, this is who I am.",
+          "cue": "This is God saying, like, this is who I am.",
+          "at": 254,
+          "timingSource": "cue"
+        },
+        "asides": [],
+        "at": 229,
+        "timingSource": "cue"
+      }
+    ],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 34720,
+      "passes": 3,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 24644,
+          "promptTokens": 2902,
+          "completionTokens": 3027,
+          "reasoningTokens": 2427,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.002178875,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-scenes:5"
+        },
+        {
+          "role": "fill-1",
+          "latencyMs": 4691,
+          "promptTokens": 484,
+          "completionTokens": 505,
+          "reasoningTokens": 362,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0003514,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:1"
+        },
+        {
+          "role": "fill-2",
+          "latencyMs": 5375,
+          "promptTokens": 465,
+          "completionTokens": 509,
+          "reasoningTokens": 416,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0003519,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:0"
+        }
+      ],
+      "totalUsd": 0.002882175,
+      "tokens": {
+        "prompt": 3851,
+        "completion": 4041,
+        "reasoning": 3205,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 1,
+        "dropped": [
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "group",
+            "count": 2
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "group",
+            "count": 2
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "group",
+            "count": 2
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-2",
+            "kind": "caveat",
+            "count": 1
+          }
+        ],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "reassigned": 0,
+        "preludes": 0,
+        "sceneCount": 5,
+        "artifactCount": 7,
+        "artifactCounts": {
+          "group": 0,
+          "footnote": 0,
+          "term": 1,
+          "allusion": 0,
+          "aside": 3,
+          "compare": 0,
+          "chain": 0,
+          "caveat": 0,
+          "highlight": 3
+        },
+        "cadence": {
+          "entranceCount": 12,
+          "uniqueBeatCount": 11,
+          "firstBeatSec": 0,
+          "lastBeatSec": 254,
+          "maxGapSec": 49
+        },
+        "passes": [
+          {
+            "role": "initial",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 3,
+            "clamped": 0,
+            "invented": 8,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 8,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 2,
+              "allusion": 0,
+              "aside": 2,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 4
+            },
+            "cadence": {
+              "entranceCount": 13,
+              "uniqueBeatCount": 11,
+              "firstBeatSec": 0,
+              "lastBeatSec": 270,
+              "maxGapSec": 30
+            }
+          },
+          {
+            "role": "house-timeline",
+            "schemaVersion": 1,
+            "dropped": [
+              {
+                "reason": "cap",
+                "kind": "scene",
+                "count": 1
+              }
+            ],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 1,
+            "sceneCount": 5,
+            "artifactCount": 6,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 1,
+              "allusion": 0,
+              "aside": 2,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 3
+            },
+            "cadence": {
+              "entranceCount": 11,
+              "uniqueBeatCount": 10,
+              "firstBeatSec": 0,
+              "lastBeatSec": 254,
+              "maxGapSec": 79
+            }
+          },
+          {
+            "role": "fill-1",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 7,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 1,
+              "allusion": 0,
+              "aside": 3,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 3
+            },
+            "cadence": {
+              "entranceCount": 12,
+              "uniqueBeatCount": 11,
+              "firstBeatSec": 0,
+              "lastBeatSec": 254,
+              "maxGapSec": 49
+            }
+          },
+          {
+            "role": "fill-2",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 7,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 1,
+              "allusion": 0,
+              "aside": 3,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 3
+            },
+            "cadence": {
+              "entranceCount": 12,
+              "uniqueBeatCount": 11,
+              "firstBeatSec": 0,
+              "lastBeatSec": 254,
+              "maxGapSec": 49
+            }
+          }
+        ]
+      }
+    }
+  },
+  "schemaVersion": 1
+}

@@ -1,0 +1,492 @@
+{
+  "runId": "2026-08-02T19-40-16-517-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-02T19:40:16.517Z",
+  "promptId": null,
+  "prompt": "pentecost as a reverse babble?",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "~deepseek/deepseek-v4-flash-latest",
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Pentecost as a Reverse Babel?",
+    "intro": "This tour starts with Babel’s scattering and then listens for what Acts 2 is doing with the nations, languages, and the Spirit. It also leaves room for an important qualification: the “reverse Babel” idea is not merely that everyone becomes culturally identical, but that God’s good news is heard across real linguistic and cultural difference and creates a new kind of community.",
+    "steps": [
+      {
+        "recordId": "naked-bible:podcast:225",
+        "startSec": 95,
+        "endSec": 395,
+        "why": "Begin with the theological backstory. The speaker connects Acts 2 to “the division of the nations in Genesis 10 and 11,” then explains Babel and Deuteronomy 32 as the backdrop for the nations’ estrangement and says that Pentecost inaugurates “the reversal of that, this whole situation, reclaiming the nations.”",
+        "episodeTitle": "Naked Bible 37: Acts 2:1-21",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2015/02/NakedBible37_Acts2_1_21.mp3",
+        "durationSec": 3857,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "forty-minutes-ot:podcast:6e2330f5bb45617d7406fb920c40990e",
+        "startSec": 1870,
+        "endSec": 2165,
+        "why": "This is the clearest direct comparison of the two scenes. The speaker contrasts Babel’s people gathered “for an evil purpose” to “make a name for themselves” with Pentecost, where God comes down, gives the Spirit, and people hear the gospel in a unified way. It also adds the Pentecost/Sinai connection: the festival associated with receiving the law becomes a proclamation of its fulfillment in Christ.",
+        "episodeTitle": "40 Minutes In The Old Testament: Episode 16",
+        "sourceId": "forty-minutes-ot",
+        "source": "40 Minutes in the Old Testament",
+        "audioUrl": "https://adbarker.com/stream/tfVE3XBxC9JCmb97VsZt7vpT/traffic.libsyn.com/secure/40minot/40_min_16_final_2.mp3?dest-id=245197",
+        "durationSec": 2435,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:76ae8290-d131-11f0-a488-778b4582e38d",
+        "startSec": 2180,
+        "endSec": 2445,
+        "why": "Now hear the Acts 2 details in their own narrative setting: people from many nations hear “the great works that God has done through Jesus” in their own languages. The speakers frame Babel as a prideful attempt to live without dependence on God, and Pentecost as the beginning of Abraham’s promised blessing reaching the scattered nations.",
+        "episodeTitle": "Acts Overview: The Day of Pentecost",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG2526509417.mp3",
+        "durationSec": 4525,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "bibleproject:podcast:church-city",
+        "startSec": 2280,
+        "endSec": 2580,
+        "why": "This clip keeps the “reverse Babel” reading from becoming a simplistic story about uniformity. The speakers emphasize that Pentecost gathers Israelites from “all the nations” and that this multicultural renewal produces a community with new economic relationships, care for widows, and a way of resolving cultural conflict—the “opposite of Babylon” embodied in social life.",
+        "episodeTitle": "The City E15: Is the Church a City?",
+        "sourceId": "bibleproject",
+        "source": "BibleProject",
+        "audioUrl": "https://afp-597195-injected.calisto.simplecastaudio.com/695767b0-cd40-4e6c-ac8c-ac6bc0df77ee/episodes/5fce19b6-ba2e-443f-8e22-82973e92a7e8/audio/128/default.mp3?awCollectionId=695767b0-cd40-4e6c-ac8c-ac6bc0df77ee&awEpisodeId=5fce19b6-ba2e-443f-8e22-82973e92a7e8",
+        "durationSec": 3247,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "spoken-gospel:podcast:6eef2130-b99a-44e4-8393-8deae06cc493",
+        "startSec": 1015,
+        "endSec": 1140,
+        "why": "End with the broad biblical-theological payoff. The speakers summarize Acts as turning “the scattered nations from a curse into a blessing,” and connect Pentecost’s languages, visions, and worldwide mission with the kingdom of Jesus replacing the old empire—not by human self-rule, but through dependence on God.",
+        "episodeTitle": "Daniel Introduction",
+        "sourceId": "spoken-gospel",
+        "source": "Spoken Gospel",
+        "audioUrl": "https://traffic.megaphone.fm/SPG2538539015.mp3?updated=1664486072",
+        "durationSec": 2537,
+        "adInsertionDrift": true
+      }
+    ],
+    "closing": "Taken together, these clips suggest that Pentecost is a reversal of Babel in direction and purpose: Babel gathers humanity around self-made greatness and ends in confusion and scattering; Pentecost gathers the nations around God’s mighty works, gives understanding across languages, and sends people back out as a blessing. The reversal is therefore not the erasure of difference, but the creation of faithful communion and shared mission under Jesus.",
+    "totalSeconds": 1285
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2663,
+      "promptTokens": 1598,
+      "completionTokens": 262,
+      "reasoningTokens": 39,
+      "cachedPromptTokens": 0,
+      "toolCalls": 7,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000356875,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 1,
+      "latencyMs": 2932,
+      "promptTokens": 11559,
+      "completionTokens": 317,
+      "reasoningTokens": 47,
+      "cachedPromptTokens": 1595,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001451575,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 2,
+      "latencyMs": 2168,
+      "promptTokens": 13902,
+      "completionTokens": 254,
+      "reasoningTokens": 0,
+      "cachedPromptTokens": 11556,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000561135,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 3,
+      "latencyMs": 6328,
+      "promptTokens": 18847,
+      "completionTokens": 315,
+      "reasoningTokens": 255,
+      "cachedPromptTokens": 13899,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000946415,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 4,
+      "latencyMs": 9692,
+      "promptTokens": 19265,
+      "completionTokens": 1078,
+      "reasoningTokens": 348,
+      "cachedPromptTokens": 18844,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00088779,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Pentecost reverse Babel language confusion",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 125,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Acts 2 Babel nations languages",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 165,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Tower of Babel Pentecost unity languages",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 77,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Acts",
+        "chapter": 2,
+        "verse": 0,
+        "limit": 20
+      },
+      "ms": 0,
+      "summary": "20 of 320 moments"
+    },
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 11,
+        "verse": 0,
+        "limit": 20
+      },
+      "ms": 0,
+      "summary": "20 of 226 moments"
+    },
+    {
+      "at": 0,
+      "name": "read_passage",
+      "args": {
+        "book": "Acts",
+        "chapter": 2,
+        "fromVerse": 1,
+        "toVerse": 21
+      },
+      "ms": 1,
+      "summary": "Acts 2:1–21 (WEB)"
+    },
+    {
+      "at": 0,
+      "name": "read_passage",
+      "args": {
+        "book": "Genesis",
+        "chapter": 11,
+        "fromVerse": 1,
+        "toVerse": 9
+      },
+      "ms": 0,
+      "summary": "Genesis 11:1–9 (WEB)"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "bibleproject:podcast:church-city",
+        "fromSec": 2150,
+        "toSec": 3000
+      },
+      "ms": 1,
+      "summary": "18 skim lines, 2150s–3000s of The City E15: Is the Church a City?"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "naked-bible:podcast:225",
+        "fromSec": 0,
+        "toSec": 650
+      },
+      "ms": 0,
+      "summary": "13 skim lines, 0s–650s of Naked Bible 37: Acts 2:1-21"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:6e2330f5bb45617d7406fb920c40990e",
+        "fromSec": 1600,
+        "toSec": 2250
+      },
+      "ms": 0,
+      "summary": "10 skim lines, 1600s–2250s of 40 Minutes In The Old Testament: Episode 16"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "spoken-gospel:podcast:76ae8290-d131-11f0-a488-778b4582e38d",
+        "fromSec": 2050,
+        "toSec": 2550
+      },
+      "ms": 0,
+      "summary": "10 skim lines, 2050s–2550s of Acts Overview: The Day of Pentecost"
+    },
+    {
+      "at": 1,
+      "name": "episode_skim",
+      "args": {
+        "recordId": "listeners-commentary:podcast:6d336c5e-com-438b5074-57cc-3884-9b1b-3be3785f5534",
+        "fromSec": 350,
+        "toSec": 1250
+      },
+      "ms": 1,
+      "summary": "error: unknown recordId \"listeners-commentary:podcast:6d336c5e-com-438b5074-57cc-3884-9b1b-3be3785f5534\""
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:225",
+        "fromSec": 95,
+        "toSec": 620
+      },
+      "ms": 0,
+      "summary": "95s–395s of Naked Bible 37: Acts 2:1-21"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "bibleproject:podcast:church-city",
+        "fromSec": 2280,
+        "toSec": 2895
+      },
+      "ms": 0,
+      "summary": "2280s–2580s of The City E15: Is the Church a City?"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "forty-minutes-ot:podcast:6e2330f5bb45617d7406fb920c40990e",
+        "fromSec": 1870,
+        "toSec": 2165
+      },
+      "ms": 0,
+      "summary": "1870s–2165s of 40 Minutes In The Old Testament: Episode 16"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:76ae8290-d131-11f0-a488-778b4582e38d",
+        "fromSec": 2180,
+        "toSec": 2445
+      },
+      "ms": 0,
+      "summary": "2180s–2445s of Acts Overview: The Day of Pentecost"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:6eef2130-b99a-44e4-8393-8deae06cc493",
+        "fromSec": 1015,
+        "toSec": 1155
+      },
+      "ms": 0,
+      "summary": "1015s–1155s of Daniel Introduction"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "spoken-gospel:podcast:76ae8290-d131-11f0-a488-778b4582e38d",
+        "fromSec": 2435,
+        "toSec": 2505
+      },
+      "ms": 0,
+      "summary": "2435s–2505s of Acts Overview: The Day of Pentecost"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 5,
+    "toolCalls": 19,
+    "tapeSec": 1370,
+    "deniedWindows": 0,
+    "promptTokens": 65171,
+    "completionTokens": 2226,
+    "reasoningTokens": 689,
+    "cachedPromptTokens": 45894,
+    "wallMs": 24158,
+    "modelLatencyMs": 23783,
+    "toolMs": 370
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.004204,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-02T19:40:40.675Z"
+}

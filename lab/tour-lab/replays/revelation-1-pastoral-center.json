@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "id": "revelation-1-pastoral-center",
   "prompt": "Walk me through Revelation 1:17–18",
   "capturedAt": "2026-08-02T19:07:26.437Z",
@@ -18,7 +18,8 @@
         "source": "The Listener's Commentary",
         "audioUrl": "https://mcdn.podbean.com/mf/web/scf2mkmpf24yyv7p/revelation_19-209es8b.mp3",
         "durationSec": 1185,
-        "adInsertionDrift": false
+        "adInsertionDrift": false,
+        "id": "step-1"
       }
     ],
     "closing": "The vision’s glory does not leave John alone on the ground: the living Jesus reaches toward him, names himself, and speaks against fear.",
@@ -31,13 +32,16 @@
     "form": "standard"
   },
   "directions": {
-    "1|gpt-5.6-luna-medium|listeners-commentary:podcast:c8a44698-com-3d2fc9b8-7af2-39c7-9759-f6ed48939efd|692|776|6c28e4ba6ae6d159": {
-      "schemaVersion": 1,
-      "requestKey": "1|gpt-5.6-luna-medium|listeners-commentary:podcast:c8a44698-com-3d2fc9b8-7af2-39c7-9759-f6ed48939efd|692|776|6c28e4ba6ae6d159",
+    "step-1": {
+      "schemaVersion": 2,
+      "requestKey": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:c8a44698-com-3d2fc9b8-7af2-39c7-9759-f6ed48939efd|692|776|f36fb2b0b6cb2bc5|6c28e4ba6ae6d159",
       "clip": {
         "fromSec": 692,
         "toSec": 776,
-        "durationSec": 84
+        "durationSec": 84,
+        "transcriptHash": "f36fb2b0b6cb2bc5",
+        "transcriptHashSource": "legacy-direction-snapshot",
+        "sustainedTeachingSec": 84
       },
       "scenes": [
         {
@@ -49,76 +53,10 @@
             }
           ],
           "cue": "falls at his feet like a dead man",
-          "groups": [
-            {
-              "words": [
-                "fell",
-                "at",
-                "feet"
-              ],
-              "label": "fallen at his feet",
-              "cue": "falls at his feet",
-              "occurrences": [
-                0,
-                0,
-                0
-              ],
-              "wordTimes": [
-                {
-                  "word": "at",
-                  "occurrence": 0,
-                  "at": 1,
-                  "timingSource": "word"
-                },
-                {
-                  "word": "feet",
-                  "occurrence": 0,
-                  "at": 1,
-                  "timingSource": "word"
-                }
-              ],
-              "at": 1,
-              "timingSource": "cue"
-            },
-            {
-              "words": [
-                "dead",
-                "man"
-              ],
-              "label": "dead man",
-              "cue": "like a dead man",
-              "occurrences": [
-                0,
-                0
-              ],
-              "wordTimes": [
-                {
-                  "word": "dead",
-                  "occurrence": 0,
-                  "at": 1,
-                  "timingSource": "word"
-                },
-                {
-                  "word": "man",
-                  "occurrence": 0,
-                  "at": 1,
-                  "timingSource": "word"
-                }
-              ],
-              "at": 1,
-              "timingSource": "cue"
-            }
-          ],
-          "footnotes": [],
-          "allusions": [],
-          "terms": [],
-          "compare": null,
-          "chain": null,
-          "caveat": null,
-          "highlight": null,
-          "asides": [],
           "at": 1,
-          "timingSource": "cue"
+          "timingSource": "cue",
+          "id": "legacy-scene-1",
+          "origin": "model"
         },
         {
           "ref": "Revelation 1:17–18",
@@ -133,83 +71,10 @@
             }
           ],
           "cue": "I am the first and the last",
-          "groups": [
-            {
-              "words": [
-                "Don't",
-                "afraid"
-              ],
-              "label": null,
-              "cue": "Do not be afraid",
-              "occurrences": [
-                0,
-                0
-              ],
-              "wordTimes": [
-                {
-                  "word": "Don't",
-                  "occurrence": 0,
-                  "at": 39,
-                  "timingSource": "word"
-                },
-                {
-                  "word": "afraid",
-                  "occurrence": 0,
-                  "at": 39,
-                  "timingSource": "word"
-                }
-              ],
-              "at": 33,
-              "timingSource": "house"
-            },
-            {
-              "words": [
-                "first",
-                "last"
-              ],
-              "label": "divine identity",
-              "cue": "the first and the last",
-              "occurrences": [
-                0,
-                0
-              ],
-              "wordTimes": [
-                {
-                  "word": "first",
-                  "occurrence": 0,
-                  "at": 19,
-                  "timingSource": "word"
-                },
-                {
-                  "word": "last",
-                  "occurrence": 0,
-                  "at": 19,
-                  "timingSource": "word"
-                }
-              ],
-              "at": 19,
-              "timingSource": "cue"
-            }
-          ],
-          "footnotes": [],
-          "allusions": [
-            {
-              "ref": "Revelation 1:8",
-              "text": "“I am the Alpha and the Omega,” says the Lord God, “who is and who was and who is to come, the Almighty.”",
-              "note": "Jesus shares the Father's beginning-and-end language",
-              "cue": "just like God the Father was described above",
-              "at": 47,
-              "timingSource": "cue"
-            }
-          ],
-          "terms": [],
-          "compare": null,
-          "chain": null,
-          "caveat": null,
-          "highlight": null,
-          "asides": [],
           "at": 19,
-          "timingSource": "cue"
+          "timingSource": "cue",
+          "id": "legacy-scene-2",
+          "origin": "model"
         },
         {
           "ref": "Revelation 1:18",
@@ -220,46 +85,10 @@
             }
           ],
           "cue": "I have the keys of death",
-          "groups": [
-            {
-              "words": [
-                "Death",
-                "Hades"
-              ],
-              "label": "death and Hades",
-              "cue": "keys of death and Hades",
-              "occurrences": [
-                0,
-                0
-              ],
-              "wordTimes": [
-                {
-                  "word": "Death",
-                  "occurrence": 0,
-                  "at": 69,
-                  "timingSource": "word"
-                },
-                {
-                  "word": "Hades",
-                  "occurrence": 0,
-                  "at": 69,
-                  "timingSource": "word"
-                }
-              ],
-              "at": 69,
-              "timingSource": "cue"
-            }
-          ],
-          "footnotes": [],
-          "allusions": [],
-          "terms": [],
-          "compare": null,
-          "chain": null,
-          "caveat": null,
-          "highlight": null,
-          "asides": [],
           "at": 69,
-          "timingSource": "cue"
+          "timingSource": "cue",
+          "id": "legacy-scene-3",
+          "origin": "model"
         }
       ],
       "model": {
@@ -314,15 +143,489 @@
           "cachedPrompt": 0
         },
         "normalization": {
-          "schemaVersion": 1,
+          "schemaVersion": 2,
+          "policyVersion": "magic-director-3",
           "dropped": [],
           "shifted": 0,
           "clamped": 0,
           "invented": 0,
+          "reassigned": 0,
+          "preludes": 0,
           "sceneCount": 3,
-          "artifactCount": 6
+          "beatCount": 6,
+          "artifactCount": 6,
+          "artifactCounts": {
+            "group": 5,
+            "footnote": 0,
+            "term": 0,
+            "allusion": 1,
+            "compare": 0,
+            "chain": 0,
+            "caveat": 0,
+            "aside": 0,
+            "highlight": 0
+          },
+          "sceneCadence": {
+            "entranceCount": 3,
+            "uniqueEntranceCount": 3,
+            "uniqueBeatCount": 3,
+            "firstEntranceSec": 1,
+            "lastEntranceSec": 69,
+            "firstBeatSec": 1,
+            "lastBeatSec": 69,
+            "maxGapSec": 50,
+            "largestGap": {
+              "start": 19,
+              "end": 69,
+              "len": 50
+            },
+            "gaps": [
+              {
+                "start": 19,
+                "end": 69,
+                "len": 50
+              },
+              {
+                "start": 1,
+                "end": 19,
+                "len": 18
+              },
+              {
+                "start": 69,
+                "end": 84,
+                "len": 15
+              },
+              {
+                "start": 0,
+                "end": 1,
+                "len": 1
+              }
+            ]
+          },
+          "thoughtCadence": {
+            "entranceCount": 5,
+            "uniqueEntranceCount": 5,
+            "uniqueBeatCount": 5,
+            "firstEntranceSec": 1,
+            "lastEntranceSec": 69,
+            "firstBeatSec": 1,
+            "lastBeatSec": 69,
+            "maxGapSec": 22,
+            "largestGap": {
+              "start": 47,
+              "end": 69,
+              "len": 22
+            },
+            "gaps": [
+              {
+                "start": 47,
+                "end": 69,
+                "len": 22
+              },
+              {
+                "start": 1,
+                "end": 19,
+                "len": 18
+              },
+              {
+                "start": 69,
+                "end": 84,
+                "len": 15
+              },
+              {
+                "start": 19,
+                "end": 33,
+                "len": 14
+              },
+              {
+                "start": 33,
+                "end": 47,
+                "len": 14
+              },
+              {
+                "start": 0,
+                "end": 1,
+                "len": 1
+              }
+            ],
+            "artifactCounts": {
+              "group": 4,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 1,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "aside": 0,
+              "highlight": 0
+            }
+          },
+          "visualCadence": {
+            "entranceCount": 5,
+            "uniqueEntranceCount": 5,
+            "uniqueBeatCount": 5,
+            "firstEntranceSec": 1,
+            "lastEntranceSec": 69,
+            "firstBeatSec": 1,
+            "lastBeatSec": 69,
+            "maxGapSec": 22,
+            "largestGap": {
+              "start": 47,
+              "end": 69,
+              "len": 22
+            },
+            "gaps": [
+              {
+                "start": 47,
+                "end": 69,
+                "len": 22
+              },
+              {
+                "start": 1,
+                "end": 19,
+                "len": 18
+              },
+              {
+                "start": 69,
+                "end": 84,
+                "len": 15
+              },
+              {
+                "start": 19,
+                "end": 33,
+                "len": 14
+              },
+              {
+                "start": 33,
+                "end": 47,
+                "len": 14
+              },
+              {
+                "start": 0,
+                "end": 1,
+                "len": 1
+              }
+            ],
+            "artifactCounts": {
+              "group": 4,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 1,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "aside": 0,
+              "highlight": 0
+            }
+          },
+          "projection": {
+            "focusMasked": [],
+            "superseded": [
+              {
+                "beatId": "legacy-beat-1-1",
+                "byBeatId": "legacy-beat-1-2",
+                "reason": "same-slot-superseded"
+              }
+            ],
+            "projectedVisible": [
+              {
+                "beatId": "legacy-beat-1-2",
+                "kind": "group"
+              },
+              {
+                "beatId": "legacy-beat-2-2",
+                "kind": "group"
+              },
+              {
+                "beatId": "legacy-beat-2-1",
+                "kind": "group"
+              },
+              {
+                "beatId": "legacy-beat-2-3",
+                "kind": "allusion"
+              },
+              {
+                "beatId": "legacy-beat-3-1",
+                "kind": "group"
+              }
+            ]
+          }
+        },
+        "outcomes": {
+          "completeness": "legacy-survivors-only",
+          "proposed": null,
+          "rejected": null,
+          "accepted": [
+            {
+              "proposalId": "legacy-proposal-1-1",
+              "beatId": "legacy-beat-1-1",
+              "kind": "group",
+              "sceneId": "legacy-scene-1"
+            },
+            {
+              "proposalId": "legacy-proposal-1-2",
+              "beatId": "legacy-beat-1-2",
+              "kind": "group",
+              "sceneId": "legacy-scene-1"
+            },
+            {
+              "proposalId": "legacy-proposal-2-2",
+              "beatId": "legacy-beat-2-2",
+              "kind": "group",
+              "sceneId": "legacy-scene-2"
+            },
+            {
+              "proposalId": "legacy-proposal-2-1",
+              "beatId": "legacy-beat-2-1",
+              "kind": "group",
+              "sceneId": "legacy-scene-2"
+            },
+            {
+              "proposalId": "legacy-proposal-2-3",
+              "beatId": "legacy-beat-2-3",
+              "kind": "allusion",
+              "sceneId": "legacy-scene-2"
+            },
+            {
+              "proposalId": "legacy-proposal-3-1",
+              "beatId": "legacy-beat-3-1",
+              "kind": "group",
+              "sceneId": "legacy-scene-3"
+            }
+          ],
+          "focusMasked": [],
+          "superseded": [
+            {
+              "beatId": "legacy-beat-1-1",
+              "byBeatId": "legacy-beat-1-2",
+              "reason": "same-slot-superseded"
+            }
+          ],
+          "projectedVisible": [
+            {
+              "beatId": "legacy-beat-1-2",
+              "kind": "group"
+            },
+            {
+              "beatId": "legacy-beat-2-2",
+              "kind": "group"
+            },
+            {
+              "beatId": "legacy-beat-2-1",
+              "kind": "group"
+            },
+            {
+              "beatId": "legacy-beat-2-3",
+              "kind": "allusion"
+            },
+            {
+              "beatId": "legacy-beat-3-1",
+              "kind": "group"
+            }
+          ]
         }
+      },
+      "policyVersion": "magic-director-3",
+      "requestFingerprint": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:c8a44698-com-3d2fc9b8-7af2-39c7-9759-f6ed48939efd|692|776|6c28e4ba6ae6d159",
+      "budget": {
+        "policyVersion": "magic-director-3",
+        "durationSec": 84,
+        "sustainedTeachingSec": 84,
+        "targetThoughtEntrances": 3,
+        "hardBeatCeiling": 7,
+        "highlightCeiling": 1,
+        "modelSceneCeiling": 3,
+        "houseSceneReserve": 0,
+        "finalSceneCeiling": 3,
+        "fillGapSec": 36,
+        "basis": "legacy-survivor-preservation"
+      },
+      "beats": [
+        {
+          "id": "legacy-beat-1-1",
+          "proposalId": "legacy-proposal-1-1",
+          "sceneId": "legacy-scene-1",
+          "kind": "group",
+          "at": 1,
+          "timingSource": "cue",
+          "cue": "falls at his feet",
+          "data": {
+            "words": [
+              "fell",
+              "at",
+              "feet"
+            ],
+            "label": "fallen at his feet",
+            "occurrences": [
+              0,
+              0,
+              0
+            ],
+            "wordTimes": [
+              {
+                "word": "at",
+                "occurrence": 0,
+                "at": 1,
+                "timingSource": "word"
+              },
+              {
+                "word": "feet",
+                "occurrence": 0,
+                "at": 1,
+                "timingSource": "word"
+              }
+            ]
+          }
+        },
+        {
+          "id": "legacy-beat-1-2",
+          "proposalId": "legacy-proposal-1-2",
+          "sceneId": "legacy-scene-1",
+          "kind": "group",
+          "at": 1,
+          "timingSource": "cue",
+          "cue": "like a dead man",
+          "data": {
+            "words": [
+              "dead",
+              "man"
+            ],
+            "label": "dead man",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [
+              {
+                "word": "dead",
+                "occurrence": 0,
+                "at": 1,
+                "timingSource": "word"
+              },
+              {
+                "word": "man",
+                "occurrence": 0,
+                "at": 1,
+                "timingSource": "word"
+              }
+            ]
+          }
+        },
+        {
+          "id": "legacy-beat-2-2",
+          "proposalId": "legacy-proposal-2-2",
+          "sceneId": "legacy-scene-2",
+          "kind": "group",
+          "at": 19,
+          "timingSource": "cue",
+          "cue": "the first and the last",
+          "data": {
+            "words": [
+              "first",
+              "last"
+            ],
+            "label": "divine identity",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [
+              {
+                "word": "first",
+                "occurrence": 0,
+                "at": 19,
+                "timingSource": "word"
+              },
+              {
+                "word": "last",
+                "occurrence": 0,
+                "at": 19,
+                "timingSource": "word"
+              }
+            ]
+          }
+        },
+        {
+          "id": "legacy-beat-2-1",
+          "proposalId": "legacy-proposal-2-1",
+          "sceneId": "legacy-scene-2",
+          "kind": "group",
+          "at": 33,
+          "timingSource": "house",
+          "cue": "Do not be afraid",
+          "data": {
+            "words": [
+              "Don't",
+              "afraid"
+            ],
+            "label": null,
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": []
+          }
+        },
+        {
+          "id": "legacy-beat-2-3",
+          "proposalId": "legacy-proposal-2-3",
+          "sceneId": "legacy-scene-2",
+          "kind": "allusion",
+          "at": 47,
+          "timingSource": "cue",
+          "cue": "just like God the Father was described above",
+          "data": {
+            "ref": "Revelation 1:8",
+            "text": "“I am the Alpha and the Omega,” says the Lord God, “who is and who was and who is to come, the Almighty.”",
+            "note": "Jesus shares the Father's beginning-and-end language"
+          }
+        },
+        {
+          "id": "legacy-beat-3-1",
+          "proposalId": "legacy-proposal-3-1",
+          "sceneId": "legacy-scene-3",
+          "kind": "group",
+          "at": 69,
+          "timingSource": "cue",
+          "cue": "keys of death and Hades",
+          "data": {
+            "words": [
+              "Death",
+              "Hades"
+            ],
+            "label": "death and Hades",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [
+              {
+                "word": "Death",
+                "occurrence": 0,
+                "at": 69,
+                "timingSource": "word"
+              },
+              {
+                "word": "Hades",
+                "occurrence": 0,
+                "at": 69,
+                "timingSource": "word"
+              }
+            ]
+          }
+        }
+      ],
+      "migration": {
+        "fromSchemaVersion": 1,
+        "originalRequestKey": "1|gpt-5.6-luna-medium|listeners-commentary:podcast:c8a44698-com-3d2fc9b8-7af2-39c7-9759-f6ed48939efd|692|776|6c28e4ba6ae6d159",
+        "limitation": "proposal and rejection outcomes were not recorded by v1",
+        "normalizationEvidencePreserved": true
       }
     }
+  },
+  "policyVersion": "magic-director-3",
+  "migration": {
+    "fromSchemaVersion": 1,
+    "directionKeying": "tour-step-id"
   }
 }

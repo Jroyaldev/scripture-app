@@ -1,0 +1,674 @@
+{
+  "startedAt": "2026-08-03T00:07:40.626Z",
+  "requestKey": "1|gpt-5.6-luna-medium|bibleproject:podcast:does-god-curse-generations|930|1215|a72e3a8718dec7c5",
+  "request": {
+    "schemaVersion": 1,
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "bibleproject:podcast:does-god-curse-generations",
+    "fromSec": 930,
+    "toSec": 1215,
+    "why": "Finish by addressing the hardest phrase without minimizing it. The hosts compare Exodus 34:7 with Exodus 20:5–6, where the generations are specified as those who continue to “hate” God, and conclude that the text is not describing God punishing innocent descendants for a parent’s sin, but generations perpetuating and being held accountable for the same covenant-breaking."
+  },
+  "result": {
+    "schemaVersion": 1,
+    "requestKey": "1|gpt-5.6-luna-medium|bibleproject:podcast:does-god-curse-generations|930|1215|a72e3a8718dec7c5",
+    "clip": {
+      "fromSec": 930,
+      "toSec": 1215,
+      "durationSec": 285
+    },
+    "scenes": [
+      {
+        "ref": "Exodus 20:5–6",
+        "verses": [
+          {
+            "verse": 5,
+            "text": "you shall not bow yourself down to them, nor serve them, for I, Yahweh your God, am a jealous God, visiting the iniquity of the fathers on the children, on the third and on the fourth generation of those who hate me,"
+          },
+          {
+            "verse": 6,
+            "text": "and showing loving kindness to thousands of those who love me and keep my commandments."
+          }
+        ],
+        "cue": "third and the fourth is a Hebrew idiom",
+        "groups": [
+          {
+            "words": [
+              "third",
+              "fourth"
+            ],
+            "label": null,
+            "cue": null,
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 57,
+            "timingSource": "house"
+          },
+          {
+            "words": [
+              "thousands",
+              "generation"
+            ],
+            "label": null,
+            "cue": "And then thousands being the comparison",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 85.5,
+            "timingSource": "house"
+          }
+        ],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [],
+        "at": 0,
+        "timingSource": "house"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "recognizing patterns in scripture",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [
+          {
+            "text": "framing the questions as scriptural pattern recognition",
+            "cue": "recognizing patterns in scripture",
+            "at": 114,
+            "timingSource": "cue"
+          }
+        ],
+        "at": 114,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Exodus 34:7",
+        "verses": [
+          {
+            "verse": 7,
+            "text": "keeping loving kindness for thousands, forgiving iniquity and disobedience and sin; and who will by no means clear the guilty, visiting the iniquity of the fathers on the children, and on the children’s children, on the third and on the fourth generation.”"
+          }
+        ],
+        "cue": "God visiting the iniquities of the fathers",
+        "groups": [
+          {
+            "words": [
+              "visiting",
+              "iniquity"
+            ],
+            "label": "visiting iniquity",
+            "cue": "this line about God visiting the iniquities",
+            "occurrences": [
+              0,
+              1
+            ],
+            "wordTimes": [],
+            "at": 144,
+            "timingSource": "cue"
+          },
+          {
+            "words": [
+              "children's",
+              "children"
+            ],
+            "label": null,
+            "cue": "on the children",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 161,
+            "timingSource": "house"
+          }
+        ],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [],
+        "at": 144,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Exodus 20:4–6",
+        "verses": [
+          {
+            "verse": 4,
+            "text": "“You shall not make for yourselves an idol, nor any image of anything that is in the heavens above, or that is in the earth beneath, or that is in the water under the earth:"
+          },
+          {
+            "verse": 5,
+            "text": "you shall not bow yourself down to them, nor serve them, for I, Yahweh your God, am a jealous God, visiting the iniquity of the fathers on the children, on the third and on the fourth generation of those who hate me,"
+          },
+          {
+            "verse": 6,
+            "text": "and showing loving kindness to thousands of those who love me and keep my commandments."
+          }
+        ],
+        "cue": "This is the first statement of this idea",
+        "groups": [
+          {
+            "words": [
+              "those",
+              "hate",
+              "me"
+            ],
+            "label": "those who hate God",
+            "cue": "of those who hate me",
+            "occurrences": [
+              0,
+              0,
+              1
+            ],
+            "wordTimes": [
+              {
+                "word": "those",
+                "occurrence": 0,
+                "at": 185,
+                "timingSource": "word"
+              },
+              {
+                "word": "hate",
+                "occurrence": 0,
+                "at": 200,
+                "timingSource": "word"
+              },
+              {
+                "word": "me",
+                "occurrence": 1,
+                "at": 200,
+                "timingSource": "word"
+              }
+            ],
+            "at": 200,
+            "timingSource": "cue"
+          },
+          {
+            "words": [
+              "love",
+              "me",
+              "keep"
+            ],
+            "label": "love and obedience",
+            "cue": "those who love me and keep my commands",
+            "occurrences": [
+              0,
+              0,
+              0
+            ],
+            "wordTimes": [
+              {
+                "word": "love",
+                "occurrence": 0,
+                "at": 200,
+                "timingSource": "word"
+              },
+              {
+                "word": "me",
+                "occurrence": 0,
+                "at": 200,
+                "timingSource": "word"
+              },
+              {
+                "word": "keep",
+                "occurrence": 0,
+                "at": 200,
+                "timingSource": "word"
+              }
+            ],
+            "at": 200,
+            "timingSource": "cue"
+          }
+        ],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": {
+          "text": "The generational consequence is understood as applying where successive generations contin",
+          "cue": null,
+          "at": 230,
+          "timingSource": "house"
+        },
+        "highlight": null,
+        "asides": [],
+        "at": 177,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Exodus 20:5–6",
+        "verses": [
+          {
+            "verse": 5,
+            "text": "you shall not bow yourself down to them, nor serve them, for I, Yahweh your God, am a jealous God, visiting the iniquity of the fathers on the children, on the third and on the fourth generation of those who hate me,"
+          },
+          {
+            "verse": 6,
+            "text": "and showing loving kindness to thousands of those who love me and keep my commandments."
+          }
+        ],
+        "cue": "it's defined right here in the text",
+        "groups": [
+          {
+            "words": [
+              "those",
+              "hate",
+              "me"
+            ],
+            "label": null,
+            "cue": "every generation is perpetuating",
+            "occurrences": [
+              0,
+              0,
+              1
+            ],
+            "wordTimes": [],
+            "at": 275,
+            "timingSource": "house"
+          },
+          {
+            "words": [
+              "love",
+              "me",
+              "keep"
+            ],
+            "label": null,
+            "cue": "thousands of those who love me",
+            "occurrences": [
+              0,
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 270,
+            "timingSource": "house"
+          }
+        ],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": {
+          "text": "It is not something that he's holding against future generations.",
+          "cue": "It's not something that he's holding against future generations.",
+          "at": 264,
+          "timingSource": "cue"
+        },
+        "highlight": {
+          "quote": "every generation is perpetuating the idolatry of their ancestors.",
+          "cue": "every generation is perpetuating the idolatry of their ancestors.",
+          "at": 280,
+          "timingSource": "house"
+        },
+        "asides": [],
+        "at": 260,
+        "timingSource": "cue"
+      }
+    ],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 39799,
+      "passes": 4,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 28058,
+          "promptTokens": 2597,
+          "completionTokens": 3607,
+          "reasoningTokens": 2918,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.00248875,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-scenes:5"
+        },
+        {
+          "role": "repair",
+          "latencyMs": 2199,
+          "promptTokens": 181,
+          "completionTokens": 49,
+          "reasoningTokens": 37,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0000475,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-repairs:1/1"
+        },
+        {
+          "role": "fill-1",
+          "latencyMs": 5796,
+          "promptTokens": 507,
+          "completionTokens": 645,
+          "reasoningTokens": 509,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0004377,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:1"
+        },
+        {
+          "role": "fill-2",
+          "latencyMs": 3739,
+          "promptTokens": 455,
+          "completionTokens": 472,
+          "reasoningTokens": 359,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0003287,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:0"
+        }
+      ],
+      "totalUsd": 0.00330265,
+      "tokens": {
+        "prompt": 3740,
+        "completion": 4773,
+        "reasoning": 3823,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 1,
+        "dropped": [
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "allusion",
+            "count": 1
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "compare",
+            "count": 1
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-1",
+            "kind": "group",
+            "count": 1
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-2",
+            "kind": "allusion",
+            "count": 1
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-2",
+            "kind": "caveat",
+            "count": 1
+          }
+        ],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "reassigned": 0,
+        "preludes": 0,
+        "sceneCount": 5,
+        "artifactCount": 12,
+        "artifactCounts": {
+          "group": 8,
+          "footnote": 0,
+          "term": 0,
+          "allusion": 0,
+          "aside": 1,
+          "compare": 0,
+          "chain": 0,
+          "caveat": 2,
+          "highlight": 1
+        },
+        "cadence": {
+          "entranceCount": 17,
+          "uniqueBeatCount": 13,
+          "firstBeatSec": 0,
+          "lastBeatSec": 280,
+          "maxGapSec": 57
+        },
+        "passes": [
+          {
+            "role": "initial",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 6,
+            "clamped": 0,
+            "invented": 11,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 11,
+            "artifactCounts": {
+              "group": 8,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 1,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 1,
+              "highlight": 1
+            },
+            "cadence": {
+              "entranceCount": 16,
+              "uniqueBeatCount": 15,
+              "firstBeatSec": 0,
+              "lastBeatSec": 256.5,
+              "maxGapSec": 28.5
+            }
+          },
+          {
+            "role": "repair",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 6,
+            "clamped": 0,
+            "invented": 11,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 11,
+            "artifactCounts": {
+              "group": 8,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 1,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 1,
+              "highlight": 1
+            },
+            "cadence": {
+              "entranceCount": 16,
+              "uniqueBeatCount": 15,
+              "firstBeatSec": 0,
+              "lastBeatSec": 256.5,
+              "maxGapSec": 28.5
+            }
+          },
+          {
+            "role": "house-timeline",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 3,
+            "clamped": 2,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 11,
+            "artifactCounts": {
+              "group": 8,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 1,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 1,
+              "highlight": 1
+            },
+            "cadence": {
+              "entranceCount": 16,
+              "uniqueBeatCount": 12,
+              "firstBeatSec": 0,
+              "lastBeatSec": 280,
+              "maxGapSec": 60
+            }
+          },
+          {
+            "role": "fill-1",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 12,
+            "artifactCounts": {
+              "group": 8,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 1,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 2,
+              "highlight": 1
+            },
+            "cadence": {
+              "entranceCount": 17,
+              "uniqueBeatCount": 13,
+              "firstBeatSec": 0,
+              "lastBeatSec": 280,
+              "maxGapSec": 57
+            }
+          },
+          {
+            "role": "fill-2",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 12,
+            "artifactCounts": {
+              "group": 8,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 1,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 2,
+              "highlight": 1
+            },
+            "cadence": {
+              "entranceCount": 17,
+              "uniqueBeatCount": 13,
+              "firstBeatSec": 0,
+              "lastBeatSec": 280,
+              "maxGapSec": 57
+            }
+          }
+        ]
+      }
+    }
+  },
+  "schemaVersion": 1
+}

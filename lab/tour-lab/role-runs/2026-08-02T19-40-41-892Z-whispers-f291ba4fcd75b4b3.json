@@ -1,0 +1,70 @@
+{
+  "role": "whispers",
+  "startedAt": "2026-08-02T19:40:41.892Z",
+  "request": {
+    "stepCount": 5,
+    "stepsHash": "78e9bafd4d3d6f4b"
+  },
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "endpointHost": "openrouter.ai",
+    "endpointStyle": "aggregator",
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "applied": true
+    },
+    "provider": "OpenAI"
+  },
+  "metrics": {
+    "wallMs": 6571,
+    "passes": 1,
+    "calls": [
+      {
+        "role": "whispers",
+        "latencyMs": 6569,
+        "promptTokens": 555,
+        "completionTokens": 566,
+        "reasoningTokens": 483,
+        "cachedPromptTokens": 0,
+        "providerCostUsd": 0.0003951,
+        "finishReason": "stop",
+        "rawModel": "openai/gpt-5.6-luna",
+        "provider": "OpenAI",
+        "model": {
+          "key": "gpt-5.6-luna-medium",
+          "requestedSlug": "openai/gpt-5.6-luna",
+          "resolvedSlug": "openai/gpt-5.6-luna",
+          "endpointHost": "openrouter.ai",
+          "endpointStyle": "aggregator",
+          "reasoning": {
+            "effort": "medium",
+            "source": "per-model default for gpt-5.6-luna-medium",
+            "applied": true
+          },
+          "provider": "OpenAI"
+        },
+        "validation": "accepted"
+      }
+    ],
+    "totalUsd": 0.0003951,
+    "tokens": {
+      "prompt": 555,
+      "completion": 566,
+      "reasoning": 483,
+      "cachedPrompt": 0
+    }
+  },
+  "result": {
+    "whispers": [
+      "Listen for Acts 2 to reverse Babel’s scattered nations.",
+      "Notice Babel’s self-made name contrasted with Pentecost’s Spirit and shared hearing.",
+      "Wait for many nations hearing Jesus’ great works in their own languages.",
+      "Notice Pentecost’s multicultural community sharing resources and caring for widows.",
+      "Wait for scattered nations becoming blessing through Jesus’ kingdom, not self-rule."
+    ]
+  },
+  "schemaVersion": 1
+}

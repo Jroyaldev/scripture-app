@@ -1,0 +1,646 @@
+{
+  "startedAt": "2026-08-02T21:49:36.493Z",
+  "requestKey": "1|gpt-5.6-luna-medium|forty-minutes-ot:podcast:da52963b-c8b7-4635-af2b-02dbd0701bc0|1930|2200|71d2ef83f98d9b0a",
+  "request": {
+    "schemaVersion": 1,
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "forty-minutes-ot:podcast:da52963b-c8b7-4635-af2b-02dbd0701bc0",
+    "fromSec": 1930,
+    "toSec": 2200,
+    "why": "End with the public resolution and the book’s surprising reach. The teacher explains that Boaz steps forward to take both the land and the widow, while the nearer redeemer wants the land but not “this outsider, this Moabite widow.” The clip lands on the birth of the child, the link to David, and the claim that Ruth comforts outsiders because “we are brought into the fold by our redeemer.”"
+  },
+  "result": {
+    "schemaVersion": 1,
+    "requestKey": "1|gpt-5.6-luna-medium|forty-minutes-ot:podcast:da52963b-c8b7-4635-af2b-02dbd0701bc0|1930|2200|71d2ef83f98d9b0a",
+    "clip": {
+      "fromSec": 1930,
+      "toSec": 2200,
+      "durationSec": 270
+    },
+    "scenes": [
+      {
+        "ref": "Ruth 4:5",
+        "verses": [
+          {
+            "verse": 5,
+            "text": "Then Boaz said, “On the day you buy the field from the hand of Naomi, you must buy it also from Ruth the Moabitess, the wife of the dead, to raise up the name of the dead on his inheritance.”"
+          }
+        ],
+        "cue": "I'm gonna be the one who steps up",
+        "groups": [
+          {
+            "words": [
+              "buy",
+              "field"
+            ],
+            "label": null,
+            "cue": "gets the land",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 8,
+            "timingSource": "cue"
+          },
+          {
+            "words": [
+              "raise",
+              "up",
+              "name"
+            ],
+            "label": "family name",
+            "cue": "raise up children",
+            "occurrences": [
+              0,
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 8,
+            "timingSource": "cue"
+          }
+        ],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [],
+        "at": 8,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Ruth 4:13",
+        "verses": [
+          {
+            "verse": 13,
+            "text": "So Boaz took Ruth and she became his wife; and he went in to her, and Yahweh enabled her to conceive, and she bore a son."
+          }
+        ],
+        "cue": "so boaz took ruth and she became his wife",
+        "groups": [
+          {
+            "words": [
+              "Yahweh",
+              "enabled"
+            ],
+            "label": null,
+            "cue": "the Lord enabled her to conceive",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 30.5,
+            "timingSource": "house"
+          },
+          {
+            "words": [
+              "enabled",
+              "bore"
+            ],
+            "label": "birth of a son",
+            "cue": null,
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 34.2,
+            "timingSource": "house"
+          }
+        ],
+        "footnotes": [
+          {
+            "word": "enabled",
+            "note": "Literally, “he gave her conception.”",
+            "cue": "he gave her conception",
+            "occurrence": 0,
+            "at": 26.8,
+            "timingSource": "house"
+          }
+        ],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [],
+        "at": 23,
+        "timingSource": "house"
+      },
+      {
+        "ref": "Ruth 4:11–12",
+        "verses": [
+          {
+            "verse": 11,
+            "text": "All the people who were in the gate, and the elders, said, “We are witnesses. May Yahweh make the woman who has come into your house like Rachel and like Leah, which both built the house of Israel; and treat you worthily in Ephrathah, and be famous in Bethlehem."
+          },
+          {
+            "verse": 12,
+            "text": "Let your house be like the house of Perez, whom Tamar bore to Judah, of the offspring which Yahweh will give you by this young woman.”"
+          }
+        ],
+        "cue": "all the people who were in the court",
+        "groups": [
+          {
+            "words": [
+              "Rachel",
+              "Leah"
+            ],
+            "label": "matriarchs",
+            "cue": "like Rachel and Leah",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 38,
+            "timingSource": "cue"
+          },
+          {
+            "words": [
+              "built",
+              "house"
+            ],
+            "label": "house of Israel",
+            "cue": "built the house of Israel",
+            "occurrences": [
+              0,
+              1
+            ],
+            "wordTimes": [
+              {
+                "word": "house",
+                "occurrence": 1,
+                "at": 48,
+                "timingSource": "word"
+              }
+            ],
+            "at": 38,
+            "timingSource": "cue"
+          }
+        ],
+        "footnotes": [
+          {
+            "word": "treat you worthily",
+            "note": "Translated “achieve wealth,” but may also mean achieve honor.",
+            "cue": "achieve wealth in Ephraim",
+            "occurrence": 0,
+            "at": 38,
+            "timingSource": "cue"
+          }
+        ],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [],
+        "at": 38,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "that was a little bit unorthodox",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [
+          {
+            "ref": "Genesis 38:15",
+            "text": "When Judah saw her, he thought that she was a prostitute, for she had covered her face.",
+            "note": "Tamar disguises herself as a prostitute.",
+            "cue": "she dressed up as a prostitute",
+            "at": 75,
+            "timingSource": "cue"
+          },
+          {
+            "ref": "Matthew 1:5",
+            "text": "Salmon became the father of Boaz by Rahab. Boaz became the father of Obed by Ruth. Obed became the father of Jesse.",
+            "note": "Matthew includes Ruth in Jesus’ genealogy.",
+            "cue": "Matthew mentions her and Ruth",
+            "at": 103,
+            "timingSource": "cue"
+          }
+        ],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "God is able to take some pretty messed up situations and work in some pretty incredible ways that you would never that you'd never expect.",
+          "cue": null,
+          "at": 115,
+          "timingSource": "cue"
+        },
+        "asides": [
+          {
+            "text": "Ruth is framed as an example of God's concern for all nations, with…",
+            "cue": null,
+            "at": 155,
+            "timingSource": "house"
+          }
+        ],
+        "at": 75,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "this outsider, this uh this Moabite widow",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": {
+          "text": "The nearer redeemer is not presented as a bad person.",
+          "cue": "other redeemer is a bad guy",
+          "at": 194,
+          "timingSource": "cue"
+        },
+        "highlight": {
+          "quote": "I mean this is the kind of Redeemer we get uh in in Christ that doesn't care about what we bring to the table whatsoever",
+          "cue": null,
+          "at": 205,
+          "timingSource": "house"
+        },
+        "asides": [
+          {
+            "text": "The conversation shifts from Boaz’s personal interest in Ruth to the…",
+            "cue": null,
+            "at": 238,
+            "timingSource": "house"
+          }
+        ],
+        "at": 194,
+        "timingSource": "cue"
+      }
+    ],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 90820,
+      "passes": 4,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 76859,
+          "promptTokens": 2575,
+          "completionTokens": 3598,
+          "reasoningTokens": 2851,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0024806,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-scenes:5"
+        },
+        {
+          "role": "repair",
+          "latencyMs": 4579,
+          "promptTokens": 301,
+          "completionTokens": 380,
+          "reasoningTokens": 359,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0002581,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-repairs:3/3"
+        },
+        {
+          "role": "fill-1",
+          "latencyMs": 5273,
+          "promptTokens": 434,
+          "completionTokens": 601,
+          "reasoningTokens": 447,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.000404,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:1"
+        },
+        {
+          "role": "fill-2",
+          "latencyMs": 4098,
+          "promptTokens": 647,
+          "completionTokens": 426,
+          "reasoningTokens": 328,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0003203,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:1"
+        }
+      ],
+      "totalUsd": 0.0034629999999999995,
+      "tokens": {
+        "prompt": 3957,
+        "completion": 5005,
+        "reasoning": 3985,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 1,
+        "dropped": [
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "highlight",
+            "count": 1
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-1",
+            "kind": "highlight",
+            "count": 1
+          }
+        ],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "reassigned": 0,
+        "preludes": 0,
+        "sceneCount": 5,
+        "artifactCount": 15,
+        "artifactCounts": {
+          "group": 6,
+          "footnote": 2,
+          "term": 0,
+          "allusion": 2,
+          "aside": 2,
+          "compare": 0,
+          "chain": 0,
+          "caveat": 1,
+          "highlight": 2
+        },
+        "cadence": {
+          "entranceCount": 20,
+          "uniqueBeatCount": 13,
+          "firstBeatSec": 8,
+          "lastBeatSec": 238,
+          "maxGapSec": 40
+        },
+        "passes": [
+          {
+            "role": "initial",
+            "schemaVersion": 1,
+            "dropped": [
+              {
+                "reason": "no-house-slot",
+                "kind": "aside",
+                "at": 135
+              },
+              {
+                "reason": "no-house-slot",
+                "kind": "aside",
+                "at": 189
+              }
+            ],
+            "shifted": 8,
+            "clamped": 0,
+            "invented": 15,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 13,
+            "artifactCounts": {
+              "group": 6,
+              "footnote": 2,
+              "term": 0,
+              "allusion": 2,
+              "aside": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 1,
+              "highlight": 2
+            },
+            "cadence": {
+              "entranceCount": 18,
+              "uniqueBeatCount": 17,
+              "firstBeatSec": 0,
+              "lastBeatSec": 243,
+              "maxGapSec": 27
+            }
+          },
+          {
+            "role": "repair",
+            "schemaVersion": 1,
+            "dropped": [
+              {
+                "reason": "no-house-slot",
+                "kind": "aside",
+                "at": 135
+              },
+              {
+                "reason": "no-house-slot",
+                "kind": "aside",
+                "at": 189
+              }
+            ],
+            "shifted": 8,
+            "clamped": 0,
+            "invented": 15,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 13,
+            "artifactCounts": {
+              "group": 6,
+              "footnote": 2,
+              "term": 0,
+              "allusion": 2,
+              "aside": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 1,
+              "highlight": 2
+            },
+            "cadence": {
+              "entranceCount": 18,
+              "uniqueBeatCount": 17,
+              "firstBeatSec": 0,
+              "lastBeatSec": 243,
+              "maxGapSec": 27
+            }
+          },
+          {
+            "role": "house-timeline",
+            "schemaVersion": 1,
+            "dropped": [
+              {
+                "reason": "aside-not-silent",
+                "kind": "aside",
+                "at": 115
+              },
+              {
+                "reason": "aside-not-silent",
+                "kind": "aside",
+                "at": 194
+              }
+            ],
+            "shifted": 4,
+            "clamped": 3,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 13,
+            "artifactCounts": {
+              "group": 6,
+              "footnote": 2,
+              "term": 0,
+              "allusion": 2,
+              "aside": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 1,
+              "highlight": 2
+            },
+            "cadence": {
+              "entranceCount": 18,
+              "uniqueBeatCount": 11,
+              "firstBeatSec": 8,
+              "lastBeatSec": 205,
+              "maxGapSec": 79
+            }
+          },
+          {
+            "role": "fill-1",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 14,
+            "artifactCounts": {
+              "group": 6,
+              "footnote": 2,
+              "term": 0,
+              "allusion": 2,
+              "aside": 1,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 1,
+              "highlight": 2
+            },
+            "cadence": {
+              "entranceCount": 19,
+              "uniqueBeatCount": 12,
+              "firstBeatSec": 8,
+              "lastBeatSec": 205,
+              "maxGapSec": 65
+            }
+          },
+          {
+            "role": "fill-2",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 15,
+            "artifactCounts": {
+              "group": 6,
+              "footnote": 2,
+              "term": 0,
+              "allusion": 2,
+              "aside": 2,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 1,
+              "highlight": 2
+            },
+            "cadence": {
+              "entranceCount": 20,
+              "uniqueBeatCount": 13,
+              "firstBeatSec": 8,
+              "lastBeatSec": 238,
+              "maxGapSec": 40
+            }
+          }
+        ]
+      }
+    }
+  },
+  "schemaVersion": 1
+}

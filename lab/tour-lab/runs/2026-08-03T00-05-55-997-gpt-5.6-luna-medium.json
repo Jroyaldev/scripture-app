@@ -1,0 +1,391 @@
+{
+  "runId": "2026-08-03T00-05-55-997-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-03T00:05:55.998Z",
+  "promptId": null,
+  "prompt": "postmodernism",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "~deepseek/deepseek-v4-flash-latest",
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite",
+        "meituan/longcat-2.0"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Postmodernism: From Modernity to Christian Witness",
+    "intro": "This tour gives you a compact Christian orientation to postmodernism: where it came from, what it changed about truth and reality, what it gets right about story, and how Christians might respond without either surrendering the gospel or retreating from their neighbors.",
+    "steps": [
+      {
+        "recordId": "five-minutes-church-history:podcast:2523",
+        "startSec": 0,
+        "endSec": 300,
+        "why": "Begin with historical orientation. Steve Nichols defines modernism as a movement arising around the turn of the twentieth century, describes its confidence in science and progress, and sketches five Christian responses—including liberalism, Pentecostalism, fundamentalism, and Machen’s return to “the Bible, it’s the word of God.” This gives you the modern backdrop against which postmodernism reacts.",
+        "episodeTitle": "5 Responses to Modernism",
+        "sourceId": "five-minutes-church-history",
+        "source": "5 Minutes in Church History",
+        "audioUrl": "https://dts.podtrac.com/redirect.mp3/traffic.libsyn.com/secure/5minutesinchurchhistory/264_5_Responses_to_Modernism.mp3?dest-id=668749",
+        "durationSec": 300,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "radically-christian:podcast:9c8cccb3-https-radicallychristian-com-p-10729",
+        "startSec": 1689,
+        "endSec": 1950,
+        "why": "Next, hear a direct account of the shift in how people talk about truth. The speakers contrast a modern world where reality is what “can be measured, what can be weighed, what can be tested” with a postmodern world where “everybody has their own reality.” They then argue that Scripture presents a reality that transcends both laboratory testing and personal feeling, centered on Jesus.",
+        "episodeTitle": "Give Thanks in All Circumstances – Practicing Gratitude",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682134/f6db07c9-af67-4f0e-97ab-a384af70ca52/transcoded.mp3?post_id=148682134&relation=podcast&Expires=1785437953&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=hMvZlESxnEWqiJG4j2PWbyXsYm9BbRbaGRwa6lZtFSn0t5MqmvwrluN~J5QkDh95pJB6-4Fh2Sxw~NVIlh4aNPjAHajkPgDbB~OYFBZ0ZPGqQoI64H6opzgblkR5ZjlVYvPgkQLZF2IMkYtkwxgl8e4HylBQDNOYJ~dljMdHJ49q~lqAjmO0HaJ5aRjuIfmxK1jTdaMfXqALD9MS5lKw3ntzPNPHZuFGQtRBH2C5C8nJ2Dc49T17KNQAjUVqrBcP0dUL~KMM~21f9cZEud9W~GU3mBFuvpWGJ11ycjUpw0-7HsFPbR-cIs9nfyqBILM1CkySEnURhb4D2QMzilkAHQ__",
+        "durationSec": 2438,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "ask-nt-wright:podcast:55146aac-com-06717f9f-d027-3b21-815e-21ad699a4b63",
+        "startSec": 1150,
+        "endSec": 1353,
+        "why": "This clip adds an important qualification rather than treating postmodernism as only a problem. N. T. Wright says one strength of postmodernity is that it has highlighted the “ineradicable nature of story within human life,” while insisting that story still raises the question, “but did it happen?” He distinguishes parables from the Gospel narratives and explains why Christian story is being presented as historical truth, not merely myth.",
+        "episodeTitle": "#67 NT Wright & Douglas Murray pt 2 - Audience Q&A",
+        "sourceId": "ask-nt-wright",
+        "source": "Ask NT Wright Anything",
+        "audioUrl": "https://traffic.megaphone.fm/NSR7609781876.mp3?updated=1751025433",
+        "durationSec": 1861,
+        "adInsertionDrift": true
+      },
+      {
+        "recordId": "naked-bible:podcast:2225",
+        "startSec": 769,
+        "endSec": 990,
+        "why": "Now hear how one conversation connects postmodern conditions with the church’s older resources. The speakers suggest that moving from modernity to postmodernity may open people to the church fathers, who had to work within a pagan or anti-Christian environment and carried a “supernatural worldview.” This offers a constructive alternative to assuming Christians must choose between modernist certainty and postmodern skepticism.",
+        "episodeTitle": "Naked Bible 251: The Church Fathers and Genesis 1",
+        "sourceId": "naked-bible",
+        "source": "Naked Bible Podcast",
+        "audioUrl": "https://nakedbiblepodcast.com/wp-content/uploads/2018/12/NakedBible251_Church_Fathers_Gen1.mp3",
+        "durationSec": 3358,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "radically-christian:podcast:2af7b996-https-radicallychristian-com-p-10410",
+        "startSec": 2390,
+        "endSec": 2655,
+        "why": "End with practical Christian posture. The speaker says the first approach should be friendship and asks, “how can I become your friend?” rather than trying to manipulate someone into belief. He connects this to “sacrificial love,” kindness, empathy, and belonging, then acknowledges that deconstruction can be “necessary and very healthy” if it leads to reconstruction. The tour lands on witness as a lived community, not merely an argument against postmodernism.",
+        "episodeTitle": "Post-Christian Culture (Hope for the Future of the Church)",
+        "sourceId": "radically-christian",
+        "source": "Radically Christian",
+        "audioUrl": "https://substackcdn.com/video_upload/post/148682159/cde45adc-d5db-463f-aad1-2ca7b5613e89/transcoded.mp3?post_id=148682159&relation=podcast&Expires=1785437914&Key-Pair-Id=APKAIVDA3NPSMPSPESQQ&Signature=aQ-bgupG5NR7gz7O0ix-Vh9ahVTYkU7EYCQvf45mEybcie9lE0joF32EctPU4lWAk2Q2YMT66q-m6e2wHtZ5iVKKh63ZtFITW9ECMFl4SVMkEB0VfOt1Oybmfem0PeRKTt~Z6d9TvkJD3-uTYhemcAUsW0ls-JcSmjaSkNqh-Byn290TSyy1Sxx7IsnpUTlyIEB69nyLlgLmZljLq2LNWJTaWcvqZVd3Qw71pcPSGNdQWz6KbH2~MPLGbgPLzb8~TMHRbUcGXNmYzVYnmRl2L8deuylBkw58c9T1D81-KXK5QilHLwZuaPNG1hFGwFCg1wm2r6bV-XXMVPUwIu5bpQ__",
+        "durationSec": 2776,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Taken together, these clips portray postmodernism as both a reaction against modernity’s narrow account of reality and a challenge to Christian claims about truth, history, and authority. They also suggest a way forward: distinguish story from myth, recover the gospel’s transcendent and historical reality, learn from earlier Christians, and embody the truth through humble, patient love.",
+    "totalSeconds": 1250
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 1859,
+      "promptTokens": 1592,
+      "completionTokens": 30,
+      "reasoningTokens": 14,
+      "cachedPromptTokens": 0,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000216925,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 1,
+      "latencyMs": 3555,
+      "promptTokens": 1887,
+      "completionTokens": 191,
+      "reasoningTokens": 13,
+      "cachedPromptTokens": 1589,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000167665,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 2,
+      "latencyMs": 3411,
+      "promptTokens": 11667,
+      "completionTokens": 419,
+      "reasoningTokens": 86,
+      "cachedPromptTokens": 1884,
+      "toolCalls": 6,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00149304,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 3,
+      "latencyMs": 8303,
+      "promptTokens": 18790,
+      "completionTokens": 909,
+      "reasoningTokens": 143,
+      "cachedPromptTokens": 11664,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.001552715,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "list_sources",
+      "args": {},
+      "ms": 11,
+      "summary": "8 shows"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "postmodernism postmodern Christian truth",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 88,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "deconstruction deconstructing faith culture",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 59,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "relativism objective truth narrative metanarrative",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 125,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "modernity modernism postmodern world worldview",
+        "sourceId": "five-minutes-church-history",
+        "limit": 10
+      },
+      "ms": 12,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "search_corpus",
+      "args": {
+        "query": "conversation with postmodern people gospel",
+        "sourceId": "radically-christian",
+        "limit": 10
+      },
+      "ms": 48,
+      "summary": "10 hits"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "five-minutes-church-history:podcast:2523",
+        "fromSec": 0,
+        "toSec": 300
+      },
+      "ms": 1,
+      "summary": "0s–300s of 5 Responses to Modernism"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:9c8cccb3-https-radicallychristian-com-p-10729",
+        "fromSec": 1680,
+        "toSec": 1950
+      },
+      "ms": 0,
+      "summary": "1680s–1950s of Give Thanks in All Circumstances – Practicing Gratitude"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:55146aac-com-06717f9f-d027-3b21-815e-21ad699a4b63",
+        "fromSec": 1120,
+        "toSec": 1450
+      },
+      "ms": 4,
+      "summary": "1120s–1420s of #67 NT Wright & Douglas Murray pt 2 - Audience Q&A"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "ask-nt-wright:podcast:38b54c4-com-5281cdd4-eabf-34d6-95e2-fb5b338f5e4f",
+        "fromSec": 700,
+        "toSec": 1000
+      },
+      "ms": 3,
+      "summary": "700s–1000s of #86 Deconstructing faith and answering atheism"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "naked-bible:podcast:2225",
+        "fromSec": 730,
+        "toSec": 1040
+      },
+      "ms": 6,
+      "summary": "730s–1030s of Naked Bible 251: The Church Fathers and Genesis 1"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "radically-christian:podcast:2af7b996-https-radicallychristian-com-p-10410",
+        "fromSec": 2370,
+        "toSec": 2776
+      },
+      "ms": 4,
+      "summary": "2370s–2670s of Post-Christian Culture (Hope for the Future of the Church)"
+    }
+  ],
+  "rejections": [],
+  "totals": {
+    "modelCalls": 4,
+    "toolCalls": 13,
+    "tapeSec": 1770,
+    "deniedWindows": 0,
+    "promptTokens": 33936,
+    "completionTokens": 1549,
+    "reasoningTokens": 256,
+    "cachedPromptTokens": 15137,
+    "wallMs": 17495,
+    "modelLatencyMs": 17128,
+    "toolMs": 361
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.00343,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-03T00:06:13.493Z"
+}

@@ -1,0 +1,434 @@
+{
+  "startedAt": "2026-08-03T00:06:14.718Z",
+  "requestKey": "1|gpt-5.6-luna-medium|five-minutes-church-history:podcast:2523|0|300|9e112e9c0c3d6654",
+  "request": {
+    "schemaVersion": 1,
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "five-minutes-church-history:podcast:2523",
+    "fromSec": 0,
+    "toSec": 300,
+    "why": "Begin with historical orientation. Steve Nichols defines modernism as a movement arising around the turn of the twentieth century, describes its confidence in science and progress, and sketches five Christian responses—including liberalism, Pentecostalism, fundamentalism, and Machen’s return to “the Bible, it’s the word of God.” This gives you the modern backdrop against which postmodernism reacts"
+  },
+  "result": {
+    "schemaVersion": 1,
+    "requestKey": "1|gpt-5.6-luna-medium|five-minutes-church-history:podcast:2523|0|300|9e112e9c0c3d6654",
+    "clip": {
+      "fromSec": 0,
+      "toSec": 300,
+      "durationSec": 300
+    },
+    "scenes": [
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "I'm using this to refer",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [
+          {
+            "text": "Defining modernism as a turn-of-the-century movement",
+            "cue": "I'm using this to refer",
+            "at": 22,
+            "timingSource": "cue"
+          }
+        ],
+        "at": 22,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "It was in an era of Darwin",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "It was a time of great optimism.",
+          "cue": "It was a time of great optimism.",
+          "at": 57,
+          "timingSource": "house"
+        },
+        "asides": [],
+        "at": 41,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "The first was liberalism",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "What if we accommodated to your sensibilities?",
+          "cue": "What if we accommodated to your sensibilities?",
+          "at": 86,
+          "timingSource": "cue"
+        },
+        "asides": [],
+        "at": 83,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "A second response was Pentecostalism",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "Pentecostalism was a response because it's going to go in the opposite direction",
+          "cue": "Pentecostalism was a response because it's going to go in the opposite direction",
+          "at": 162,
+          "timingSource": "cue"
+        },
+        "asides": [
+          {
+            "text": "Context: the clip locates modern Pentecostalism’s beginnings in the…",
+            "cue": null,
+            "at": 141,
+            "timingSource": "house"
+          }
+        ],
+        "at": 119,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "A fourth response to modernism",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "It's the Bible, it's the word of God.",
+          "cue": "It's the Bible, it's the word of God.",
+          "at": 265,
+          "timingSource": "cue"
+        },
+        "asides": [
+          {
+            "text": "This section shifts from broad movements to J. Gresham Machen as an…",
+            "cue": "Well, a fifth response to modernism is not a movement. I'm going to use a man.",
+            "at": 224,
+            "timingSource": "cue"
+          }
+        ],
+        "at": 200,
+        "timingSource": "cue"
+      }
+    ],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 20400,
+      "passes": 3,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 10145,
+          "promptTokens": 2567,
+          "completionTokens": 998,
+          "reasoningTokens": 516,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0009196,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-scenes:5"
+        },
+        {
+          "role": "fill-1",
+          "latencyMs": 5430,
+          "promptTokens": 438,
+          "completionTokens": 341,
+          "reasoningTokens": 214,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0002484,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:1"
+        },
+        {
+          "role": "fill-2",
+          "latencyMs": 4818,
+          "promptTokens": 355,
+          "completionTokens": 345,
+          "reasoningTokens": 204,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0002425,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:1"
+        }
+      ],
+      "totalUsd": 0.0014105,
+      "tokens": {
+        "prompt": 3360,
+        "completion": 1684,
+        "reasoning": 934,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 1,
+        "dropped": [
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-1",
+            "kind": "highlight",
+            "count": 1
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-2",
+            "kind": "highlight",
+            "count": 1
+          }
+        ],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "reassigned": 0,
+        "preludes": 0,
+        "sceneCount": 5,
+        "artifactCount": 7,
+        "artifactCounts": {
+          "group": 0,
+          "footnote": 0,
+          "term": 0,
+          "allusion": 0,
+          "aside": 3,
+          "compare": 0,
+          "chain": 0,
+          "caveat": 0,
+          "highlight": 4
+        },
+        "cadence": {
+          "entranceCount": 12,
+          "uniqueBeatCount": 11,
+          "firstBeatSec": 22,
+          "lastBeatSec": 265,
+          "maxGapSec": 41
+        },
+        "passes": [
+          {
+            "role": "initial",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 4,
+            "clamped": 0,
+            "invented": 9,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 9,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 5,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 4
+            },
+            "cadence": {
+              "entranceCount": 14,
+              "uniqueBeatCount": 12,
+              "firstBeatSec": 0,
+              "lastBeatSec": 300,
+              "maxGapSec": 30
+            }
+          },
+          {
+            "role": "house-timeline",
+            "schemaVersion": 1,
+            "dropped": [
+              {
+                "reason": "aside-not-silent",
+                "kind": "aside",
+                "at": 72
+              },
+              {
+                "reason": "aside-not-silent",
+                "kind": "aside",
+                "at": 95
+              },
+              {
+                "reason": "aside-not-silent",
+                "kind": "aside",
+                "at": 162
+              },
+              {
+                "reason": "aside-not-silent",
+                "kind": "aside",
+                "at": 267
+              }
+            ],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 5,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 1,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 4
+            },
+            "cadence": {
+              "entranceCount": 10,
+              "uniqueBeatCount": 9,
+              "firstBeatSec": 22,
+              "lastBeatSec": 265,
+              "maxGapSec": 65
+            }
+          },
+          {
+            "role": "fill-1",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 6,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 2,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 4
+            },
+            "cadence": {
+              "entranceCount": 11,
+              "uniqueBeatCount": 10,
+              "firstBeatSec": 22,
+              "lastBeatSec": 265,
+              "maxGapSec": 43
+            }
+          },
+          {
+            "role": "fill-2",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 7,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 3,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 4
+            },
+            "cadence": {
+              "entranceCount": 12,
+              "uniqueBeatCount": 11,
+              "firstBeatSec": 22,
+              "lastBeatSec": 265,
+              "maxGapSec": 41
+            }
+          }
+        ]
+      }
+    }
+  },
+  "schemaVersion": 1
+}

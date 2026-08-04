@@ -1,0 +1,520 @@
+{
+  "startedAt": "2026-08-02T21:48:43.703Z",
+  "requestKey": "1|gpt-5.6-luna-medium|bibleproject:podcast:ruth-naomi-boaz-and-a-cosmic-redemption|1266|1510|7bc1263318c734de",
+  "request": {
+    "schemaVersion": 1,
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "bibleproject:podcast:ruth-naomi-boaz-and-a-cosmic-redemption",
+    "fromSec": 1266,
+    "toSec": 1510,
+    "why": "Begin here because the teachers refuse to rush past Naomi’s grief: “It’s described quickly, but you’re really supposed to sit in the tragedy.” The clip names the losses—husband, sons, land, and future—then lets Ruth’s vow, “Wherever you go, I’m gonna go,” become the first sign of unexpected loyalty and hope. It also highlights the book’s reversal of insider and outsider: Ruth is the Moabite who tr"
+  },
+  "result": {
+    "schemaVersion": 1,
+    "requestKey": "1|gpt-5.6-luna-medium|bibleproject:podcast:ruth-naomi-boaz-and-a-cosmic-redemption|1266|1510|7bc1263318c734de",
+    "clip": {
+      "fromSec": 1266,
+      "toSec": 1510,
+      "durationSec": 244
+    },
+    "scenes": [
+      {
+        "ref": "Ruth 1:5",
+        "verses": [
+          {
+            "verse": 5,
+            "text": "Mahlon and Chilion both died, and the woman was bereaved of her two children and of her husband."
+          }
+        ],
+        "cue": "Naomi was bereaved of her two sons",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": {
+          "text": "The family is not labeled as wicked or idolatrous.",
+          "cue": "they're not labeled as like a wicked family",
+          "at": 35,
+          "timingSource": "cue"
+        },
+        "highlight": {
+          "quote": "This is a tragic scene.",
+          "cue": "This is a tragic scene.",
+          "at": 61,
+          "timingSource": "cue"
+        },
+        "asides": [],
+        "at": 10,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "by the end of the story",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [
+          {
+            "text": "framing Ruth's plot as restoration of inheritance and future",
+            "cue": "So this is key because by the end of the story",
+            "at": 98,
+            "timingSource": "cue"
+          },
+          {
+            "text": "The stretch frames Ruth as a story of lost inheritance and family…",
+            "cue": null,
+            "at": 125,
+            "timingSource": "house"
+          }
+        ],
+        "at": 98,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Ruth 1:16–17",
+        "verses": [
+          {
+            "verse": 16,
+            "text": "Ruth said, “Don’t urge me to leave you, and to return from following you, for where you go, I will go; and where you stay, I will stay. Your people will be my people, and your God my God."
+          },
+          {
+            "verse": 17,
+            "text": "Where you die, I will die, and there I will be buried. May Yahweh do so to me, and more also, if anything but death parts you and me.”"
+          }
+        ],
+        "cue": "this remarkable speech that she gives",
+        "groups": [
+          {
+            "words": [
+              "Where",
+              "go"
+            ],
+            "label": "shared direction",
+            "cue": "Wherever you go, I'm gonna go.",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [
+              {
+                "word": "Where",
+                "occurrence": 0,
+                "at": 182,
+                "timingSource": "word"
+              },
+              {
+                "word": "go",
+                "occurrence": 0,
+                "at": 162,
+                "timingSource": "word"
+              }
+            ],
+            "at": 162,
+            "timingSource": "cue"
+          },
+          {
+            "words": [
+              "people",
+              "my",
+              "people"
+            ],
+            "label": "shared belonging",
+            "cue": "Your people are my people",
+            "occurrences": [
+              0,
+              0,
+              0
+            ],
+            "wordTimes": [
+              {
+                "word": "people",
+                "occurrence": 0,
+                "at": 174,
+                "timingSource": "word"
+              },
+              {
+                "word": "my",
+                "occurrence": 0,
+                "at": 167,
+                "timingSource": "word"
+              },
+              {
+                "word": "people",
+                "occurrence": 0,
+                "at": 174,
+                "timingSource": "word"
+              }
+            ],
+            "at": 174,
+            "timingSource": "cue"
+          }
+        ],
+        "footnotes": [
+          {
+            "word": "leave",
+            "note": "Literally, Ruth is refusing to abandon or forsake Naomi.",
+            "cue": "literally to abandon you or forsake you",
+            "occurrence": 0,
+            "at": 158,
+            "timingSource": "cue"
+          }
+        ],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "So she becomes this emblem of surprising, courageous loyalty to this woman, to her mother-in-law, but also to her God, to Yahweh.",
+          "cue": null,
+          "at": 203,
+          "timingSource": "cue"
+        },
+        "asides": [],
+        "at": 151,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "messing with our categories of insider and outsider",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [
+          {
+            "text": "recasting Ruth's outsider status as faithful allegiance to Yahweh",
+            "cue": "Because she's a Mobite.",
+            "at": 228,
+            "timingSource": "house"
+          }
+        ],
+        "at": 222,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "they go to Bethlehem",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [
+          {
+            "text": "staging the return to Bethlehem and the women's chorus",
+            "cue": "the women of this city",
+            "at": 244,
+            "timingSource": "house"
+          }
+        ],
+        "at": 234,
+        "timingSource": "cue"
+      }
+    ],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 52787,
+      "passes": 3,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 36269,
+          "promptTokens": 2387,
+          "completionTokens": 4096,
+          "reasoningTokens": 3460,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0027559,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-scenes:5"
+        },
+        {
+          "role": "fill-1",
+          "latencyMs": 6237,
+          "promptTokens": 378,
+          "completionTokens": 456,
+          "reasoningTokens": 327,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0003114,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:1"
+        },
+        {
+          "role": "fill-2",
+          "latencyMs": 10272,
+          "promptTokens": 330,
+          "completionTokens": 561,
+          "reasoningTokens": 457,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0003696,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:0"
+        }
+      ],
+      "totalUsd": 0.0034368999999999997,
+      "tokens": {
+        "prompt": 3095,
+        "completion": 5113,
+        "reasoning": 4244,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 1,
+        "dropped": [
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "group",
+            "count": 2
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "highlight",
+            "count": 1
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-1",
+            "kind": "highlight",
+            "count": 1
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-2",
+            "kind": "highlight",
+            "count": 1
+          }
+        ],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "reassigned": 0,
+        "preludes": 0,
+        "sceneCount": 5,
+        "artifactCount": 10,
+        "artifactCounts": {
+          "group": 2,
+          "footnote": 1,
+          "term": 0,
+          "allusion": 0,
+          "aside": 4,
+          "compare": 0,
+          "chain": 0,
+          "caveat": 1,
+          "highlight": 2
+        },
+        "cadence": {
+          "entranceCount": 15,
+          "uniqueBeatCount": 13,
+          "firstBeatSec": 10,
+          "lastBeatSec": 244,
+          "maxGapSec": 37
+        },
+        "passes": [
+          {
+            "role": "initial",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 5,
+            "clamped": 0,
+            "invented": 10,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 10,
+            "artifactCounts": {
+              "group": 2,
+              "footnote": 1,
+              "term": 0,
+              "allusion": 0,
+              "aside": 4,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 1,
+              "highlight": 2
+            },
+            "cadence": {
+              "entranceCount": 15,
+              "uniqueBeatCount": 14,
+              "firstBeatSec": 0,
+              "lastBeatSec": 219.6,
+              "maxGapSec": 24.4
+            }
+          },
+          {
+            "role": "house-timeline",
+            "schemaVersion": 1,
+            "dropped": [
+              {
+                "reason": "aside-not-silent",
+                "kind": "aside",
+                "at": 38
+              }
+            ],
+            "shifted": 1,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 9,
+            "artifactCounts": {
+              "group": 2,
+              "footnote": 1,
+              "term": 0,
+              "allusion": 0,
+              "aside": 3,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 1,
+              "highlight": 2
+            },
+            "cadence": {
+              "entranceCount": 14,
+              "uniqueBeatCount": 12,
+              "firstBeatSec": 10,
+              "lastBeatSec": 244,
+              "maxGapSec": 53
+            }
+          },
+          {
+            "role": "fill-1",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 10,
+            "artifactCounts": {
+              "group": 2,
+              "footnote": 1,
+              "term": 0,
+              "allusion": 0,
+              "aside": 4,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 1,
+              "highlight": 2
+            },
+            "cadence": {
+              "entranceCount": 15,
+              "uniqueBeatCount": 13,
+              "firstBeatSec": 10,
+              "lastBeatSec": 244,
+              "maxGapSec": 37
+            }
+          },
+          {
+            "role": "fill-2",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 10,
+            "artifactCounts": {
+              "group": 2,
+              "footnote": 1,
+              "term": 0,
+              "allusion": 0,
+              "aside": 4,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 1,
+              "highlight": 2
+            },
+            "cadence": {
+              "entranceCount": 15,
+              "uniqueBeatCount": 13,
+              "firstBeatSec": 10,
+              "lastBeatSec": 244,
+              "maxGapSec": 37
+            }
+          }
+        ]
+      }
+    }
+  },
+  "schemaVersion": 1
+}

@@ -1,0 +1,419 @@
+{
+  "startedAt": "2026-08-03T00:07:39.343Z",
+  "requestKey": "1|gpt-5.6-luna-medium|naked-bible:podcast:2693|635|806|63254d42b1406df5",
+  "request": {
+    "schemaVersion": 1,
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "naked-bible:podcast:2693",
+    "fromSec": 635,
+    "toSec": 806,
+    "why": "Stay with the immediate context and hear the passage read as the climax of Moses’ encounter in the rock. The discussion emphasizes the contrast between God’s protected, partial self-disclosure—“you shall see my back”—and the revealed name: “a God merciful and gracious, slow to anger, and abounding in steadfast love and faithfulness.”"
+  },
+  "result": {
+    "schemaVersion": 1,
+    "requestKey": "1|gpt-5.6-luna-medium|naked-bible:podcast:2693|635|806|63254d42b1406df5",
+    "clip": {
+      "fromSec": 635,
+      "toSec": 806,
+      "durationSec": 171
+    },
+    "scenes": [
+      {
+        "ref": "Exodus 33:20",
+        "verses": [
+          {
+            "verse": 20,
+            "text": "He said, “You cannot see my face, for man may not see me and live.”"
+          }
+        ],
+        "cue": "You cannot see my face",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [
+          {
+            "term": "panim",
+            "gloss": "face",
+            "cue": "Hebrew there is Panim",
+            "at": 6,
+            "timingSource": "cue"
+          }
+        ],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [],
+        "at": 2,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Exodus 33:21–23",
+        "verses": [
+          {
+            "verse": 21,
+            "text": "Yahweh also said, “Behold, there is a place by me, and you shall stand on the rock."
+          },
+          {
+            "verse": 22,
+            "text": "It will happen, while my glory passes by, that I will put you in a cleft of the rock, and will cover you with my hand until I have passed by;"
+          },
+          {
+            "verse": 23,
+            "text": "then I will take away my hand, and you will see my back; but my face shall not be seen.”"
+          }
+        ],
+        "cue": "there's a place by me",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "Then I will take away my hand, and you shall see my back.",
+          "cue": "Then I will take away my hand, and you shall see my back.",
+          "at": 28,
+          "timingSource": "cue"
+        },
+        "asides": [],
+        "at": 25,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Exodus 34:5–7",
+        "verses": [
+          {
+            "verse": 5,
+            "text": "Yahweh descended in the cloud, and stood with him there, and proclaimed Yahweh’s name."
+          },
+          {
+            "verse": 6,
+            "text": "Yahweh passed by before him, and proclaimed, “Yahweh! Yahweh, a merciful and gracious God, slow to anger, and abundant in loving kindness and truth,"
+          },
+          {
+            "verse": 7,
+            "text": "keeping loving kindness for thousands, forgiving iniquity and disobedience and sin; and who will by no means clear the guilty, visiting the iniquity of the fathers on the children, and on the children’s children, on the third and on the fourth generation.”"
+          }
+        ],
+        "cue": "a God merciful and gracious",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [
+          {
+            "term": "Yahweh",
+            "gloss": "the divine name",
+            "cue": "this is all Yahweh in the Hebrew",
+            "at": 119,
+            "timingSource": "house"
+          }
+        ],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "Yahweh, Yahweh, a God merciful and gracious, slow to anger, and abounding in steadfast love and faithfulness",
+          "cue": null,
+          "at": 110,
+          "timingSource": "cue"
+        },
+        "asides": [],
+        "at": 110,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Exodus 34:8–9",
+        "verses": [
+          {
+            "verse": 8,
+            "text": "Moses hurried and bowed his head toward the earth, and worshiped."
+          },
+          {
+            "verse": 9,
+            "text": "He said, “If now I have found favor in your sight, Lord, please let the Lord go among us, even though this is a stiff-necked people; pardon our iniquity and our sin, and take us for your inheritance.”"
+          }
+        ],
+        "cue": "please let the Lord go in the midst",
+        "groups": [],
+        "footnotes": [
+          {
+            "word": "Lord",
+            "note": "The final “Lord” is Adonai, not the divine name.",
+            "cue": "Lord there is not the divine name",
+            "occurrence": 0,
+            "at": 134,
+            "timingSource": "cue"
+          }
+        ],
+        "allusions": [],
+        "terms": [
+          {
+            "term": "Adonai",
+            "gloss": "a title for Lord, distinct from the divine name",
+            "cue": "but it's Adonai",
+            "at": 134,
+            "timingSource": "cue"
+          }
+        ],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "If now I have found favour in your sight, O Lord, please let the Lord go in the midst of us",
+          "cue": null,
+          "at": 128,
+          "timingSource": "cue"
+        },
+        "asides": [
+          {
+            "text": "reading Moses’s name choice as humility before God’s presence",
+            "cue": "afraid to use uh the divine name",
+            "at": 151,
+            "timingSource": "cue"
+          }
+        ],
+        "at": 128,
+        "timingSource": "cue"
+      }
+    ],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 32196,
+      "passes": 2,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 26776,
+          "promptTokens": 2142,
+          "completionTokens": 3658,
+          "reasoningTokens": 3013,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.002462475,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-scenes:4"
+        },
+        {
+          "role": "fill-1",
+          "latencyMs": 5414,
+          "promptTokens": 590,
+          "completionTokens": 621,
+          "reasoningTokens": 494,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0004316,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:0"
+        }
+      ],
+      "totalUsd": 0.002894075,
+      "tokens": {
+        "prompt": 2732,
+        "completion": 4279,
+        "reasoning": 3507,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 1,
+        "dropped": [
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "group",
+            "count": 2
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "group",
+            "count": 2
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "group",
+            "count": 2
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "group",
+            "count": 2
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-1",
+            "kind": "footnote",
+            "count": 1
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-1",
+            "kind": "term",
+            "count": 1
+          }
+        ],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "reassigned": 0,
+        "preludes": 0,
+        "sceneCount": 4,
+        "artifactCount": 8,
+        "artifactCounts": {
+          "group": 0,
+          "footnote": 1,
+          "term": 3,
+          "allusion": 0,
+          "aside": 1,
+          "compare": 0,
+          "chain": 0,
+          "caveat": 0,
+          "highlight": 3
+        },
+        "cadence": {
+          "entranceCount": 12,
+          "uniqueBeatCount": 9,
+          "firstBeatSec": 2,
+          "lastBeatSec": 151,
+          "maxGapSec": 82
+        },
+        "passes": [
+          {
+            "role": "initial",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 4,
+            "clamped": 0,
+            "invented": 8,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 4,
+            "artifactCount": 8,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 1,
+              "term": 3,
+              "allusion": 0,
+              "aside": 1,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 3
+            },
+            "cadence": {
+              "entranceCount": 12,
+              "uniqueBeatCount": 10,
+              "firstBeatSec": 0,
+              "lastBeatSec": 171,
+              "maxGapSec": 21.4
+            }
+          },
+          {
+            "role": "house-timeline",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 4,
+            "artifactCount": 8,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 1,
+              "term": 3,
+              "allusion": 0,
+              "aside": 1,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 3
+            },
+            "cadence": {
+              "entranceCount": 12,
+              "uniqueBeatCount": 9,
+              "firstBeatSec": 2,
+              "lastBeatSec": 151,
+              "maxGapSec": 82
+            }
+          },
+          {
+            "role": "fill-1",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 4,
+            "artifactCount": 8,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 1,
+              "term": 3,
+              "allusion": 0,
+              "aside": 1,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 3
+            },
+            "cadence": {
+              "entranceCount": 12,
+              "uniqueBeatCount": 9,
+              "firstBeatSec": 2,
+              "lastBeatSec": 151,
+              "maxGapSec": 82
+            }
+          }
+        ]
+      }
+    }
+  },
+  "schemaVersion": 1
+}

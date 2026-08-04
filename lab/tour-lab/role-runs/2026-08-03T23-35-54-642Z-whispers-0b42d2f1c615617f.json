@@ -1,0 +1,71 @@
+{
+  "role": "whispers",
+  "startedAt": "2026-08-03T23:35:54.642Z",
+  "request": {
+    "stepCount": 5,
+    "stepsHash": "d416793e84080822"
+  },
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "endpointHost": "openrouter.ai",
+    "endpointStyle": "aggregator",
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "applied": true
+    },
+    "provider": "OpenAI"
+  },
+  "metrics": {
+    "wallMs": 4268,
+    "passes": 1,
+    "calls": [
+      {
+        "role": "whispers",
+        "latencyMs": 4268,
+        "promptTokens": 610,
+        "completionTokens": 599,
+        "reasoningTokens": 516,
+        "cachedPromptTokens": 0,
+        "providerCostUsd": 0.0004204,
+        "finishReason": "stop",
+        "rawModel": "openai/gpt-5.6-luna",
+        "provider": "OpenAI",
+        "model": {
+          "key": "gpt-5.6-luna-medium",
+          "requestedSlug": "openai/gpt-5.6-luna",
+          "resolvedSlug": "openai/gpt-5.6-luna",
+          "endpointHost": "openrouter.ai",
+          "endpointStyle": "aggregator",
+          "reasoning": {
+            "effort": "medium",
+            "source": "per-model default for gpt-5.6-luna-medium",
+            "applied": true
+          },
+          "provider": "OpenAI"
+        },
+        "validation": "accepted"
+      }
+    ],
+    "totalUsd": 0.0004204,
+    "tokens": {
+      "prompt": 610,
+      "completion": 599,
+      "reasoning": 516,
+      "cachedPrompt": 0
+    }
+  },
+  "result": {
+    "whispers": [
+      "Listen for Paul’s opening identity: “bondservant of Christ Jesus.”",
+      "Notice Paul calls the gospel God’s power for salvation.",
+      "Wait for “suppressed the truth” and refusing to thank God.",
+      "Notice “God gave them over” after people exchange truth for lies.",
+      "Listen for Paul widening the list to envy, gossip, and lack of mercy."
+    ]
+  },
+  "schemaVersion": 2,
+  "policyVersion": "magic-director-3"
+}

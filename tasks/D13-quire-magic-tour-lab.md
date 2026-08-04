@@ -82,5 +82,31 @@ Out of scope:
 
 ## Status
 
-In progress.
+Complete — 2026-08-02.
 
+Evidence:
+
+- All four Magic roles report `gpt-5.6-luna-medium`, resolving exactly to
+  `openai/gpt-5.6-luna` through `openrouter.ai` with medium reasoning. Local refusal probes returned 400
+  for Sol overrides on both `/api/tour` and `/api/direct`, and 409 for director schema 2, before any
+  provider call.
+- One controlled director capture produced
+  `director-runs/2026-08-02T19-07-26-437Z-1d1d62e89a6ea61a.json`: 1 Luna pass, 17.649s wall,
+  1,395 prompt / 2,454 completion / 2,070 reasoning / 0 cached tokens, `$0.0016467` provider cost,
+  3 scenes, 6 artifacts, and no normalization drops, shifts, or clamps.
+- `replays/revelation-1-pastoral-center.json` validates under the current director and replay schemas.
+  After capture, director evidence remained exactly 1 file and auxiliary role evidence remained 0 files;
+  no later verification purchased another call.
+- A local reverse-proxy firewall blocked `/api/tour`, `/api/whispers`, `/api/form`, and `/api/direct`.
+  The full replay run logged 30 allowed requests (page/assets, named fixture, transcript windows) and zero
+  blocked/model-route attempts.
+- Browser acceptance passed at 1280×800 and 390×844 in dark and light themes, plus forced reduced motion.
+  Home exposed the pre-first-scene state; arrows, Page Up/Down, End, ±15-second jumps, scene 1/2/3
+  reconstruction, 1280→390→1280 redraw, focus entry/restoration, publisher audio, caption/control
+  clearance, geometry bounds, and zero horizontal overflow all passed. Fresh final tabs reported zero
+  console errors. The run caught and fixed one negative-volume animation-clock edge before the clean rerun.
+- `node --import tsx --test tests/tour-lab-magic-contract.test.ts`: 9/9 passing, offline.
+- `npm test`: 1,535 tests; 1,503 pass; 32 expected ABI skips; 0 failures.
+- The implementation remains isolated to Tour Lab code, its focused test, this task, README, and STATUS.
+  A concurrent shared-branch commit also contained unrelated Listen-room changes; those were preserved and
+  were not used to port `/magic` into the main renderer.

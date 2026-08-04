@@ -1,0 +1,484 @@
+{
+  "startedAt": "2026-08-02T19:41:16.631Z",
+  "requestKey": "1|gpt-5.6-luna-medium|spoken-gospel:podcast:76ae8290-d131-11f0-a488-778b4582e38d|2180|2445|01b187f3c6150cbf",
+  "request": {
+    "schemaVersion": 1,
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "spoken-gospel:podcast:76ae8290-d131-11f0-a488-778b4582e38d",
+    "fromSec": 2180,
+    "toSec": 2445,
+    "why": "Now hear the Acts 2 details in their own narrative setting: people from many nations hear “the great works that God has done through Jesus” in their own languages. The speakers frame Babel as a prideful attempt to live without dependence on God, and Pentecost as the beginning of Abraham’s promised blessing reaching the scattered nations."
+  },
+  "result": {
+    "schemaVersion": 1,
+    "requestKey": "1|gpt-5.6-luna-medium|spoken-gospel:podcast:76ae8290-d131-11f0-a488-778b4582e38d|2180|2445|01b187f3c6150cbf",
+    "clip": {
+      "fromSec": 2180,
+      "toSec": 2445,
+      "durationSec": 265
+    },
+    "scenes": [
+      {
+        "ref": "Acts 2:8–10",
+        "verses": [
+          {
+            "verse": 8,
+            "text": "How do we hear, everyone in our own native language?"
+          },
+          {
+            "verse": 9,
+            "text": "Parthians, Medes, Elamites, and people from Mesopotamia, Judea, Cappadocia, Pontus, Asia,"
+          },
+          {
+            "verse": 10,
+            "text": "Phrygia, Pamphylia, Egypt, the parts of Libya around Cyrene, visitors from Rome, both Jews and proselytes,"
+          }
+        ],
+        "cue": "everyone's hearing them in their own language",
+        "groups": [
+          {
+            "words": [
+              "own",
+              "native",
+              "language"
+            ],
+            "label": "native hearing",
+            "cue": null,
+            "occurrences": [
+              0,
+              0,
+              0
+            ],
+            "wordTimes": [
+              {
+                "word": "own",
+                "occurrence": 0,
+                "at": 36,
+                "timingSource": "word"
+              },
+              {
+                "word": "language",
+                "occurrence": 0,
+                "at": 36,
+                "timingSource": "word"
+              }
+            ],
+            "at": 36,
+            "timingSource": "word"
+          }
+        ],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [],
+        "at": 36,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Genesis 11:1–3",
+        "verses": [
+          {
+            "verse": 1,
+            "text": "The whole earth was of one language and of one speech."
+          },
+          {
+            "verse": 2,
+            "text": "As they traveled from the east, they found a plain in the land of Shinar, and they lived there."
+          },
+          {
+            "verse": 3,
+            "text": "They said to one another, “Come, let’s make bricks, and burn them thoroughly.” They had brick for stone, and they used tar for mortar."
+          }
+        ],
+        "cue": "what led to the Tower of Babel",
+        "groups": [
+          {
+            "words": [
+              "one",
+              "language",
+              "one",
+              "speech"
+            ],
+            "label": "shared speech",
+            "cue": "make their own version of God's mountain",
+            "occurrences": [
+              0,
+              0,
+              0,
+              0
+            ],
+            "wordTimes": [
+              {
+                "word": "one",
+                "occurrence": 0,
+                "at": 134,
+                "timingSource": "word"
+              },
+              {
+                "word": "language",
+                "occurrence": 0,
+                "at": 134,
+                "timingSource": "word"
+              }
+            ],
+            "at": 94,
+            "timingSource": "cue"
+          },
+          {
+            "words": [
+              "one language",
+              "one speech"
+            ],
+            "label": null,
+            "cue": "he confuses their language and scatters them",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 134,
+            "timingSource": "cue"
+          },
+          {
+            "words": [
+              "Come",
+              "make bricks"
+            ],
+            "label": null,
+            "cue": "So they build this tower, this ziggurat",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [
+              {
+                "word": "Come",
+                "occurrence": 0,
+                "at": 122,
+                "timingSource": "word"
+              }
+            ],
+            "at": 97,
+            "timingSource": "cue"
+          }
+        ],
+        "footnotes": [],
+        "allusions": [
+          {
+            "ref": "Acts 2:11",
+            "text": "Cretans and Arabians: we hear them speaking in our languages the mighty works of God!”",
+            "note": "Pentecost gathers the scattered nations through shared heari",
+            "cue": "So how is Pentecost a reverse or an unworking of the Babel story",
+            "at": 158,
+            "timingSource": "house"
+          }
+        ],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [
+          {
+            "text": "contrasting self-sufficiency with dependence on God",
+            "cue": "not live in this state of dependence that God longs for with his people",
+            "at": 189.5,
+            "timingSource": "house"
+          }
+        ],
+        "at": 76,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Genesis 12:3",
+        "verses": [
+          {
+            "verse": 3,
+            "text": "I will bless those who bless you, and I will curse him who treats you with contempt. All the families of the earth will be blessed through you.”"
+          }
+        ],
+        "cue": "The solution that God gives is Abraham",
+        "groups": [
+          {
+            "words": [
+              "families",
+              "earth"
+            ],
+            "label": "universal blessing",
+            "cue": "all those nations of the world",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 221,
+            "timingSource": "cue"
+          },
+          {
+            "words": [
+              "blessed",
+              "through"
+            ],
+            "label": null,
+            "cue": "are going to be blessed instead",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 221,
+            "timingSource": "cue"
+          }
+        ],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": {
+          "quote": "He's the son of Abraham who has come to be a blessing to all these scattered nations",
+          "at": 230,
+          "timingSource": "cue"
+        },
+        "asides": [],
+        "at": 221,
+        "timingSource": "cue"
+      },
+      {
+        "ref": "Acts 2:11",
+        "verses": [
+          {
+            "verse": 11,
+            "text": "Cretans and Arabians: we hear them speaking in our languages the mighty works of God!”"
+          }
+        ],
+        "cue": "reverse or an unworking of the Babel story",
+        "groups": [
+          {
+            "words": [
+              "hear",
+              "speaking"
+            ],
+            "label": "shared hearing",
+            "cue": "actually hearing their languages spoken",
+            "occurrences": [
+              0,
+              0
+            ],
+            "wordTimes": [],
+            "at": 250,
+            "timingSource": "house"
+          },
+          {
+            "words": [
+              "mighty",
+              "works",
+              "God"
+            ],
+            "label": "God's mighty works",
+            "cue": "the great works that God has done through Jesus",
+            "occurrences": [
+              0,
+              0,
+              0
+            ],
+            "wordTimes": [
+              {
+                "word": "God",
+                "occurrence": 0,
+                "at": 250,
+                "timingSource": "word"
+              }
+            ],
+            "at": 243,
+            "timingSource": "house"
+          }
+        ],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [],
+        "at": 235,
+        "timingSource": "cue"
+      }
+    ],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 40153,
+      "passes": 3,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 28502,
+          "promptTokens": 1952,
+          "completionTokens": 3610,
+          "reasoningTokens": 3106,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.002409925,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-scenes:4"
+        },
+        {
+          "role": "repair",
+          "latencyMs": 1710,
+          "promptTokens": 180,
+          "completionTokens": 41,
+          "reasoningTokens": 30,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0000426,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-repairs:0/1"
+        },
+        {
+          "role": "fill-1",
+          "latencyMs": 9934,
+          "promptTokens": 489,
+          "completionTokens": 1143,
+          "reasoningTokens": 1034,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0007347,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:3"
+        }
+      ],
+      "totalUsd": 0.0031872249999999997,
+      "tokens": {
+        "prompt": 2621,
+        "completion": 4794,
+        "reasoning": 4170,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 1,
+        "dropped": [
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "allusion",
+            "count": 1
+          },
+          {
+            "reason": "repair-unresolved",
+            "pass": "repair",
+            "kind": "word",
+            "count": 1
+          }
+        ],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "sceneCount": 4,
+        "artifactCount": 11,
+        "passes": [
+          {
+            "role": "initial",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 5,
+            "clamped": 0,
+            "invented": 9,
+            "sceneCount": 4,
+            "artifactCount": 9
+          },
+          {
+            "role": "repair",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 5,
+            "clamped": 0,
+            "invented": 9,
+            "sceneCount": 4,
+            "artifactCount": 9
+          },
+          {
+            "role": "house-timeline",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "sceneCount": 4,
+            "artifactCount": 8
+          },
+          {
+            "role": "fill-1",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 1,
+            "clamped": 0,
+            "invented": 0,
+            "sceneCount": 4,
+            "artifactCount": 11
+          }
+        ]
+      }
+    }
+  },
+  "schemaVersion": 1
+}

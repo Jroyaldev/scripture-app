@@ -1,0 +1,140 @@
+{
+  "role": "form",
+  "startedAt": "2026-08-02T19:40:41.895Z",
+  "request": {
+    "stepCount": 5,
+    "askHash": "e4ae0e098dbf5bf8",
+    "stepsHash": "78e9bafd4d3d6f4b"
+  },
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "endpointHost": "openrouter.ai",
+    "endpointStyle": "aggregator",
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "applied": true
+    },
+    "provider": "OpenAI"
+  },
+  "metrics": {
+    "wallMs": 3883,
+    "passes": 1,
+    "calls": [
+      {
+        "role": "form",
+        "latencyMs": 3882,
+        "promptTokens": 813,
+        "completionTokens": 415,
+        "reasoningTokens": 338,
+        "cachedPromptTokens": 0,
+        "providerCostUsd": 0.0003303,
+        "finishReason": "stop",
+        "rawModel": "openai/gpt-5.6-luna",
+        "provider": "OpenAI",
+        "model": {
+          "key": "gpt-5.6-luna-medium",
+          "requestedSlug": "openai/gpt-5.6-luna",
+          "resolvedSlug": "openai/gpt-5.6-luna",
+          "endpointHost": "openrouter.ai",
+          "endpointStyle": "aggregator",
+          "reasoning": {
+            "effort": "medium",
+            "source": "per-model default for gpt-5.6-luna-medium",
+            "applied": true
+          },
+          "provider": "OpenAI"
+        },
+        "validation": "accepted"
+      }
+    ],
+    "totalUsd": 0.0003303,
+    "tokens": {
+      "prompt": 813,
+      "completion": 415,
+      "reasoning": 338,
+      "cachedPrompt": 0
+    }
+  },
+  "result": {
+    "form": "path",
+    "waypoints": [
+      {
+        "step": 0,
+        "marker": "Acts 2:1-21"
+      },
+      {
+        "step": 1,
+        "marker": "Babel/Pentecost"
+      },
+      {
+        "step": 2,
+        "marker": "Acts 2:1-13"
+      },
+      {
+        "step": 3,
+        "marker": "Church as city"
+      },
+      {
+        "step": 4,
+        "marker": "Daniel's kingdom"
+      }
+    ],
+    "usd": 0.0003303,
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 3883,
+      "passes": 1,
+      "calls": [
+        {
+          "role": "form",
+          "latencyMs": 3882,
+          "promptTokens": 813,
+          "completionTokens": 415,
+          "reasoningTokens": 338,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0003303,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "accepted"
+        }
+      ],
+      "totalUsd": 0.0003303,
+      "tokens": {
+        "prompt": 813,
+        "completion": 415,
+        "reasoning": 338,
+        "cachedPrompt": 0
+      }
+    }
+  },
+  "schemaVersion": 1
+}

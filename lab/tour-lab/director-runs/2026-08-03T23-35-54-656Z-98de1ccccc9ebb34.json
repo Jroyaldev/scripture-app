@@ -1,0 +1,1288 @@
+{
+  "startedAt": "2026-08-03T23:35:54.656Z",
+  "requestKey": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:9ca9ec4b-com-a6ea48e1-f96c-3968-a3f7-dd692d7aa849|120|420|220ed33f6e42ea28|e76f755f5ac9ed87",
+  "request": {
+    "schemaVersion": 2,
+    "policyVersion": "magic-director-3",
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "listeners-commentary:podcast:9ca9ec4b-com-a6ea48e1-f96c-3968-a3f7-dd692d7aa849",
+    "fromSec": 120,
+    "toSec": 420,
+    "why": "Begin with Paul’s identity, audience, and posture. The teacher explains that Paul calls himself a “bondservant of Christ Jesus,” an apostle and representative of Jesus, while the Roman Christians are “beloved of God” and “called as saints”—not an elite group, but people who belong to God. This gives the chapter its relational and pastoral setting.",
+    "transcriptHash": "220ed33f6e42ea28",
+    "requestFingerprint": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:9ca9ec4b-com-a6ea48e1-f96c-3968-a3f7-dd692d7aa849|120|420|e76f755f5ac9ed87",
+    "budget": {
+      "policyVersion": "magic-director-3",
+      "durationSec": 300,
+      "sustainedTeachingSec": 290.6,
+      "targetThoughtEntrances": 10,
+      "hardBeatCeiling": 25,
+      "highlightCeiling": 2,
+      "modelSceneCeiling": 10,
+      "houseSceneReserve": 1,
+      "finalSceneCeiling": 11,
+      "fillGapSec": 36
+    }
+  },
+  "result": {
+    "schemaVersion": 2,
+    "policyVersion": "magic-director-3",
+    "requestKey": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:9ca9ec4b-com-a6ea48e1-f96c-3968-a3f7-dd692d7aa849|120|420|220ed33f6e42ea28|e76f755f5ac9ed87",
+    "requestFingerprint": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:9ca9ec4b-com-a6ea48e1-f96c-3968-a3f7-dd692d7aa849|120|420|e76f755f5ac9ed87",
+    "clip": {
+      "fromSec": 120,
+      "toSec": 420,
+      "durationSec": 300,
+      "transcriptHash": "220ed33f6e42ea28",
+      "sustainedTeachingSec": 290.6
+    },
+    "budget": {
+      "policyVersion": "magic-director-3",
+      "durationSec": 300,
+      "sustainedTeachingSec": 290.6,
+      "targetThoughtEntrances": 10,
+      "hardBeatCeiling": 25,
+      "highlightCeiling": 2,
+      "modelSceneCeiling": 10,
+      "houseSceneReserve": 1,
+      "finalSceneCeiling": 11,
+      "fillGapSec": 36
+    },
+    "scenes": [
+      {
+        "id": "house:prelude",
+        "origin": "house-prelude",
+        "ref": null,
+        "verses": [],
+        "cue": null,
+        "at": 0,
+        "timingSource": "house"
+      },
+      {
+        "id": "scene:initial:0",
+        "origin": "model",
+        "ref": "Romans 1:1",
+        "verses": [
+          {
+            "verse": 1,
+            "text": "Paul, a servant of Jesus Christ, called to be an apostle, set apart for the Good News of God,"
+          }
+        ],
+        "cue": "Paul is the sender of the letter",
+        "at": 25,
+        "timingSource": "cue"
+      },
+      {
+        "id": "scene:initial:1",
+        "origin": "model",
+        "ref": "Romans 1:7",
+        "verses": [
+          {
+            "verse": 7,
+            "text": "to all who are in Rome, beloved of God, called to be saints: Grace to you and peace from God our Father and the Lord Jesus Christ."
+          }
+        ],
+        "cue": "all who are beloved of God in Rome",
+        "at": 126,
+        "timingSource": "cue"
+      },
+      {
+        "id": "scene:initial:2",
+        "origin": "model",
+        "ref": "Romans 1:7",
+        "verses": [
+          {
+            "verse": 7,
+            "text": "to all who are in Rome, beloved of God, called to be saints: Grace to you and peace from God our Father and the Lord Jesus Christ."
+          }
+        ],
+        "cue": "Grace to you and peace",
+        "at": 190,
+        "timingSource": "cue"
+      },
+      {
+        "id": "scene:initial:4",
+        "origin": "model",
+        "ref": null,
+        "verses": [],
+        "cue": "Paul has never been there",
+        "at": 281,
+        "timingSource": "cue"
+      }
+    ],
+    "beats": [
+      {
+        "id": "beat:initial:0",
+        "proposalId": "initial:0",
+        "sceneId": "scene:initial:0",
+        "kind": "term",
+        "cue": "bondservant of Christ Jesus",
+        "at": 35,
+        "timingSource": "cue",
+        "data": {
+          "term": "bondservant",
+          "gloss": "one who belongs to Jesus and is available for hi"
+        }
+      },
+      {
+        "id": "beat:initial:1",
+        "proposalId": "initial:1",
+        "sceneId": "scene:initial:0",
+        "kind": "term",
+        "cue": "an official representative of somebody else",
+        "at": 71,
+        "timingSource": "cue",
+        "data": {
+          "term": "apostle",
+          "gloss": "one sent as an official representative on anothe"
+        }
+      },
+      {
+        "id": "beat:initial:2",
+        "proposalId": "initial:2",
+        "sceneId": "scene:initial:0",
+        "kind": "term",
+        "cue": "set apart for the gospel of God",
+        "at": 94,
+        "timingSource": "cue",
+        "data": {
+          "term": "set apart",
+          "gloss": "dedicated to God's purposes in gospel work"
+        }
+      },
+      {
+        "id": "beat:initial:3",
+        "proposalId": "initial:3",
+        "sceneId": "scene:initial:1",
+        "kind": "caveat",
+        "cue": "doesn't mean somebody who has been deemed",
+        "at": 146,
+        "timingSource": "cue",
+        "data": {
+          "text": "Saint does not mean a super-spiritual person honored by the church; it refers to the Chris"
+        }
+      },
+      {
+        "id": "beat:initial:4",
+        "proposalId": "initial:4",
+        "sceneId": "scene:initial:1",
+        "kind": "footnote",
+        "cue": "The word saint, as used here, is in the plural",
+        "at": 160,
+        "timingSource": "cue",
+        "data": {
+          "word": "saints",
+          "note": "The term is plural, refers to all the Christians there, and is consistently plural in the ",
+          "occurrence": 0
+        }
+      },
+      {
+        "id": "beat:initial:5",
+        "proposalId": "initial:5",
+        "sceneId": "scene:initial:2",
+        "kind": "aside",
+        "cue": "adapts the standard greeting of the day",
+        "at": 198,
+        "timingSource": "cue",
+        "data": {
+          "text": "Paul adapts the ordinary letter greeting for Christian purposes."
+        }
+      },
+      {
+        "id": "beat:initial:7",
+        "proposalId": "initial:7",
+        "sceneId": "scene:initial:2",
+        "kind": "term",
+        "cue": "Shalom, which means peace",
+        "at": 237,
+        "timingSource": "cue",
+        "data": {
+          "term": "shalom",
+          "gloss": "peace, the standard Jewish greeting"
+        }
+      },
+      {
+        "id": "beat:initial:8",
+        "proposalId": "initial:8",
+        "sceneId": "scene:initial:4",
+        "kind": "aside",
+        "cue": "he has to kind of build some rapport",
+        "at": 281,
+        "timingSource": "cue",
+        "data": {
+          "text": "Because Paul has never been to Rome, he establishes rapport and…"
+        }
+      },
+      {
+        "id": "beat:initial:9",
+        "proposalId": "initial:9",
+        "sceneId": "scene:initial:4",
+        "kind": "aside",
+        "cue": "building on another man's foundation",
+        "at": 291,
+        "timingSource": "cue",
+        "data": {
+          "text": "Paul is careful not to barge in and assert apostolic authority over…"
+        }
+      }
+    ],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 25261,
+      "passes": 2,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 17145,
+          "promptTokens": 2408,
+          "completionTokens": 2193,
+          "reasoningTokens": 1552,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.001616725,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-scenes:4;semantic-beats:9"
+        },
+        {
+          "role": "fill",
+          "latencyMs": 8084,
+          "promptTokens": 1959,
+          "completionTokens": 761,
+          "reasoningTokens": 693,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0007014,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-intervals:4;semantic-beats:0"
+        }
+      ],
+      "totalUsd": 0.002318125,
+      "tokens": {
+        "prompt": 4367,
+        "completion": 2954,
+        "reasoning": 2245,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 2,
+        "policyVersion": "magic-director-3",
+        "dropped": [
+          {
+            "id": "scene:initial:3",
+            "kind": "scene",
+            "reason": "canonical-range-too-wide",
+            "modelId": "s4",
+            "detail": "director references may contain at most 3 verses"
+          }
+        ],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "reassigned": 0,
+        "preludes": 0,
+        "sceneCount": 5,
+        "beatCount": 9,
+        "artifactCount": 9,
+        "artifactCounts": {
+          "group": 0,
+          "footnote": 1,
+          "term": 4,
+          "allusion": 0,
+          "compare": 0,
+          "chain": 0,
+          "caveat": 1,
+          "aside": 3,
+          "highlight": 0
+        },
+        "sceneCadence": {
+          "entranceCount": 5,
+          "uniqueEntranceCount": 5,
+          "uniqueBeatCount": 5,
+          "firstEntranceSec": 0,
+          "lastEntranceSec": 281,
+          "firstBeatSec": 0,
+          "lastBeatSec": 281,
+          "maxGapSec": 101,
+          "largestGap": {
+            "start": 25,
+            "end": 126,
+            "len": 101
+          },
+          "gaps": [
+            {
+              "start": 25,
+              "end": 126,
+              "len": 101
+            },
+            {
+              "start": 190,
+              "end": 281,
+              "len": 91
+            },
+            {
+              "start": 126,
+              "end": 190,
+              "len": 64
+            },
+            {
+              "start": 0,
+              "end": 25,
+              "len": 25
+            },
+            {
+              "start": 281,
+              "end": 300,
+              "len": 19
+            }
+          ]
+        },
+        "thoughtCadence": {
+          "entranceCount": 9,
+          "uniqueEntranceCount": 9,
+          "uniqueBeatCount": 9,
+          "firstEntranceSec": 35,
+          "lastEntranceSec": 291,
+          "firstBeatSec": 35,
+          "lastBeatSec": 291,
+          "maxGapSec": 52,
+          "largestGap": {
+            "start": 94,
+            "end": 146,
+            "len": 52
+          },
+          "gaps": [
+            {
+              "start": 94,
+              "end": 146,
+              "len": 52
+            },
+            {
+              "start": 237,
+              "end": 281,
+              "len": 44
+            },
+            {
+              "start": 198,
+              "end": 237,
+              "len": 39
+            },
+            {
+              "start": 160,
+              "end": 198,
+              "len": 38
+            },
+            {
+              "start": 35,
+              "end": 71,
+              "len": 36
+            },
+            {
+              "start": 0,
+              "end": 35,
+              "len": 35
+            },
+            {
+              "start": 71,
+              "end": 94,
+              "len": 23
+            },
+            {
+              "start": 146,
+              "end": 160,
+              "len": 14
+            },
+            {
+              "start": 281,
+              "end": 291,
+              "len": 10
+            },
+            {
+              "start": 291,
+              "end": 300,
+              "len": 9
+            }
+          ],
+          "artifactCounts": {
+            "group": 0,
+            "footnote": 1,
+            "term": 4,
+            "allusion": 0,
+            "compare": 0,
+            "chain": 0,
+            "caveat": 1,
+            "aside": 3,
+            "highlight": 0
+          }
+        },
+        "visualCadence": {
+          "entranceCount": 9,
+          "uniqueEntranceCount": 9,
+          "uniqueBeatCount": 9,
+          "firstEntranceSec": 35,
+          "lastEntranceSec": 291,
+          "firstBeatSec": 35,
+          "lastBeatSec": 291,
+          "maxGapSec": 52,
+          "largestGap": {
+            "start": 94,
+            "end": 146,
+            "len": 52
+          },
+          "gaps": [
+            {
+              "start": 94,
+              "end": 146,
+              "len": 52
+            },
+            {
+              "start": 237,
+              "end": 281,
+              "len": 44
+            },
+            {
+              "start": 198,
+              "end": 237,
+              "len": 39
+            },
+            {
+              "start": 160,
+              "end": 198,
+              "len": 38
+            },
+            {
+              "start": 35,
+              "end": 71,
+              "len": 36
+            },
+            {
+              "start": 0,
+              "end": 35,
+              "len": 35
+            },
+            {
+              "start": 71,
+              "end": 94,
+              "len": 23
+            },
+            {
+              "start": 146,
+              "end": 160,
+              "len": 14
+            },
+            {
+              "start": 281,
+              "end": 291,
+              "len": 10
+            },
+            {
+              "start": 291,
+              "end": 300,
+              "len": 9
+            }
+          ],
+          "artifactCounts": {
+            "group": 0,
+            "footnote": 1,
+            "term": 4,
+            "allusion": 0,
+            "compare": 0,
+            "chain": 0,
+            "caveat": 1,
+            "aside": 3,
+            "highlight": 0
+          }
+        },
+        "projection": {
+          "focusMasked": [],
+          "superseded": [],
+          "projectedVisible": [
+            {
+              "beatId": "beat:initial:0",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:initial:1",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:initial:2",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:initial:3",
+              "kind": "caveat"
+            },
+            {
+              "beatId": "beat:initial:4",
+              "kind": "footnote"
+            },
+            {
+              "beatId": "beat:initial:5",
+              "kind": "aside"
+            },
+            {
+              "beatId": "beat:initial:7",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:initial:8",
+              "kind": "aside"
+            },
+            {
+              "beatId": "beat:initial:9",
+              "kind": "aside"
+            }
+          ]
+        },
+        "passes": [
+          {
+            "role": "initial",
+            "schemaVersion": 2,
+            "policyVersion": "magic-director-3",
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "beatCount": 9,
+            "artifactCount": 9,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 1,
+              "term": 4,
+              "allusion": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 1,
+              "aside": 3,
+              "highlight": 0
+            },
+            "sceneCadence": {
+              "entranceCount": 5,
+              "uniqueEntranceCount": 5,
+              "uniqueBeatCount": 5,
+              "firstEntranceSec": 0,
+              "lastEntranceSec": 281,
+              "firstBeatSec": 0,
+              "lastBeatSec": 281,
+              "maxGapSec": 101,
+              "largestGap": {
+                "start": 25,
+                "end": 126,
+                "len": 101
+              },
+              "gaps": [
+                {
+                  "start": 25,
+                  "end": 126,
+                  "len": 101
+                },
+                {
+                  "start": 190,
+                  "end": 281,
+                  "len": 91
+                },
+                {
+                  "start": 126,
+                  "end": 190,
+                  "len": 64
+                },
+                {
+                  "start": 0,
+                  "end": 25,
+                  "len": 25
+                },
+                {
+                  "start": 281,
+                  "end": 300,
+                  "len": 19
+                }
+              ]
+            },
+            "thoughtCadence": {
+              "entranceCount": 9,
+              "uniqueEntranceCount": 9,
+              "uniqueBeatCount": 9,
+              "firstEntranceSec": 35,
+              "lastEntranceSec": 291,
+              "firstBeatSec": 35,
+              "lastBeatSec": 291,
+              "maxGapSec": 52,
+              "largestGap": {
+                "start": 94,
+                "end": 146,
+                "len": 52
+              },
+              "gaps": [
+                {
+                  "start": 94,
+                  "end": 146,
+                  "len": 52
+                },
+                {
+                  "start": 237,
+                  "end": 281,
+                  "len": 44
+                },
+                {
+                  "start": 198,
+                  "end": 237,
+                  "len": 39
+                },
+                {
+                  "start": 160,
+                  "end": 198,
+                  "len": 38
+                },
+                {
+                  "start": 35,
+                  "end": 71,
+                  "len": 36
+                },
+                {
+                  "start": 0,
+                  "end": 35,
+                  "len": 35
+                },
+                {
+                  "start": 71,
+                  "end": 94,
+                  "len": 23
+                },
+                {
+                  "start": 146,
+                  "end": 160,
+                  "len": 14
+                },
+                {
+                  "start": 281,
+                  "end": 291,
+                  "len": 10
+                },
+                {
+                  "start": 291,
+                  "end": 300,
+                  "len": 9
+                }
+              ],
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 1,
+                "term": 4,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 1,
+                "aside": 3,
+                "highlight": 0
+              }
+            },
+            "visualCadence": {
+              "entranceCount": 9,
+              "uniqueEntranceCount": 9,
+              "uniqueBeatCount": 9,
+              "firstEntranceSec": 35,
+              "lastEntranceSec": 291,
+              "firstBeatSec": 35,
+              "lastBeatSec": 291,
+              "maxGapSec": 52,
+              "largestGap": {
+                "start": 94,
+                "end": 146,
+                "len": 52
+              },
+              "gaps": [
+                {
+                  "start": 94,
+                  "end": 146,
+                  "len": 52
+                },
+                {
+                  "start": 237,
+                  "end": 281,
+                  "len": 44
+                },
+                {
+                  "start": 198,
+                  "end": 237,
+                  "len": 39
+                },
+                {
+                  "start": 160,
+                  "end": 198,
+                  "len": 38
+                },
+                {
+                  "start": 35,
+                  "end": 71,
+                  "len": 36
+                },
+                {
+                  "start": 0,
+                  "end": 35,
+                  "len": 35
+                },
+                {
+                  "start": 71,
+                  "end": 94,
+                  "len": 23
+                },
+                {
+                  "start": 146,
+                  "end": 160,
+                  "len": 14
+                },
+                {
+                  "start": 281,
+                  "end": 291,
+                  "len": 10
+                },
+                {
+                  "start": 291,
+                  "end": 300,
+                  "len": 9
+                }
+              ],
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 1,
+                "term": 4,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 1,
+                "aside": 3,
+                "highlight": 0
+              }
+            },
+            "projection": {
+              "focusMasked": [],
+              "superseded": [],
+              "projectedVisible": [
+                {
+                  "beatId": "beat:initial:0",
+                  "kind": "term"
+                },
+                {
+                  "beatId": "beat:initial:1",
+                  "kind": "term"
+                },
+                {
+                  "beatId": "beat:initial:2",
+                  "kind": "term"
+                },
+                {
+                  "beatId": "beat:initial:3",
+                  "kind": "caveat"
+                },
+                {
+                  "beatId": "beat:initial:4",
+                  "kind": "footnote"
+                },
+                {
+                  "beatId": "beat:initial:5",
+                  "kind": "aside"
+                },
+                {
+                  "beatId": "beat:initial:7",
+                  "kind": "term"
+                },
+                {
+                  "beatId": "beat:initial:8",
+                  "kind": "aside"
+                },
+                {
+                  "beatId": "beat:initial:9",
+                  "kind": "aside"
+                }
+              ]
+            }
+          },
+          {
+            "role": "fill",
+            "schemaVersion": 2,
+            "policyVersion": "magic-director-3",
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "beatCount": 9,
+            "artifactCount": 9,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 1,
+              "term": 4,
+              "allusion": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 1,
+              "aside": 3,
+              "highlight": 0
+            },
+            "sceneCadence": {
+              "entranceCount": 5,
+              "uniqueEntranceCount": 5,
+              "uniqueBeatCount": 5,
+              "firstEntranceSec": 0,
+              "lastEntranceSec": 281,
+              "firstBeatSec": 0,
+              "lastBeatSec": 281,
+              "maxGapSec": 101,
+              "largestGap": {
+                "start": 25,
+                "end": 126,
+                "len": 101
+              },
+              "gaps": [
+                {
+                  "start": 25,
+                  "end": 126,
+                  "len": 101
+                },
+                {
+                  "start": 190,
+                  "end": 281,
+                  "len": 91
+                },
+                {
+                  "start": 126,
+                  "end": 190,
+                  "len": 64
+                },
+                {
+                  "start": 0,
+                  "end": 25,
+                  "len": 25
+                },
+                {
+                  "start": 281,
+                  "end": 300,
+                  "len": 19
+                }
+              ]
+            },
+            "thoughtCadence": {
+              "entranceCount": 9,
+              "uniqueEntranceCount": 9,
+              "uniqueBeatCount": 9,
+              "firstEntranceSec": 35,
+              "lastEntranceSec": 291,
+              "firstBeatSec": 35,
+              "lastBeatSec": 291,
+              "maxGapSec": 52,
+              "largestGap": {
+                "start": 94,
+                "end": 146,
+                "len": 52
+              },
+              "gaps": [
+                {
+                  "start": 94,
+                  "end": 146,
+                  "len": 52
+                },
+                {
+                  "start": 237,
+                  "end": 281,
+                  "len": 44
+                },
+                {
+                  "start": 198,
+                  "end": 237,
+                  "len": 39
+                },
+                {
+                  "start": 160,
+                  "end": 198,
+                  "len": 38
+                },
+                {
+                  "start": 35,
+                  "end": 71,
+                  "len": 36
+                },
+                {
+                  "start": 0,
+                  "end": 35,
+                  "len": 35
+                },
+                {
+                  "start": 71,
+                  "end": 94,
+                  "len": 23
+                },
+                {
+                  "start": 146,
+                  "end": 160,
+                  "len": 14
+                },
+                {
+                  "start": 281,
+                  "end": 291,
+                  "len": 10
+                },
+                {
+                  "start": 291,
+                  "end": 300,
+                  "len": 9
+                }
+              ],
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 1,
+                "term": 4,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 1,
+                "aside": 3,
+                "highlight": 0
+              }
+            },
+            "visualCadence": {
+              "entranceCount": 9,
+              "uniqueEntranceCount": 9,
+              "uniqueBeatCount": 9,
+              "firstEntranceSec": 35,
+              "lastEntranceSec": 291,
+              "firstBeatSec": 35,
+              "lastBeatSec": 291,
+              "maxGapSec": 52,
+              "largestGap": {
+                "start": 94,
+                "end": 146,
+                "len": 52
+              },
+              "gaps": [
+                {
+                  "start": 94,
+                  "end": 146,
+                  "len": 52
+                },
+                {
+                  "start": 237,
+                  "end": 281,
+                  "len": 44
+                },
+                {
+                  "start": 198,
+                  "end": 237,
+                  "len": 39
+                },
+                {
+                  "start": 160,
+                  "end": 198,
+                  "len": 38
+                },
+                {
+                  "start": 35,
+                  "end": 71,
+                  "len": 36
+                },
+                {
+                  "start": 0,
+                  "end": 35,
+                  "len": 35
+                },
+                {
+                  "start": 71,
+                  "end": 94,
+                  "len": 23
+                },
+                {
+                  "start": 146,
+                  "end": 160,
+                  "len": 14
+                },
+                {
+                  "start": 281,
+                  "end": 291,
+                  "len": 10
+                },
+                {
+                  "start": 291,
+                  "end": 300,
+                  "len": 9
+                }
+              ],
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 1,
+                "term": 4,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 1,
+                "aside": 3,
+                "highlight": 0
+              }
+            },
+            "projection": {
+              "focusMasked": [],
+              "superseded": [],
+              "projectedVisible": [
+                {
+                  "beatId": "beat:initial:0",
+                  "kind": "term"
+                },
+                {
+                  "beatId": "beat:initial:1",
+                  "kind": "term"
+                },
+                {
+                  "beatId": "beat:initial:2",
+                  "kind": "term"
+                },
+                {
+                  "beatId": "beat:initial:3",
+                  "kind": "caveat"
+                },
+                {
+                  "beatId": "beat:initial:4",
+                  "kind": "footnote"
+                },
+                {
+                  "beatId": "beat:initial:5",
+                  "kind": "aside"
+                },
+                {
+                  "beatId": "beat:initial:7",
+                  "kind": "term"
+                },
+                {
+                  "beatId": "beat:initial:8",
+                  "kind": "aside"
+                },
+                {
+                  "beatId": "beat:initial:9",
+                  "kind": "aside"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "outcomes": {
+        "completeness": "complete",
+        "proposed": [
+          {
+            "proposalId": "initial:0",
+            "pass": "initial",
+            "kind": "term"
+          },
+          {
+            "proposalId": "initial:1",
+            "pass": "initial",
+            "kind": "term"
+          },
+          {
+            "proposalId": "initial:2",
+            "pass": "initial",
+            "kind": "term"
+          },
+          {
+            "proposalId": "initial:3",
+            "pass": "initial",
+            "kind": "caveat"
+          },
+          {
+            "proposalId": "initial:4",
+            "pass": "initial",
+            "kind": "footnote"
+          },
+          {
+            "proposalId": "initial:5",
+            "pass": "initial",
+            "kind": "aside"
+          },
+          {
+            "proposalId": "initial:6",
+            "pass": "initial",
+            "kind": "compare"
+          },
+          {
+            "proposalId": "initial:7",
+            "pass": "initial",
+            "kind": "term"
+          },
+          {
+            "proposalId": "initial:8",
+            "pass": "initial",
+            "kind": "aside"
+          },
+          {
+            "proposalId": "initial:9",
+            "pass": "initial",
+            "kind": "aside"
+          },
+          {
+            "proposalId": "fill:gap:2:0",
+            "pass": "fill",
+            "kind": "compare",
+            "gapId": "gap:2"
+          }
+        ],
+        "rejected": [
+          {
+            "proposalId": "initial:6",
+            "pass": "initial",
+            "kind": "compare",
+            "reason": "canonical-unparsable-reference",
+            "detail": "expected \"Book chapter:verse\" or a same-chapter verse range"
+          },
+          {
+            "proposalId": "fill:gap:2:0",
+            "pass": "fill",
+            "kind": "compare",
+            "reason": "canonical-unparsable-reference",
+            "gapId": "gap:2",
+            "detail": "expected \"Book chapter:verse\" or a same-chapter verse range"
+          }
+        ],
+        "accepted": [
+          {
+            "proposalId": "initial:0",
+            "beatId": "beat:initial:0",
+            "kind": "term",
+            "sceneId": "scene:initial:0"
+          },
+          {
+            "proposalId": "initial:1",
+            "beatId": "beat:initial:1",
+            "kind": "term",
+            "sceneId": "scene:initial:0"
+          },
+          {
+            "proposalId": "initial:2",
+            "beatId": "beat:initial:2",
+            "kind": "term",
+            "sceneId": "scene:initial:0"
+          },
+          {
+            "proposalId": "initial:3",
+            "beatId": "beat:initial:3",
+            "kind": "caveat",
+            "sceneId": "scene:initial:1"
+          },
+          {
+            "proposalId": "initial:4",
+            "beatId": "beat:initial:4",
+            "kind": "footnote",
+            "sceneId": "scene:initial:1"
+          },
+          {
+            "proposalId": "initial:5",
+            "beatId": "beat:initial:5",
+            "kind": "aside",
+            "sceneId": "scene:initial:2"
+          },
+          {
+            "proposalId": "initial:7",
+            "beatId": "beat:initial:7",
+            "kind": "term",
+            "sceneId": "scene:initial:2"
+          },
+          {
+            "proposalId": "initial:8",
+            "beatId": "beat:initial:8",
+            "kind": "aside",
+            "sceneId": "scene:initial:4"
+          },
+          {
+            "proposalId": "initial:9",
+            "beatId": "beat:initial:9",
+            "kind": "aside",
+            "sceneId": "scene:initial:4"
+          }
+        ],
+        "focusMasked": [],
+        "superseded": [],
+        "projectedVisible": [
+          {
+            "beatId": "beat:initial:0",
+            "kind": "term"
+          },
+          {
+            "beatId": "beat:initial:1",
+            "kind": "term"
+          },
+          {
+            "beatId": "beat:initial:2",
+            "kind": "term"
+          },
+          {
+            "beatId": "beat:initial:3",
+            "kind": "caveat"
+          },
+          {
+            "beatId": "beat:initial:4",
+            "kind": "footnote"
+          },
+          {
+            "beatId": "beat:initial:5",
+            "kind": "aside"
+          },
+          {
+            "beatId": "beat:initial:7",
+            "kind": "term"
+          },
+          {
+            "beatId": "beat:initial:8",
+            "kind": "aside"
+          },
+          {
+            "beatId": "beat:initial:9",
+            "kind": "aside"
+          }
+        ]
+      }
+    }
+  },
+  "schemaVersion": 2,
+  "policyVersion": "magic-director-3"
+}

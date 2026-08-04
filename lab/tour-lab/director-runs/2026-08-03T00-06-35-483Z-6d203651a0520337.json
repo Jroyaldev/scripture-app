@@ -1,0 +1,355 @@
+{
+  "startedAt": "2026-08-03T00:06:35.483Z",
+  "requestKey": "1|gpt-5.6-luna-medium|naked-bible:podcast:2225|769|990|2f769c5b38b1971a",
+  "request": {
+    "schemaVersion": 1,
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "naked-bible:podcast:2225",
+    "fromSec": 769,
+    "toSec": 990,
+    "why": "Now hear how one conversation connects postmodern conditions with the church’s older resources. The speakers suggest that moving from modernity to postmodernity may open people to the church fathers, who had to work within a pagan or anti-Christian environment and carried a “supernatural worldview.” This offers a constructive alternative to assuming Christians must choose between modernist certain"
+  },
+  "result": {
+    "schemaVersion": 1,
+    "requestKey": "1|gpt-5.6-luna-medium|naked-bible:podcast:2225|769|990|2f769c5b38b1971a",
+    "clip": {
+      "fromSec": 769,
+      "toSec": 990,
+      "durationSec": 221
+    },
+    "scenes": [
+      {
+        "ref": null,
+        "verses": [],
+        "cue": null,
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [],
+        "at": 0,
+        "timingSource": "house"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": null,
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [
+          {
+            "text": "framing postmodernity as an opening toward ancient Christian resources",
+            "cue": null,
+            "at": 96,
+            "timingSource": "house"
+          },
+          {
+            "text": "connecting paganized culture with the church fathers' renewed…",
+            "cue": "they're going to become even more important",
+            "at": 46,
+            "timingSource": "cue"
+          }
+        ],
+        "at": 44,
+        "timingSource": "house"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "the supernatural worldview of the biblical writers",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [
+          {
+            "text": "turning from cultural analysis back toward Genesis",
+            "cue": "I'm gonna try to steer myself back here to that to Genesis",
+            "at": 148,
+            "timingSource": "cue"
+          }
+        ],
+        "at": 148,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "when they do comment on Genesis",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [],
+        "at": 158,
+        "timingSource": "cue"
+      },
+      {
+        "ref": null,
+        "verses": [],
+        "cue": "how not to read the fathers",
+        "groups": [],
+        "footnotes": [],
+        "allusions": [],
+        "terms": [],
+        "compare": null,
+        "chain": null,
+        "caveat": null,
+        "highlight": null,
+        "asides": [
+          {
+            "text": "introducing a critique of creation-science appropriation",
+            "cue": "a survey of creation science appropriation of the fathers",
+            "at": 195,
+            "timingSource": "cue"
+          }
+        ],
+        "at": 195,
+        "timingSource": "cue"
+      }
+    ],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 10357,
+      "passes": 2,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 6383,
+          "promptTokens": 2118,
+          "completionTokens": 889,
+          "reasoningTokens": 409,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.000798075,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-scenes:5"
+        },
+        {
+          "role": "fill-1",
+          "latencyMs": 3970,
+          "promptTokens": 518,
+          "completionTokens": 423,
+          "reasoningTokens": 274,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0003056,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-artifacts:1"
+        }
+      ],
+      "totalUsd": 0.001103675,
+      "tokens": {
+        "prompt": 2636,
+        "completion": 1312,
+        "reasoning": 683,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 1,
+        "dropped": [
+          {
+            "reason": "semantic-rejection",
+            "pass": "initial",
+            "kind": "highlight",
+            "count": 1
+          },
+          {
+            "reason": "semantic-rejection",
+            "pass": "fill-1",
+            "kind": "highlight",
+            "count": 1
+          }
+        ],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "reassigned": 0,
+        "preludes": 0,
+        "sceneCount": 5,
+        "artifactCount": 4,
+        "artifactCounts": {
+          "group": 0,
+          "footnote": 0,
+          "term": 0,
+          "allusion": 0,
+          "aside": 4,
+          "compare": 0,
+          "chain": 0,
+          "caveat": 0,
+          "highlight": 0
+        },
+        "cadence": {
+          "entranceCount": 9,
+          "uniqueBeatCount": 6,
+          "firstBeatSec": 0,
+          "lastBeatSec": 195,
+          "maxGapSec": 52
+        },
+        "passes": [
+          {
+            "role": "initial",
+            "schemaVersion": 1,
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 5,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 5,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 5,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 0
+            },
+            "cadence": {
+              "entranceCount": 10,
+              "uniqueBeatCount": 9,
+              "firstBeatSec": 0,
+              "lastBeatSec": 198.9,
+              "maxGapSec": 22.2
+            }
+          },
+          {
+            "role": "house-timeline",
+            "schemaVersion": 1,
+            "dropped": [
+              {
+                "reason": "aside-not-silent",
+                "kind": "aside",
+                "at": 161
+              }
+            ],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 1,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 4,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 4,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 0
+            },
+            "cadence": {
+              "entranceCount": 9,
+              "uniqueBeatCount": 6,
+              "firstBeatSec": 0,
+              "lastBeatSec": 195,
+              "maxGapSec": 52
+            }
+          },
+          {
+            "role": "fill-1",
+            "schemaVersion": 1,
+            "dropped": [
+              {
+                "reason": "cap",
+                "kind": "aside",
+                "count": 1
+              }
+            ],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "artifactCount": 4,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "aside": 4,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "highlight": 0
+            },
+            "cadence": {
+              "entranceCount": 9,
+              "uniqueBeatCount": 6,
+              "firstBeatSec": 0,
+              "lastBeatSec": 195,
+              "maxGapSec": 52
+            }
+          }
+        ]
+      }
+    }
+  },
+  "schemaVersion": 1
+}

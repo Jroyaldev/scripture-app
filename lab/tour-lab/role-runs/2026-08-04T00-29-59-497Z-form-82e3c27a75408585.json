@@ -1,0 +1,203 @@
+{
+  "role": "form",
+  "startedAt": "2026-08-04T00:29:59.497Z",
+  "request": {
+    "stepCount": 6,
+    "askHash": "8770c8ad039b96ba",
+    "stepsHash": "901ef1a3020f981a"
+  },
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "endpointHost": "openrouter.ai",
+    "endpointStyle": "aggregator",
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "applied": true
+    },
+    "provider": "OpenAI"
+  },
+  "metrics": {
+    "wallMs": 6042,
+    "passes": 1,
+    "calls": [
+      {
+        "role": "form",
+        "latencyMs": 6036,
+        "promptTokens": 968,
+        "completionTokens": 728,
+        "reasoningTokens": 516,
+        "cachedPromptTokens": 0,
+        "providerCostUsd": 0.0005336,
+        "finishReason": "stop",
+        "rawModel": "openai/gpt-5.6-luna",
+        "provider": "OpenAI",
+        "model": {
+          "key": "gpt-5.6-luna-medium",
+          "requestedSlug": "openai/gpt-5.6-luna",
+          "resolvedSlug": "openai/gpt-5.6-luna",
+          "endpointHost": "openrouter.ai",
+          "endpointStyle": "aggregator",
+          "reasoning": {
+            "effort": "medium",
+            "source": "per-model default for gpt-5.6-luna-medium",
+            "applied": true
+          },
+          "provider": "OpenAI"
+        },
+        "validation": "accepted"
+      }
+    ],
+    "totalUsd": 0.0005336,
+    "tokens": {
+      "prompt": 968,
+      "completion": 728,
+      "reasoning": 516,
+      "cachedPrompt": 0
+    }
+  },
+  "result": {
+    "form": "standard",
+    "stage": [
+      {
+        "step": 0,
+        "verse": "Exodus 34:6-7",
+        "marks": [
+          {
+            "words": [
+              "steadfast",
+              "love"
+            ],
+            "label": "covenant love"
+          },
+          {
+            "words": [
+              "iniquity",
+              "transgression",
+              "sin"
+            ],
+            "label": "threefold guilt"
+          }
+        ]
+      },
+      {
+        "step": 2,
+        "verse": "Numbers 14:18",
+        "marks": [
+          {
+            "words": [
+              "forgiving",
+              "iniquity"
+            ],
+            "label": "mercy"
+          },
+          {
+            "words": [
+              "visiting",
+              "iniquity"
+            ],
+            "label": "accountability"
+          }
+        ]
+      },
+      {
+        "step": 3,
+        "verse": "Exodus 20:5-6",
+        "marks": [
+          {
+            "words": [
+              "visiting",
+              "iniquity"
+            ],
+            "label": null
+          },
+          {
+            "words": [
+              "third",
+              "fourth",
+              "generation"
+            ],
+            "label": "scope of effects"
+          }
+        ]
+      },
+      {
+        "step": 4,
+        "verse": "Jonah 4:2",
+        "marks": [
+          {
+            "words": [
+              "gracious",
+              "compassionate"
+            ],
+            "label": "divine character"
+          },
+          {
+            "words": [
+              "slow",
+              "anger"
+            ],
+            "label": "patient mercy"
+          }
+        ]
+      }
+    ],
+    "usd": 0.0005336,
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 6042,
+      "passes": 1,
+      "calls": [
+        {
+          "role": "form",
+          "latencyMs": 6036,
+          "promptTokens": 968,
+          "completionTokens": 728,
+          "reasoningTokens": 516,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0005336,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "accepted"
+        }
+      ],
+      "totalUsd": 0.0005336,
+      "tokens": {
+        "prompt": 968,
+        "completion": 728,
+        "reasoning": 516,
+        "cachedPrompt": 0
+      }
+    }
+  },
+  "schemaVersion": 2,
+  "policyVersion": "magic-director-3"
+}

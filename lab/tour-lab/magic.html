@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Listening</title>
+<link rel="icon" href="data:," />
 <link rel="stylesheet" href="magic.css" />
 </head>
 <body>
@@ -54,21 +55,21 @@
   </header>
   <p class="th-whisper"></p>
   <div class="th-body" aria-busy="false">
-    <blockquote class="verses"></blockquote>
-    <div class="footnotes"></div>
-    <div class="terms"></div>
-    <div class="compare"></div>
-    <div class="chain"></div>
-    <div class="allusions"></div>
-    <p class="big-quote"></p>
-    <div class="caveats"></div>
-    <div class="asides"></div>
+    <div class="shot-frame" data-editorial-slot="current">
+      <div class="scripture-stage">
+        <blockquote class="verses"></blockquote>
+      </div>
+      <section class="thought-stage" data-visual-slot="thought" aria-live="polite" aria-atomic="true">
+        <div class="thought-outgoing" aria-hidden="true"></div>
+        <div class="thought-current"></div>
+      </section>
+    </div>
   </div>
   <p class="caption" aria-live="off"></p>
   <footer class="th-controls">
     <button id="th-stop" class="play" aria-label="Stop">
-      <svg width="12" height="14" viewBox="0 0 12 14" fill="currentColor" aria-hidden="true">
-        <g><rect x="1" y="1" width="3.5" height="12"></rect><rect x="7.5" y="1" width="3.5" height="12"></rect></g>
+      <svg width="12" height="12" viewBox="0 0 12 12" fill="currentColor" aria-hidden="true">
+        <rect x="1.5" y="1.5" width="9" height="9" rx="1"></rect>
       </svg>
     </button>
     <button id="th-back" class="th-jump" aria-label="Back 15 seconds">−15</button>

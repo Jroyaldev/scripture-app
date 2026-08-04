@@ -29,6 +29,12 @@ export const TRANSLATION = 'World English Bible (WEB), public domain';
    the whole payload comfortably under the cap. */
 const CHAR_BUDGET = 9000;
 
+/* Director references are claim-bearing rather than forgiving reader input.
+   They therefore use exact book aliases and refuse every range that cannot be
+   reproduced exactly from the bundled canon. */
+export const DIRECTOR_REFERENCE_MAX_VERSES = 3;
+const DIRECTOR_REFERENCE_REFUSAL = 'DIRECTOR_REFERENCE_REFUSED';
+
 let BOOKS = null;
 
 function loadBooks() {
@@ -112,4 +118,128 @@ export function readPassage({ book, chapter, fromVerse = null, toVerse = null })
     out.note = `long chapter — stopped after verse ${verses.at(-1).verse} of ${all.length}; call again with fromVerse ${verses.at(-1).verse + 1} to read on`;
   }
   return out;
+}
+
+function directorReferenceRefusal(input, reason, message, details = {}) {
+  return {
+    ok: false,
+    code: DIRECTOR_REFERENCE_REFUSAL,
+    reason,
+    input: String(input ?? '').trim(),
+    message,
+    ...details,
+  };
+}
+
+/**
+ * Strict canonical resolver for claim-bearing /magic director artifacts.
+ *
+ * Unlike readPassage(), this path never guesses a partial book name and never
+ * clamps a verse coordinate. It accepts one same-chapter verse or an inclusive
+ * range of at most three verses and returns the exact WEB text Luna named.
+ */
+export function resolveDirectorPassageReference(input) {
+  const raw = String(input ?? '').trim();
+  const crossChapter = raw.match(/^(.+?)\s+(\d{1,3})\s*:\s*(\d{1,3})\s*[\u2013\u2014-]\s*(\d{1,3})\s*:\s*(\d{1,3})$/u);
+  if (crossChapter) {
+    return directorReferenceRefusal(raw, 'cross-chapter-range', 'director references must stay within one chapter');
+  }
+
+  const match = raw.match(/^(.+?)\s+(\d{1,3})\s*:\s*(\d{1,3})(?:\s*[\u2013\u2014-]\s*(\d{1,3}))?$/u);
+  if (!match) {
+    return directorReferenceRefusal(raw, 'unparsable-reference', 'expected "Book chapter:verse" or a same-chapter verse range');
+  }
+
+  const books = loadBooks();
+  const bookKey = match[1].trim().toLowerCase().replace(/\s+/g, ' ');
+  const code = books.aliasToCode.get(bookKey) ?? null;
+  if (!code) {
+    return directorReferenceRefusal(raw, 'unknown-book', 'book must be an exact known name, alias, or USFM code');
+  }
+
+  const chapter = Number(match[2]);
+  const chapterCount = books.chapters.get(code) ?? null;
+  if (!Number.isInteger(chapter) || chapter < 1 || !chapterCount || chapter > chapterCount) {
+    return directorReferenceRefusal(raw, 'invalid-chapter', `${books.display.get(code)} does not have chapter ${match[2]}`);
+  }
+
+  const fromVerse = Number(match[3]);
+  const toVerse = match[4] == null ? fromVerse : Number(match[4]);
+  if (!Number.isInteger(fromVerse) || !Number.isInteger(toVerse) || fromVerse < 1 || toVerse < 1) {
+    return directorReferenceRefusal(raw, 'invalid-verse', 'verse coordinates must be positive integers');
+  }
+  if (toVerse < fromVerse) {
+    return directorReferenceRefusal(raw, 'reversed-range', 'the end verse must not precede the start verse');
+  }
+  const rangeSize = toVerse - fromVerse + 1;
+  if (rangeSize > DIRECTOR_REFERENCE_MAX_VERSES) {
+    return directorReferenceRefusal(
+      raw,
+      'range-too-wide',
+      `director references may contain at most ${DIRECTOR_REFERENCE_MAX_VERSES} verses`,
+      { rangeSize, maxVerses: DIRECTOR_REFERENCE_MAX_VERSES },
+    );
+  }
+
+  /* A whole-chapter probe supplies the authoritative last verse. Its text may
+     be character-budget clipped, but verseCount always describes the complete
+     on-disk chapter. This check prevents readPassage's reader-friendly clamp
+     from silently changing a director's claim. */
+  const chapterProbe = readPassage({ book: code, chapter });
+  if (chapterProbe.error || !Number.isInteger(chapterProbe.verseCount)) {
+    return directorReferenceRefusal(raw, 'passage-lookup-failed', chapterProbe.error || 'canonical chapter is unavailable');
+  }
+  if (fromVerse > chapterProbe.verseCount || toVerse > chapterProbe.verseCount) {
+    return directorReferenceRefusal(
+      raw,
+      'range-out-of-bounds',
+      `${chapterProbe.bookName} ${chapter} has verses 1-${chapterProbe.verseCount}`,
+      { verseCount: chapterProbe.verseCount },
+    );
+  }
+
+  const passage = readPassage({ book: code, chapter, fromVerse, toVerse });
+  if (passage.error || !Array.isArray(passage.verses)) {
+    return directorReferenceRefusal(raw, 'passage-lookup-failed', passage.error || 'canonical passage is unavailable');
+  }
+  const exact = passage.verses.length === rangeSize
+    && passage.verses.every((verse, index) => verse.verse === fromVerse + index);
+  if (!exact) {
+    return directorReferenceRefusal(
+      raw,
+      'clamped-range-mismatch',
+      'canonical lookup did not return the exact requested verse range',
+      { requestedFromVerse: fromVerse, requestedToVerse: toVerse },
+    );
+  }
+
+  const ref = `${passage.bookName} ${chapter}:${fromVerse}${toVerse > fromVerse ? `\u2013${toVerse}` : ''}`;
+  return {
+    ok: true,
+    value: {
+      ref,
+      book: passage.book,
+      bookName: passage.bookName,
+      chapter,
+      fromVerse,
+      toVerse,
+      verses: passage.verses.map((verse) => ({ ...verse })),
+      text: passage.verses.map((verse) => String(verse.text ?? '')).join(' '),
+      translation: passage.translation,
+    },
+  };
+}
+
+/** Resolve a list atomically: one bad reference refuses the complete list. */
+export function resolveDirectorPassageReferences(inputs) {
+  if (!Array.isArray(inputs)) {
+    return directorReferenceRefusal('', 'invalid-reference-list', 'director reference list must be an array');
+  }
+  const values = [];
+  for (const [index, input] of inputs.entries()) {
+    const resolved = resolveDirectorPassageReference(input);
+    if (!resolved.ok) return { ...resolved, index };
+    values.push(resolved.value);
+  }
+  return { ok: true, values };
 }

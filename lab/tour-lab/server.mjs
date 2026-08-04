@@ -8,19 +8,31 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { buildIndex, indexExists, loadIndex, loadTranscript, CACHE_DIR, ARTIFACTS_DIR } from './corpus.mjs';
-import { readPassage } from './scripture.mjs';
+import {
+  DIRECTOR_REFERENCE_MAX_VERSES,
+  readPassage,
+  resolveDirectorPassageReference,
+  resolveDirectorPassageReferences,
+} from './scripture.mjs';
 import { MODELS, clientFor } from './model-client.mjs';
 import { runTour, listRuns, readRun, readLedger, loadPricing, CAVEATS, MAX_MODEL_CALLS, MAX_TOOL_CALLS } from './tour-agent.mjs';
 import {
+  DIRECTOR_COPY_LIMITS,
+  DIRECTOR_LIMITS,
+  MAGIC_DIRECTOR_POLICY_VERSION,
   MAGIC_DIRECTOR_SCHEMA_VERSION,
   MAGIC_MODEL_ROLES,
   assertMagicModel,
   assertMagicReplyEvidence,
   assertMagicRuntime,
+  computeDirectorMovementBudget,
+  createDirectorHousePrelude,
   directorCacheKey,
-  normalizeDirectorScenes,
+  directorRequestFingerprint,
+  normalizeDirectorPlan,
   resolveMagicSearchModels,
   stableTextHash,
+  summarizeVisualProjection,
   validateDirectorPayload,
 } from './magic-contract.mjs';
 import {
@@ -156,6 +168,1133 @@ async function readBody(req) {
   }
 }
 
+const DIRECTOR_KINDS = Object.freeze([
+  'group', 'footnote', 'term', 'allusion', 'compare', 'chain', 'caveat', 'aside', 'highlight',
+]);
+const DIRECTOR_KIND_SET = new Set(DIRECTOR_KINDS);
+
+const directorNorm = (value) => String(value ?? '')
+  .toLowerCase()
+  .replace(/[’']/g, "'")
+  .replace(/[^a-z0-9' ]+/g, ' ')
+  .replace(/\s+/g, ' ')
+  .trim();
+
+const transcriptTupleText = (value) => String(value ?? '')
+  .normalize('NFKC')
+  .replace(/[’]/g, "'")
+  .replace(/\s+/g, ' ')
+  .trim();
+
+const transcriptTupleNumber = (value) => Math.round(Number(value) * 1000) / 1000;
+
+function transcriptWindowHash(segments) {
+  const tuples = (Array.isArray(segments) ? segments : []).map((segment) => [
+    transcriptTupleNumber(segment.s),
+    transcriptTupleNumber(segment.e),
+    transcriptTupleText(segment.t),
+  ]);
+  return stableTextHash(JSON.stringify(tuples));
+}
+
+function sustainedTeachingSeconds(segments, fromSec, toSec) {
+  const intervals = (Array.isArray(segments) ? segments : [])
+    .filter((segment) => transcriptTupleText(segment.t))
+    .map((segment) => ({
+      start: Math.max(fromSec, Number(segment.s)),
+      end: Math.min(toSec, Number(segment.e)),
+    }))
+    .filter(({ start, end }) => Number.isFinite(start) && Number.isFinite(end) && end > start)
+    .sort((a, b) => a.start - b.start || a.end - b.end);
+  const merged = [];
+  for (const interval of intervals) {
+    const prior = merged.at(-1);
+    if (prior && interval.start <= prior.end) prior.end = Math.max(prior.end, interval.end);
+    else merged.push({ ...interval });
+  }
+  return Math.round(merged.reduce((sum, interval) => sum + interval.end - interval.start, 0) * 10) / 10;
+}
+
+function sampleTimedRows(rows, charBudget) {
+  const safeRows = (Array.isArray(rows) ? rows : []).filter(Boolean);
+  const budget = Math.max(1, Math.floor(Number(charBudget) || 1));
+  const length = safeRows.reduce((sum, row) => sum + row.length + 1, 0);
+  if (length <= budget) return safeRows.join('\n');
+  const count = Math.max(2, Math.floor(safeRows.length * budget / Math.max(1, length)));
+  return Array.from({ length: Math.min(count, safeRows.length) }, (_, index) => (
+    safeRows[Math.round(index * (safeRows.length - 1) / Math.max(1, count - 1))]
+  )).join('\n').slice(0, budget);
+}
+
+function evenlyDistributed(items, ceiling) {
+  const list = Array.isArray(items) ? items : [];
+  const cap = Math.max(0, Math.floor(Number(ceiling) || 0));
+  if (list.length <= cap) return { kept: list, dropped: [] };
+  if (!cap) return { kept: [], dropped: list };
+  const indexes = new Set(Array.from({ length: cap }, (_, index) => (
+    Math.round(index * (list.length - 1) / Math.max(1, cap - 1))
+  )));
+  return {
+    kept: list.filter((_, index) => indexes.has(index)),
+    dropped: list.filter((_, index) => !indexes.has(index)),
+  };
+}
+
+const DIRECTOR_ACTION_GUIDE = `Classify the teacher's action before choosing a visual. Use exactly one most-specific kind for one teaching action; never duplicate the same moment as a specialized beat and a generic group. GROUP is only the fallback for a genuine pattern in the displayed passage's own wording.
+For COMPARE, axis must be exactly "likeness" or "difference". Never substitute a synonym or silently reinterpret the teacher's comparison.
+Write labels, glosses, notes, caveats, and asides as complete compact thoughts. Prefer one clause or one sentence under 16 words. Never submit a fragment that depends on the house truncating it; the house accepts copy whole or refuses it.
+For GROUP, words must be a JSON array of exactly 2-4 items. Every item must be one exact single word copied from the displayed passage: never a phrase, comma-separated list, or explanatory label. If the teacher explicitly enumerates a wording pattern in a displayed passage, GROUP is the expected visual. The optional label must be at most four complete words and ${DIRECTOR_COPY_LIMITS.groupLabel} characters; omit it instead of shortening a word.
+Shape examples only — never copy a cue or claim unless this transcript supports it:
+- GROUP: {"kind":"group","sceneId":"s1","cue":"eyes that will not see","at":42,"data":{"words":["eyes","see","ears","hear"],"label":"refused senses"}}
+- FOOTNOTE: {"kind":"footnote","sceneId":"s1","cue":"this is plural in Hebrew","at":54,"data":{"word":"rulers","note":"the teacher's translation point"}}
+- TERM: {"kind":"term","cue":"the word hesed means","at":70,"data":{"term":"hesed","gloss":"loyal covenant love"}}
+- ALLUSION: {"kind":"allusion","cue":"John is echoing Isaiah","at":82,"data":{"verse":"Isaiah 6:10","note":"the stated echo"}}
+- COMPARE: {"kind":"compare","cue":"set these two passages together","at":96,"data":{"a":"Genesis 3:6","b":"Genesis 6:1-2","axis":"likeness","note":"the teacher's comparison"}}
+- CHAIN: {"kind":"chain","cue":"Isaiah then John then Paul","at":112,"data":{"refs":["Isaiah 53:1","John 12:38","Romans 10:16"],"note":"the line being traced"}}
+- CAVEAT: {"kind":"caveat","cue":"that is not what this says","at":128,"data":{"text":"The passage does not make that larger claim."}}
+- ASIDE: {"kind":"aside","cue":"the city had become an empire","at":143,"data":{"text":"setting the ancient city's political context"}}
+- HIGHLIGHT: {"kind":"highlight","at":158,"data":{"quote":"The point is not escape from creation but its renewal."}}`;
+
+function buildDirectorInitialPrompt({ timedTape, why, budget }) {
+  return `You direct a quiet editorial visual stage while a podcast clip plays. First identify structural passage/context movements. Then inventory the teacher's grounded actions and emit a flat chronological beat for each supported visual action. The [Ns] stamps are approximate seconds into this clip.
+
+TIMECODED TRANSCRIPT COVERAGE FROM THE WHOLE CLIP:
+${timedTape}
+
+THE CLIP'S PURPOSE IN ITS TOUR:
+${why}
+
+STRUCTURAL SCENES:
+- Return at most ${budget.modelSceneCeiling} model scenes. This is a safety ceiling, not a quota.
+- Each scene needs a unique short id, a 3-8 word cue copied verbatim from the transcript, and its approximate integer second.
+- verse is a canonical "Book chapter:verse" or same-chapter range of at most ${DIRECTOR_REFERENCE_MAX_VERSES} verses, or null for a substantial context/story/application movement with no displayed passage.
+- Use a passage only when the teacher actually walks through it, not when it is merely mentioned.
+- The house may add its own prelude; do not spend a scene on empty throat-clearing.
+
+SEMANTIC BEATS:
+- Return a flat beats array, independent of the scene objects, ordered by approximate time.
+- Every beat needs kind, approximate at, data, and a distinctive 3-8 word cue copied verbatim from the transcript. A highlight's verbatim quote may serve as its cue.
+- group and footnote also need sceneId because they are coordinates in that displayed passage. Other kinds may name sceneId, but verified podcast time owns their final scene.
+- Compare and chain may use same-chapter ranges of at most ${DIRECTOR_REFERENCE_MAX_VERSES} verses per reference. A chain has 2-4 distinct references in order.
+- The editorial target is about ${budget.targetThoughtEntrances} grounded visual entrances across this clip; the absolute hard maximum is ${budget.hardBeatCeiling}. Do not turn the ceiling into a quota. Silence is better than invention; distribute supported beats across the whole clip.
+- Choose the most specific supported semantic action first: footnote, term, allusion, compare, chain, caveat, or aside. Use group only for a real pattern in displayed Scripture wording. Never substitute highlight for a more precise type.
+- HIGHLIGHT IS RARE: zero is normal and this clip may retain at most ${budget.highlightCeiling}. It must be one exact, teacher-authored sentence that distills the teacher's own interpretive thesis. Never highlight a Scripture quotation or paraphrase, biblical narration, setup, transition, application slogan, or ordinary exposition.
+- Do not author duration, layout, color, channel, Scripture wording, or rendering instructions. The house owns those.
+
+${DIRECTOR_ACTION_GUIDE}
+
+Answer ONLY with JSON:
+{"scenes":[{"id":"s1","verse":"Genesis 6:1-2","cue":"copied scene cue here","at":40}],"beats":[{"kind":"term","cue":"copied beat cue here","at":58,"data":{"term":"...","gloss":"..."}}]}`;
+}
+
+function buildDirectorFillPrompt({ intervals, budget, existingBeats }) {
+  const intervalText = intervals.map((interval) => `INTERVAL ${interval.id} · ${Math.round(interval.start)}-${Math.round(interval.end)}s
+Available stages: ${interval.stages.map((stage) => `${stage.sceneId} (${stage.ref || 'context stage'}) ${stage.from}-${stage.to}s${stage.text ? ` · ${stage.text}` : ''}`).join(' | ')}
+Transcript:
+${interval.transcript}`).join('\n\n');
+  const accepted = (Array.isArray(existingBeats) ? existingBeats : [])
+    .map((beat) => `${beat.kind}@${Math.round(Number(beat.at) || 0)}s`)
+    .join(', ') || 'none';
+  const usedHighlights = (Array.isArray(existingBeats) ? existingBeats : [])
+    .filter((beat) => beat.kind === 'highlight').length;
+  const remainingHighlights = Math.max(0, budget.highlightCeiling - usedHighlights);
+  return `A podcast visual stage already has grounded scenes and beats, but the following transcript-qualified visual intervals remain quiet. This is ONE batched fill pass.
+
+ALREADY ACCEPTED BEATS: ${accepted}
+REMAINING HIGHLIGHT CAPACITY: ${remainingHighlights} of ${budget.highlightCeiling}
+
+${intervalText}
+
+For each interval, return zero or one additional beat. Include its exact interval id as gapId. Its cue (or highlight quote) must be copied verbatim from that interval's transcript and its approximate at must fall inside that interval. A group or footnote must name one listed passage sceneId and use wording from that displayed passage. Do not duplicate an accepted cue, teaching action, or visual already listed above; duplicates are rejected. Choose a specific semantic type before group, and never use highlight when its remaining capacity is zero. A highlight must still be a rare teacher-authored distilled thesis, never Scripture quotation/paraphrase, narration, or ordinary exposition. Truth beats filling every interval. The total final beat safety ceiling is ${budget.hardBeatCeiling}.
+
+${DIRECTOR_ACTION_GUIDE}
+
+Answer ONLY with JSON: {"beats":[{"gapId":"gap:0","kind":"caveat","sceneId":"s1","cue":"copied cue from that interval","at":75,"data":{"text":"..."}}]}`;
+}
+
+async function handleDirectV2(req, res, body) {
+  if (!body || typeof body !== 'object' || Array.isArray(body)) {
+    return sendJson(res, 400, { error: 'director request body must be a JSON object' });
+  }
+  if (body.schemaVersion !== MAGIC_DIRECTOR_SCHEMA_VERSION) {
+    return sendJson(res, 409, {
+      error: `director schema ${String(body.schemaVersion)} is not supported`,
+      supportedSchemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
+    });
+  }
+  if (body.policyVersion !== MAGIC_DIRECTOR_POLICY_VERSION) {
+    return sendJson(res, 409, {
+      error: `director policy ${String(body.policyVersion)} is not supported`,
+      supportedPolicyVersion: MAGIC_DIRECTOR_POLICY_VERSION,
+    });
+  }
+  try {
+    assertMagicModel(body.model);
+  } catch (error) {
+    return sendJson(res, 400, { error: error.message, code: error.code });
+  }
+
+  const recordId = String(body.recordId || '').trim();
+  const fromInput = Number(body.fromSec);
+  const toInput = Number(body.toSec);
+  if (!recordId) return sendJson(res, 400, { error: 'recordId is required' });
+  if (!Number.isFinite(fromInput) || !Number.isFinite(toInput)
+    || fromInput < 0 || toInput <= fromInput || toInput - fromInput > 900) {
+    return sendJson(res, 400, { error: 'director clip bounds must be finite, increasing, and no longer than 900 seconds' });
+  }
+  const from = Math.round(fromInput * 10) / 10;
+  const to = Math.round(toInput * 10) / 10;
+  const dur = Math.round((to - from) * 10) / 10;
+  if (to <= from || dur <= 0 || dur > 900) {
+    return sendJson(res, 400, { error: 'director clip bounds collapse or exceed 900 seconds at timeline precision' });
+  }
+  const whyFull = String(body.why || '');
+  const why = whyFull.slice(0, 800);
+
+  // Transcript identity is resolved before shared-job acquisition. A changed
+  // local transcript must never reuse a paid result generated from older text.
+  const tr = loadTranscript(recordId);
+  if (!tr) return sendJson(res, 404, { error: 'unknown recording' });
+  const segs = (Array.isArray(tr.segments) ? tr.segments : []).filter((segment) => (
+    Number.isFinite(Number(segment?.s)) && Number.isFinite(Number(segment?.e))
+    && Number(segment.e) > Number(segment.s)
+    && Number(segment.e) > from && Number(segment.s) < to
+  )).sort((a, b) => Number(a.s) - Number(b.s) || Number(a.e) - Number(b.e));
+  const tape = segs.map((segment) => String(segment.t || '').trim()).filter(Boolean).join(' ');
+  if (tape.length < 200) return sendJson(res, 422, { error: 'recording window has too little transcript' });
+
+  const transcriptHash = transcriptWindowHash(segs);
+  const sustainedSec = sustainedTeachingSeconds(segs, from, to);
+  const budget = computeDirectorMovementBudget({
+    durationSec: dur,
+    sustainedTeachingSec: sustainedSec,
+  });
+  const requestIdentity = {
+    schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
+    policyVersion: MAGIC_DIRECTOR_POLICY_VERSION,
+    modelKey: body.model,
+    recordId,
+    fromSec: from,
+    toSec: to,
+    // Cache identity follows the effective prompt input. Text past the prompt
+    // cap must not mint a fresh paid key for an otherwise identical request.
+    why,
+  };
+  const requestFingerprint = directorRequestFingerprint(requestIdentity);
+  const requestKey = directorCacheKey({ ...requestIdentity, transcriptHash });
+  const directRequest = {
+    schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
+    policyVersion: MAGIC_DIRECTOR_POLICY_VERSION,
+    model: body.model,
+    recordId,
+    fromSec: from,
+    toSec: to,
+    why,
+    transcriptHash,
+    requestFingerprint,
+    budget,
+  };
+
+  const timedRows = segs.map((segment) => (
+    `[${Math.max(0, Math.round(segment.e - from))}s] ${String(segment.t || '').trim()}`
+  ));
+  const timedTape = sampleTimedRows(timedRows, 12000);
+  const tapeNorm = ` ${directorNorm(tape)} `;
+
+  const locatePhrase = (phrase, nearRel = null, { after = 0, before = dur } = {}) => {
+    if (!phrase) return null;
+    const normalizedCue = ` ${directorNorm(phrase)} `;
+    if (normalizedCue === '  ') return null;
+    let accumulated = '';
+    const hits = [];
+    for (const segment of segs) {
+      accumulated += ` ${directorNorm(segment.t)}`;
+      if ((` ${accumulated} `).includes(normalizedCue)) {
+        const hit = Math.max(0, Math.round(segment.e - from));
+        if (hit >= after && hit <= before && hits.at(-1) !== hit) hits.push(hit);
+        accumulated = '';
+      }
+      accumulated = accumulated.slice(-500);
+    }
+    if (!hits.length) return null;
+    if (!Number.isFinite(Number(nearRel))) return hits[0];
+    return hits.sort((a, b) => Math.abs(a - Number(nearRel)) - Math.abs(b - Number(nearRel)) || a - b)[0];
+  };
+
+  const locateWordAfter = (word, afterRel, occurrence = 0, beforeRel = dur) => {
+    const normalizedWord = ` ${directorNorm(word)} `;
+    let seen = 0;
+    for (const segment of segs) {
+      const rel = segment.e - from;
+      if (rel < afterRel) continue;
+      if (rel > beforeRel) break;
+      const text = ` ${directorNorm(segment.t)} `;
+      let cursor = 0;
+      while ((cursor = text.indexOf(normalizedWord, cursor)) >= 0) {
+        if (seen === occurrence) return Math.round(rel);
+        seen += 1;
+        cursor += normalizedWord.length;
+      }
+    }
+    return null;
+  };
+
+  const displayedMatches = (scene, phrase) => {
+    const haystack = ` ${directorNorm((scene.verses || []).map((verse) => verse.text).join(' '))} `;
+    const needle = ` ${directorNorm(phrase)} `;
+    if (needle === '  ') return [];
+    const matches = [];
+    let cursor = 0;
+    while (matches.length < 40) {
+      const index = haystack.indexOf(needle, cursor);
+      if (index < 0) break;
+      matches.push({ index, end: index + needle.length, occurrence: matches.length });
+      cursor = index + Math.max(1, needle.length - 1);
+    }
+    return matches;
+  };
+
+  const displayedOccurrences = (scene, words) => {
+    const candidates = words.map((word) => displayedMatches(scene, word));
+    if (candidates.some((matches) => !matches.length)) return null;
+    let best = null;
+    const visit = (wordIndex, previousEnd, picked) => {
+      if (wordIndex === candidates.length) {
+        const span = picked.at(-1).end - picked[0].index;
+        if (!best || span < best.span || (span === best.span && picked[0].index < best.start)) {
+          best = { span, start: picked[0].index, picked: [...picked] };
+        }
+        return;
+      }
+      for (const match of candidates[wordIndex]) {
+        if (match.index < previousEnd) continue;
+        visit(wordIndex + 1, match.end, [...picked, match]);
+      }
+    };
+    visit(0, -1, []);
+    return best ? best.picked.map((match) => match.occurrence) : null;
+  };
+
+  const acquired = acquireDirectorJob(requestKey, req, res, async (signal) => {
+    const startedAt = new Date().toISOString();
+    const wallStarted = Date.now();
+    signal.throwIfAborted();
+    let client;
+    let runtime;
+    try {
+      ({ client, runtime } = await preflightMagicRole('director'));
+    } catch (error) {
+      if (signal.aborted) throw error;
+      const observedClient = clientFor(MAGIC_MODEL_ROLES.director);
+      const observedRuntime = observedClient.resolution
+        ? magicRuntimeDescriptor(observedClient, observedClient.resolution)
+        : observedClient.describe();
+      const evidenceFile = writeDirectorEvidence({
+        status: 'refused',
+        startedAt,
+        requestKey,
+        request: directRequest,
+        runtime: observedRuntime,
+        calls: [{
+          role: 'preflight',
+          validation: 'runtime-refusal',
+          error: { code: error?.code || 'PREFLIGHT', message: error?.message || String(error) },
+        }],
+        error: { code: error?.code || 'PREFLIGHT', message: error?.message || String(error) },
+      });
+      error.evidenceFile = path.basename(evidenceFile);
+      throw error;
+    }
+    signal.throwIfAborted();
+
+    const calls = [];
+    const proposed = [];
+    const semanticRejected = [];
+    const sceneDrops = [];
+    const normalizationPasses = [];
+    let currentSnapshot = normalizeDirectorPlan({ scenes: [], beats: [] }, {
+      durationSec: dur,
+      sustainedTeachingSec: sustainedSec,
+      budget,
+      addPrelude: true,
+    });
+
+    const reject = (proposal, reason, detail = null) => {
+      const record = {
+        proposalId: proposal.proposalId,
+        pass: proposal.pass,
+        kind: proposal.kind,
+        reason,
+        ...(proposal.gapId ? { gapId: proposal.gapId } : {}),
+        ...(detail ? { detail } : {}),
+      };
+      if (!semanticRejected.some((candidate) => candidate.proposalId === record.proposalId)) {
+        semanticRejected.push(record);
+      }
+      return null;
+    };
+
+    const markLastCall = (outcome) => {
+      if (!calls.length) return;
+      calls.at(-1).validation = `${calls.at(-1).validation};${outcome}`;
+    };
+
+    const callModel = async (role, content, maxTokens = 16000) => {
+      const callStarted = Date.now();
+      let reply;
+      try {
+        reply = await client.chat({
+          maxTokens,
+          messages: [{ role: 'user', content }],
+          signal,
+        });
+      } catch (error) {
+        calls.push({
+          role,
+          latencyMs: Math.max(0, Number(error?.latencyMs) || Date.now() - callStarted),
+          promptTokens: 0,
+          completionTokens: 0,
+          reasoningTokens: 0,
+          cachedPromptTokens: 0,
+          providerCostUsd: null,
+          finishReason: null,
+          rawModel: null,
+          provider: null,
+          model: { ...runtime, provider: 'unreported' },
+          validation: 'call-error',
+          error: { code: error?.code || 'CALL', message: error?.message || String(error) },
+        });
+        throw error;
+      }
+
+      const text = String(reply.message.content || '');
+      let parsed = null;
+      let validation = 'no-json-object';
+      try {
+        parsed = JSON.parse(text.trim());
+        validation = 'json-parsed';
+      } catch {
+        const match = text.match(/\{[\s\S]*\}/);
+        if (match) {
+          try {
+            parsed = JSON.parse(match[0]);
+            validation = 'json-extracted';
+          } catch {
+            validation = 'invalid-json';
+          }
+        }
+      }
+      let runtimeError = null;
+      try {
+        assertMagicReplyEvidence(reply, runtime);
+      } catch (error) {
+        runtimeError = error;
+      }
+      const rawModel = reply.raw?.model ?? null;
+      const provider = reply.raw?.provider ?? null;
+      calls.push({
+        role,
+        latencyMs: Math.max(0, Number(reply.latencyMs) || Date.now() - callStarted),
+        promptTokens: reply.usage?.promptTokens || 0,
+        completionTokens: reply.usage?.completionTokens || 0,
+        reasoningTokens: reply.usage?.reasoningTokens || 0,
+        cachedPromptTokens: reply.usage?.cachedPromptTokens || 0,
+        providerCostUsd: reply.usage?.providerCostUsd ?? null,
+        finishReason: reply.finishReason || null,
+        rawModel,
+        provider,
+        model: { ...runtime, provider: provider || 'unreported' },
+        validation: runtimeError ? 'runtime-mismatch' : validation,
+      });
+      if (runtimeError) throw runtimeError;
+      return parsed;
+    };
+
+    // The remainder of this shared job is deliberately local to the request:
+    // semantic validation needs the exact tape, canonical scenes, and locators.
+    const STOPWORDS = new Set(['the', 'and', 'of', 'to', 'a', 'an', 'in', 'on', 'at', 'for', 'that', 'this', 'with', 'from',
+      'they', 'them', 'were', 'was', 'is', 'are', 'be', 'been', 'have', 'has', 'had', 'his', 'her', 'him', 'she', 'he',
+      'it', 'its', 'not', 'but', 'all', 'any', 'who', 'you', 'your', 'their', 'there', 'when', 'then', 'will', 'shall']);
+
+    const sceneWindows = (scenes) => scenes.map((scene, index) => ({
+      scene,
+      start: scene.at,
+      end: index + 1 < scenes.length ? scenes[index + 1].at : dur,
+    }));
+
+    const sceneForTime = (scenes, at) => {
+      const windows = sceneWindows(scenes);
+      return [...windows].reverse().find((window) => at >= window.start && at <= window.end)?.scene || null;
+    };
+
+    const makeHousePrelude = () => ({
+      ...createDirectorHousePrelude(),
+      modelId: null,
+      verseNorm: '  ',
+    });
+
+    const normalizedPassageText = (scene) => ` ${directorNorm((scene?.verses || []).map((verse) => verse.text).join(' '))} `;
+
+    const parseScenes = (rawScenes, rawBeats) => {
+      const candidates = [];
+      const seenModelIds = new Set();
+      for (const [index, rawScene] of (Array.isArray(rawScenes) ? rawScenes : []).entries()) {
+        const modelId = typeof rawScene?.id === 'string' ? rawScene.id.trim() : '';
+        const sceneDrop = (reason, detail = null) => {
+          sceneDrops.push({
+            id: `scene:initial:${index}`,
+            kind: 'scene',
+            reason,
+            ...(modelId ? { modelId } : {}),
+            ...(detail ? { detail } : {}),
+          });
+        };
+        if (!rawScene || typeof rawScene !== 'object' || Array.isArray(rawScene)) {
+          sceneDrop('invalid-scene');
+          continue;
+        }
+        if (!modelId) {
+          sceneDrop('scene-id-required');
+          continue;
+        }
+        if (seenModelIds.has(modelId)) {
+          sceneDrop('scene-id-duplicate');
+          continue;
+        }
+        seenModelIds.add(modelId);
+        const cue = typeof rawScene.cue === 'string' ? rawScene.cue.trim() : '';
+        if (cue.length < 8 || cue.length > 100 || !tapeNorm.includes(` ${directorNorm(cue)} `)) {
+          sceneDrop('scene-cue-not-grounded');
+          continue;
+        }
+        const atHint = Number.isFinite(Number(rawScene.at)) ? Number(rawScene.at) : null;
+        const at = locatePhrase(cue, atHint);
+        if (at == null) {
+          sceneDrop('scene-cue-not-located');
+          continue;
+        }
+        const id = `scene:initial:${index}`;
+        if (rawScene.verse == null || String(rawScene.verse).trim().toLowerCase() === 'null') {
+          candidates.push({
+            id,
+            modelId,
+            origin: 'model',
+            ref: null,
+            verses: [],
+            verseNorm: '  ',
+            cue,
+            at,
+            timingSource: 'cue',
+          });
+          continue;
+        }
+        const resolved = resolveDirectorPassageReference(rawScene.verse);
+        if (!resolved.ok) {
+          sceneDrop(`canonical-${resolved.reason}`, resolved.message);
+          continue;
+        }
+        candidates.push({
+          id,
+          modelId,
+          origin: 'model',
+          ref: resolved.value.ref,
+          verses: resolved.value.verses,
+          verseNorm: ` ${directorNorm(resolved.value.text)} `,
+          cue,
+          at,
+          timingSource: 'cue',
+        });
+      }
+
+      candidates.sort((a, b) => a.at - b.at || a.id.localeCompare(b.id));
+      const uniqueTimes = [];
+      for (const scene of candidates) {
+        if (uniqueTimes.some((candidate) => candidate.at === scene.at)) {
+          sceneDrops.push({ id: scene.id, kind: 'scene', reason: 'scene-cue-collision', at: scene.at });
+        } else {
+          uniqueTimes.push(scene);
+        }
+      }
+      const selected = evenlyDistributed(uniqueTimes, budget.modelSceneCeiling);
+      for (const scene of selected.dropped) {
+        sceneDrops.push({ id: scene.id, kind: 'scene', reason: 'safety-cap', at: scene.at });
+      }
+      const scenes = [...selected.kept];
+
+      const earliestBeatCue = (Array.isArray(rawBeats) ? rawBeats : [])
+        .map((rawBeat) => rawBeat?.kind === 'highlight' ? rawBeat?.data?.quote : rawBeat?.cue)
+        .map((cue) => locatePhrase(cue, null))
+        .filter((at) => at != null)
+        .sort((a, b) => a - b)[0];
+      const first = scenes[0];
+      const needsPrelude = Boolean(first && first.at > 0 && (
+        (first.verses.length && first.at >= DIRECTOR_LIMITS.preludeMinSec)
+        || (earliestBeatCue != null && earliestBeatCue < first.at)
+      ));
+      const portableRawBeat = (Array.isArray(rawBeats) ? rawBeats : []).some((rawBeat) => (
+        DIRECTOR_KIND_SET.has(rawBeat?.kind) && !['group', 'footnote'].includes(rawBeat.kind)
+      ));
+      if ((needsPrelude || (!scenes.length && portableRawBeat)) && budget.houseSceneReserve > 0) {
+        scenes.unshift(makeHousePrelude());
+      }
+      return scenes.sort((a, b) => a.at - b.at || a.id.localeCompare(b.id));
+    };
+
+    const validateBeat = (rawBeat, index, pass, scenes, { gap = null, allowRepair = true } = {}) => {
+      const rawKind = typeof rawBeat?.kind === 'string' ? rawBeat.kind.trim().toLowerCase() : '';
+      const proposal = {
+        proposalId: pass === 'fill' && rawBeat?.gapId
+          ? `fill:${String(rawBeat.gapId)}:${index}`
+          : `${pass}:${index}`,
+        pass,
+        kind: rawKind || 'unknown',
+        ...(rawBeat?.gapId ? { gapId: String(rawBeat.gapId) } : {}),
+      };
+      proposed.push({ ...proposal });
+      if (!rawBeat || typeof rawBeat !== 'object' || Array.isArray(rawBeat)) return reject(proposal, 'invalid-beat');
+      if (!DIRECTOR_KIND_SET.has(rawKind)) return reject(proposal, 'unknown-kind');
+      const data = rawBeat.data;
+      if (!data || typeof data !== 'object' || Array.isArray(data)) return reject(proposal, 'data-required');
+
+      const quoteCue = rawKind === 'highlight' && typeof data.quote === 'string' ? data.quote.trim() : '';
+      const cue = typeof rawBeat.cue === 'string' && rawBeat.cue.trim() ? rawBeat.cue.trim() : quoteCue;
+      if (!cue) return reject(proposal, 'cue-required');
+      if (cue.length < 8 || cue.length > 140) return reject(proposal, 'cue-length');
+      if (!tapeNorm.includes(` ${directorNorm(cue)} `)) return reject(proposal, 'cue-not-in-transcript');
+      const atHint = Number.isFinite(Number(rawBeat.at)) ? Number(rawBeat.at) : null;
+      const at = locatePhrase(cue, atHint);
+      if (at == null) return reject(proposal, 'cue-not-located');
+      if (gap && (at < gap.start || at > gap.end)) {
+        return reject(proposal, 'cue-outside-gap', `${at}s is outside ${gap.start}-${gap.end}s`);
+      }
+
+      const byId = new Map(scenes.flatMap((scene) => [
+        [scene.id, scene],
+        ...(scene.modelId ? [[scene.modelId, scene]] : []),
+      ]));
+      const declaredScene = typeof rawBeat.sceneId === 'string' ? byId.get(rawBeat.sceneId.trim()) : null;
+      let owner = sceneForTime(scenes, at);
+      let pendingPrelude = null;
+      const portableFillBeforeFirstScene = pass === 'fill'
+        && rawKind !== 'group' && rawKind !== 'footnote'
+        && budget.houseSceneReserve > 0
+        && !scenes.some((scene) => scene.origin === 'house-prelude')
+        && (!scenes[0] || at < scenes[0].at);
+      if (!owner && portableFillBeforeFirstScene) {
+        // Provisional only: malformed or semantically rejected fill proposals
+        // must not leave an empty structural scene behind.
+        pendingPrelude = makeHousePrelude();
+        owner = pendingPrelude;
+      }
+      if (rawKind === 'group' || rawKind === 'footnote') {
+        if (!declaredScene) return reject(proposal, 'scene-id-unknown');
+        if (!declaredScene.verses.length) return reject(proposal, 'scene-not-passage');
+        const declaredWindow = sceneWindows(scenes).find((window) => window.scene === declaredScene);
+        if (!declaredWindow || at < declaredWindow.start || at > declaredWindow.end) {
+          return reject(proposal, 'cue-outside-scene');
+        }
+        owner = declaredScene;
+      }
+      if (!owner) return reject(proposal, 'scene-owner-missing');
+
+      const beat = {
+        id: `beat:${proposal.proposalId}`,
+        proposalId: proposal.proposalId,
+        sceneId: owner.id,
+        kind: rawKind,
+        cue,
+        at,
+        timingSource: 'cue',
+        data: null,
+        pass,
+        ...(proposal.gapId ? { gapId: proposal.gapId } : {}),
+        _owner: owner,
+        _repairs: [],
+      };
+
+      if (rawKind === 'group') {
+        if (!Array.isArray(data.words) || data.words.length < 2 || data.words.length > 4) {
+          return reject(proposal, 'group-word-count');
+        }
+        const words = [];
+        const seen = new Set();
+        for (const rawWord of data.words) {
+          const word = typeof rawWord === 'string' ? rawWord.trim() : '';
+          const normalizedWord = directorNorm(word);
+          if (!word || word.length > 28 || word.split(/\s+/).length > 3) return reject(proposal, 'group-word-shape');
+          if (!word.includes(' ') && STOPWORDS.has(normalizedWord)) return reject(proposal, 'group-stopword', word);
+          if (seen.has(normalizedWord)) return reject(proposal, 'group-word-duplicate', word);
+          seen.add(normalizedWord);
+          const slot = { spoken: word, resolved: owner.verseNorm.includes(` ${normalizedWord} `) ? word : null };
+          if (!slot.resolved && !allowRepair) return reject(proposal, 'group-word-not-in-passage', word);
+          if (!slot.resolved) beat._repairs.push(slot);
+          words.push(slot);
+        }
+        const label = typeof data.label === 'string' ? data.label.trim() : '';
+        if (label.length > DIRECTOR_COPY_LIMITS.groupLabel) return reject(proposal, 'group-label-too-long');
+        beat.data = { words, label: label || null };
+      } else if (rawKind === 'footnote') {
+        const word = typeof data.word === 'string' ? data.word.trim() : '';
+        const note = typeof data.note === 'string' ? data.note.trim() : '';
+        if (!word || word.length > 28 || word.split(/\s+/).length > 3) return reject(proposal, 'footnote-word-shape');
+        if (note.length < 4) return reject(proposal, 'footnote-note-required');
+        if (note.length > DIRECTOR_COPY_LIMITS.footnoteNote) return reject(proposal, 'footnote-note-too-long');
+        const slot = { spoken: word, resolved: owner.verseNorm.includes(` ${directorNorm(word)} `) ? word : null };
+        if (!slot.resolved && !allowRepair) return reject(proposal, 'footnote-word-not-in-passage', word);
+        if (!slot.resolved) beat._repairs.push(slot);
+        beat.data = { word: slot, note };
+      } else if (rawKind === 'term') {
+        const term = typeof data.term === 'string' ? data.term.trim() : '';
+        const gloss = typeof data.gloss === 'string' ? data.gloss.trim() : '';
+        if (term.length < 2 || term.length > 24) return reject(proposal, 'term-shape');
+        if (gloss.length < 3) return reject(proposal, 'term-gloss-required');
+        if (gloss.length > DIRECTOR_COPY_LIMITS.termGloss) return reject(proposal, 'term-gloss-too-long');
+        beat.data = { term, gloss };
+      } else if (rawKind === 'allusion') {
+        const resolved = resolveDirectorPassageReference(data.verse ?? data.ref);
+        if (!resolved.ok) return reject(proposal, `canonical-${resolved.reason}`, resolved.message);
+        const note = typeof data.note === 'string' ? data.note.trim() : '';
+        if (note.length > DIRECTOR_COPY_LIMITS.relationNote) return reject(proposal, 'allusion-note-too-long');
+        beat.data = {
+          ref: resolved.value.ref,
+          text: resolved.value.text,
+          note: note || null,
+        };
+      } else if (rawKind === 'compare') {
+        const resolved = resolveDirectorPassageReferences([data.a, data.b]);
+        if (!resolved.ok) return reject(proposal, `canonical-${resolved.reason}`, resolved.message);
+        const [a, b] = resolved.values;
+        const overlaps = a.book === b.book && a.chapter === b.chapter
+          && a.fromVerse <= b.toVerse && b.fromVerse <= a.toVerse;
+        if (a.ref === b.ref || overlaps) return reject(proposal, 'compare-sides-not-distinct');
+        if (!['likeness', 'difference'].includes(data.axis)) return reject(proposal, 'compare-axis-invalid');
+        const note = typeof data.note === 'string' ? data.note.trim() : '';
+        if (note.length > DIRECTOR_COPY_LIMITS.relationNote) return reject(proposal, 'compare-note-too-long');
+        beat.data = {
+          a: { ref: a.ref, text: a.text },
+          b: { ref: b.ref, text: b.text },
+          axis: data.axis,
+          note: note || null,
+        };
+      } else if (rawKind === 'chain') {
+        if (!Array.isArray(data.refs) || data.refs.length < 2 || data.refs.length > 4) {
+          return reject(proposal, 'chain-link-count');
+        }
+        const resolved = resolveDirectorPassageReferences(data.refs);
+        if (!resolved.ok) return reject(proposal, `canonical-${resolved.reason}`, resolved.message);
+        const refs = resolved.values.map((value) => value.ref);
+        if (new Set(refs).size !== refs.length) return reject(proposal, 'chain-link-duplicate');
+        const note = typeof data.note === 'string' ? data.note.trim() : '';
+        if (note.length > DIRECTOR_COPY_LIMITS.relationNote) return reject(proposal, 'chain-note-too-long');
+        beat.data = {
+          links: resolved.values.map((value) => ({ ref: value.ref, text: value.text })),
+          note: note || null,
+        };
+      } else if (rawKind === 'caveat') {
+        const text = typeof data.text === 'string' ? data.text.trim() : '';
+        if (text.length < 8) return reject(proposal, 'caveat-text-required');
+        if (text.length > DIRECTOR_COPY_LIMITS.marginText) return reject(proposal, 'caveat-text-too-long');
+        beat.data = { text };
+      } else if (rawKind === 'aside') {
+        const text = typeof data.text === 'string' ? data.text.trim() : '';
+        if (text.length < 8) return reject(proposal, 'aside-text-required');
+        if (text.length > DIRECTOR_COPY_LIMITS.marginText) return reject(proposal, 'aside-text-too-long');
+        beat.data = { text };
+      } else if (rawKind === 'highlight') {
+        const quote = typeof data.quote === 'string' ? data.quote.trim() : '';
+        if (quote.length < 12 || quote.length > 140) return reject(proposal, 'highlight-quote-length');
+        if (!tapeNorm.includes(` ${directorNorm(quote)} `)) return reject(proposal, 'highlight-not-verbatim');
+        beat.data = { quote };
+      }
+      if (pendingPrelude) {
+        const committedPrelude = scenes.find((scene) => scene.origin === 'house-prelude');
+        if (committedPrelude) {
+          beat.sceneId = committedPrelude.id;
+          beat._owner = committedPrelude;
+        } else {
+          scenes.unshift(pendingPrelude);
+          scenes.sort((a, b) => a.at - b.at || a.id.localeCompare(b.id));
+        }
+      }
+      return beat;
+    };
+
+    const repairAndFinalizeAnchors = async (beats) => {
+      const repairs = beats.flatMap((beat) => beat._repairs.map((slot) => ({ beat, slot })));
+      if (repairs.length) {
+        try {
+          const mapped = await callModel('repair', `A visual stage displays the World English Bible while a teacher may read another translation. For each numbered pair, return the word or short phrase (at most 3 words) FROM THE DISPLAYED TEXT that carries the same meaning as the teaching's wording, or null when there is no honest counterpart.
+
+${repairs.map(({ beat, slot }, index) => `${index}. displayed text: "${beat._owner.verses.map((verse) => verse.text).join(' ').slice(0, 500)}"
+   teaching wording: "${slot.spoken}"`).join('\n')}
+
+Answer ONLY with JSON: {"map":["displayed wording",null]} with exactly ${repairs.length} entries.`, 5000);
+          const map = Array.isArray(mapped?.map) ? mapped.map : [];
+          repairs.forEach(({ beat, slot }, index) => {
+            const candidate = typeof map[index] === 'string' ? map[index].trim() : '';
+            if (candidate && candidate.length <= 28 && candidate.split(/\s+/).length <= 3
+              && !(!candidate.includes(' ') && STOPWORDS.has(directorNorm(candidate)))
+              && beat._owner.verseNorm.includes(` ${directorNorm(candidate)} `)) {
+              slot.resolved = candidate;
+            }
+          });
+          markLastCall(`semantic-repairs:${repairs.filter(({ slot }) => slot.resolved).length}/${repairs.length}`);
+        } catch (error) {
+          if (signal.aborted) throw error;
+        }
+      }
+
+      const finalized = [];
+      for (const beat of beats) {
+        const proposal = {
+          proposalId: beat.proposalId,
+          pass: beat.pass,
+          kind: beat.kind,
+          ...(beat.gapId ? { gapId: beat.gapId } : {}),
+        };
+        if (beat.kind === 'group') {
+          const words = beat.data.words.map((slot) => slot.resolved).filter(Boolean);
+          if (words.length !== beat.data.words.length) {
+            reject(proposal, 'repair-unresolved');
+            continue;
+          }
+          const occurrences = displayedOccurrences(beat._owner, words);
+          if (!occurrences) {
+            reject(proposal, 'group-word-not-in-passage');
+            continue;
+          }
+          const verseLength = Math.max(1, beat._owner.verseNorm.trim().length);
+          if (words.length > 2 && words.reduce((sum, word) => sum + word.length, 0) > verseLength * 0.33) {
+            reject(proposal, 'group-overcoverage');
+            continue;
+          }
+          const wordOccurrences = new Map();
+          const window = sceneWindows(currentScenes).find((candidate) => candidate.scene.id === beat.sceneId);
+          const wordTimes = words.map((word, wordIndex) => {
+            const key = directorNorm(word);
+            const occurrence = wordOccurrences.get(key) || 0;
+            wordOccurrences.set(key, occurrence + 1);
+            return {
+              word,
+              occurrence: occurrences[wordIndex],
+              at: locateWordAfter(word, window?.start ?? 0, occurrence, window?.end ?? dur),
+              timingSource: 'word',
+            };
+          }).filter((wordTime) => wordTime.at != null);
+          beat.data = { words, occurrences, wordTimes, label: beat.data.label };
+        } else if (beat.kind === 'footnote') {
+          const word = beat.data.word.resolved;
+          if (!word) {
+            reject(proposal, 'repair-unresolved');
+            continue;
+          }
+          const occurrence = displayedOccurrences(beat._owner, [word])?.[0];
+          if (!Number.isInteger(occurrence)) {
+            reject(proposal, 'footnote-word-not-in-passage');
+            continue;
+          }
+          beat.data = { word, note: beat.data.note, occurrence };
+        }
+        delete beat._owner;
+        delete beat._repairs;
+        finalized.push(beat);
+      }
+      return finalized;
+    };
+
+    const applyNormalization = (role, plan) => {
+      const snapshot = normalizeDirectorPlan(plan, {
+        durationSec: dur,
+        sustainedTeachingSec: sustainedSec,
+        budget,
+        addPrelude: true,
+      });
+      normalizationPasses.push({ role, ...snapshot.report });
+      currentSnapshot = snapshot;
+      return snapshot;
+    };
+
+    const finish = (note = null, { allowAborted = false } = {}) => {
+      if (!allowAborted) signal.throwIfAborted();
+      const scenes = currentSnapshot.scenes.map((scene) => {
+        const { verseNorm, modelId, ...publicScene } = scene;
+        return publicScene;
+      });
+      const beats = currentSnapshot.beats.map((beat) => {
+        const { pass, gapId, ...publicBeat } = beat;
+        return publicBeat;
+      });
+      const allDrops = [
+        ...sceneDrops,
+        ...normalizationPasses.flatMap((entry) => entry.dropped || []),
+      ];
+      const uniqueDrops = [];
+      const seenDrop = new Set();
+      for (const drop of allDrops) {
+        const key = JSON.stringify(drop);
+        if (!seenDrop.has(key)) {
+          seenDrop.add(key);
+          uniqueDrops.push(drop);
+        }
+      }
+      const projection = summarizeVisualProjection({ scenes, beats }, dur);
+      const acceptedProposalIds = new Set(beats.map((beat) => beat.proposalId));
+      const rejectedByProposal = new Map(semanticRejected.map((entry) => [entry.proposalId, entry]));
+      for (const drop of uniqueDrops) {
+        const proposalId = drop.proposalId || (typeof drop.id === 'string' && drop.id.startsWith('beat:')
+          ? drop.id.slice('beat:'.length)
+          : null);
+        if (!proposalId || acceptedProposalIds.has(proposalId) || rejectedByProposal.has(proposalId)) continue;
+        const source = proposed.find((entry) => entry.proposalId === proposalId);
+        if (!source) continue;
+        rejectedByProposal.set(proposalId, {
+          ...source,
+          reason: drop.reason || 'normalization-refused',
+          ...(drop.at != null ? { at: drop.at } : {}),
+        });
+      }
+      for (const proposal of proposed) {
+        if (!acceptedProposalIds.has(proposal.proposalId) && !rejectedByProposal.has(proposal.proposalId)) {
+          rejectedByProposal.set(proposal.proposalId, { ...proposal, reason: 'normalization-refused' });
+        }
+      }
+      const outcomes = {
+        completeness: 'complete',
+        proposed,
+        rejected: [...rejectedByProposal.values()],
+        accepted: beats.map((beat) => ({
+          proposalId: beat.proposalId,
+          beatId: beat.id,
+          kind: beat.kind,
+          sceneId: beat.sceneId,
+        })),
+        focusMasked: projection.focusMasked,
+        superseded: projection.superseded,
+        projectedVisible: projection.projectedVisible,
+      };
+      const normalization = {
+        ...currentSnapshot.report,
+        dropped: uniqueDrops,
+        passes: normalizationPasses,
+        projection,
+      };
+      const provider = calls.find((call) => call.provider)?.provider || 'unreported';
+      const costs = calls.map((call) => call.providerCostUsd);
+      const payload = {
+        schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
+        policyVersion: MAGIC_DIRECTOR_POLICY_VERSION,
+        requestKey,
+        requestFingerprint,
+        clip: {
+          fromSec: from,
+          toSec: to,
+          durationSec: dur,
+          transcriptHash,
+          sustainedTeachingSec: sustainedSec,
+        },
+        budget,
+        scenes,
+        beats,
+        model: { ...runtime, provider },
+        metrics: {
+          wallMs: Date.now() - wallStarted,
+          passes: calls.length,
+          calls,
+          totalUsd: calls.length && costs.every((cost) => Number.isFinite(cost) && cost >= 0)
+            ? costs.reduce((sum, cost) => sum + cost, 0)
+            : null,
+          tokens: {
+            prompt: calls.reduce((sum, call) => sum + call.promptTokens, 0),
+            completion: calls.reduce((sum, call) => sum + call.completionTokens, 0),
+            reasoning: calls.reduce((sum, call) => sum + call.reasoningTokens, 0),
+            cachedPrompt: calls.reduce((sum, call) => sum + call.cachedPromptTokens, 0),
+          },
+          normalization,
+          outcomes,
+        },
+        ...(note ? { note } : {}),
+      };
+      const checked = validateDirectorPayload(payload);
+      if (!checked.ok) throw new Error(`refusing invalid director payload: ${checked.errors.join('; ')}`);
+      const evidenceFile = writeDirectorEvidence({
+        startedAt,
+        requestKey,
+        request: directRequest,
+        result: payload,
+      });
+      return { ...payload, evidenceFile: path.basename(evidenceFile) };
+    };
+
+    let currentScenes = [];
+    try {
+      const raw = await callModel('initial', buildDirectorInitialPrompt({ timedTape, why, budget }));
+      const rawScenes = Array.isArray(raw?.scenes) ? raw.scenes : [];
+      const rawBeats = Array.isArray(raw?.beats) ? raw.beats : [];
+      currentScenes = parseScenes(rawScenes, rawBeats);
+      const candidates = rawBeats
+        .map((rawBeat, index) => validateBeat(rawBeat, index, 'initial', currentScenes))
+        .filter(Boolean);
+      const initialBeats = await repairAndFinalizeAnchors(candidates);
+      markLastCall(`semantic-scenes:${currentScenes.filter((scene) => scene.origin === 'model').length};semantic-beats:${initialBeats.length}`);
+      applyNormalization('initial', { scenes: currentScenes, beats: initialBeats });
+      currentScenes = currentSnapshot.scenes;
+
+      // The normalization report measures entrances that can actually project;
+      // a beat hidden by focus does not make its interval visually occupied.
+      const cadence = currentSnapshot.report.visualCadence;
+      const candidateGaps = (cadence.gaps || [])
+        .filter((gap) => gap.len > budget.fillGapSec)
+        .sort((a, b) => a.start - b.start || a.end - b.end);
+      const intervals = [];
+      for (const gap of candidateGaps) {
+        const stretchSegments = segs.filter((segment) => (
+          segment.e - from >= gap.start && segment.s - from <= gap.end
+        ));
+        const stretchText = stretchSegments.map((segment) => String(segment.t || '').trim()).filter(Boolean).join(' ');
+        const wordCount = transcriptTupleText(stretchText).split(/\s+/).filter(Boolean).length;
+        const activeSec = sustainedTeachingSeconds(stretchSegments, from + gap.start, from + gap.end);
+        if (wordCount < 20 || activeSec < 8) continue;
+        const stages = sceneWindows(currentScenes)
+          .filter((window) => window.end >= gap.start && window.start <= gap.end)
+          .map((window) => ({
+            sceneId: window.scene.id,
+            ref: window.scene.ref,
+            from: Math.max(gap.start, window.start),
+            to: Math.min(gap.end, window.end),
+            text: window.scene.verses?.length
+              ? window.scene.verses.map((verse) => verse.text).join(' ').slice(0, 500)
+              : '',
+          }));
+        if (!stages.length) continue;
+        intervals.push({
+          id: `gap:${intervals.length}`,
+          start: gap.start,
+          end: gap.end,
+          len: gap.len,
+          stages,
+          transcript: '',
+          _rows: stretchSegments.map((segment) => (
+            `[${Math.max(0, Math.round(segment.e - from))}s] ${String(segment.t || '').trim()}`
+          )),
+        });
+      }
+      if (intervals.length) {
+        const perIntervalBudget = Math.max(500, Math.floor(14000 / intervals.length));
+        intervals.forEach((interval) => {
+          interval.transcript = sampleTimedRows(interval._rows, perIntervalBudget);
+          delete interval._rows;
+        });
+        const existingBeats = currentSnapshot.beats;
+        const fillRaw = await callModel('fill', buildDirectorFillPrompt({
+          intervals,
+          budget,
+          existingBeats,
+        }), 12000);
+        const byGap = new Map(intervals.map((interval) => [interval.id, interval]));
+        const claimedGaps = new Set();
+        const fillCandidates = [];
+        const acceptedCueSignatures = new Set(existingBeats.map((beat) => {
+          const cue = beat.kind === 'highlight' ? beat.data?.quote : beat.cue;
+          return cue ? `${beat.kind}|${directorNorm(cue)}` : null;
+        }).filter(Boolean));
+        let acceptedFillHighlights = 0;
+        const existingHighlightCount = existingBeats.filter((beat) => beat.kind === 'highlight').length;
+        for (const [index, rawBeat] of (Array.isArray(fillRaw?.beats) ? fillRaw.beats : []).entries()) {
+          const gapId = typeof rawBeat?.gapId === 'string' ? rawBeat.gapId : '';
+          const gap = byGap.get(gapId);
+          const kind = typeof rawBeat?.kind === 'string' && rawBeat.kind.trim()
+            ? rawBeat.kind.trim().toLowerCase()
+            : 'unknown';
+          const proposal = { proposalId: `fill:${gapId || 'unknown'}:${index}`, pass: 'fill', kind, gapId };
+          if (!gap) {
+            proposed.push(proposal);
+            reject(proposal, 'gap-id-unknown');
+            continue;
+          }
+          if (claimedGaps.has(gapId)) {
+            proposed.push(proposal);
+            reject(proposal, 'gap-duplicate');
+            continue;
+          }
+          claimedGaps.add(gapId);
+          if (kind === 'highlight'
+            && existingHighlightCount + acceptedFillHighlights >= budget.highlightCeiling) {
+            proposed.push(proposal);
+            reject(proposal, 'highlight-capacity-exhausted');
+            continue;
+          }
+          const rawCue = kind === 'highlight' ? rawBeat?.data?.quote : rawBeat?.cue;
+          const rawSignature = typeof rawCue === 'string' && rawCue.trim()
+            ? `${kind}|${directorNorm(rawCue)}`
+            : null;
+          if (rawSignature && acceptedCueSignatures.has(rawSignature)) {
+            proposed.push(proposal);
+            reject(proposal, 'duplicate-existing-beat');
+            continue;
+          }
+          const candidate = validateBeat(rawBeat, index, 'fill', currentScenes, { gap, allowRepair: false });
+          if (candidate) {
+            const cue = candidate.kind === 'highlight' ? candidate.data?.quote : candidate.cue;
+            const signature = cue ? `${candidate.kind}|${directorNorm(cue)}` : null;
+            if (signature && acceptedCueSignatures.has(signature)) {
+              reject(candidate, 'duplicate-existing-beat');
+              continue;
+            }
+            if (signature) acceptedCueSignatures.add(signature);
+            if (candidate.kind === 'highlight') acceptedFillHighlights += 1;
+            fillCandidates.push(candidate);
+          }
+        }
+        const finalizedFill = await repairAndFinalizeAnchors(fillCandidates);
+        markLastCall(`semantic-intervals:${intervals.length};semantic-beats:${finalizedFill.length}`);
+        applyNormalization('fill', {
+          scenes: currentScenes,
+          beats: [...currentSnapshot.beats, ...finalizedFill],
+        });
+        currentScenes = currentSnapshot.scenes;
+      }
+
+      return finish();
+    } catch (error) {
+      if (signal.aborted) {
+        if (calls.length) {
+          const evidence = finish('director job aborted after its last consumer left', { allowAborted: true });
+          error.evidenceFile = evidence.evidenceFile;
+        }
+        throw error;
+      }
+      if (error?.code === 'MAGIC_RUNTIME_REFUSED') {
+        const evidenceFile = writeDirectorEvidence({
+          status: 'refused',
+          startedAt,
+          requestKey,
+          request: directRequest,
+          runtime,
+          calls,
+          error: { code: error.code, message: error.message },
+        });
+        error.evidenceFile = path.basename(evidenceFile);
+        throw error;
+      }
+      return finish(error?.message || String(error));
+    }
+  });
+
+  try {
+    const payload = await acquired.promise;
+    acquired.release();
+    return sendJson(res, 200, payload);
+  } catch (error) {
+    acquired.release();
+    if (res.destroyed || res.writableEnded) return;
+    return sendJson(res, 503, {
+      error: error?.message || String(error),
+      code: error?.code || 'DIRECTOR_FAILED',
+      ...(error?.evidenceFile ? { evidenceFile: error.evidenceFile } : {}),
+    });
+  }
+}
+
 /* The strong heuristics behind on-the-fly forms: every parameter the model
    supplies is checked against what the tour actually contains, and any
    shortfall lands on 'standard'. A lexicon needs renderings that point at
@@ -248,7 +1387,11 @@ const server = http.createServer(async (req, res) => {
         pricing: loadPricing(),
         caveats: CAVEATS,
         ledger: readLedger(),
-        magic: { directorSchemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION, roles: MAGIC_MODEL_ROLES },
+        magic: {
+          directorSchemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
+          directorPolicyVersion: MAGIC_DIRECTOR_POLICY_VERSION,
+          roles: MAGIC_MODEL_ROLES,
+        },
       });
     }
 
@@ -530,746 +1673,13 @@ Include only the keys the chosen form needs; stage directions are optional and m
       }
     }
 
-    // The director's pass: one deeper call per playing step, grounded in
-    // the ACTUAL tape and the ACTUAL verse text, returning a RESOLVED
-    // TIMELINE — every scene and artifact carries `at` seconds into the
-    // clip, located on the tape here, so the page is a scheduler and never
-    // a guesser. When the resolved timeline leaves a dead stretch longer
-    // than 45s, a second cheap call reads exactly that stretch and buys
-    // more beats for it. Every claim from either pass is checked against
-    // the real texts before the page sees it.
+    // The v2 director keeps structural scenes and semantic visual beats as
+    // separate, versioned timelines. The handler owns transcript identity,
+    // shared paid-call dedupe, canonical grounding, and append-only evidence.
     if (p === '/api/direct' && req.method === 'POST') {
       const body = await readBody(req);
-      if (body.schemaVersion !== MAGIC_DIRECTOR_SCHEMA_VERSION) {
-        return sendJson(res, 409, {
-          error: `director schema ${String(body.schemaVersion)} is not supported`,
-          supportedSchemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
-        });
-      }
-      try {
-        assertMagicModel(body.model);
-      } catch (error) {
-        return sendJson(res, 400, { error: error.message, code: error.code });
-      }
-
-      const recordId = String(body.recordId || '');
-      const from = Math.max(0, Number(body.fromSec) || 0);
-      const to = Math.min(from + 900, Number(body.toSec) || from + 900);
-      const dur = to - from;
-      const whyFull = String(body.why || '');
-      const why = whyFull.slice(0, 400);
-      const requestKey = directorCacheKey({
-        schemaVersion: body.schemaVersion,
-        modelKey: body.model,
-        recordId,
-        fromSec: from,
-        toSec: to,
-        why: whyFull,
-      });
-      const directRequest = {
-        schemaVersion: body.schemaVersion,
-        model: body.model,
-        recordId,
-        fromSec: from,
-        toSec: to,
-        why,
-      };
-      const tr = loadTranscript(recordId);
-      const segs = (tr?.segments || []).filter((s) => s.e >= from && s.s <= to);
-      const tape = segs.map((s) => s.t).join(' ').slice(0, 11000);
-      const norm = (s) => String(s).toLowerCase().replace(/[’']/g, "'").replace(/[^a-z0-9' ]+/g, ' ').replace(/\s+/g, ' ').trim();
-      const tapeNorm = ` ${norm(tape)} `;
-
-      /* Locators — the house's clock. A phrase resolves to the second its
-         segment ends; a word resolves to its first utterance after a time. */
-      const locatePhrase = (phrase) => {
-        if (!phrase) return null;
-        const nc = ` ${norm(phrase)} `;
-        let acc = '';
-        for (const s of segs) {
-          acc += ' ' + norm(s.t);
-          if ((` ${acc} `).includes(nc)) return Math.max(0, Math.round(s.e - from));
-          acc = acc.slice(-500);
-        }
-        return null;
-      };
-      const locateWordAfter = (word, afterRel, occurrence = 0) => {
-        const nw = ` ${norm(word)} `;
-        let seen = 0;
-        for (const s of segs) {
-          const rel = s.e - from;
-          if (rel < afterRel) continue;
-          const text = ` ${norm(s.t)} `;
-          let cursor = 0;
-          while ((cursor = text.indexOf(nw, cursor)) >= 0) {
-            if (seen === occurrence) return Math.round(rel);
-            seen += 1;
-            cursor += nw.length;
-          }
-        }
-        return null;
-      };
-
-      /* Occurrence is a coordinate in the displayed verse, not the tape. For
-         a repeated word-group, choose the tightest left-to-right combination
-         the displayed text permits; transcript timing remains independent. */
-      const displayedMatches = (scene, phrase) => {
-        const haystack = ` ${norm((scene.verses || []).map((verse) => verse.text).join(' '))} `;
-        const needle = ` ${norm(phrase)} `;
-        if (needle === '  ') return [];
-        const matches = [];
-        let cursor = 0;
-        while (matches.length < 40) {
-          const index = haystack.indexOf(needle, cursor);
-          if (index < 0) break;
-          matches.push({ index, end: index + needle.length, occurrence: matches.length });
-          cursor = index + Math.max(1, needle.length - 1);
-        }
-        return matches;
-      };
-      const displayedOccurrences = (scene, words) => {
-        const candidates = words.map((word) => displayedMatches(scene, word));
-        if (candidates.some((matches) => !matches.length)) return words.map(() => 0);
-        let best = null;
-        const visit = (wordIndex, previousEnd, picked) => {
-          if (wordIndex === candidates.length) {
-            const span = picked.at(-1).end - picked[0].index;
-            if (!best || span < best.span || (span === best.span && picked[0].index < best.start)) {
-              best = { span, start: picked[0].index, picked: [...picked] };
-            }
-            return;
-          }
-          for (const match of candidates[wordIndex]) {
-            if (match.index < previousEnd) continue;
-            visit(wordIndex + 1, match.end, [...picked, match]);
-          }
-        };
-        visit(0, -1, []);
-        return best ? best.picked.map((match) => match.occurrence) : words.map(() => 0);
-      };
-
-      const oneVerse = (refStr) => {
-        const r = String(refStr || '').match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3}):(\d{1,3})$/);
-        if (!r) return null;
-        const pv = readPassage({ book: r[1], chapter: Number(r[2]), fromVerse: Number(r[3]), toVerse: Number(r[3]) });
-        if (pv.error || !pv.verses?.length) return null;
-        return { ref: `${pv.bookName} ${pv.chapter}:${r[3]}`, text: pv.verses[0].text };
-      };
-
-      const semanticDrops = [];
-
-      /* One validator for both passes: everything checked against the scene's
-         real verse text and the pass's own stretch of tape. */
-      /* Function words never carry a bracket: lighting "of" and "the" as
-         they are said is noise wearing the loom's clothes. */
-      const STOPWORDS = new Set(['the', 'and', 'of', 'to', 'a', 'an', 'in', 'on', 'at', 'for', 'that', 'this', 'with', 'from',
-        'they', 'them', 'were', 'was', 'is', 'are', 'be', 'been', 'have', 'has', 'had', 'his', 'her', 'him', 'she', 'he',
-        'it', 'its', 'not', 'but', 'all', 'any', 'who', 'you', 'your', 'their', 'there', 'when', 'then', 'will', 'shall']);
-      const validateArtifacts = (sc, verseNorm, cueNorm, pass = 'unknown') => {
-        const cueOk = (c) => typeof c === 'string' && c.trim().length >= 8 && c.length <= 80 && cueNorm.includes(` ${norm(c)} `);
-        /* A word the displayed translation phrases differently is not
-           rejected — it is held for the repair exchange, where the model
-           maps the teaching's wording onto the displayed text's wording
-           (meaning for meaning, never a dictionary), and the mapped phrase
-           must still exist verbatim in the verse. */
-        const groups = (Array.isArray(sc.groups) ? sc.groups : [])
-          .filter((g) => g && Array.isArray(g.words) && g.words.length >= 2 && g.words.length <= 4)
-          .map((g) => {
-            const words = [];
-            const dropped = [];
-            for (const raw of g.words) {
-              const w = String(raw).trim();
-              if (!w || w.length > 28 || w.split(/\s+/).length > 3) continue;
-              const isPhrase = /\s/.test(w);
-              if (!isPhrase && STOPWORDS.has(norm(w))) continue; // a function word is not repairable, it is noise
-              if (verseNorm.includes(` ${norm(w)} `)) words.push(w);
-              else dropped.push(w);
-            }
-            /* A group that blankets the verse stops emphasizing anything:
-               words are trimmed, longest first, until they cover at most a
-               third of the verse text. */
-            const verseLen = verseNorm.length;
-            let kept = [...words].sort((a, b) => b.length - a.length);
-            while (kept.length > 2 && kept.reduce((n, w) => n + w.length, 0) > verseLen * 0.33) kept.shift();
-            return {
-              words: words.filter((w) => kept.includes(w)),
-              dropped,
-              label: (typeof g.label === 'string' && g.label.trim() && g.label.trim().length <= 18) ? g.label.trim() : null,
-              cue: cueOk(g.cue) ? g.cue.trim() : null,
-            };
-          })
-          .filter((g) => g.words.length + g.dropped.length >= 2)
-          .slice(0, 2);
-        const footnotes = (Array.isArray(sc.footnotes) ? sc.footnotes : [])
-          .filter((f) => f && typeof f.word === 'string' && f.word.trim() && f.word.trim().split(/\s+/).length <= 3
-            && typeof f.note === 'string' && f.note.trim().length >= 4)
-          .slice(0, 2)
-          .map((f) => ({
-            word: f.word.trim(),
-            note: f.note.trim().slice(0, 90),
-            cue: cueOk(f.cue) ? f.cue.trim() : null,
-            missing: !verseNorm.includes(` ${norm(f.word.trim())} `),
-          }));
-        const allusions = [];
-        for (const a of (Array.isArray(sc.allusions) ? sc.allusions : []).slice(0, 2)) {
-          const ar = String(a?.verse || '').match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3})(?::(\d{1,3}))?$/);
-          if (!ar) continue;
-          const av = ar[3] ? Number(ar[3]) : 1;
-          const ap = readPassage({ book: ar[1], chapter: Number(ar[2]), fromVerse: av, toVerse: av });
-          if (ap.error || !ap.verses?.length) continue;
-          const atext = ap.verses[0].text;
-          allusions.push({
-            ref: `${ap.bookName} ${ap.chapter}:${av}`,
-            text: atext.length > 170 ? atext.slice(0, 170).replace(/\s+\S*$/, '') + '…' : atext,
-            note: (typeof a.note === 'string' && a.note.trim()) ? a.note.trim().slice(0, 60) : null,
-            cue: cueOk(a.cue) ? a.cue.trim() : null,
-          });
-        }
-        const terms = (Array.isArray(sc.terms) ? sc.terms : [])
-          .filter((t) => t && typeof t.term === 'string' && t.term.trim().length >= 2 && t.term.trim().length <= 24
-            && typeof t.gloss === 'string' && t.gloss.trim().length >= 3)
-          .slice(0, 2)
-          .map((t) => ({ term: t.term.trim(), gloss: t.gloss.trim().slice(0, 48), cue: cueOk(t.cue) ? t.cue.trim() : null }));
-        let compare = null;
-        if (sc.compare && typeof sc.compare === 'object') {
-          const a = oneVerse(sc.compare.a);
-          const b = oneVerse(sc.compare.b);
-          if (a && b && a.ref !== b.ref) {
-            const AXES = new Set(['likeness', 'difference']);
-            compare = {
-              a, b,
-              axis: AXES.has(sc.compare.axis) ? sc.compare.axis : 'likeness',
-              note: (typeof sc.compare.note === 'string' && sc.compare.note.trim()) ? sc.compare.note.trim().slice(0, 60) : null,
-              cue: cueOk(sc.compare.cue) ? sc.compare.cue.trim() : null,
-            };
-          }
-        }
-        let chain = null;
-        if (sc.chain && Array.isArray(sc.chain.refs)) {
-          const links = sc.chain.refs.slice(0, 4).map(oneVerse).filter(Boolean);
-          if (links.length >= 2) {
-            chain = { links, note: (typeof sc.chain.note === 'string' && sc.chain.note.trim()) ? sc.chain.note.trim().slice(0, 60) : null, cue: cueOk(sc.chain.cue) ? sc.chain.cue.trim() : null };
-          }
-        }
-        const caveat = (sc.caveat && typeof sc.caveat.text === 'string' && sc.caveat.text.trim().length >= 8)
-          ? { text: sc.caveat.text.trim().slice(0, 90), cue: cueOk(sc.caveat.cue) ? sc.caveat.cue.trim() : null }
-          : null;
-        const highlight = (sc.highlight && typeof sc.highlight.quote === 'string'
-          && sc.highlight.quote.trim().length >= 12 && sc.highlight.quote.length <= 140
-          && cueNorm.includes(` ${norm(sc.highlight.quote)} `))
-          ? { quote: sc.highlight.quote.trim() }
-          : null;
-        /* A verse scene earns one aside — the movement, not the play-by-play.
-           Only the verse-less scene, whose asides ARE the stage, keeps two. */
-        const asides = (Array.isArray(sc.asides) ? sc.asides : [])
-          .filter((a) => a && typeof a.text === 'string' && a.text.trim().length >= 8)
-          .slice(0, verseNorm.trim() ? 1 : 2)
-          .map((a) => {
-            const t = a.text.trim();
-            return { text: t.length > 70 ? t.slice(0, 70).replace(/\s+\S*$/, '') + '…' : t, cue: cueOk(a.cue) ? a.cue.trim() : null };
-          });
-        const accepted = { groups, footnotes, allusions, terms, asides };
-        for (const [kind, rawKey] of [
-          ['group', 'groups'],
-          ['footnote', 'footnotes'],
-          ['allusion', 'allusions'],
-          ['term', 'terms'],
-          ['aside', 'asides'],
-        ]) {
-          const submitted = Array.isArray(sc?.[rawKey]) ? sc[rawKey].length : 0;
-          const kept = accepted[rawKey].length;
-          if (submitted > kept) semanticDrops.push({ reason: 'semantic-rejection', pass, kind, count: submitted - kept });
-        }
-        for (const [kind, value] of Object.entries({ compare, chain, caveat, highlight })) {
-          if (sc?.[kind] && !value) semanticDrops.push({ reason: 'semantic-rejection', pass, kind, count: 1 });
-        }
-        return { groups, footnotes, allusions, terms, compare, chain, caveat, highlight, asides };
-      };
-
-      const acquired = acquireDirectorJob(requestKey, req, res, async (signal) => {
-        const startedAt = new Date().toISOString();
-        const wallStarted = Date.now();
-        signal.throwIfAborted();
-        const { client, runtime } = await preflightMagicRole('director');
-        signal.throwIfAborted();
-        const calls = [];
-        let scenes = [];
-        const normalizationPasses = [];
-
-        const markLastCall = (outcome) => {
-          if (!calls.length) return;
-          calls.at(-1).validation = `${calls.at(-1).validation};${outcome}`;
-        };
-
-        const normalizePass = (role, { apply = false } = {}) => {
-          const snapshot = normalizeDirectorScenes(scenes, dur);
-          normalizationPasses.push({ role, ...snapshot.report });
-          if (apply) scenes = snapshot.scenes;
-          return snapshot;
-        };
-
-        const finish = (rawScenes, note = null, { allowAborted = false } = {}) => {
-          if (!allowAborted) signal.throwIfAborted();
-          for (const scene of rawScenes) delete scene.verseNorm;
-          const normalized = normalizeDirectorScenes(rawScenes, dur);
-          normalized.report.dropped = [...semanticDrops, ...normalized.report.dropped];
-          normalized.report.passes = normalizationPasses;
-          const costs = calls.filter((call) => call.providerCostUsd != null).map((call) => call.providerCostUsd);
-          const provider = calls.find((call) => call.provider)?.provider || 'unreported';
-          const payload = {
-            schemaVersion: MAGIC_DIRECTOR_SCHEMA_VERSION,
-            requestKey,
-            clip: { fromSec: from, toSec: to, durationSec: dur },
-            scenes: normalized.scenes,
-            model: { ...runtime, provider },
-            metrics: {
-              wallMs: Date.now() - wallStarted,
-              passes: calls.length,
-              calls,
-              totalUsd: calls.length && costs.length === calls.length
-                ? costs.reduce((sum, cost) => sum + cost, 0)
-                : null,
-              tokens: {
-                prompt: calls.reduce((sum, call) => sum + call.promptTokens, 0),
-                completion: calls.reduce((sum, call) => sum + call.completionTokens, 0),
-                reasoning: calls.reduce((sum, call) => sum + call.reasoningTokens, 0),
-                cachedPrompt: calls.reduce((sum, call) => sum + call.cachedPromptTokens, 0),
-              },
-              normalization: normalized.report,
-            },
-            ...(note ? { note } : {}),
-          };
-          const checked = validateDirectorPayload(payload);
-          if (!checked.ok) throw new Error(`refusing invalid director payload: ${checked.errors.join('; ')}`);
-          const evidenceFile = writeDirectorEvidence({
-            startedAt,
-            requestKey,
-            request: directRequest,
-            result: payload,
-          });
-          return { ...payload, evidenceFile: path.basename(evidenceFile) };
-        };
-
-        const callModel = async (role, content, maxTokens = 16000) => {
-          const callStarted = Date.now();
-          let reply;
-          try {
-            reply = await client.chat({
-              maxTokens,
-              messages: [{ role: 'user', content }],
-              signal,
-            });
-          } catch (error) {
-            calls.push({
-              role,
-              latencyMs: Math.max(0, Number(error?.latencyMs) || Date.now() - callStarted),
-              promptTokens: 0,
-              completionTokens: 0,
-              reasoningTokens: 0,
-              cachedPromptTokens: 0,
-              providerCostUsd: null,
-              finishReason: null,
-              rawModel: null,
-              provider: null,
-              model: { ...runtime, provider: 'unreported' },
-              validation: 'call-error',
-              error: { code: error?.code || 'CALL', message: error?.message || String(error) },
-            });
-            throw error;
-          }
-
-          const text = String(reply.message.content || '');
-          const match = text.match(/\{[\s\S]*\}/);
-          let parsed = null;
-          let validation = 'no-json-object';
-          if (match) {
-            try {
-              parsed = JSON.parse(match[0]);
-              validation = 'json-parsed';
-            } catch {
-              validation = 'invalid-json';
-            }
-          }
-          let runtimeError = null;
-          try {
-            assertMagicReplyEvidence(reply, runtime);
-          } catch (error) {
-            runtimeError = error;
-          }
-          const rawModel = reply.raw?.model ?? null;
-          const provider = reply.raw?.provider ?? null;
-          calls.push({
-            role,
-            latencyMs: Math.max(0, Number(reply.latencyMs) || Date.now() - callStarted),
-            promptTokens: reply.usage?.promptTokens || 0,
-            completionTokens: reply.usage?.completionTokens || 0,
-            reasoningTokens: reply.usage?.reasoningTokens || 0,
-            cachedPromptTokens: reply.usage?.cachedPromptTokens || 0,
-            providerCostUsd: reply.usage?.providerCostUsd ?? null,
-            finishReason: reply.finishReason || null,
-              rawModel,
-              provider,
-              model: { ...runtime, provider: provider || 'unreported' },
-              validation: runtimeError ? 'runtime-mismatch' : validation,
-            });
-          if (runtimeError) throw runtimeError;
-          return parsed;
-        };
-
-        if (!tr) return finish([], 'unknown recording');
-        if (tape.length < 200) return finish([], 'recording window has too little transcript');
-
-        try {
-          const raw = await callModel('initial', `You are directing a small visual stage a listener watches while a podcast clip plays. Here is the clip's full transcript:
-
-${tape}
-
-The clip's purpose in its tour: ${why}
-
-Direct up to 4 SCENES — as many as the teaching has MOVEMENTS, no more. ONE scene is common; use several only when the teacher genuinely moves between passages. Each scene:
-- "verse": the passage being discussed at that point — "Book chapter:verse" or a range of at most 3 verses. Only passages genuinely walked through, not passing mentions.
-- "cue": a distinctive phrase of 3-8 words COPIED VERBATIM from the transcript at the moment this scene should appear.
-- "groups": up to 2 word-groups inside that verse the teaching turns on — 2-4 single words each that appear in the verse text, a label (max 18 characters), and optionally that group's own verbatim cue phrase. The best groups catch a pattern in the verse's own wording — a parallelism, an echoed pair, the words the argument physically turns on ("eyes, see, ears, hear" when the teacher dwells on refused senses) — not just topic words.
-- "footnotes": up to 2 — when the teacher gives a translation or textual note about ONE word of the verse: {"word":"...","note":"the teacher's point, max 90 chars","cue":"..."}. The word must be in the verse text.
-- "allusions": up to 2 — when the teacher says this verse echoes or draws on ANOTHER passage: {"verse":"Psalm 82:1","note":"what the teacher says it carries, max 60 chars","cue":"..."}. Only allusions the teacher actually makes.
-- "terms": up to 2 — when the teacher explains an original-language word: {"term":"hesed","gloss":"the teacher's gloss, max 48 chars","cue":"..."}. Any transliterated Hebrew or Greek word the teacher dwells on (elohim, hesed, hilasterion, shalom) deserves its card.
-- "compare": at most 1 — when the teacher sets two passages side by side: {"a":"Genesis 6:2","b":"Genesis 3:6","axis":"likeness" or "difference","note":"max 60 chars","cue":"..."}. The shared or contrasting wording is found automatically; your job is naming the two texts and which way the comparison cuts.
-- "chain": at most 1 — when the teacher traces one line through scripture: {"refs":["Isaiah 53:1","John 12:38","Romans 10:16"],"note":"max 60 chars","cue":"..."} — 2 to 4 single verses in the order the chain runs. The classic case: an Old Testament line quoted in the New — when the teacher makes that move, the chain is the right box, not two separate scenes.
-- "caveat": at most 1 — when the teacher says what the passage does NOT say: {"text":"max 90 chars","cue":"..."}.
-- "highlight": at most 1, USED SPARINGLY — one sentence worth keeping ABOUT THE TEXT OR ITS MEANING, copied VERBATIM from the transcript (12-140 chars): {"quote":"..."}. Never a sentence about method, markers, the episode, or the speakers themselves. Most clips have none.
-- "asides": at most 1 per scene — for a stretch where the teacher is talking but no verse language is in play (context, story, setup): one line naming the MOVEMENT they are making, never the play-by-play: {"text":"outlining the sign act and its explanation","cue":"..."} — max 70 chars, present tense, no hype. "Setting the letter's context" is an aside; "explains the daytime gathering" is narration and belongs to nobody.
-
-The stage displays the World English Bible; the teacher may read another translation. Direct with the words the TEACHING turns on even if the displayed translation phrases them differently ("none" against "no one", "sons of God" against "God's sons") — mismatches are mapped onto the displayed text afterward, meaning for meaning. A word may be a short phrase of up to 3 words.
-Spread your directions across the WHOLE clip — the stage draws each artifact at the moment its cue is spoken, and long empty stretches are dead air. Every cue is verbatim from the transcript. Fewer, truer artifacts beat coverage. A clip that discusses no specific verse gets {"scenes":[]}.
-Answer ONLY with JSON: {"scenes":[{"verse":"Genesis 6:2","cue":"...","groups":[{"words":["saw","took"],"label":"Eden echo","cue":"..."}],"footnotes":[],"allusions":[],"terms":[],"compare":null,"chain":null,"caveat":null,"highlight":null,"asides":[]}]}`);
-
-        scenes = [];
-        const submittedScenes = Array.isArray(raw?.scenes) ? raw.scenes : [];
-        if (submittedScenes.length > 4) {
-          semanticDrops.push({ reason: 'cap', pass: 'initial', kind: 'scene', count: submittedScenes.length - 4 });
-        }
-        for (const sc of submittedScenes.slice(0, 4)) {
-          const ref = String(sc?.verse || '').match(/^([1-3]?\s?[A-Za-z ]+?)\s+(\d{1,3}):(\d{1,3})(?:\s*[–-]\s*(\d{1,3}))?$/);
-          if (!ref) {
-            semanticDrops.push({ reason: 'unparsable-verse', pass: 'initial', kind: 'scene', count: 1 });
-            console.log(`[direct] dropped scene, unparsable verse: "${sc?.verse}"`);
-            continue;
-          }
-          const fromV = Number(ref[3]);
-          const toV = ref[4] ? Math.min(Number(ref[4]), fromV + 2) : fromV;
-          const passage = readPassage({ book: ref[1], chapter: Number(ref[2]), fromVerse: fromV, toVerse: toV });
-          if (passage.error || !passage.verses?.length) {
-            semanticDrops.push({ reason: 'passage-lookup-failed', pass: 'initial', kind: 'scene', count: 1 });
-            console.log(`[direct] dropped scene, passage lookup failed: "${sc?.verse}"`);
-            continue;
-          }
-          const verseNorm = ` ${norm(passage.verses.map((v) => v.text).join(' '))} `;
-          scenes.push({
-            ref: `${passage.bookName} ${passage.chapter}:${fromV}${toV > fromV ? '–' + toV : ''}`,
-            verses: passage.verses,
-            verseNorm,
-            cue: (typeof sc.cue === 'string' && sc.cue.trim().length >= 8) ? sc.cue.trim() : null,
-            ...validateArtifacts(sc, verseNorm, tapeNorm, 'initial'),
-          });
-        }
-        markLastCall(`semantic-scenes:${scenes.length}`);
-        normalizePass('initial');
-
-        /* ---- the sceneless clip: presence without a verse ----
-           A topical or story clip that walks through no passage still
-           deserves a stage that breathes: a handful of asides naming what
-           the teacher is doing, and at most one sentence worth keeping.
-           They ride in one verse-less scene the page knows how to dress. */
-        if (!scenes.length) {
-          try {
-            const bare = await callModel('sceneless', `A visual stage accompanies this podcast clip, but the clip walks through no specific Bible passage. Here is its transcript:
-
-${tape.slice(0, 8000)}
-
-Direct 2-4 ASIDES — one quiet line each naming what the teacher is doing at that point ("telling the story of...", "answering why...", max 70 chars, present tense) — each with a cue phrase of 3-8 words COPIED VERBATIM from the transcript at that moment. Optionally ONE highlight: a sentence worth keeping about the subject, verbatim (12-140 chars).
-Answer ONLY with JSON: {"asides":[{"text":"...","cue":"..."}],"highlight":null}`, 5000);
-            if (bare) {
-              const extra = validateArtifacts({ asides: bare.asides, highlight: bare.highlight }, '  ', tapeNorm, 'sceneless');
-              if (extra.asides.length) {
-                scenes.push({
-                  ref: null,
-                  verses: [],
-                  verseNorm: '  ',
-                  cue: null,
-                  groups: [], footnotes: [], allusions: [], terms: [],
-                  compare: null, chain: null, caveat: null,
-                  highlight: extra.highlight,
-                  asides: extra.asides,
-                });
-              }
-            }
-            markLastCall(`semantic-scenes:${scenes.length}`);
-            normalizePass('sceneless');
-          } catch (error) {
-            if (signal.aborted) throw error;
-            /* an empty stage stays empty honestly */
-          }
-        }
-
-        /* ---- the repair exchange: meaning for meaning ----
-           Words the displayed translation phrases differently were held,
-           not rejected. One small call maps each onto the displayed text's
-           own wording — and the mapping only stands if the mapped phrase
-           exists verbatim in the verse. The model does the semantics; the
-           house still does the checking. */
-        const repairs = [];
-        for (const sc of scenes) {
-          for (const g of sc.groups) for (const w of g.dropped) repairs.push({ sc, apply: (t) => g.words.push(t), spoken: w });
-          for (const f of sc.footnotes) if (f.missing) repairs.push({ sc, apply: (t) => { f.word = t; f.missing = false; }, spoken: f.word });
-        }
-        if (repairs.length) {
-          try {
-            const mapRaw = await callModel('repair', `A visual stage displays Bible verses in one translation while a teacher, possibly reading another translation, is heard. For each numbered pair below, name the word or short phrase (at most 3 words) FROM THE DISPLAYED TEXT that carries the same meaning as the teaching's word — or null if the displayed text truly has no counterpart.
-
-${repairs.map((r, i) => `${i}. displayed text: "${r.sc.verses.map((v) => v.text).join(' ').slice(0, 400)}"
-   the teaching's word: "${r.spoken}"`).join('\n')}
-
-Answer ONLY with JSON: {"map":["no one", null, ...]} — exactly ${repairs.length} entries, in order.`, 4000);
-            const mapped = Array.isArray(mapRaw?.map) ? mapRaw.map : [];
-            let repaired = 0;
-            repairs.forEach((r, i) => {
-              const t = mapped[i];
-              const tt = typeof t === 'string' ? t.trim() : '';
-              if (tt && tt.length <= 28 && tt.split(/\s+/).length <= 3
-                && !(!/\s/.test(tt) && STOPWORDS.has(norm(tt)))
-                && r.sc.verseNorm.includes(` ${norm(tt)} `)) {
-                r.apply(tt);
-                repaired += 1;
-              }
-            });
-            const missed = repairs.length - repaired;
-            if (missed) semanticDrops.push({ reason: 'repair-unresolved', pass: 'repair', kind: 'word', count: missed });
-            markLastCall(`semantic-repairs:${repaired}/${repairs.length}`);
-            normalizePass('repair');
-          } catch (error) {
-            if (signal.aborted) throw error;
-            /* unrepaired words simply stay absent */
-          }
-        }
-        for (const sc of scenes) {
-          sc.groups = sc.groups.filter((g) => { delete g.dropped; return g.words.length >= 2; });
-          sc.footnotes = sc.footnotes.filter((f) => { const keep = !f.missing; delete f.missing; return keep; });
-        }
-
-        /* ---- the timeline, resolved by the house ---- */
-        scenes.forEach((sc, i) => {
-          const located = locatePhrase(sc.cue);
-          sc.at = located ?? (i === 0 ? 0 : null);
-          sc.timingSource = located == null ? 'house' : 'cue';
-        });
-        scenes.forEach((sc, i) => {
-          if (sc.at != null) return;
-          sc.at = Math.round((dur * i) / Math.max(1, scenes.length));
-          sc.timingSource = 'house';
-        });
-        scenes.sort((a, b) => a.at - b.at);
-
-        const artifactsOf = (sc) => [
-          ...sc.groups, ...sc.footnotes, ...sc.terms, ...sc.allusions, ...(sc.asides || []),
-          ...[sc.compare, sc.chain, sc.caveat, sc.highlight].filter(Boolean),
-        ];
-        scenes.forEach((sc, i) => {
-          const winStart = sc.at;
-          const winEnd = i + 1 < scenes.length ? scenes[i + 1].at : dur;
-          const span = Math.max(10, winEnd - winStart);
-          const tapeOccurrences = new Map();
-          for (const g of sc.groups) {
-            const verseOccurrences = displayedOccurrences(sc, g.words);
-            g.occurrences = verseOccurrences;
-            g.wordTimes = g.words.map((word, wordIndex) => {
-              const wordKey = norm(word);
-              const tapeOccurrence = tapeOccurrences.get(wordKey) || 0;
-              tapeOccurrences.set(wordKey, tapeOccurrence + 1);
-              return {
-                word,
-                occurrence: verseOccurrences[wordIndex],
-                at: locateWordAfter(word, winStart, tapeOccurrence),
-                timingSource: 'word',
-              };
-            });
-            const lastWord = Math.max(...g.wordTimes.map((w) => w.at ?? -1));
-            const cueAt = locatePhrase(g.cue);
-            g.at = cueAt ?? (lastWord >= 0 ? lastWord : null);
-            g.timingSource = cueAt != null ? 'cue' : lastWord >= 0 ? 'word' : 'house';
-          }
-          for (const a of sc.footnotes) {
-            a.occurrence = displayedOccurrences(sc, [a.word])[0];
-          }
-          for (const a of [...sc.footnotes, ...sc.terms, ...sc.allusions, ...(sc.asides || [])]) {
-            a.at = locatePhrase(a.cue);
-            a.timingSource = a.at == null ? 'house' : 'cue';
-          }
-          for (const a of [sc.compare, sc.chain, sc.caveat].filter(Boolean)) {
-            a.at = locatePhrase(a.cue);
-            a.timingSource = a.at == null ? 'house' : 'cue';
-          }
-          if (sc.highlight) {
-            sc.highlight.at = locatePhrase(sc.highlight.quote);
-            sc.highlight.timingSource = sc.highlight.at == null ? 'house' : 'cue';
-          }
-          /* The attention budget, by channel. Cue-located beats keep their
-             moment — the teacher's own speech paced them, and sync is
-             sacred. The highlight is substitutive (it dims the room and
-             becomes the field), so it is governed by scarcity, never
-             density. Only beats whose timing the house INVENTED are
-             budgeted: each seeks the center of the largest empty stretch,
-             at least 15s from anything located. */
-          const anchored = artifactsOf(sc)
-            .filter((a) => a.at != null && a.at >= winStart - 2 && a.at <= winEnd + 5)
-            .map((a) => a.at);
-          const missing = artifactsOf(sc).filter((a) => a.at == null || a.at < winStart - 2 || a.at > winEnd + 5);
-          for (const a of missing) {
-            const marks = [winStart, ...anchored.sort((x, y) => x - y), winEnd];
-            let best = { len: -1, at: winStart + span / 2 };
-            for (let m = 1; m < marks.length; m++) {
-              const len = marks[m] - marks[m - 1];
-              if (len > best.len) best = { len, at: (marks[m] + marks[m - 1]) / 2 };
-            }
-            a.at = Math.round(best.at);
-            a.timingSource = 'house';
-            anchored.push(a.at);
-          }
-        });
-        normalizePass('house-timeline', { apply: true });
-
-        /* ---- the second pass: buy beats for the starved stretch ---- */
-        /* A fourteen-minute commentary clip cannot be rescued by one
-           helping: the fill re-measures and goes again, twice at most. */
-        const fillRounds = dur > 480 ? 2 : 1;
-        for (let round = 0; round < fillRounds; round++) {
-        const beatTimes = [0, ...scenes.map((s) => s.at), ...scenes.flatMap(artifactsOf).map((e) => e.at)].sort((a, b) => a - b);
-        let gap = { len: 0, start: 0 };
-        for (let i = 1; i < beatTimes.length; i++) {
-          if (beatTimes[i] - beatTimes[i - 1] > gap.len) gap = { len: beatTimes[i] - beatTimes[i - 1], start: beatTimes[i - 1] };
-        }
-        const tail = dur - (beatTimes.at(-1) ?? 0);
-        if (tail > gap.len) gap = { len: tail, start: beatTimes.at(-1) ?? 0 };
-        if (!(scenes.length && gap.len > 45)) break;
-        if (scenes.length && gap.len > 45) {
-          const host = [...scenes].reverse().find((s) => s.at <= gap.start + 1) || scenes[0];
-          const stretchSegs = segs.filter((s) => s.e - from >= gap.start + 2 && s.s - from <= gap.start + gap.len);
-          const stretch = stretchSegs.map((s) => s.t).join(' ').slice(0, 6000);
-          if (stretch.length > 300) {
-            const beforeFillCount = artifactsOf(host).length;
-            const extraRaw = await callModel(`fill-${round + 1}`, `A visual stage is showing ${host.ref} while a podcast clip plays, and nothing new appears for ${Math.round(gap.len)} seconds. Here is the transcript of exactly that quiet stretch:
-
-${stretch}
-
-Direct 1-3 additional artifacts drawn FROM THIS STRETCH ONLY, for that same verse (its text: ${host.verses.map((v) => v.text).join(' ').slice(0, 600)}). Same rules as before — group words must appear in the verse text, every cue is a phrase copied verbatim from THIS stretch, fewer and truer beats coverage.
-An "aside" is often the right direction for a stretch like this — one line naming the MOVEMENT the teacher is making, never the play-by-play: {"asides":[{"text":"setting the letter's context","cue":"..."}]} (max 70 chars, present tense). At most one aside; "explains the daytime gathering" is narration, not an aside.\nAnswer ONLY with JSON: {"groups":[...],"footnotes":[],"terms":[],"allusions":[],"asides":[],"caveat":null,"highlight":null}`, 6000);
-            if (extraRaw) {
-              const stretchNorm = ` ${norm(stretch)} `;
-              const extra = validateArtifacts(extraRaw, host.verseNorm, stretchNorm, `fill-${round + 1}`);
-              const clampIn = (a) => {
-                const cueAt = locatePhrase(a.cue || a.quote);
-                const wordAt = Math.max(...(a.wordTimes || []).map((wordTime) => wordTime.at ?? -1));
-                if (cueAt != null && cueAt >= gap.start && cueAt <= gap.start + gap.len + 5) {
-                  a.at = cueAt;
-                  a.timingSource = 'cue';
-                } else if (wordAt >= gap.start && wordAt <= gap.start + gap.len + 5) {
-                  a.at = wordAt;
-                  a.timingSource = 'word';
-                } else {
-                  a.at = Math.round(gap.start + gap.len / 2);
-                  a.timingSource = 'house';
-                }
-                return a;
-              };
-              const fillTapeOccurrences = new Map();
-              for (const g of extra.groups.slice(0, 2)) {
-                const unresolvedWords = Array.isArray(g.dropped) ? g.dropped.length : 0;
-                delete g.dropped;
-                if (g.words.length < 2) {
-                  semanticDrops.push({ reason: 'fill-group-unresolved', pass: `fill-${round + 1}`, kind: 'group', count: 1 });
-                  continue;
-                }
-                if (unresolvedWords) {
-                  semanticDrops.push({ reason: 'fill-word-unresolved', pass: `fill-${round + 1}`, kind: 'word', count: unresolvedWords });
-                }
-                const verseOccurrences = displayedOccurrences(host, g.words);
-                g.occurrences = verseOccurrences;
-                g.wordTimes = g.words.map((word, wordIndex) => {
-                  const wordKey = norm(word);
-                  const tapeOccurrence = fillTapeOccurrences.get(wordKey) || 0;
-                  fillTapeOccurrences.set(wordKey, tapeOccurrence + 1);
-                  return {
-                    word,
-                    occurrence: verseOccurrences[wordIndex],
-                    at: locateWordAfter(word, gap.start, tapeOccurrence),
-                    timingSource: 'word',
-                  };
-                });
-                host.groups.push(clampIn(g));
-              }
-              for (const f of extra.footnotes.slice(0, 1)) {
-                if (f.missing) {
-                  semanticDrops.push({ reason: 'fill-footnote-unresolved', pass: `fill-${round + 1}`, kind: 'footnote', count: 1 });
-                  continue;
-                }
-                delete f.missing;
-                f.occurrence = displayedOccurrences(host, [f.word])[0];
-                host.footnotes.push(clampIn(f));
-              }
-              for (const t of extra.terms.slice(0, 1)) host.terms.push(clampIn(t));
-              for (const a of extra.allusions.slice(0, 1)) host.allusions.push(clampIn(a));
-              host.asides = host.asides || [];
-              for (const a of (extra.asides || []).slice(0, 1)) host.asides.push(clampIn(a));
-              if (extra.caveat && !host.caveat) host.caveat = clampIn(extra.caveat);
-              if (extra.highlight && !host.highlight) host.highlight = clampIn(extra.highlight);
-            }
-            const added = Math.max(0, artifactsOf(host).length - beforeFillCount);
-            markLastCall(`semantic-artifacts:${added}`);
-            normalizePass(`fill-${round + 1}`, { apply: true });
-          }
-        }
-
-        }
-          return finish(scenes);
-        } catch (error) {
-          if (signal.aborted) {
-            if (calls.length) {
-              const evidence = finish(scenes, 'director job aborted after its last consumer left', { allowAborted: true });
-              error.evidenceFile = evidence.evidenceFile;
-            }
-            throw error;
-          }
-          if (error?.code === 'MAGIC_RUNTIME_REFUSED') {
-            const evidenceFile = writeDirectorEvidence({
-              status: 'refused',
-              startedAt,
-              requestKey,
-              request: directRequest,
-              runtime,
-              calls,
-              error: { code: error.code, message: error.message },
-            });
-            error.evidenceFile = path.basename(evidenceFile);
-            throw error;
-          }
-          return finish(scenes, error?.message || String(error));
-        }
-      });
-
-      try {
-        const payload = await acquired.promise;
-        acquired.release();
-        return sendJson(res, 200, payload);
-      } catch (error) {
-        acquired.release();
-        if (res.destroyed || res.writableEnded) return;
-        return sendJson(res, 503, {
-          error: error?.message || String(error),
-          code: error?.code || 'DIRECTOR_FAILED',
-          ...(error?.evidenceFile ? { evidenceFile: error.evidenceFile } : {}),
-        });
-      }
+      return handleDirectV2(req, res, body);
     }
-
     if (p.startsWith('/api/')) return sendJson(res, 404, { error: 'no such endpoint' });
     return serveStatic(req, res, p);
   } catch (err) {

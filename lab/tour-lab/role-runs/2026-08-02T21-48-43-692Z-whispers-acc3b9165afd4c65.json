@@ -1,0 +1,69 @@
+{
+  "role": "whispers",
+  "startedAt": "2026-08-02T21:48:43.692Z",
+  "request": {
+    "stepCount": 4,
+    "stepsHash": "82315d66392d183c"
+  },
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "endpointHost": "openrouter.ai",
+    "endpointStyle": "aggregator",
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "applied": true
+    },
+    "provider": "OpenAI"
+  },
+  "metrics": {
+    "wallMs": 3472,
+    "passes": 1,
+    "calls": [
+      {
+        "role": "whispers",
+        "latencyMs": 3472,
+        "promptTokens": 557,
+        "completionTokens": 452,
+        "reasoningTokens": 374,
+        "cachedPromptTokens": 0,
+        "providerCostUsd": 0.0003269,
+        "finishReason": "stop",
+        "rawModel": "openai/gpt-5.6-luna",
+        "provider": "OpenAI",
+        "model": {
+          "key": "gpt-5.6-luna-medium",
+          "requestedSlug": "openai/gpt-5.6-luna",
+          "resolvedSlug": "openai/gpt-5.6-luna",
+          "endpointHost": "openrouter.ai",
+          "endpointStyle": "aggregator",
+          "reasoning": {
+            "effort": "medium",
+            "source": "per-model default for gpt-5.6-luna-medium",
+            "applied": true
+          },
+          "provider": "OpenAI"
+        },
+        "validation": "accepted"
+      }
+    ],
+    "totalUsd": 0.0003269,
+    "tokens": {
+      "prompt": 557,
+      "completion": 452,
+      "reasoning": 374,
+      "cachedPrompt": 0
+    }
+  },
+  "result": {
+    "whispers": [
+      "Notice how Naomi’s losses are named before Ruth says, “Wherever you go.”",
+      "Listen for Ruth gleaning in Bethlehem’s fields, turning Naomi’s emptiness into provision.",
+      "Wait for redemption to point beyond romance toward God’s freedom and restoration.",
+      "Notice the nearer redeemer wants the land but rejects the Moabite widow."
+    ]
+  },
+  "schemaVersion": 1
+}

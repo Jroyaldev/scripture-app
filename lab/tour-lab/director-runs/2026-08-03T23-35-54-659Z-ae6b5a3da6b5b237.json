@@ -1,0 +1,1445 @@
+{
+  "startedAt": "2026-08-03T23:35:54.659Z",
+  "requestKey": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4|100|400|1b6fbfe35a199010|0c12a5ad6f3ca3b9",
+  "request": {
+    "schemaVersion": 2,
+    "policyVersion": "magic-director-3",
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4",
+    "fromSec": 100,
+    "toSec": 400,
+    "why": "Now hear the chapter’s thesis in verses 16–17. The teacher says Paul is “not ashamed of the gospel” because it is “the power of God for salvation,” available to Jew and Gentile alike. He also explains the gospel as news about what God has done in Jesus and introduces the debated phrase “the righteousness of God,” preparing you for the argument that follows.",
+    "transcriptHash": "1b6fbfe35a199010",
+    "requestFingerprint": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4|100|400|0c12a5ad6f3ca3b9",
+    "budget": {
+      "policyVersion": "magic-director-3",
+      "durationSec": 300,
+      "sustainedTeachingSec": 290.3,
+      "targetThoughtEntrances": 10,
+      "hardBeatCeiling": 25,
+      "highlightCeiling": 2,
+      "modelSceneCeiling": 10,
+      "houseSceneReserve": 1,
+      "finalSceneCeiling": 11,
+      "fillGapSec": 36
+    }
+  },
+  "result": {
+    "schemaVersion": 2,
+    "policyVersion": "magic-director-3",
+    "requestKey": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4|100|400|1b6fbfe35a199010|0c12a5ad6f3ca3b9",
+    "requestFingerprint": "2|magic-director-3|gpt-5.6-luna-medium|listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4|100|400|0c12a5ad6f3ca3b9",
+    "clip": {
+      "fromSec": 100,
+      "toSec": 400,
+      "durationSec": 300,
+      "transcriptHash": "1b6fbfe35a199010",
+      "sustainedTeachingSec": 290.3
+    },
+    "budget": {
+      "policyVersion": "magic-director-3",
+      "durationSec": 300,
+      "sustainedTeachingSec": 290.3,
+      "targetThoughtEntrances": 10,
+      "hardBeatCeiling": 25,
+      "highlightCeiling": 2,
+      "modelSceneCeiling": 10,
+      "houseSceneReserve": 1,
+      "finalSceneCeiling": 11,
+      "fillGapSec": 36
+    },
+    "scenes": [
+      {
+        "id": "scene:initial:0",
+        "origin": "model",
+        "ref": null,
+        "verses": [],
+        "cue": "preceding introduction to Paul's ministry",
+        "at": 5,
+        "timingSource": "cue"
+      },
+      {
+        "id": "scene:initial:2",
+        "origin": "model",
+        "ref": "Romans 1:16–17",
+        "verses": [
+          {
+            "verse": 16,
+            "text": "For I am not ashamed of the Good News of Christ, because it is the power of God for salvation for everyone who believes, for the Jew first, and also for the Greek."
+          },
+          {
+            "verse": 17,
+            "text": "For in it is revealed God’s righteousness from faith to faith. As it is written, “But the righteous shall live by faith.”"
+          }
+        ],
+        "cue": "I'm not ashamed of that gospel",
+        "at": 19,
+        "timingSource": "cue"
+      },
+      {
+        "id": "scene:initial:1",
+        "origin": "model",
+        "ref": null,
+        "verses": [],
+        "cue": "ancient world was an honor and shame culture",
+        "at": 40,
+        "timingSource": "cue"
+      },
+      {
+        "id": "scene:initial:3",
+        "origin": "model",
+        "ref": "Romans 1:16",
+        "verses": [
+          {
+            "verse": 16,
+            "text": "For I am not ashamed of the Good News of Christ, because it is the power of God for salvation for everyone who believes, for the Jew first, and also for the Greek."
+          }
+        ],
+        "cue": "power of God for salvation",
+        "at": 124,
+        "timingSource": "cue"
+      },
+      {
+        "id": "scene:initial:4",
+        "origin": "model",
+        "ref": null,
+        "verses": [],
+        "cue": "gospel is news",
+        "at": 162,
+        "timingSource": "cue"
+      },
+      {
+        "id": "scene:initial:5",
+        "origin": "model",
+        "ref": "Romans 1:16",
+        "verses": [
+          {
+            "verse": 16,
+            "text": "For I am not ashamed of the Good News of Christ, because it is the power of God for salvation for everyone who believes, for the Jew first, and also for the Greek."
+          }
+        ],
+        "cue": "Jew first and to the Greek",
+        "at": 190,
+        "timingSource": "cue"
+      },
+      {
+        "id": "scene:initial:6",
+        "origin": "model",
+        "ref": "Romans 1:16–17",
+        "verses": [
+          {
+            "verse": 16,
+            "text": "For I am not ashamed of the Good News of Christ, because it is the power of God for salvation for everyone who believes, for the Jew first, and also for the Greek."
+          },
+          {
+            "verse": 17,
+            "text": "For in it is revealed God’s righteousness from faith to faith. As it is written, “But the righteous shall live by faith.”"
+          }
+        ],
+        "cue": "faith in Jesus the Messiah",
+        "at": 224,
+        "timingSource": "cue"
+      },
+      {
+        "id": "scene:initial:7",
+        "origin": "model",
+        "ref": "Romans 1:17",
+        "verses": [
+          {
+            "verse": 17,
+            "text": "For in it is revealed God’s righteousness from faith to faith. As it is written, “But the righteous shall live by faith.”"
+          }
+        ],
+        "cue": "righteousness of God is revealed",
+        "at": 250,
+        "timingSource": "cue"
+      },
+      {
+        "id": "scene:initial:8",
+        "origin": "model",
+        "ref": "Romans 1:17",
+        "verses": [
+          {
+            "verse": 17,
+            "text": "For in it is revealed God’s righteousness from faith to faith. As it is written, “But the righteous shall live by faith.”"
+          }
+        ],
+        "cue": "What is the righteousness of God",
+        "at": 264,
+        "timingSource": "cue"
+      }
+    ],
+    "beats": [
+      {
+        "id": "beat:initial:0",
+        "proposalId": "initial:0",
+        "sceneId": "scene:initial:1",
+        "kind": "aside",
+        "cue": "ancient world was an honor and shame culture",
+        "at": 40,
+        "timingSource": "cue",
+        "data": {
+          "text": "The ancient world treated shame as the opposite of honor, involving…"
+        }
+      },
+      {
+        "id": "beat:fill:gap:1:0",
+        "proposalId": "fill:gap:1:0",
+        "sceneId": "scene:initial:1",
+        "kind": "caveat",
+        "cue": "it's more than just being embarrassed",
+        "at": 82,
+        "timingSource": "cue",
+        "data": {
+          "text": "Shame and honor are not merely embarrassment; they are deep states of disgrace and dishono"
+        }
+      },
+      {
+        "id": "beat:initial:1",
+        "proposalId": "initial:1",
+        "sceneId": "scene:initial:1",
+        "kind": "aside",
+        "cue": "Caesar is in charge and appears to be winning",
+        "at": 106,
+        "timingSource": "cue",
+        "data": {
+          "text": "Caesar's apparent supremacy, kingship, and lordship do not bring…"
+        }
+      },
+      {
+        "id": "beat:fill:gap:2:1",
+        "proposalId": "fill:gap:2:1",
+        "sceneId": "scene:initial:3",
+        "kind": "highlight",
+        "cue": "somehow telling this story unleashes God's power and incites faith and draws people to God Himself so that they can be saved.",
+        "at": 157,
+        "timingSource": "cue",
+        "data": {
+          "quote": "somehow telling this story unleashes God's power and incites faith and draws people to God Himself so that they can be saved."
+        }
+      },
+      {
+        "id": "beat:initial:2",
+        "proposalId": "initial:2",
+        "sceneId": "scene:initial:4",
+        "kind": "term",
+        "cue": "gospel is news",
+        "at": 162,
+        "timingSource": "cue",
+        "data": {
+          "term": "gospel",
+          "gloss": "news about what God has done in Jesus"
+        }
+      },
+      {
+        "id": "beat:initial:3",
+        "proposalId": "initial:3",
+        "sceneId": "scene:initial:5",
+        "kind": "group",
+        "cue": "Jew first and to the Greek",
+        "at": 190,
+        "timingSource": "cue",
+        "data": {
+          "words": [
+            "Jew",
+            "Greek"
+          ],
+          "occurrences": [
+            0,
+            0
+          ],
+          "wordTimes": [],
+          "label": "the two main categ"
+        }
+      },
+      {
+        "id": "beat:initial:4",
+        "proposalId": "initial:4",
+        "sceneId": "scene:initial:6",
+        "kind": "term",
+        "cue": "faith in Jesus the Messiah",
+        "at": 224,
+        "timingSource": "cue",
+        "data": {
+          "term": "faith",
+          "gloss": "faith in Jesus the Messiah"
+        }
+      },
+      {
+        "id": "beat:initial:5",
+        "proposalId": "initial:5",
+        "sceneId": "scene:initial:7",
+        "kind": "term",
+        "cue": "righteousness of God is revealed",
+        "at": 250,
+        "timingSource": "cue",
+        "data": {
+          "term": "righteousness of God",
+          "gloss": "what the gospel reveals"
+        }
+      },
+      {
+        "id": "beat:initial:6",
+        "proposalId": "initial:6",
+        "sceneId": "scene:initial:8",
+        "kind": "caveat",
+        "cue": "could refer to either",
+        "at": 276,
+        "timingSource": "cue",
+        "data": {
+          "text": "The phrase can grammatically refer either to the righteousness God gives or to the righteo"
+        }
+      },
+      {
+        "id": "beat:initial:7",
+        "proposalId": "initial:7",
+        "sceneId": "scene:initial:8",
+        "kind": "aside",
+        "cue": "particularly in chapter 4",
+        "at": 293,
+        "timingSource": "cue",
+        "data": {
+          "text": "Paul later describes Abraham as declared righteous because of faith."
+        }
+      }
+    ],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 34400,
+      "passes": 2,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 22529,
+          "promptTokens": 2232,
+          "completionTokens": 2737,
+          "reasoningTokens": 2070,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.001921125,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-scenes:9;semantic-beats:8"
+        },
+        {
+          "role": "fill",
+          "latencyMs": 11846,
+          "promptTokens": 1812,
+          "completionTokens": 1418,
+          "reasoningTokens": 1310,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.001077225,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-intervals:3;semantic-beats:2"
+        }
+      ],
+      "totalUsd": 0.0029983500000000003,
+      "tokens": {
+        "prompt": 4044,
+        "completion": 4155,
+        "reasoning": 3380,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 2,
+        "policyVersion": "magic-director-3",
+        "dropped": [
+          {
+            "id": "scene:initial:9",
+            "kind": "scene",
+            "reason": "scene-cue-not-located",
+            "modelId": "s10"
+          }
+        ],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "reassigned": 0,
+        "preludes": 0,
+        "sceneCount": 9,
+        "beatCount": 10,
+        "artifactCount": 10,
+        "artifactCounts": {
+          "group": 1,
+          "footnote": 0,
+          "term": 3,
+          "allusion": 0,
+          "compare": 0,
+          "chain": 0,
+          "caveat": 2,
+          "aside": 3,
+          "highlight": 1
+        },
+        "sceneCadence": {
+          "entranceCount": 9,
+          "uniqueEntranceCount": 9,
+          "uniqueBeatCount": 9,
+          "firstEntranceSec": 5,
+          "lastEntranceSec": 264,
+          "firstBeatSec": 5,
+          "lastBeatSec": 264,
+          "maxGapSec": 84,
+          "largestGap": {
+            "start": 40,
+            "end": 124,
+            "len": 84
+          },
+          "gaps": [
+            {
+              "start": 40,
+              "end": 124,
+              "len": 84
+            },
+            {
+              "start": 124,
+              "end": 162,
+              "len": 38
+            },
+            {
+              "start": 264,
+              "end": 300,
+              "len": 36
+            },
+            {
+              "start": 190,
+              "end": 224,
+              "len": 34
+            },
+            {
+              "start": 162,
+              "end": 190,
+              "len": 28
+            },
+            {
+              "start": 224,
+              "end": 250,
+              "len": 26
+            },
+            {
+              "start": 19,
+              "end": 40,
+              "len": 21
+            },
+            {
+              "start": 5,
+              "end": 19,
+              "len": 14
+            },
+            {
+              "start": 250,
+              "end": 264,
+              "len": 14
+            },
+            {
+              "start": 0,
+              "end": 5,
+              "len": 5
+            }
+          ]
+        },
+        "thoughtCadence": {
+          "entranceCount": 9,
+          "uniqueEntranceCount": 9,
+          "uniqueBeatCount": 9,
+          "firstEntranceSec": 40,
+          "lastEntranceSec": 293,
+          "firstBeatSec": 40,
+          "lastBeatSec": 293,
+          "maxGapSec": 56,
+          "largestGap": {
+            "start": 106,
+            "end": 162,
+            "len": 56
+          },
+          "gaps": [
+            {
+              "start": 106,
+              "end": 162,
+              "len": 56
+            },
+            {
+              "start": 40,
+              "end": 82,
+              "len": 42
+            },
+            {
+              "start": 0,
+              "end": 40,
+              "len": 40
+            },
+            {
+              "start": 190,
+              "end": 224,
+              "len": 34
+            },
+            {
+              "start": 162,
+              "end": 190,
+              "len": 28
+            },
+            {
+              "start": 224,
+              "end": 250,
+              "len": 26
+            },
+            {
+              "start": 250,
+              "end": 276,
+              "len": 26
+            },
+            {
+              "start": 82,
+              "end": 106,
+              "len": 24
+            },
+            {
+              "start": 276,
+              "end": 293,
+              "len": 17
+            },
+            {
+              "start": 293,
+              "end": 300,
+              "len": 7
+            }
+          ],
+          "artifactCounts": {
+            "group": 1,
+            "footnote": 0,
+            "term": 3,
+            "allusion": 0,
+            "compare": 0,
+            "chain": 0,
+            "caveat": 2,
+            "aside": 3,
+            "highlight": 1
+          }
+        },
+        "visualCadence": {
+          "entranceCount": 10,
+          "uniqueEntranceCount": 10,
+          "uniqueBeatCount": 10,
+          "firstEntranceSec": 40,
+          "lastEntranceSec": 293,
+          "firstBeatSec": 40,
+          "lastBeatSec": 293,
+          "maxGapSec": 51,
+          "largestGap": {
+            "start": 106,
+            "end": 157,
+            "len": 51
+          },
+          "gaps": [
+            {
+              "start": 106,
+              "end": 157,
+              "len": 51
+            },
+            {
+              "start": 40,
+              "end": 82,
+              "len": 42
+            },
+            {
+              "start": 0,
+              "end": 40,
+              "len": 40
+            },
+            {
+              "start": 190,
+              "end": 224,
+              "len": 34
+            },
+            {
+              "start": 162,
+              "end": 190,
+              "len": 28
+            },
+            {
+              "start": 224,
+              "end": 250,
+              "len": 26
+            },
+            {
+              "start": 250,
+              "end": 276,
+              "len": 26
+            },
+            {
+              "start": 82,
+              "end": 106,
+              "len": 24
+            },
+            {
+              "start": 276,
+              "end": 293,
+              "len": 17
+            },
+            {
+              "start": 293,
+              "end": 300,
+              "len": 7
+            },
+            {
+              "start": 157,
+              "end": 162,
+              "len": 5
+            }
+          ],
+          "artifactCounts": {
+            "group": 1,
+            "footnote": 0,
+            "term": 3,
+            "allusion": 0,
+            "compare": 0,
+            "chain": 0,
+            "caveat": 2,
+            "aside": 3,
+            "highlight": 1
+          }
+        },
+        "projection": {
+          "focusMasked": [],
+          "superseded": [],
+          "projectedVisible": [
+            {
+              "beatId": "beat:initial:0",
+              "kind": "aside"
+            },
+            {
+              "beatId": "beat:fill:gap:1:0",
+              "kind": "caveat"
+            },
+            {
+              "beatId": "beat:initial:1",
+              "kind": "aside"
+            },
+            {
+              "beatId": "beat:fill:gap:2:1",
+              "kind": "highlight"
+            },
+            {
+              "beatId": "beat:initial:2",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:initial:3",
+              "kind": "group"
+            },
+            {
+              "beatId": "beat:initial:4",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:initial:5",
+              "kind": "term"
+            },
+            {
+              "beatId": "beat:initial:6",
+              "kind": "caveat"
+            },
+            {
+              "beatId": "beat:initial:7",
+              "kind": "aside"
+            }
+          ]
+        },
+        "passes": [
+          {
+            "role": "initial",
+            "schemaVersion": 2,
+            "policyVersion": "magic-director-3",
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 9,
+            "beatCount": 8,
+            "artifactCount": 8,
+            "artifactCounts": {
+              "group": 1,
+              "footnote": 0,
+              "term": 3,
+              "allusion": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 1,
+              "aside": 3,
+              "highlight": 0
+            },
+            "sceneCadence": {
+              "entranceCount": 9,
+              "uniqueEntranceCount": 9,
+              "uniqueBeatCount": 9,
+              "firstEntranceSec": 5,
+              "lastEntranceSec": 264,
+              "firstBeatSec": 5,
+              "lastBeatSec": 264,
+              "maxGapSec": 84,
+              "largestGap": {
+                "start": 40,
+                "end": 124,
+                "len": 84
+              },
+              "gaps": [
+                {
+                  "start": 40,
+                  "end": 124,
+                  "len": 84
+                },
+                {
+                  "start": 124,
+                  "end": 162,
+                  "len": 38
+                },
+                {
+                  "start": 264,
+                  "end": 300,
+                  "len": 36
+                },
+                {
+                  "start": 190,
+                  "end": 224,
+                  "len": 34
+                },
+                {
+                  "start": 162,
+                  "end": 190,
+                  "len": 28
+                },
+                {
+                  "start": 224,
+                  "end": 250,
+                  "len": 26
+                },
+                {
+                  "start": 19,
+                  "end": 40,
+                  "len": 21
+                },
+                {
+                  "start": 5,
+                  "end": 19,
+                  "len": 14
+                },
+                {
+                  "start": 250,
+                  "end": 264,
+                  "len": 14
+                },
+                {
+                  "start": 0,
+                  "end": 5,
+                  "len": 5
+                }
+              ]
+            },
+            "thoughtCadence": {
+              "entranceCount": 8,
+              "uniqueEntranceCount": 8,
+              "uniqueBeatCount": 8,
+              "firstEntranceSec": 40,
+              "lastEntranceSec": 293,
+              "firstBeatSec": 40,
+              "lastBeatSec": 293,
+              "maxGapSec": 66,
+              "largestGap": {
+                "start": 40,
+                "end": 106,
+                "len": 66
+              },
+              "gaps": [
+                {
+                  "start": 40,
+                  "end": 106,
+                  "len": 66
+                },
+                {
+                  "start": 106,
+                  "end": 162,
+                  "len": 56
+                },
+                {
+                  "start": 0,
+                  "end": 40,
+                  "len": 40
+                },
+                {
+                  "start": 190,
+                  "end": 224,
+                  "len": 34
+                },
+                {
+                  "start": 162,
+                  "end": 190,
+                  "len": 28
+                },
+                {
+                  "start": 224,
+                  "end": 250,
+                  "len": 26
+                },
+                {
+                  "start": 250,
+                  "end": 276,
+                  "len": 26
+                },
+                {
+                  "start": 276,
+                  "end": 293,
+                  "len": 17
+                },
+                {
+                  "start": 293,
+                  "end": 300,
+                  "len": 7
+                }
+              ],
+              "artifactCounts": {
+                "group": 1,
+                "footnote": 0,
+                "term": 3,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 1,
+                "aside": 3,
+                "highlight": 0
+              }
+            },
+            "visualCadence": {
+              "entranceCount": 8,
+              "uniqueEntranceCount": 8,
+              "uniqueBeatCount": 8,
+              "firstEntranceSec": 40,
+              "lastEntranceSec": 293,
+              "firstBeatSec": 40,
+              "lastBeatSec": 293,
+              "maxGapSec": 66,
+              "largestGap": {
+                "start": 40,
+                "end": 106,
+                "len": 66
+              },
+              "gaps": [
+                {
+                  "start": 40,
+                  "end": 106,
+                  "len": 66
+                },
+                {
+                  "start": 106,
+                  "end": 162,
+                  "len": 56
+                },
+                {
+                  "start": 0,
+                  "end": 40,
+                  "len": 40
+                },
+                {
+                  "start": 190,
+                  "end": 224,
+                  "len": 34
+                },
+                {
+                  "start": 162,
+                  "end": 190,
+                  "len": 28
+                },
+                {
+                  "start": 224,
+                  "end": 250,
+                  "len": 26
+                },
+                {
+                  "start": 250,
+                  "end": 276,
+                  "len": 26
+                },
+                {
+                  "start": 276,
+                  "end": 293,
+                  "len": 17
+                },
+                {
+                  "start": 293,
+                  "end": 300,
+                  "len": 7
+                }
+              ],
+              "artifactCounts": {
+                "group": 1,
+                "footnote": 0,
+                "term": 3,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 1,
+                "aside": 3,
+                "highlight": 0
+              }
+            },
+            "projection": {
+              "focusMasked": [],
+              "superseded": [],
+              "projectedVisible": [
+                {
+                  "beatId": "beat:initial:0",
+                  "kind": "aside"
+                },
+                {
+                  "beatId": "beat:initial:1",
+                  "kind": "aside"
+                },
+                {
+                  "beatId": "beat:initial:2",
+                  "kind": "term"
+                },
+                {
+                  "beatId": "beat:initial:3",
+                  "kind": "group"
+                },
+                {
+                  "beatId": "beat:initial:4",
+                  "kind": "term"
+                },
+                {
+                  "beatId": "beat:initial:5",
+                  "kind": "term"
+                },
+                {
+                  "beatId": "beat:initial:6",
+                  "kind": "caveat"
+                },
+                {
+                  "beatId": "beat:initial:7",
+                  "kind": "aside"
+                }
+              ]
+            }
+          },
+          {
+            "role": "fill",
+            "schemaVersion": 2,
+            "policyVersion": "magic-director-3",
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 9,
+            "beatCount": 10,
+            "artifactCount": 10,
+            "artifactCounts": {
+              "group": 1,
+              "footnote": 0,
+              "term": 3,
+              "allusion": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 2,
+              "aside": 3,
+              "highlight": 1
+            },
+            "sceneCadence": {
+              "entranceCount": 9,
+              "uniqueEntranceCount": 9,
+              "uniqueBeatCount": 9,
+              "firstEntranceSec": 5,
+              "lastEntranceSec": 264,
+              "firstBeatSec": 5,
+              "lastBeatSec": 264,
+              "maxGapSec": 84,
+              "largestGap": {
+                "start": 40,
+                "end": 124,
+                "len": 84
+              },
+              "gaps": [
+                {
+                  "start": 40,
+                  "end": 124,
+                  "len": 84
+                },
+                {
+                  "start": 124,
+                  "end": 162,
+                  "len": 38
+                },
+                {
+                  "start": 264,
+                  "end": 300,
+                  "len": 36
+                },
+                {
+                  "start": 190,
+                  "end": 224,
+                  "len": 34
+                },
+                {
+                  "start": 162,
+                  "end": 190,
+                  "len": 28
+                },
+                {
+                  "start": 224,
+                  "end": 250,
+                  "len": 26
+                },
+                {
+                  "start": 19,
+                  "end": 40,
+                  "len": 21
+                },
+                {
+                  "start": 5,
+                  "end": 19,
+                  "len": 14
+                },
+                {
+                  "start": 250,
+                  "end": 264,
+                  "len": 14
+                },
+                {
+                  "start": 0,
+                  "end": 5,
+                  "len": 5
+                }
+              ]
+            },
+            "thoughtCadence": {
+              "entranceCount": 9,
+              "uniqueEntranceCount": 9,
+              "uniqueBeatCount": 9,
+              "firstEntranceSec": 40,
+              "lastEntranceSec": 293,
+              "firstBeatSec": 40,
+              "lastBeatSec": 293,
+              "maxGapSec": 56,
+              "largestGap": {
+                "start": 106,
+                "end": 162,
+                "len": 56
+              },
+              "gaps": [
+                {
+                  "start": 106,
+                  "end": 162,
+                  "len": 56
+                },
+                {
+                  "start": 40,
+                  "end": 82,
+                  "len": 42
+                },
+                {
+                  "start": 0,
+                  "end": 40,
+                  "len": 40
+                },
+                {
+                  "start": 190,
+                  "end": 224,
+                  "len": 34
+                },
+                {
+                  "start": 162,
+                  "end": 190,
+                  "len": 28
+                },
+                {
+                  "start": 224,
+                  "end": 250,
+                  "len": 26
+                },
+                {
+                  "start": 250,
+                  "end": 276,
+                  "len": 26
+                },
+                {
+                  "start": 82,
+                  "end": 106,
+                  "len": 24
+                },
+                {
+                  "start": 276,
+                  "end": 293,
+                  "len": 17
+                },
+                {
+                  "start": 293,
+                  "end": 300,
+                  "len": 7
+                }
+              ],
+              "artifactCounts": {
+                "group": 1,
+                "footnote": 0,
+                "term": 3,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 2,
+                "aside": 3,
+                "highlight": 1
+              }
+            },
+            "visualCadence": {
+              "entranceCount": 10,
+              "uniqueEntranceCount": 10,
+              "uniqueBeatCount": 10,
+              "firstEntranceSec": 40,
+              "lastEntranceSec": 293,
+              "firstBeatSec": 40,
+              "lastBeatSec": 293,
+              "maxGapSec": 51,
+              "largestGap": {
+                "start": 106,
+                "end": 157,
+                "len": 51
+              },
+              "gaps": [
+                {
+                  "start": 106,
+                  "end": 157,
+                  "len": 51
+                },
+                {
+                  "start": 40,
+                  "end": 82,
+                  "len": 42
+                },
+                {
+                  "start": 0,
+                  "end": 40,
+                  "len": 40
+                },
+                {
+                  "start": 190,
+                  "end": 224,
+                  "len": 34
+                },
+                {
+                  "start": 162,
+                  "end": 190,
+                  "len": 28
+                },
+                {
+                  "start": 224,
+                  "end": 250,
+                  "len": 26
+                },
+                {
+                  "start": 250,
+                  "end": 276,
+                  "len": 26
+                },
+                {
+                  "start": 82,
+                  "end": 106,
+                  "len": 24
+                },
+                {
+                  "start": 276,
+                  "end": 293,
+                  "len": 17
+                },
+                {
+                  "start": 293,
+                  "end": 300,
+                  "len": 7
+                },
+                {
+                  "start": 157,
+                  "end": 162,
+                  "len": 5
+                }
+              ],
+              "artifactCounts": {
+                "group": 1,
+                "footnote": 0,
+                "term": 3,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 2,
+                "aside": 3,
+                "highlight": 1
+              }
+            },
+            "projection": {
+              "focusMasked": [],
+              "superseded": [],
+              "projectedVisible": [
+                {
+                  "beatId": "beat:initial:0",
+                  "kind": "aside"
+                },
+                {
+                  "beatId": "beat:fill:gap:1:0",
+                  "kind": "caveat"
+                },
+                {
+                  "beatId": "beat:initial:1",
+                  "kind": "aside"
+                },
+                {
+                  "beatId": "beat:fill:gap:2:1",
+                  "kind": "highlight"
+                },
+                {
+                  "beatId": "beat:initial:2",
+                  "kind": "term"
+                },
+                {
+                  "beatId": "beat:initial:3",
+                  "kind": "group"
+                },
+                {
+                  "beatId": "beat:initial:4",
+                  "kind": "term"
+                },
+                {
+                  "beatId": "beat:initial:5",
+                  "kind": "term"
+                },
+                {
+                  "beatId": "beat:initial:6",
+                  "kind": "caveat"
+                },
+                {
+                  "beatId": "beat:initial:7",
+                  "kind": "aside"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "outcomes": {
+        "completeness": "complete",
+        "proposed": [
+          {
+            "proposalId": "initial:0",
+            "pass": "initial",
+            "kind": "aside"
+          },
+          {
+            "proposalId": "initial:1",
+            "pass": "initial",
+            "kind": "aside"
+          },
+          {
+            "proposalId": "initial:2",
+            "pass": "initial",
+            "kind": "term"
+          },
+          {
+            "proposalId": "initial:3",
+            "pass": "initial",
+            "kind": "group"
+          },
+          {
+            "proposalId": "initial:4",
+            "pass": "initial",
+            "kind": "term"
+          },
+          {
+            "proposalId": "initial:5",
+            "pass": "initial",
+            "kind": "term"
+          },
+          {
+            "proposalId": "initial:6",
+            "pass": "initial",
+            "kind": "caveat"
+          },
+          {
+            "proposalId": "initial:7",
+            "pass": "initial",
+            "kind": "aside"
+          },
+          {
+            "proposalId": "initial:8",
+            "pass": "initial",
+            "kind": "term"
+          },
+          {
+            "proposalId": "fill:gap:1:0",
+            "pass": "fill",
+            "kind": "caveat",
+            "gapId": "gap:1"
+          },
+          {
+            "proposalId": "fill:gap:2:1",
+            "pass": "fill",
+            "kind": "highlight",
+            "gapId": "gap:2"
+          }
+        ],
+        "rejected": [
+          {
+            "proposalId": "initial:8",
+            "pass": "initial",
+            "kind": "term",
+            "reason": "cue-not-located"
+          }
+        ],
+        "accepted": [
+          {
+            "proposalId": "initial:0",
+            "beatId": "beat:initial:0",
+            "kind": "aside",
+            "sceneId": "scene:initial:1"
+          },
+          {
+            "proposalId": "fill:gap:1:0",
+            "beatId": "beat:fill:gap:1:0",
+            "kind": "caveat",
+            "sceneId": "scene:initial:1"
+          },
+          {
+            "proposalId": "initial:1",
+            "beatId": "beat:initial:1",
+            "kind": "aside",
+            "sceneId": "scene:initial:1"
+          },
+          {
+            "proposalId": "fill:gap:2:1",
+            "beatId": "beat:fill:gap:2:1",
+            "kind": "highlight",
+            "sceneId": "scene:initial:3"
+          },
+          {
+            "proposalId": "initial:2",
+            "beatId": "beat:initial:2",
+            "kind": "term",
+            "sceneId": "scene:initial:4"
+          },
+          {
+            "proposalId": "initial:3",
+            "beatId": "beat:initial:3",
+            "kind": "group",
+            "sceneId": "scene:initial:5"
+          },
+          {
+            "proposalId": "initial:4",
+            "beatId": "beat:initial:4",
+            "kind": "term",
+            "sceneId": "scene:initial:6"
+          },
+          {
+            "proposalId": "initial:5",
+            "beatId": "beat:initial:5",
+            "kind": "term",
+            "sceneId": "scene:initial:7"
+          },
+          {
+            "proposalId": "initial:6",
+            "beatId": "beat:initial:6",
+            "kind": "caveat",
+            "sceneId": "scene:initial:8"
+          },
+          {
+            "proposalId": "initial:7",
+            "beatId": "beat:initial:7",
+            "kind": "aside",
+            "sceneId": "scene:initial:8"
+          }
+        ],
+        "focusMasked": [],
+        "superseded": [],
+        "projectedVisible": [
+          {
+            "beatId": "beat:initial:0",
+            "kind": "aside"
+          },
+          {
+            "beatId": "beat:fill:gap:1:0",
+            "kind": "caveat"
+          },
+          {
+            "beatId": "beat:initial:1",
+            "kind": "aside"
+          },
+          {
+            "beatId": "beat:fill:gap:2:1",
+            "kind": "highlight"
+          },
+          {
+            "beatId": "beat:initial:2",
+            "kind": "term"
+          },
+          {
+            "beatId": "beat:initial:3",
+            "kind": "group"
+          },
+          {
+            "beatId": "beat:initial:4",
+            "kind": "term"
+          },
+          {
+            "beatId": "beat:initial:5",
+            "kind": "term"
+          },
+          {
+            "beatId": "beat:initial:6",
+            "kind": "caveat"
+          },
+          {
+            "beatId": "beat:initial:7",
+            "kind": "aside"
+          }
+        ]
+      }
+    }
+  },
+  "schemaVersion": 2,
+  "policyVersion": "magic-director-3"
+}

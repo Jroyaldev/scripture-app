@@ -1,0 +1,1061 @@
+{
+  "startedAt": "2026-08-04T01:30:55.187Z",
+  "requestKey": "2|magic-director-3|gpt-5.6-luna-medium|bibleproject:podcast:most-quoted-verse-bible|400|700|7f4f87db128e39d7|45cadf50d7ad0cb2",
+  "request": {
+    "schemaVersion": 2,
+    "policyVersion": "magic-director-3",
+    "model": "gpt-5.6-luna-medium",
+    "recordId": "bibleproject:podcast:most-quoted-verse-bible",
+    "fromSec": 400,
+    "toSec": 700,
+    "why": "Begin with the passage itself and its shape. The speakers read a translation foregrounding “loyal love,” “faithfulness,” and the threefold “iniquity, transgression, and sin,” then openly name the shock of the turn to judgment—“it just all of a sudden takes a turn.” Their discussion of the two chiasms and the “balance” between compassion and accountability gives the tour its governing tension, while also establishing why this is plausibly the Bible’s most reused description of God.",
+    "transcriptHash": "7f4f87db128e39d7",
+    "requestFingerprint": "2|magic-director-3|gpt-5.6-luna-medium|bibleproject:podcast:most-quoted-verse-bible|400|700|45cadf50d7ad0cb2",
+    "budget": {
+      "policyVersion": "magic-director-3",
+      "durationSec": 300,
+      "sustainedTeachingSec": 283,
+      "targetThoughtEntrances": 9,
+      "hardBeatCeiling": 24,
+      "highlightCeiling": 2,
+      "modelSceneCeiling": 10,
+      "houseSceneReserve": 1,
+      "finalSceneCeiling": 11,
+      "fillGapSec": 36
+    }
+  },
+  "result": {
+    "schemaVersion": 2,
+    "policyVersion": "magic-director-3",
+    "requestKey": "2|magic-director-3|gpt-5.6-luna-medium|bibleproject:podcast:most-quoted-verse-bible|400|700|7f4f87db128e39d7|45cadf50d7ad0cb2",
+    "requestFingerprint": "2|magic-director-3|gpt-5.6-luna-medium|bibleproject:podcast:most-quoted-verse-bible|400|700|45cadf50d7ad0cb2",
+    "clip": {
+      "fromSec": 400,
+      "toSec": 700,
+      "durationSec": 300,
+      "transcriptHash": "7f4f87db128e39d7",
+      "sustainedTeachingSec": 283
+    },
+    "budget": {
+      "policyVersion": "magic-director-3",
+      "durationSec": 300,
+      "sustainedTeachingSec": 283,
+      "targetThoughtEntrances": 9,
+      "hardBeatCeiling": 24,
+      "highlightCeiling": 2,
+      "modelSceneCeiling": 10,
+      "houseSceneReserve": 1,
+      "finalSceneCeiling": 11,
+      "fillGapSec": 36
+    },
+    "scenes": [
+      {
+        "id": "house:prelude",
+        "origin": "house-prelude",
+        "ref": null,
+        "verses": [],
+        "cue": null,
+        "at": 0,
+        "timingSource": "house"
+      },
+      {
+        "id": "scene:initial:0",
+        "origin": "model",
+        "ref": "Exodus 34:6–7",
+        "verses": [
+          {
+            "verse": 6,
+            "text": "Yahweh passed by before him, and proclaimed, “Yahweh! Yahweh, a merciful and gracious God, slow to anger, and abundant in loving kindness and truth,"
+          },
+          {
+            "verse": 7,
+            "text": "keeping loving kindness for thousands, forgiving iniquity and disobedience and sin; and who will by no means clear the guilty, visiting the iniquity of the fathers on the children, and on the children’s children, on the third and on the fourth generation.”"
+          }
+        ],
+        "cue": "read these two verses aloud",
+        "at": 31,
+        "timingSource": "cue"
+      },
+      {
+        "id": "scene:initial:1",
+        "origin": "model",
+        "ref": "Exodus 34:6–7",
+        "verses": [
+          {
+            "verse": 6,
+            "text": "Yahweh passed by before him, and proclaimed, “Yahweh! Yahweh, a merciful and gracious God, slow to anger, and abundant in loving kindness and truth,"
+          },
+          {
+            "verse": 7,
+            "text": "keeping loving kindness for thousands, forgiving iniquity and disobedience and sin; and who will by no means clear the guilty, visiting the iniquity of the fathers on the children, and on the children’s children, on the third and on the fourth generation.”"
+          }
+        ],
+        "cue": "first verse is really wonderful",
+        "at": 94,
+        "timingSource": "cue"
+      },
+      {
+        "id": "scene:initial:2",
+        "origin": "model",
+        "ref": "Exodus 34:6–7",
+        "verses": [
+          {
+            "verse": 6,
+            "text": "Yahweh passed by before him, and proclaimed, “Yahweh! Yahweh, a merciful and gracious God, slow to anger, and abundant in loving kindness and truth,"
+          },
+          {
+            "verse": 7,
+            "text": "keeping loving kindness for thousands, forgiving iniquity and disobedience and sin; and who will by no means clear the guilty, visiting the iniquity of the fathers on the children, and on the children’s children, on the third and on the fourth generation.”"
+          }
+        ],
+        "cue": "second half of the verse",
+        "at": 112,
+        "timingSource": "cue"
+      },
+      {
+        "id": "scene:initial:3",
+        "origin": "model",
+        "ref": "Exodus 34:6–7",
+        "verses": [
+          {
+            "verse": 6,
+            "text": "Yahweh passed by before him, and proclaimed, “Yahweh! Yahweh, a merciful and gracious God, slow to anger, and abundant in loving kindness and truth,"
+          },
+          {
+            "verse": 7,
+            "text": "keeping loving kindness for thousands, forgiving iniquity and disobedience and sin; and who will by no means clear the guilty, visiting the iniquity of the fathers on the children, and on the children’s children, on the third and on the fourth generation.”"
+          }
+        ],
+        "cue": "last thought here is about",
+        "at": 176,
+        "timingSource": "cue"
+      }
+    ],
+    "beats": [
+      {
+        "id": "beat:initial:1",
+        "proposalId": "initial:1",
+        "sceneId": "scene:initial:1",
+        "kind": "aside",
+        "cue": "requoted so much by biblical authors",
+        "at": 107,
+        "timingSource": "cue",
+        "data": {
+          "text": "Biblical authors reuse this description in different ways."
+        }
+      },
+      {
+        "id": "beat:initial:3",
+        "proposalId": "initial:3",
+        "sceneId": "scene:initial:2",
+        "kind": "aside",
+        "cue": "God is vengeful after all",
+        "at": 142,
+        "timingSource": "cue",
+        "data": {
+          "text": "The ending can make God seem vengeful."
+        }
+      },
+      {
+        "id": "beat:initial:4",
+        "proposalId": "initial:4",
+        "sceneId": "scene:initial:3",
+        "kind": "aside",
+        "cue": "last thought here is about",
+        "at": 176,
+        "timingSource": "cue",
+        "data": {
+          "text": "The final line makes generational judgment feel central."
+        }
+      },
+      {
+        "id": "beat:initial:5",
+        "proposalId": "initial:5",
+        "sceneId": "scene:initial:3",
+        "kind": "aside",
+        "cue": "bait and switch almost",
+        "at": 204,
+        "timingSource": "cue",
+        "data": {
+          "text": "The praise seems to switch suddenly into punishment."
+        }
+      },
+      {
+        "id": "beat:initial:7",
+        "proposalId": "initial:7",
+        "sceneId": "scene:initial:3",
+        "kind": "highlight",
+        "cue": "the balancing act is more important",
+        "at": 252,
+        "timingSource": "cue",
+        "data": {
+          "quote": "I guess the balancing act is more important than the final word."
+        }
+      }
+    ],
+    "model": {
+      "key": "gpt-5.6-luna-medium",
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "resolvedSlug": "openai/gpt-5.6-luna",
+      "endpointHost": "openrouter.ai",
+      "endpointStyle": "aggregator",
+      "reasoning": {
+        "effort": "medium",
+        "source": "per-model default for gpt-5.6-luna-medium",
+        "applied": true
+      },
+      "provider": "OpenAI"
+    },
+    "metrics": {
+      "wallMs": 34422,
+      "passes": 2,
+      "calls": [
+        {
+          "role": "initial",
+          "latencyMs": 24437,
+          "promptTokens": 2408,
+          "completionTokens": 3154,
+          "reasoningTokens": 2588,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.002193325,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-scenes:4;semantic-beats:5"
+        },
+        {
+          "role": "fill",
+          "latencyMs": 9767,
+          "promptTokens": 2147,
+          "completionTokens": 1225,
+          "reasoningTokens": 1034,
+          "cachedPromptTokens": 0,
+          "providerCostUsd": 0.0010033,
+          "finishReason": "stop",
+          "rawModel": "openai/gpt-5.6-luna",
+          "provider": "OpenAI",
+          "model": {
+            "key": "gpt-5.6-luna-medium",
+            "requestedSlug": "openai/gpt-5.6-luna",
+            "resolvedSlug": "openai/gpt-5.6-luna",
+            "endpointHost": "openrouter.ai",
+            "endpointStyle": "aggregator",
+            "reasoning": {
+              "effort": "medium",
+              "source": "per-model default for gpt-5.6-luna-medium",
+              "applied": true
+            },
+            "provider": "OpenAI"
+          },
+          "validation": "json-parsed;semantic-intervals:3;semantic-beats:0"
+        }
+      ],
+      "totalUsd": 0.003196625,
+      "tokens": {
+        "prompt": 4555,
+        "completion": 4379,
+        "reasoning": 3622,
+        "cachedPrompt": 0
+      },
+      "normalization": {
+        "schemaVersion": 2,
+        "policyVersion": "magic-director-3",
+        "dropped": [
+          {
+            "id": "scene:initial:4",
+            "kind": "scene",
+            "reason": "scene-cue-not-grounded",
+            "modelId": "s5"
+          },
+          {
+            "id": "scene:initial:5",
+            "kind": "scene",
+            "reason": "scene-cue-not-located",
+            "modelId": "s6"
+          }
+        ],
+        "shifted": 0,
+        "clamped": 0,
+        "invented": 0,
+        "reassigned": 0,
+        "preludes": 0,
+        "sceneCount": 5,
+        "beatCount": 5,
+        "artifactCount": 5,
+        "artifactCounts": {
+          "group": 0,
+          "footnote": 0,
+          "term": 0,
+          "allusion": 0,
+          "compare": 0,
+          "chain": 0,
+          "caveat": 0,
+          "aside": 4,
+          "highlight": 1
+        },
+        "sceneCadence": {
+          "entranceCount": 5,
+          "uniqueEntranceCount": 5,
+          "uniqueBeatCount": 5,
+          "firstEntranceSec": 0,
+          "lastEntranceSec": 176,
+          "firstBeatSec": 0,
+          "lastBeatSec": 176,
+          "maxGapSec": 124,
+          "largestGap": {
+            "start": 176,
+            "end": 300,
+            "len": 124
+          },
+          "gaps": [
+            {
+              "start": 176,
+              "end": 300,
+              "len": 124
+            },
+            {
+              "start": 112,
+              "end": 176,
+              "len": 64
+            },
+            {
+              "start": 31,
+              "end": 94,
+              "len": 63
+            },
+            {
+              "start": 0,
+              "end": 31,
+              "len": 31
+            },
+            {
+              "start": 94,
+              "end": 112,
+              "len": 18
+            }
+          ]
+        },
+        "thoughtCadence": {
+          "entranceCount": 4,
+          "uniqueEntranceCount": 4,
+          "uniqueBeatCount": 4,
+          "firstEntranceSec": 107,
+          "lastEntranceSec": 204,
+          "firstBeatSec": 107,
+          "lastBeatSec": 204,
+          "maxGapSec": 107,
+          "largestGap": {
+            "start": 0,
+            "end": 107,
+            "len": 107
+          },
+          "gaps": [
+            {
+              "start": 0,
+              "end": 107,
+              "len": 107
+            },
+            {
+              "start": 204,
+              "end": 300,
+              "len": 96
+            },
+            {
+              "start": 107,
+              "end": 142,
+              "len": 35
+            },
+            {
+              "start": 142,
+              "end": 176,
+              "len": 34
+            },
+            {
+              "start": 176,
+              "end": 204,
+              "len": 28
+            }
+          ],
+          "artifactCounts": {
+            "group": 0,
+            "footnote": 0,
+            "term": 0,
+            "allusion": 0,
+            "compare": 0,
+            "chain": 0,
+            "caveat": 0,
+            "aside": 4,
+            "highlight": 1
+          }
+        },
+        "visualCadence": {
+          "entranceCount": 5,
+          "uniqueEntranceCount": 5,
+          "uniqueBeatCount": 5,
+          "firstEntranceSec": 107,
+          "lastEntranceSec": 252,
+          "firstBeatSec": 107,
+          "lastBeatSec": 252,
+          "maxGapSec": 107,
+          "largestGap": {
+            "start": 0,
+            "end": 107,
+            "len": 107
+          },
+          "gaps": [
+            {
+              "start": 0,
+              "end": 107,
+              "len": 107
+            },
+            {
+              "start": 204,
+              "end": 252,
+              "len": 48
+            },
+            {
+              "start": 252,
+              "end": 300,
+              "len": 48
+            },
+            {
+              "start": 107,
+              "end": 142,
+              "len": 35
+            },
+            {
+              "start": 142,
+              "end": 176,
+              "len": 34
+            },
+            {
+              "start": 176,
+              "end": 204,
+              "len": 28
+            }
+          ],
+          "artifactCounts": {
+            "group": 0,
+            "footnote": 0,
+            "term": 0,
+            "allusion": 0,
+            "compare": 0,
+            "chain": 0,
+            "caveat": 0,
+            "aside": 4,
+            "highlight": 1
+          }
+        },
+        "projection": {
+          "focusMasked": [],
+          "superseded": [],
+          "projectedVisible": [
+            {
+              "beatId": "beat:initial:1",
+              "kind": "aside"
+            },
+            {
+              "beatId": "beat:initial:3",
+              "kind": "aside"
+            },
+            {
+              "beatId": "beat:initial:4",
+              "kind": "aside"
+            },
+            {
+              "beatId": "beat:initial:5",
+              "kind": "aside"
+            },
+            {
+              "beatId": "beat:initial:7",
+              "kind": "highlight"
+            }
+          ]
+        },
+        "passes": [
+          {
+            "role": "initial",
+            "schemaVersion": 2,
+            "policyVersion": "magic-director-3",
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "beatCount": 5,
+            "artifactCount": 5,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "aside": 4,
+              "highlight": 1
+            },
+            "sceneCadence": {
+              "entranceCount": 5,
+              "uniqueEntranceCount": 5,
+              "uniqueBeatCount": 5,
+              "firstEntranceSec": 0,
+              "lastEntranceSec": 176,
+              "firstBeatSec": 0,
+              "lastBeatSec": 176,
+              "maxGapSec": 124,
+              "largestGap": {
+                "start": 176,
+                "end": 300,
+                "len": 124
+              },
+              "gaps": [
+                {
+                  "start": 176,
+                  "end": 300,
+                  "len": 124
+                },
+                {
+                  "start": 112,
+                  "end": 176,
+                  "len": 64
+                },
+                {
+                  "start": 31,
+                  "end": 94,
+                  "len": 63
+                },
+                {
+                  "start": 0,
+                  "end": 31,
+                  "len": 31
+                },
+                {
+                  "start": 94,
+                  "end": 112,
+                  "len": 18
+                }
+              ]
+            },
+            "thoughtCadence": {
+              "entranceCount": 4,
+              "uniqueEntranceCount": 4,
+              "uniqueBeatCount": 4,
+              "firstEntranceSec": 107,
+              "lastEntranceSec": 204,
+              "firstBeatSec": 107,
+              "lastBeatSec": 204,
+              "maxGapSec": 107,
+              "largestGap": {
+                "start": 0,
+                "end": 107,
+                "len": 107
+              },
+              "gaps": [
+                {
+                  "start": 0,
+                  "end": 107,
+                  "len": 107
+                },
+                {
+                  "start": 204,
+                  "end": 300,
+                  "len": 96
+                },
+                {
+                  "start": 107,
+                  "end": 142,
+                  "len": 35
+                },
+                {
+                  "start": 142,
+                  "end": 176,
+                  "len": 34
+                },
+                {
+                  "start": 176,
+                  "end": 204,
+                  "len": 28
+                }
+              ],
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 0,
+                "term": 0,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 0,
+                "aside": 4,
+                "highlight": 1
+              }
+            },
+            "visualCadence": {
+              "entranceCount": 5,
+              "uniqueEntranceCount": 5,
+              "uniqueBeatCount": 5,
+              "firstEntranceSec": 107,
+              "lastEntranceSec": 252,
+              "firstBeatSec": 107,
+              "lastBeatSec": 252,
+              "maxGapSec": 107,
+              "largestGap": {
+                "start": 0,
+                "end": 107,
+                "len": 107
+              },
+              "gaps": [
+                {
+                  "start": 0,
+                  "end": 107,
+                  "len": 107
+                },
+                {
+                  "start": 204,
+                  "end": 252,
+                  "len": 48
+                },
+                {
+                  "start": 252,
+                  "end": 300,
+                  "len": 48
+                },
+                {
+                  "start": 107,
+                  "end": 142,
+                  "len": 35
+                },
+                {
+                  "start": 142,
+                  "end": 176,
+                  "len": 34
+                },
+                {
+                  "start": 176,
+                  "end": 204,
+                  "len": 28
+                }
+              ],
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 0,
+                "term": 0,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 0,
+                "aside": 4,
+                "highlight": 1
+              }
+            },
+            "projection": {
+              "focusMasked": [],
+              "superseded": [],
+              "projectedVisible": [
+                {
+                  "beatId": "beat:initial:1",
+                  "kind": "aside"
+                },
+                {
+                  "beatId": "beat:initial:3",
+                  "kind": "aside"
+                },
+                {
+                  "beatId": "beat:initial:4",
+                  "kind": "aside"
+                },
+                {
+                  "beatId": "beat:initial:5",
+                  "kind": "aside"
+                },
+                {
+                  "beatId": "beat:initial:7",
+                  "kind": "highlight"
+                }
+              ]
+            }
+          },
+          {
+            "role": "fill",
+            "schemaVersion": 2,
+            "policyVersion": "magic-director-3",
+            "dropped": [],
+            "shifted": 0,
+            "clamped": 0,
+            "invented": 0,
+            "reassigned": 0,
+            "preludes": 0,
+            "sceneCount": 5,
+            "beatCount": 5,
+            "artifactCount": 5,
+            "artifactCounts": {
+              "group": 0,
+              "footnote": 0,
+              "term": 0,
+              "allusion": 0,
+              "compare": 0,
+              "chain": 0,
+              "caveat": 0,
+              "aside": 4,
+              "highlight": 1
+            },
+            "sceneCadence": {
+              "entranceCount": 5,
+              "uniqueEntranceCount": 5,
+              "uniqueBeatCount": 5,
+              "firstEntranceSec": 0,
+              "lastEntranceSec": 176,
+              "firstBeatSec": 0,
+              "lastBeatSec": 176,
+              "maxGapSec": 124,
+              "largestGap": {
+                "start": 176,
+                "end": 300,
+                "len": 124
+              },
+              "gaps": [
+                {
+                  "start": 176,
+                  "end": 300,
+                  "len": 124
+                },
+                {
+                  "start": 112,
+                  "end": 176,
+                  "len": 64
+                },
+                {
+                  "start": 31,
+                  "end": 94,
+                  "len": 63
+                },
+                {
+                  "start": 0,
+                  "end": 31,
+                  "len": 31
+                },
+                {
+                  "start": 94,
+                  "end": 112,
+                  "len": 18
+                }
+              ]
+            },
+            "thoughtCadence": {
+              "entranceCount": 4,
+              "uniqueEntranceCount": 4,
+              "uniqueBeatCount": 4,
+              "firstEntranceSec": 107,
+              "lastEntranceSec": 204,
+              "firstBeatSec": 107,
+              "lastBeatSec": 204,
+              "maxGapSec": 107,
+              "largestGap": {
+                "start": 0,
+                "end": 107,
+                "len": 107
+              },
+              "gaps": [
+                {
+                  "start": 0,
+                  "end": 107,
+                  "len": 107
+                },
+                {
+                  "start": 204,
+                  "end": 300,
+                  "len": 96
+                },
+                {
+                  "start": 107,
+                  "end": 142,
+                  "len": 35
+                },
+                {
+                  "start": 142,
+                  "end": 176,
+                  "len": 34
+                },
+                {
+                  "start": 176,
+                  "end": 204,
+                  "len": 28
+                }
+              ],
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 0,
+                "term": 0,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 0,
+                "aside": 4,
+                "highlight": 1
+              }
+            },
+            "visualCadence": {
+              "entranceCount": 5,
+              "uniqueEntranceCount": 5,
+              "uniqueBeatCount": 5,
+              "firstEntranceSec": 107,
+              "lastEntranceSec": 252,
+              "firstBeatSec": 107,
+              "lastBeatSec": 252,
+              "maxGapSec": 107,
+              "largestGap": {
+                "start": 0,
+                "end": 107,
+                "len": 107
+              },
+              "gaps": [
+                {
+                  "start": 0,
+                  "end": 107,
+                  "len": 107
+                },
+                {
+                  "start": 204,
+                  "end": 252,
+                  "len": 48
+                },
+                {
+                  "start": 252,
+                  "end": 300,
+                  "len": 48
+                },
+                {
+                  "start": 107,
+                  "end": 142,
+                  "len": 35
+                },
+                {
+                  "start": 142,
+                  "end": 176,
+                  "len": 34
+                },
+                {
+                  "start": 176,
+                  "end": 204,
+                  "len": 28
+                }
+              ],
+              "artifactCounts": {
+                "group": 0,
+                "footnote": 0,
+                "term": 0,
+                "allusion": 0,
+                "compare": 0,
+                "chain": 0,
+                "caveat": 0,
+                "aside": 4,
+                "highlight": 1
+              }
+            },
+            "projection": {
+              "focusMasked": [],
+              "superseded": [],
+              "projectedVisible": [
+                {
+                  "beatId": "beat:initial:1",
+                  "kind": "aside"
+                },
+                {
+                  "beatId": "beat:initial:3",
+                  "kind": "aside"
+                },
+                {
+                  "beatId": "beat:initial:4",
+                  "kind": "aside"
+                },
+                {
+                  "beatId": "beat:initial:5",
+                  "kind": "aside"
+                },
+                {
+                  "beatId": "beat:initial:7",
+                  "kind": "highlight"
+                }
+              ]
+            }
+          }
+        ]
+      },
+      "outcomes": {
+        "completeness": "complete",
+        "proposed": [
+          {
+            "proposalId": "initial:0",
+            "pass": "initial",
+            "kind": "group"
+          },
+          {
+            "proposalId": "initial:1",
+            "pass": "initial",
+            "kind": "aside"
+          },
+          {
+            "proposalId": "initial:2",
+            "pass": "initial",
+            "kind": "group"
+          },
+          {
+            "proposalId": "initial:3",
+            "pass": "initial",
+            "kind": "aside"
+          },
+          {
+            "proposalId": "initial:4",
+            "pass": "initial",
+            "kind": "aside"
+          },
+          {
+            "proposalId": "initial:5",
+            "pass": "initial",
+            "kind": "aside"
+          },
+          {
+            "proposalId": "initial:6",
+            "pass": "initial",
+            "kind": "aside"
+          },
+          {
+            "proposalId": "initial:7",
+            "pass": "initial",
+            "kind": "highlight"
+          },
+          {
+            "proposalId": "initial:8",
+            "pass": "initial",
+            "kind": "aside"
+          },
+          {
+            "proposalId": "fill:gap:0:0",
+            "pass": "fill",
+            "kind": "group",
+            "gapId": "gap:0"
+          },
+          {
+            "proposalId": "fill:gap:1:1",
+            "pass": "fill",
+            "kind": "group",
+            "gapId": "gap:1"
+          }
+        ],
+        "rejected": [
+          {
+            "proposalId": "initial:0",
+            "pass": "initial",
+            "kind": "group",
+            "reason": "group-word-count"
+          },
+          {
+            "proposalId": "initial:2",
+            "pass": "initial",
+            "kind": "group",
+            "reason": "group-word-shape"
+          },
+          {
+            "proposalId": "initial:6",
+            "pass": "initial",
+            "kind": "aside",
+            "reason": "cue-not-in-transcript"
+          },
+          {
+            "proposalId": "initial:8",
+            "pass": "initial",
+            "kind": "aside",
+            "reason": "cue-not-located"
+          },
+          {
+            "proposalId": "fill:gap:0:0",
+            "pass": "fill",
+            "kind": "group",
+            "reason": "group-word-count",
+            "gapId": "gap:0"
+          },
+          {
+            "proposalId": "fill:gap:1:1",
+            "pass": "fill",
+            "kind": "group",
+            "reason": "group-word-count",
+            "gapId": "gap:1"
+          }
+        ],
+        "accepted": [
+          {
+            "proposalId": "initial:1",
+            "beatId": "beat:initial:1",
+            "kind": "aside",
+            "sceneId": "scene:initial:1"
+          },
+          {
+            "proposalId": "initial:3",
+            "beatId": "beat:initial:3",
+            "kind": "aside",
+            "sceneId": "scene:initial:2"
+          },
+          {
+            "proposalId": "initial:4",
+            "beatId": "beat:initial:4",
+            "kind": "aside",
+            "sceneId": "scene:initial:3"
+          },
+          {
+            "proposalId": "initial:5",
+            "beatId": "beat:initial:5",
+            "kind": "aside",
+            "sceneId": "scene:initial:3"
+          },
+          {
+            "proposalId": "initial:7",
+            "beatId": "beat:initial:7",
+            "kind": "highlight",
+            "sceneId": "scene:initial:3"
+          }
+        ],
+        "focusMasked": [],
+        "superseded": [],
+        "projectedVisible": [
+          {
+            "beatId": "beat:initial:1",
+            "kind": "aside"
+          },
+          {
+            "beatId": "beat:initial:3",
+            "kind": "aside"
+          },
+          {
+            "beatId": "beat:initial:4",
+            "kind": "aside"
+          },
+          {
+            "beatId": "beat:initial:5",
+            "kind": "aside"
+          },
+          {
+            "beatId": "beat:initial:7",
+            "kind": "highlight"
+          }
+        ]
+      }
+    }
+  },
+  "schemaVersion": 2,
+  "policyVersion": "magic-director-3"
+}

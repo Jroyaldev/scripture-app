@@ -1,0 +1,549 @@
+{
+  "runId": "2026-08-03T23-35-21-157-gpt-5.6-luna-medium",
+  "startedAt": "2026-08-03T23:35:21.157Z",
+  "promptId": null,
+  "prompt": "romans 1",
+  "model": {
+    "key": "gpt-5.6-luna-medium",
+    "label": "GPT-5.6 Luna (medium)",
+    "requestedSlug": "openai/gpt-5.6-luna",
+    "resolvedSlug": "openai/gpt-5.6-luna",
+    "resolution": {
+      "slug": "openai/gpt-5.6-luna",
+      "requested": "openai/gpt-5.6-luna",
+      "configured": null,
+      "endpointStyle": "aggregator",
+      "endpointHost": "openrouter.ai",
+      "form": "vendor/model",
+      "via": "models-list",
+      "exact": true,
+      "tried": [
+        "openai/gpt-5.6-luna",
+        "gpt-5.6-luna"
+      ],
+      "note": "endpoint accepts the requested slug in vendor/model form",
+      "availableSample": [
+        "qwen/qwen3.8-max",
+        "~deepseek/deepseek-v4-flash-latest",
+        "deepseek/deepseek-v4-flash-0731",
+        "thinkingmachines/inkling-small",
+        "qwen/qwen3.7-flash",
+        "anthropic/claude-opus-5-fast",
+        "anthropic/claude-opus-5",
+        "inclusionai/ling-3.0-flash:free",
+        "poolside/laguna-s-2.1",
+        "poolside/laguna-s-2.1:free",
+        "google/gemini-3.6-flash",
+        "google/gemini-3.5-flash-lite"
+      ]
+    },
+    "reasoning": {
+      "effort": "medium",
+      "source": "per-model default for gpt-5.6-luna-medium",
+      "envVar": "LUNA_MEDIUM_REASONING",
+      "applied": true
+    }
+  },
+  "status": "ok",
+  "error": null,
+  "tour": {
+    "title": "Romans 1: From Good News to the Human Problem",
+    "intro": "This tour walks through Romans 1 in the order Paul builds it: who he is writing as, why the gospel is central, and how he diagnoses humanity’s refusal of God. The final clips treat the chapter’s difficult ethical material directly, while keeping it in the chapter’s larger argument about idolatry, disordered desire, and the need for the gospel.",
+    "steps": [
+      {
+        "recordId": "listeners-commentary:podcast:9ca9ec4b-com-a6ea48e1-f96c-3968-a3f7-dd692d7aa849",
+        "startSec": 120,
+        "endSec": 420,
+        "why": "Begin with Paul’s identity, audience, and posture. The teacher explains that Paul calls himself a “bondservant of Christ Jesus,” an apostle and representative of Jesus, while the Roman Christians are “beloved of God” and “called as saints”—not an elite group, but people who belong to God. This gives the chapter its relational and pastoral setting.",
+        "episodeTitle": "Romans 1:1-15",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/f4kmzk/romans_11-157qsrz.mp3",
+        "durationSec": 1512,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4",
+        "startSec": 100,
+        "endSec": 400,
+        "why": "Now hear the chapter’s thesis in verses 16–17. The teacher says Paul is “not ashamed of the gospel” because it is “the power of God for salvation,” available to Jew and Gentile alike. He also explains the gospel as news about what God has done in Jesus and introduces the debated phrase “the righteousness of God,” preparing you for the argument that follows.",
+        "episodeTitle": "Romans 1:16-17",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/7uc4t3/romans_116-17a8laf.mp3",
+        "durationSec": 1125,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "startSec": 200,
+        "endSec": 500,
+        "why": "This clip turns from the thesis to the problem Paul says makes salvation necessary. The teacher reads and explains Romans 1:18–23: humanity “suppressed the truth,” refused to honor or thank God, and “exchanged the glory” of the Creator for images. His account of wrath emphasizes that God’s response is “just repayment for sin,” not divine caprice.",
+        "episodeTitle": "Romans 1:18-32",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/na8unf/romans_118-329cdz0.mp3",
+        "durationSec": 1668,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "startSec": 804,
+        "endSec": 1060,
+        "why": "Stay with Paul’s repeated “God gave them over” language as the teacher connects idolatry with its consequences. He describes people exchanging “the truth of God for the lie,” then carefully frames the chapter’s reference to homosexual behavior as an example Paul gives of desires and practices that, in this teacher’s reading, result from rejecting God’s design. The clip keeps the difficult verses inside the chapter’s stated movement from worshiping the Creator to worshiping the creature.",
+        "episodeTitle": "Romans 1:18-32",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/na8unf/romans_118-329cdz0.mp3",
+        "durationSec": 1668,
+        "adInsertionDrift": false
+      },
+      {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "startSec": 1360,
+        "endSec": 1600,
+        "why": "End with the chapter’s wide-angle conclusion rather than with one disputed example. The teacher says Paul is “throwing the net wide” through a catalog that includes envy, murder, deceit, arrogance, gossip, disobedience, and lack of mercy. He concludes that the root problem is not merely rule-breaking but “our flight from God,” with behavior as the symptom—and explains why an accurate diagnosis matters for presenting the gospel.",
+        "episodeTitle": "Romans 1:18-32",
+        "sourceId": "listeners-commentary",
+        "source": "The Listener's Commentary",
+        "audioUrl": "https://mcdn.podbean.com/mf/web/na8unf/romans_118-329cdz0.mp3",
+        "durationSec": 1668,
+        "adInsertionDrift": false
+      }
+    ],
+    "closing": "Romans 1 leaves you with both a stark diagnosis and a clear center: the gospel is God’s saving power, while humanity’s deepest problem is alienation from the Creator. As you continue into Romans 2 and 3, listen for how Paul prevents this indictment from becoming a platform for judging other people and presses the argument toward the universal need for God’s righteousness.",
+    "totalSeconds": 1396
+  },
+  "calls": [
+    {
+      "i": 0,
+      "latencyMs": 2457,
+      "promptTokens": 1593,
+      "completionTokens": 199,
+      "reasoningTokens": 23,
+      "cachedPromptTokens": 0,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00031845,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 1,
+      "latencyMs": 3989,
+      "promptTokens": 11061,
+      "completionTokens": 376,
+      "reasoningTokens": 79,
+      "cachedPromptTokens": 1590,
+      "toolCalls": 5,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.0014253,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 2,
+      "latencyMs": 2871,
+      "promptTokens": 15407,
+      "completionTokens": 276,
+      "reasoningTokens": 68,
+      "cachedPromptTokens": 11058,
+      "toolCalls": 3,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00081973,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 3,
+      "latencyMs": 4151,
+      "promptTokens": 19026,
+      "completionTokens": 210,
+      "reasoningTokens": 144,
+      "cachedPromptTokens": 15404,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000732715,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 4,
+      "latencyMs": 3215,
+      "promptTokens": 20170,
+      "completionTokens": 206,
+      "reasoningTokens": 138,
+      "cachedPromptTokens": 19023,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00045713,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 5,
+      "latencyMs": 9334,
+      "promptTokens": 21062,
+      "completionTokens": 1111,
+      "reasoningTokens": 253,
+      "cachedPromptTokens": 20167,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.00098007,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    },
+    {
+      "i": 6,
+      "latencyMs": 5830,
+      "promptTokens": 22017,
+      "completionTokens": 978,
+      "reasoningTokens": 119,
+      "cachedPromptTokens": 21059,
+      "toolCalls": 1,
+      "finishReason": "tool_calls",
+      "providerCostUsd": 0.000917065,
+      "rawModel": "openai/gpt-5.6-luna",
+      "provider": "OpenAI",
+      "model": {
+        "key": "gpt-5.6-luna-medium",
+        "requestedSlug": "openai/gpt-5.6-luna",
+        "resolvedSlug": "openai/gpt-5.6-luna",
+        "endpointHost": "openrouter.ai",
+        "endpointStyle": "aggregator",
+        "reasoning": {
+          "effort": "medium",
+          "source": "per-model default for gpt-5.6-luna-medium",
+          "applied": true
+        },
+        "provider": "OpenAI"
+      },
+      "validation": "runtime-accepted"
+    }
+  ],
+  "toolLog": [
+    {
+      "at": 0,
+      "name": "moments_for_passage",
+      "args": {
+        "book": "Romans",
+        "chapter": 1,
+        "verse": 0,
+        "limit": 25
+      },
+      "ms": 160,
+      "summary": "25 of 182 moments"
+    },
+    {
+      "at": 0,
+      "name": "read_passage",
+      "args": {
+        "book": "Romans",
+        "chapter": 1,
+        "fromVerse": 1,
+        "toVerse": 32
+      },
+      "ms": 0,
+      "summary": "Romans 1:1–32 (WEB)"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Romans chapter one gospel power of God righteousness faith",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 97,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "wrath God exchanged glory images creation homosexual passions Romans one",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 83,
+      "summary": "10 hits"
+    },
+    {
+      "at": 0,
+      "name": "search_corpus",
+      "args": {
+        "query": "Paul servant apostle called set apart good news Romans 1",
+        "sourceId": "",
+        "limit": 10
+      },
+      "ms": 68,
+      "summary": "10 hits"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:9ca9ec4b-com-a6ea48e1-f96c-3968-a3f7-dd692d7aa849"
+      },
+      "ms": 3,
+      "summary": "Romans 1:1-15 (1512s)"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4"
+      },
+      "ms": 3,
+      "summary": "Romans 1:16-17 (1125s)"
+    },
+    {
+      "at": 1,
+      "name": "episode_info",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134"
+      },
+      "ms": 1,
+      "summary": "Romans 1:18-32 (1668s)"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:9ca9ec4b-com-a6ea48e1-f96c-3968-a3f7-dd692d7aa849",
+        "fromSec": 120,
+        "toSec": 650
+      },
+      "ms": 0,
+      "summary": "120s–420s of Romans 1:1-15"
+    },
+    {
+      "at": 1,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 760,
+        "toSec": 1250
+      },
+      "ms": 0,
+      "summary": "760s–1060s of Romans 1:18-32"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4",
+        "fromSec": 100,
+        "toSec": 520
+      },
+      "ms": 0,
+      "summary": "100s–400s of Romans 1:16-17"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 1060,
+        "toSec": 1580
+      },
+      "ms": 0,
+      "summary": "1060s–1360s of Romans 1:18-32"
+    },
+    {
+      "at": 2,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:9ca9ec4b-com-a6ea48e1-f96c-3968-a3f7-dd692d7aa849",
+        "fromSec": 900,
+        "toSec": 1320
+      },
+      "ms": 0,
+      "summary": "900s–1200s of Romans 1:1-15"
+    },
+    {
+      "at": 3,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 200,
+        "toSec": 804
+      },
+      "ms": 0,
+      "summary": "200s–500s of Romans 1:18-32"
+    },
+    {
+      "at": 4,
+      "name": "transcript_window",
+      "args": {
+        "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+        "fromSec": 1360,
+        "toSec": 1600
+      },
+      "ms": 0,
+      "summary": "1360s–1600s of Romans 1:18-32"
+    }
+  ],
+  "rejections": [
+    {
+      "at": 5,
+      "errors": [
+        "steps[4].recordId: \"listeners-commentary:podcast:5fe688cc-65c93edc-8ea4-3bbe-be46-a3936a1d3134\" is not an episode in this corpus"
+      ],
+      "submitted": {
+        "title": "Romans 1: From Good News to the Human Problem",
+        "intro": "This tour walks through Romans 1 in the order Paul builds it: who he is writing as, why the gospel is central, and how he diagnoses humanity’s refusal of God. The final clips treat the chapter’s difficult ethical material directly, while keeping it in the chapter’s larger argument about idolatry, disordered desire, and the need for the gospel.",
+        "steps": [
+          {
+            "recordId": "listeners-commentary:podcast:9ca9ec4b-com-a6ea48e1-f96c-3968-a3f7-dd692d7aa849",
+            "startSec": 120,
+            "endSec": 420,
+            "why": "Begin with Paul’s identity, audience, and posture. The teacher explains that Paul calls himself a “bondservant of Christ Jesus,” an apostle and representative of Jesus, while the Roman Christians are “beloved of God” and “called as saints”—not an elite group, but people who belong to God. This gives the chapter its relational and pastoral setting."
+          },
+          {
+            "recordId": "listeners-commentary:podcast:34b19564-com-39466500-c5d5-3d58-8aca-9da318d1c2c4",
+            "startSec": 100,
+            "endSec": 400,
+            "why": "Now hear the chapter’s thesis in verses 16–17. The teacher says Paul is “not ashamed of the gospel” because it is “the power of God for salvation,” available to Jew and Gentile alike. He also explains the gospel as news about what God has done in Jesus and introduces the debated phrase “the righteousness of God,” preparing you for the argument that follows."
+          },
+          {
+            "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+            "startSec": 200,
+            "endSec": 500,
+            "why": "This clip turns from the thesis to the problem Paul says makes salvation necessary. The teacher reads and explains Romans 1:18–23: humanity “suppressed the truth,” refused to honor or thank God, and “exchanged the glory” of the Creator for images. His account of wrath emphasizes that God’s response is “just repayment for sin,” not divine caprice."
+          },
+          {
+            "recordId": "listeners-commentary:podcast:5fe688cc-com-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+            "startSec": 804,
+            "endSec": 1060,
+            "why": "Stay with Paul’s repeated “God gave them over” language as the teacher connects idolatry with its consequences. He describes people exchanging “the truth of God for the lie,” then carefully frames the chapter’s reference to homosexual behavior as an example Paul gives of desires and practices that, in this teacher’s reading, result from rejecting God’s design. The clip keeps the difficult verses inside the chapter’s stated movement from worshiping the Creator to worshiping the creature."
+          },
+          {
+            "recordId": "listeners-commentary:podcast:5fe688cc-65c93edc-8ea4-3bbe-be46-a3936a1d3134",
+            "startSec": 1360,
+            "endSec": 1600,
+            "why": "End with the chapter’s wide-angle conclusion rather than with one disputed example. The teacher says Paul is “throwing the net wide” through a catalog that includes envy, murder, deceit, arrogance, gossip, disobedience, and lack of mercy. He concludes that the root problem is not merely rule-breaking but “our flight from God,” with behavior as the symptom—and explains why an accurate diagnosis matters for presenting the gospel."
+          }
+        ],
+        "closing": "Romans 1 leaves you with both a stark diagnosis and a clear center: the gospel is God’s saving power, while humanity’s deepest problem is alienation from the Creator. As you continue into Romans 2 and 3, listen for how Paul prevents this indictment from becoming a platform for judging other people and presses the argument toward the universal need for God’s righteousness."
+      }
+    }
+  ],
+  "totals": {
+    "modelCalls": 7,
+    "toolCalls": 17,
+    "tapeSec": 2040,
+    "deniedWindows": 0,
+    "promptTokens": 110336,
+    "completionTokens": 3356,
+    "reasoningTokens": 824,
+    "cachedPromptTokens": 88301,
+    "wallMs": 32271,
+    "modelLatencyMs": 31847,
+    "toolMs": 415
+  },
+  "cost": {
+    "source": "provider",
+    "totalUsd": 0.00565,
+    "inputUsd": null,
+    "outputUsd": null,
+    "rateCard": {
+      "requestedSlug": "openai/gpt-5.6-luna",
+      "inputPerMTokensUsd": 1.25,
+      "outputPerMTokensUsd": 10,
+      "cachedInputPerMTokensUsd": 0.125,
+      "_note": "Same model, same placeholder rates as gpt-5.6-luna — this row exists only because it is a distinct roster key (pinned effort medium). Effort changes how many tokens are spent, never the rate."
+    },
+    "note": "endpoint reported its own accounted cost; the local price table was not used"
+  },
+  "caveats": [
+    "Clips on ad-inserted hosts (Megaphone: ask-nt-wright, spoken-gospel) can land up to ~2 minutes off against today’s stream. This is a known corpus-wide drift, not a bug in this tour.",
+    "A tour is model output over machine transcripts. The \"why\" text should report what a transcript says; it is not a claim that the speaker is right.",
+    "The player streams each episode straight from its publisher. A few hosts (Substack’s CDN, for one) refuse hotlinked requests and the step will say so and offer the URL instead — the clip boundaries are still good, the playback path is not."
+  ],
+  "finishedAt": "2026-08-03T23:35:53.428Z"
+}
