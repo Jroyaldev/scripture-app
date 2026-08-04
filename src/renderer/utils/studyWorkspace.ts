@@ -184,7 +184,6 @@ export type WorkspaceDecision =
   | "close-passage-and-research"
   | "keep-research"
   | "close-study"
-  | "keep-open"
   | "move-branch"
   | "copy-origin-passage"
   | "move-study"
@@ -1340,7 +1339,12 @@ export function resolveStudyWorkspaceDecision(
   confirmation: WorkspaceConfirmation,
   decision: WorkspaceDecision,
 ): WorkspaceMutationResult {
-  if (decision === "cancel" || decision === "keep-open") {
+  /* `keep-open` used to sit beside `cancel` here, resolving to the same
+     `unchanged` — a second spelling of backing out, offered by no dialog and
+     reachable from nothing but a test whose name claimed a dialog offered it.
+     Two words for one outcome is two things to keep in step; the surviving one
+     is the one the Escape key and the Cancel button already send. */
+  if (decision === "cancel") {
     return { state, outcome: "unchanged" };
   }
   if (confirmation.kind === "sole-group-passage") {

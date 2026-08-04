@@ -1455,7 +1455,7 @@ test("keep-research closes only the passage and clears dependent return targets"
   assert.equal(kept.state.activeTabId, "nicodemus");
 });
 
-test("a sole group passage offers keep-open or close-study without invalidating the workspace", () => {
+test("a sole group passage offers cancel or close-study without invalidating the workspace", () => {
   const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
     groupId: "g1",
     passageTabId: "a",
@@ -1476,7 +1476,15 @@ test("a sole group passage offers keep-open or close-study without invalidating 
     tabIds: ["a"],
     entityNonces: [],
   });
-  const kept = resolveStudyWorkspaceDecision(selected, requested.confirmation, "keep-open");
+  /* THIS SAID `keep-open`, WHICH WAS NEVER A BUTTON. It was a second spelling of
+     `cancel` — same branch, same `unchanged` — offered by no dialog and reached
+     from nowhere but this line, and it went on passing after the word was
+     deleted from the union — `tsconfig.json` includes the sources and not the
+     tests, so the argument quietly stopped being a member of the type, fell
+     through every branch, and returned the very `unchanged` this asserts. A
+     test that passes for the wrong reason is the argument for deleting the
+     word. */
+  const kept = resolveStudyWorkspaceDecision(selected, requested.confirmation, "cancel");
   assert.equal(kept.state, selected);
   assert.equal(kept.outcome, "unchanged");
   const closed = resolveStudyWorkspaceDecision(selected, requested.confirmation, "close-study");

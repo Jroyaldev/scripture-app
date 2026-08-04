@@ -141,3 +141,53 @@ test("the question is asked in the top layer, where a click can reach it", () =>
     /\[\.\.\.shell\.classList\]\.filter\(\(name\) => name === "dark" \|\| name\.startsWith\("theme-"\)\)/,
   );
 });
+
+test("every dialog describes the buttons it actually offers, and offers no word twice", () => {
+  /* AUDIT · 2026-08-03. Three things were wrong in the same family, and all
+     three were about a reader trying to tell two answers apart. */
+
+  /* ONE · The home-passage dialog described one option twice. "Keep this study
+     intact, or leave a copy of its home passage here and move only this passage
+     branch" reads as two choices and is one — both halves are `duplicate-home`
+     — so the button that takes a study out of existence as a study was never
+     described at all. Each clause maps to a button now, in the order they
+     stand. */
+  const home = presentation({
+    kind: "move-home-passage",
+    tabId: "home", groupId: "g1", sourceTabIds: ["home"], entityNonces: [], targetGroupId: "g2",
+  });
+  assert.deepEqual(home.actions.map((action) => action.decision), ["duplicate-home", "move-study"]);
+  assert.match(home.description, /Leave a copy behind and only this branch moves/);
+  assert.match(home.description, /the whole study moves with it/);
+  assert.doesNotMatch(home.description, /Keep this study intact/);
+
+  /* TWO · The two ways to close a study made different promises. The one raised
+     by closing a passage — the more alarming of the pair, since you asked about
+     a tab and are being told a study will go — was the one that withheld the
+     reassurance. They end the same way and recover the same way. */
+  const sole = presentation({
+    kind: "sole-group-passage", groupId: "g1", tabId: "a", tabIds: ["a"], entityNonces: [],
+  });
+  const study = presentation({ kind: "close-study", groupId: "g1", tabIds: ["a", "b"], entityNonces: [] });
+  for (const closing of [sole, study]) {
+    assert.match(closing.description, /Recently closed/);
+    assert.match(closing.description, /reopened/);
+  }
+
+  /* THREE · Every tone a dialog can ask for must be a tone the sheet draws.
+     `is-secondary` and `is-cancel` were both class names with no rule behind
+     them, so the second real choice in the home-passage dialog rendered exactly
+     like Cancel: one emphasised button and two identical scraps of text, the
+     quieter of which moved an entire study. */
+  const styles = readFileSync(
+    resolve(import.meta.dirname, "../src/renderer/styles.css"),
+    "utf8",
+  );
+  for (const tone of ["primary", "secondary", "danger"]) {
+    assert.match(
+      styles,
+      new RegExp(`\\.workspace-decision-action\\.is-${tone}`),
+      `a dialog can ask for the ${tone} tone, so the sheet has to draw it`,
+    );
+  }
+});

@@ -45,7 +45,12 @@ export function workspaceDecisionPresentation(
   if (confirmation.kind === "sole-group-passage") {
     return {
       title: "Close this study?",
-      description: "This is the study's only passage. Closing it also closes the research gathered with it.",
+      /* THE SAME PROMISE THE OTHER CLOSE MAKES. This said only that the research
+         goes too, and stopped — so the more alarming of the two close dialogs
+         (you asked to close a passage and are being told a whole study will go)
+         withheld the reassurance the calmer one gives. Both end the same way and
+         recover the same way, and the sentence that matters is the second. */
+      description: "This is the study's only passage, so the study closes with it. Everything moves to Recently closed and can be reopened.",
       actions: [{ decision: "close-study", label: "Close study", tone: "danger" }],
     };
   }
@@ -76,7 +81,14 @@ export function workspaceDecisionPresentation(
 
   return {
     title: "Move this study's home passage?",
-    description: "Keep this study intact, or leave a copy of its home passage here and move only this passage branch.",
+    /* IT USED TO DESCRIBE ONE OPTION TWICE. "Keep this study intact, or leave a
+       copy of its home passage here and move only this passage branch" reads as
+       two choices and is one: both halves are `duplicate-home`, and the reader
+       had to work out for themselves what "Move entire study" would do — the
+       button that takes the study out of existence as a study. Two clauses now,
+       in the order the buttons stand, and the first says why there is a question
+       at all. */
+    description: "This passage is what its study is built on. Leave a copy behind and only this branch moves; take it and the whole study moves with it.",
     actions: [
       { decision: "duplicate-home", label: "Leave a copy + move branch", tone: "primary" },
       { decision: "move-study", label: "Move entire study", tone: "secondary" },

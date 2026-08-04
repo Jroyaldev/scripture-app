@@ -20612,6 +20612,21 @@ button.lang-phrase-diagram-node:focus-visible,
   background: var(--bg-secondary);
   color: var(--text-primary);
 }
+/* THREE RANKS, BECAUSE THERE ARE THREE KINDS OF ANSWER. `is-secondary` and
+   `is-cancel` were both class names with no rule behind them, so the one dialog
+   that offers two real choices — leave a copy and move the branch, or move the
+   whole study — drew the second of them exactly like Cancel. A reader looking
+   for their two options saw one emphasised button and two identical scraps of
+   text, and the quieter of the two answers was the one that takes a study out
+   of existence.
+
+   Primary is bordered and filled; secondary is bordered and not; backing out
+   keeps the bare treatment, which is what makes the pair read as a pair. */
+.workspace-decision-action.is-secondary {
+  border-color: var(--border-subtle);
+  color: var(--text-primary);
+}
+
 .workspace-decision-action.is-danger { color: var(--error); }
 .workspace-decision-action:focus-visible {
   outline: 2px solid var(--study-gold);
