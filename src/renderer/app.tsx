@@ -1596,12 +1596,19 @@ export function App(): React.JSX.Element {
   const moveWorkspaceTab = useCallback(async (
     tabId: string,
     targetGroupId: string,
+    slot?: number,
   ): Promise<boolean> => {
     let applied = false;
     const proceed = await runWorkspaceTransition("group-change", async () => {
       const snapshot = studyWorkspaceRef.current;
       if (!snapshot) return;
-      const requested = moveStudyWorkspaceTab(snapshot, { tabId, targetGroupId });
+      /* The slot rides the whole transition, confirmation included. A drop that
+         raises one — moving a study's home passage, moving research with its
+         branch — resolves inside this same await and commits once, so the tab
+         appears where the reader dropped it. Composing move-then-reorder would
+         be two commits, two persistence writes, and a visible append followed by
+         a jump. */
+      const requested = moveStudyWorkspaceTab(snapshot, { tabId, targetGroupId, slot });
       let result = requested;
       if (requested.outcome === "needs-confirmation") {
         const decision = await requestWorkspaceDecision(requested.confirmation);

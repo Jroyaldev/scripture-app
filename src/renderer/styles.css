@@ -3690,6 +3690,64 @@ html, body, #root {
   color: var(--text-primary);
 }
 
+/* ── A ROW IN HAND · 2026-08-03 ────────────────────────────────────────────
+ *
+ * The gap the neighbours open IS the preview. There is no insertion line, for
+ * the same reason the strip has none: a line is a mark drawn between things to
+ * say what would happen, and moving the things says it without a new vocabulary.
+ *
+ * The transition is gated on the list rather than stated on the row, so a shift
+ * written while the drag is live animates and the reset at drop does not: the
+ * attribute goes with the gesture, and the rows fall back into place instantly
+ * because by then the model has already put them there. `--row-shift` is written
+ * per frame straight to the element, never through React.
+ */
+.scripture-workspace-overflow-row {
+  transform: translateY(var(--row-shift, 0px));
+}
+
+.scripture-workspace-overflow-list[data-row-drag-live] .scripture-workspace-overflow-row {
+  transition: transform 140ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+/* The carried row keeps its space and gives up its ink. `visibility: hidden`
+   rather than a collapse, because the space it holds is the space it came from
+   — a row that also collapsed would open the gap twice. */
+.scripture-workspace-overflow-row[data-row-carried] {
+  visibility: hidden;
+  transition: none;
+}
+
+/* The proxy under the cursor. Fixed, above the panel, and unhittable — the drop
+   is decided by arithmetic rather than by hit-testing, but a proxy that could be
+   hit would still swallow the pointerup that ends the gesture. It wears the
+   row's own shape rather than the strip ghost's uppercase mono: what is being
+   carried is a line in a list, and it should look like one. */
+.scripture-workspace-row-ghost {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1400;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 28px;
+  max-width: 260px;
+  padding: 0 10px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-float);
+  color: var(--text-primary);
+  font-size: 10.5px;
+  white-space: nowrap;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 10px rgb(0 0 0 / 0.16)) drop-shadow(0 1px 2px rgb(0 0 0 / 0.10));
+}
+
+.scripture-workspace-row-ghost > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* `.scripture-workspace-empty` stood here — "No open tab matches", drawn when
    a search left nothing standing. Nothing filters the list any more, and a menu
    that always shows every row has no empty state to draw: the panel does not
@@ -4137,6 +4195,9 @@ html[data-tab-drag] * {
 .scripture-workspace-recent-list button small { color: var(--text-tertiary); font-size: 9.5px; }
 
 @media (prefers-reduced-motion: reduce) {
+  /* The gap still opens — it is the preview, not decoration, and a drag with no
+     preview is a drag with no answer. What goes is the slide to it. */
+  .scripture-workspace-overflow-list[data-row-drag-live] .scripture-workspace-overflow-row,
   .scripture-workspace-tab-wrap,
   .scripture-workspace-tab,
   .scripture-workspace-tab-close,
@@ -4212,6 +4273,13 @@ html[data-tab-drag] * {
      needs the same answer, or the one object standing for a tab in mid-air is a
      bare rectangle on the system's own canvas. */
   .scripture-workspace-tab-wrap.is-dragging { outline: 2px solid Highlight; outline-offset: -1px; }
+
+  .scripture-workspace-row-ghost {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+    filter: none;
+  }
 
   .scripture-workspace-tab-ghost {
     background: Canvas;

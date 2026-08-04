@@ -1291,7 +1291,169 @@ try {
   );
   assert.equal(afterTabRings.onFocused, true, "the ring is not on the control the keyboard reached");
 
-  await driver.evaluate(`document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`);
+
+  /* ── A ROW IN HAND · 2026-08-03 ─────────────────────────────────────────────
+
+     All Tabs is where a reader can reach a study they are not in, and until now
+     the only thing they could do to a row from here was press it. Order lived on
+     the row's context menu, which is correct for the keyboard and a poor answer
+     for a pointer: a reader who can see both rows should be able to put one
+     above the other by putting it there.
+
+     Three claims, in the order a reader meets them. The gap opens where the row
+     would land — that gap IS the preview, there is no insertion line, for the
+     same reason the strip has none. The drop commits to the slot the gap named.
+     And nothing survives the gesture: no inline transforms, no live attribute,
+     no ghost.
+
+     Driven with real CDP mouse events rather than synthetic ones, because the
+     gesture is built on pointer capture and a synthetic event has no pointer to
+     capture. */
+  await driver.evaluate(`document.querySelector("[data-study-all-tabs]")?.click()`);
+  await driver.waitFor(`Boolean(document.getElementById("study-workspace-all-tabs"))`);
+  await driver.settle();
+  const rowsBeforeDrag = await driver.evaluate(`(() => {
+    const study = [...document.querySelectorAll(".scripture-workspace-overflow-group")]
+      .find((group) => group.querySelectorAll("[data-study-all-tabs-row]").length >= 3);
+    if (!study) throw new Error("the drag leg needs a study with three rows");
+    const rows = [...study.querySelectorAll("[data-study-all-tabs-row]")];
+    const box = (element) => {
+      const rect = element.getBoundingClientRect();
+      return { x: Math.round(rect.x + 60), y: Math.round(rect.y + rect.height / 2) };
+    };
+    return {
+      ids: rows.map((row) => row.getAttribute("data-study-tab-id")),
+      first: box(rows[0]),
+      third: box(rows[2]),
+    };
+  })()`);
+  await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: rowsBeforeDrag.first.x, y: rowsBeforeDrag.first.y });
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mousePressed", x: rowsBeforeDrag.first.x, y: rowsBeforeDrag.first.y, button: "left", buttons: 1, clickCount: 1,
+  });
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mouseMoved", x: rowsBeforeDrag.first.x, y: rowsBeforeDrag.first.y + 8, button: "left", buttons: 1,
+  });
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mouseMoved", x: rowsBeforeDrag.first.x, y: rowsBeforeDrag.third.y + 4, button: "left", buttons: 1,
+  });
+  await sleep(160);
+  const dragPreview = await driver.evaluate(`(() => {
+    const list = document.querySelector(".scripture-workspace-overflow-list");
+    const rows = [...document.querySelectorAll("[data-study-all-tabs-row]")];
+    const shifts = rows
+      .map((row) => Number.parseFloat(row.style.getPropertyValue("--row-shift")) || 0)
+      .filter((value) => value !== 0);
+    const carried = document.querySelector("[data-row-carried]");
+    return {
+      live: list?.hasAttribute("data-row-drag-live") ?? false,
+      ghost: Boolean(document.querySelector("[data-study-row-ghost]")),
+      ghostHittable: getComputedStyle(document.querySelector("[data-study-row-ghost]") ?? document.body).pointerEvents,
+      carriedHidden: carried ? getComputedStyle(carried).visibility : null,
+      shifts,
+      // One step, measured inside a study. This read the first two rows in the
+      // list once, which are a section apart when the first study holds one row
+      // — the neighbours previewed a 28px move by sliding 77.
+      step: shifts.length > 0 ? Math.abs(shifts[0]) : 0,
+    };
+  })()`);
+  assert.equal(dragPreview.live, true, "the list does not mark a drag in progress");
+  assert.equal(dragPreview.ghost, true, "no proxy follows the pointer");
+  assert.equal(dragPreview.ghostHittable, "none", "the ghost can be hit, and will swallow the pointerup that ends the drag");
+  assert.equal(dragPreview.carriedHidden, "hidden", "the carried row still paints, so the gap reads twice");
+  assert.ok(dragPreview.shifts.length > 0, "no neighbour moved — the gap is the whole preview");
+  assert.ok(
+    dragPreview.step > 24 && dragPreview.step < 48,
+    `neighbours moved ${dragPreview.step}px, which is not one row's step — the measurement crossed a section`,
+  );
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mouseReleased", x: rowsBeforeDrag.first.x, y: rowsBeforeDrag.third.y + 4, button: "left", buttons: 0, clickCount: 1,
+  });
+  await driver.settle();
+  await sleep(240);
+  const afterRowDrop = await driver.evaluate(`(() => {
+    const study = [...document.querySelectorAll(".scripture-workspace-overflow-group")]
+      .find((group) => group.querySelectorAll("[data-study-all-tabs-row]").length >= 3);
+    const list = document.querySelector(".scripture-workspace-overflow-list");
+    return {
+      ids: [...(study?.querySelectorAll("[data-study-all-tabs-row]") ?? [])]
+        .map((row) => row.getAttribute("data-study-tab-id")),
+      open: Boolean(document.getElementById("study-workspace-all-tabs")),
+      live: list?.hasAttribute("data-row-drag-live") ?? false,
+      ghost: Boolean(document.querySelector("[data-study-row-ghost]")),
+      inline: [...document.querySelectorAll("[data-study-all-tabs-row]")]
+        .filter((row) => row.style.cssText.length > 0).length,
+    };
+  })()`);
+  assert.notDeepEqual(afterRowDrop.ids, rowsBeforeDrag.ids, "the drop committed nothing");
+  // The first three rotate; everything below them is untouched, because a drop
+  // moves one row and its neighbours close over the hole it left.
+  assert.deepEqual(
+    afterRowDrop.ids,
+    [
+      rowsBeforeDrag.ids[1],
+      rowsBeforeDrag.ids[2],
+      rowsBeforeDrag.ids[0],
+      ...rowsBeforeDrag.ids.slice(3),
+    ],
+    "the row did not land in the slot the gap named",
+  );
+  // The list stays open: a reader ordering a study is not finished after one row.
+  assert.equal(afterRowDrop.open, true, "the drop closed the list");
+  assert.equal(afterRowDrop.live, false, "the drag marker outlived the drag");
+  assert.equal(afterRowDrop.ghost, false, "the ghost outlived the drag");
+  assert.equal(afterRowDrop.inline, 0, "inline drag transforms outlived the drag");
+
+  /* AND PUT IT BACK, which is two things at once. It proves the gesture works
+     upward as well as down — the shift arithmetic is not symmetric, rows above
+     the slot move down while rows below move up — and it leaves the fixture as
+     it found it. Later legs in this tour drive the strip's own drag against
+     tab positions in this same study; a leg that reorders a shared fixture and
+     walks away is a leg that breaks something three hundred lines later and
+     blames it. */
+  const backPoints = await driver.evaluate(`(() => {
+    const study = [...document.querySelectorAll(".scripture-workspace-overflow-group")]
+      .find((group) => group.querySelectorAll("[data-study-all-tabs-row]").length >= 3);
+    const rows = [...study.querySelectorAll("[data-study-all-tabs-row]")];
+    const box = (element) => {
+      const rect = element.getBoundingClientRect();
+      return { x: Math.round(rect.x + 60), y: Math.round(rect.y + rect.height / 2) };
+    };
+    return { third: box(rows[2]), first: box(rows[0]) };
+  })()`);
+  await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: backPoints.third.x, y: backPoints.third.y });
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mousePressed", x: backPoints.third.x, y: backPoints.third.y, button: "left", buttons: 1, clickCount: 1,
+  });
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mouseMoved", x: backPoints.third.x, y: backPoints.third.y - 8, button: "left", buttons: 1,
+  });
+  await sleep(90);
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mouseMoved", x: backPoints.third.x, y: backPoints.first.y - 4, button: "left", buttons: 1,
+  });
+  await sleep(160);
+  await cdp.send("Input.dispatchMouseEvent", {
+    type: "mouseReleased", x: backPoints.third.x, y: backPoints.first.y - 4, button: "left", buttons: 0, clickCount: 1,
+  });
+  await driver.settle();
+  await sleep(240);
+  const restored = await driver.evaluate(`(() => {
+    const study = [...document.querySelectorAll(".scripture-workspace-overflow-group")]
+      .find((group) => group.querySelectorAll("[data-study-all-tabs-row]").length >= 3);
+    return [...study.querySelectorAll("[data-study-all-tabs-row]")]
+      .map((row) => row.getAttribute("data-study-tab-id"));
+  })()`);
+  assert.deepEqual(restored, rowsBeforeDrag.ids, "dragging the row back did not restore the order it started in");
+
+  /* A REAL Escape, and now for a second reason. The first was faithfulness — a
+     synthetic keydown only works when something happens to be listening on the
+     node it is dispatched to. The second is MODALITY: the drag leg above ends
+     with real mouse input, and the forced-colours gate below focuses the strip's
+     selected tab programmatically and measures its ring. A programmatic focus
+     matches `:focus-visible` only when the browser's last input was a keyboard,
+     so a synthetic Escape leaves that gate reading 0px and blaming the sheet. */
+  await dispatchKey(cdp, "Escape", "Escape", 27);
   await driver.waitFor(`!document.getElementById("study-workspace-all-tabs")
     && document.activeElement?.matches("[data-study-all-tabs]") === true`);
 
@@ -1880,7 +2042,7 @@ try {
   for (const capture of pendingScreenshots) {
     writeFileSync(join(OUTPUT_DIR, capture.file), capture.bytes);
   }
-  console.log(`PASS study workspace bar: ${THEMES.length} identical-fixture theme captures + clean tab state + study control (switch, rename, one, waking, sixteen, narrow) + tab drag (shuffle, carry, land, found) + forced-colors/reduced-motion`);
+  console.log(`PASS study workspace bar: ${THEMES.length} identical-fixture theme captures + clean tab state + study control (switch, rename, one, waking, sixteen, narrow) + tab drag (shuffle, carry, land, found) + All Tabs row drag (gap, drop, round trip) + forced-colors/reduced-motion`);
 } catch (error) {
   throw new Error(`${error instanceof Error ? error.stack ?? error.message : String(error)}\nElectron log:\n${childLog}`);
 } finally {

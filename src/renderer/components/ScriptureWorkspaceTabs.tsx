@@ -52,7 +52,10 @@ export interface ScriptureWorkspaceTabsProps {
   onClose: (tabId: string) => Promise<boolean>;
   onCloseGroup: (groupId: string) => Promise<boolean>;
   onRenameGroup: (groupId: string, label: string) => Promise<boolean>;
-  onMoveTab: (tabId: string, targetGroupId: string) => Promise<boolean>;
+  /** `slot` is where in the target study to land, and only a drag knows it: a
+   *  menu naming a study has said nothing about position, so it omits this and
+   *  the model appends. */
+  onMoveTab: (tabId: string, targetGroupId: string, slot?: number) => Promise<boolean>;
   onPromoteTab: (tabId: string) => Promise<boolean>;
   /**
    * The study a dragged tab is currently over, or null.
@@ -627,6 +630,55 @@ export function ScriptureWorkspaceTabs({
      the layout effect below can play the difference back. */
   const settleRef = useRef<{ tabId: string; left: number } | null>(null);
   const suppressTabClickRef = useRef(false);
+
+  /* ── DRAGGING A ROW INSIDE ALL TABS ────────────────────────────────────────
+
+     The strip's drag and this one look alike and are not the same gesture, and
+     the difference is worth stating before the code:
+
+       · THE AXIS. The strip is a row; this is a list. Everything the strip
+         reasons about in `left`/`width` this reasons about in `top`/`height`.
+       · THE COORDINATE SPACE. The strip snapshots viewport rects once and never
+         scrolls. This list scrolls WHILE you drag — auto-scroll is the whole
+         reason you can reach a study below the fold — so viewport snapshots go
+         stale the first frame the list moves. Everything here is in the list's
+         CONTENT space: `top + scrollTop` at capture, and the pointer converted
+         with the live `scrollTop` every frame.
+       · THE SHIFT. `studyWorkspaceDragShuffle` exists because the strip's
+         selected tab carries uneven margins, so how far each neighbour moves is
+         a positional question with no closed form. These rows are uniform —
+         28px and a 2px gap — so a neighbour moves exactly one step or not at
+         all, and the arithmetic is a comparison rather than a walk. It also
+         assumes the dragged item is IN the slot list, which is false the moment
+         the target is a different study.
+
+     What is shared is the discipline, and it is the part that was expensive to
+     learn: snapshot once at threshold, write per-frame transforms straight to
+     the DOM, and only set React state when a DISCRETE value changes. */
+  interface RowDragRow { id: string; groupId: string; top: number; height: number }
+  interface RowDragGesture {
+    x: number;
+    y: number;
+    tabId: string;
+    groupId: string;
+    started: boolean;
+    rows: RowDragRow[];
+    sections: Array<{ groupId: string; top: number; bottom: number }>;
+    step: number;
+    listTop: number;
+    listHeight: number;
+    pointerX: number;
+    pointerY: number;
+    target: { groupId: string; slot: number } | null;
+  }
+  const rowDragRef = useRef<RowDragGesture | null>(null);
+  const rowGhostRef = useRef<HTMLDivElement>(null);
+  const rowScrollRafRef = useRef<number | null>(null);
+  const suppressRowClickRef = useRef(false);
+  const [rowDrag, setRowDrag] = useState<
+    { tabId: string; groupId: string; targetGroupId: string; slot: number } | null
+  >(null);
+  const [rowCarried, setRowCarried] = useState<CarriedTab | null>(null);
   const rovingFocusNonceRef = useRef(0);
   // Symmetric exit motion: a closed tab leaves a decorative ghost that collapses
   // its width/opacity to mirror the 150ms entrance. Geometry is captured while
@@ -969,6 +1021,247 @@ export function ScriptureWorkspaceTabs({
     return () => window.clearTimeout(timer);
   }, [overflowOpen, overflowAnchor]);
 
+  /** The list a row drag lives inside, or null when the panel is closed. */
+  const overflowListElement = useCallback((): HTMLElement | null => (
+    document.getElementById(OVERFLOW_PANEL_ID)
+      ?.querySelector<HTMLElement>(".scripture-workspace-overflow-list") ?? null
+  ), []);
+
+  /* Where a pointer at content-space `y` is asking to put the row.
+     The slot is stated in KEPT-LIST space — the study's rows with the dragged
+     one taken out — because that is what both mutations mean by it: `reorderedIndex`
+     splices the tab out and then in, and `moveTabRecords` inserts among the tabs
+     it kept. Two vocabularies for one number is how a preview and a commit come
+     to disagree. */
+  const rowDropTarget = useCallback((
+    gesture: RowDragGesture,
+    y: number,
+  ): { groupId: string; slot: number } | null => {
+    const section = gesture.sections.find((entry) => y >= entry.top && y <= entry.bottom)
+      // Above the first section or below the last: the nearest one, so a reader
+      // who overshoots into the head or the recents still has an answer rather
+      // than watching the gap snap shut.
+      ?? (y < (gesture.sections[0]?.top ?? 0)
+        ? gesture.sections[0]
+        : gesture.sections.at(-1));
+    if (!section) return null;
+    const kept = gesture.rows.filter((row) => row.groupId === section.groupId
+      && row.id !== gesture.tabId);
+    let slot = kept.length;
+    for (let index = 0; index < kept.length; index += 1) {
+      const row = kept[index];
+      if (row && y < row.top + row.height / 2) { slot = index; break; }
+    }
+    return { groupId: section.groupId, slot };
+  }, []);
+
+  /* One step down, one step up, or nothing. Rows the drop pushes past move by
+     exactly `step`; everything else stays. Written against the ORIGINAL rendered
+     order, because that is what is on screen — the arithmetic converts each row's
+     original index to where it will end up and takes the difference. */
+  const rowDragShifts = useCallback((
+    gesture: RowDragGesture,
+    target: { groupId: string; slot: number },
+  ): Map<string, number> => {
+    const shifts = new Map<string, number>();
+    const source = gesture.rows.filter((row) => row.groupId === gesture.groupId);
+    const from = source.findIndex((row) => row.id === gesture.tabId);
+    if (from < 0) return shifts;
+    if (target.groupId === gesture.groupId) {
+      source.forEach((row, index) => {
+        if (row.id === gesture.tabId) return;
+        // Below the dragged row and at or before the slot: it comes up one.
+        // Above it and at or after the slot: it goes down one.
+        if (index > from && index - 1 < target.slot) shifts.set(row.id, -gesture.step);
+        else if (index < from && index >= target.slot) shifts.set(row.id, gesture.step);
+      });
+      return shifts;
+    }
+    // Two studies: the source closes over the hole, the target opens one.
+    source.forEach((row, index) => {
+      if (index > from) shifts.set(row.id, -gesture.step);
+    });
+    gesture.rows
+      .filter((row) => row.groupId === target.groupId)
+      .forEach((row, index) => {
+        if (index >= target.slot) shifts.set(row.id, gesture.step);
+      });
+    return shifts;
+  }, []);
+
+  const paintRowDrag = useCallback((gesture: RowDragGesture): void => {
+    const list = overflowListElement();
+    if (!list) return;
+    const y = gesture.pointerY - gesture.listTop + list.scrollTop;
+    const ghost = rowGhostRef.current;
+    // Both axes. This tracked Y alone at first, which left the proxy pinned to
+    // the left edge of the WINDOW while the row it represented was being carried
+    // down a panel eleven hundred pixels to the right — a ghost that is not
+    // under the cursor is not a ghost of anything.
+    if (ghost) {
+      ghost.style.transform =
+        `translate3d(${Math.round(gesture.pointerX + 12)}px, ${Math.round(gesture.pointerY - 14)}px, 0)`;
+    }
+    const target = rowDropTarget(gesture, y);
+    const shifts = target ? rowDragShifts(gesture, target) : new Map<string, number>();
+    for (const row of gesture.rows) {
+      const element = list.querySelector<HTMLElement>(
+        `[data-study-all-tabs-row][data-study-tab-id="${CSS.escape(row.id)}"]`,
+      );
+      if (!element) continue;
+      const shift = shifts.get(row.id) ?? 0;
+      element.style.setProperty("--row-shift", `${shift}px`);
+    }
+    // Only when a discrete value changes — a render per frame would fight the
+    // transforms this just wrote.
+    const changed = target?.groupId !== gesture.target?.groupId
+      || target?.slot !== gesture.target?.slot;
+    gesture.target = target;
+    if (changed) {
+      setRowDrag(target
+        ? { tabId: gesture.tabId, groupId: gesture.groupId, targetGroupId: target.groupId, slot: target.slot }
+        : null);
+    }
+  }, [overflowListElement, rowDragShifts, rowDropTarget]);
+
+  /* AUTO-SCROLL, and the reason the coordinates are what they are. Sixty-four
+     tabs do not fit; the study you want may be below the fold; so nearing an
+     edge with a row in hand scrolls the list. Every scroll moves the rows under
+     the pointer, which is exactly why the snapshot is in content space and the
+     pointer is converted fresh each frame. */
+  const stepRowScroll = useCallback((): void => {
+    const gesture = rowDragRef.current;
+    const list = overflowListElement();
+    if (!gesture?.started || !list) { rowScrollRafRef.current = null; return; }
+    const above = gesture.pointerY - gesture.listTop;
+    const below = gesture.listTop + gesture.listHeight - gesture.pointerY;
+    const EDGE = 28;
+    const speed = above < EDGE ? -Math.min(12, EDGE - above)
+      : below < EDGE ? Math.min(12, EDGE - below)
+        : 0;
+    if (speed !== 0) {
+      const before = list.scrollTop;
+      list.scrollTop += speed;
+      if (list.scrollTop !== before) paintRowDrag(gesture);
+    }
+    rowScrollRafRef.current = window.requestAnimationFrame(stepRowScroll);
+  }, [overflowListElement, paintRowDrag]);
+
+  const endRowDrag = useCallback((): void => {
+    const list = overflowListElement();
+    if (list) {
+      list.removeAttribute("data-row-drag-live");
+      for (const element of list.querySelectorAll<HTMLElement>("[data-study-all-tabs-row]")) {
+        element.style.removeProperty("--row-shift");
+      }
+    }
+    if (rowScrollRafRef.current !== null) {
+      window.cancelAnimationFrame(rowScrollRafRef.current);
+      rowScrollRafRef.current = null;
+    }
+    rowDragRef.current = null;
+    setRowDrag(null);
+    setRowCarried(null);
+  }, [overflowListElement]);
+
+  const handleRowPointerDown = useCallback((
+    event: React.PointerEvent<HTMLButtonElement>,
+    tabId: string,
+    groupId: string,
+  ): void => {
+    if (event.button !== 0) return;
+    rowDragRef.current = {
+      x: event.clientX,
+      y: event.clientY,
+      tabId,
+      groupId,
+      started: false,
+      rows: [],
+      sections: [],
+      step: 0,
+      listTop: 0,
+      listHeight: 0,
+      pointerX: event.clientX,
+      pointerY: event.clientY,
+      target: null,
+    };
+  }, []);
+
+  const handleRowPointerMove = useCallback((
+    event: React.PointerEvent<HTMLButtonElement>,
+  ): void => {
+    const gesture = rowDragRef.current;
+    if (!gesture) return;
+    gesture.pointerX = event.clientX;
+    gesture.pointerY = event.clientY;
+    if (!gesture.started) {
+      if (Math.abs(event.clientY - gesture.y) < DRAG_THRESHOLD_PX
+        && Math.abs(event.clientX - gesture.x) < DRAG_THRESHOLD_PX) return;
+      const list = overflowListElement();
+      if (!list) { rowDragRef.current = null; return; }
+      const listRect = list.getBoundingClientRect();
+      gesture.listTop = listRect.top;
+      gesture.listHeight = listRect.height;
+      /* SNAPSHOT ONCE, IN CONTENT SPACE. Measuring per frame would read the
+         rows mid-transform and feed the drag its own preview. */
+      const rows = [...list.querySelectorAll<HTMLElement>("[data-study-all-tabs-row]")];
+      gesture.rows = rows.map((element) => {
+        const rect = element.getBoundingClientRect();
+        return {
+          id: element.getAttribute("data-study-tab-id") ?? "",
+          groupId: element.closest("[data-study-group-id]")?.getAttribute("data-study-group-id") ?? "",
+          top: rect.top - listRect.top + list.scrollTop,
+          height: rect.height,
+        };
+      });
+      gesture.sections = [...list.querySelectorAll<HTMLElement>("[data-study-group-id]")]
+        .map((element) => {
+          const rect = element.getBoundingClientRect();
+          return {
+            groupId: element.getAttribute("data-study-group-id") ?? "",
+            top: rect.top - listRect.top + list.scrollTop,
+            bottom: rect.bottom - listRect.top + list.scrollTop,
+          };
+        });
+      /* THE STEP IS MEASURED WITHIN A STUDY, never across two. This read the
+         first two rows in the list, which are only one step apart when the first
+         study has at least two of them — otherwise the gap it measured spanned a
+         section header and its rules, and the neighbours slid 77px to preview a
+         28px move. The slot was right either way, because that comes from
+         midpoints; it was only the distance that lied, which is exactly the kind
+         of wrong that ships. */
+      const step = gesture.rows.reduce<number | null>((found, row, index) => {
+        if (found !== null || index === 0) return found;
+        const previous = gesture.rows[index - 1];
+        return previous && previous.groupId === row.groupId ? row.top - previous.top : null;
+      }, null);
+      gesture.step = step ?? (gesture.rows[0]?.height ?? 28) + 2;
+      gesture.started = true;
+      // The transition lives with the gesture: shifts written while this is on
+      // slide, and the reset at drop does not — by then the model has already
+      // put the rows where the preview said they would be.
+      list.setAttribute("data-row-drag-live", "");
+      suppressRowClickRef.current = true;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      const carrying = gesture.rows.find((row) => row.id === gesture.tabId);
+      if (carrying) {
+        setRowCarried({
+          id: gesture.tabId,
+          /* NOT the first span — that is the tab's mark, and it holds no text,
+             so the proxy carried a 40px blank the whole way down the list. The
+             label is the row's own span, the one the mark is not. */
+          label: [...event.currentTarget.querySelectorAll<HTMLElement>(":scope > span")]
+            .find((span) => !span.classList.contains("scripture-workspace-tab-mark"))
+            ?.textContent?.trim() ?? "",
+          kind: (event.currentTarget.closest("[data-study-all-tabs-row]")
+            ?.getAttribute("data-study-tab-kind") ?? "passage") as CarriedTab["kind"],
+        });
+      }
+      rowScrollRafRef.current = window.requestAnimationFrame(stepRowScroll);
+    }
+    paintRowDrag(gesture);
+  }, [overflowListElement, paintRowDrag, stepRowScroll]);
+
   useLayoutEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport) return;
@@ -1197,9 +1490,27 @@ export function ScriptureWorkspaceTabs({
     tabId: string,
     targetGroupId: string,
     focusTarget: HTMLElement,
+    slot?: number,
   ): Promise<boolean> => await runApprovedIntent(
-    () => onMoveTab(tabId, targetGroupId),
-    () => scheduleControlFocus(focusTarget, overflowPanelFallback),
+    () => onMoveTab(tabId, targetGroupId, slot),
+    /* A tab moved between studies REMOUNTS under its new section, so the node
+       the caller handed us is disconnected by the time focus is due and the
+       fallback would swallow it. Re-resolve by id — the row is still the row,
+       it is simply a different element now — and resolve it LAZILY, because
+       this callback runs before React has drawn the section it moved to. An
+       eager lookup here finds the node that is about to be thrown away.
+
+       Three answers in order, and the order is the point: the row where it
+       landed, for a drop inside All Tabs; the control that asked, for the
+       strip's own drag onto a study chip, where no such row is on screen; then
+       the panel, which is only an answer while the panel is open. */
+    () => scheduleControlFocus(null, () => (
+      document.querySelector<HTMLElement>(
+        `[data-study-all-tabs-row][data-study-tab-id="${CSS.escape(tabId)}"] > button`,
+      )
+      ?? (focusTarget.isConnected ? focusTarget : null)
+      ?? overflowPanelFallback()
+    )),
   ), [onMoveTab, runApprovedIntent, overflowPanelFallback, scheduleControlFocus]);
 
   const handlePromoteTab = useCallback(async (tabId: string): Promise<boolean> => await runApprovedIntent(
@@ -1218,6 +1529,32 @@ export function ScriptureWorkspaceTabs({
     () => onReorderTab(tabId, position),
     () => scheduleControlFocus(focusTarget, overflowPanelFallback),
   ), [onReorderTab, runApprovedIntent, overflowPanelFallback, scheduleControlFocus]);
+
+  const handleRowPointerUp = useCallback(async (
+    event: React.PointerEvent<HTMLButtonElement>,
+  ): Promise<void> => {
+    const gesture = rowDragRef.current;
+    if (!gesture?.started) { rowDragRef.current = null; return; }
+    const target = gesture.target;
+    const { tabId, groupId } = gesture;
+    const source = gesture.rows.filter((row) => row.groupId === groupId);
+    const from = source.findIndex((row) => row.id === tabId);
+    event.currentTarget.releasePointerCapture(event.pointerId);
+    endRowDrag();
+    if (!target) return;
+    /* ONE COMMIT, EITHER WAY. Same study is a reorder at the slot; a different
+       study is a move that carries the slot with it — including through a
+       confirmation, so a drop that has to ask a question still lands where the
+       reader let go rather than appending and then jumping. */
+    if (target.groupId === groupId) {
+      // The dragged row is still in the rendered list, so its own position is a
+      // no-op that the model would refuse anyway; say so here and save a commit.
+      if (target.slot === from) return;
+      await handleReorderTab(tabId, { slot: target.slot }, event.currentTarget);
+      return;
+    }
+    await handleMoveTab(tabId, target.groupId, event.currentTarget, target.slot);
+  }, [endRowDrag, handleMoveTab, handleReorderTab]);
 
   const handleReorderGroup = useCallback(async (
     groupId: string,
@@ -2215,11 +2552,29 @@ export function ScriptureWorkspaceTabs({
                          a strip of shortcut hints is chrome about chrome. */
                       const ordinal = studyWorkspaceTabOrdinal(workspace, tab.id);
                       return (
-                        <div className="scripture-workspace-overflow-row" data-study-all-tabs-row="" data-study-tab-id={tab.id} key={tab.id}>
+                        <div
+                          className="scripture-workspace-overflow-row"
+                          data-study-all-tabs-row=""
+                          data-study-tab-id={tab.id}
+                          data-study-tab-kind={tab.kind}
+                          // The row being carried keeps its space in the list —
+                          // the gap the others open is the preview, and a row
+                          // that also collapsed would double it.
+                          data-row-carried={rowDrag?.tabId === tab.id ? "" : undefined}
+                          key={tab.id}
+                        >
                           <button
                             type="button"
                             ref={workspace.activeTabId === tab.id ? activeOverflowRowRef : undefined}
                             className={workspace.activeTabId === tab.id ? "is-active" : undefined}
+                            /* THE WHOLE ROW DRAGS. No grip glyph: a handle would
+                               be one more mark on every row to buy a gesture the
+                               row can carry itself, and the four-pixel threshold
+                               is what keeps a press from becoming a drag. */
+                            onPointerDown={(event) => handleRowPointerDown(event, tab.id, group.id)}
+                            onPointerMove={handleRowPointerMove}
+                            onPointerUp={handleRowPointerUp}
+                            onPointerCancel={endRowDrag}
                             /* THE ROW'S VERBS ARE ON ITS MENU, not beside it.
                                Order and Move stood here as two more buttons per
                                row, which made a twenty-tab list eighty tab stops
@@ -2234,7 +2589,15 @@ export function ScriptureWorkspaceTabs({
                               event,
                               { keepOverflow: true },
                             )}
-                            onClick={async () => { await handleSelectTab(tab.id, { closeOverflow: true, moveFocus: true }); }}
+                            onClick={async () => {
+                              // A drag ends with a click the browser owes us and
+                              // the reader did not ask for.
+                              if (suppressRowClickRef.current) {
+                                suppressRowClickRef.current = false;
+                                return;
+                              }
+                              await handleSelectTab(tab.id, { closeOverflow: true, moveFocus: true });
+                            }}
                           >
                             <TabMark tab={tab} /><span>{tabLabel}</span>
                             {workspace.activeTabId === tab.id && <small>Current</small>}
@@ -2354,6 +2717,25 @@ export function ScriptureWorkspaceTabs({
         >
           <TabMarkForKind kind={carried.kind} />
           <span className="scripture-workspace-tab-label">{carried.label}</span>
+        </div>,
+        document.body,
+      )}
+
+      {/* The row's ghost. Portalled to the body for the same reason the strip's
+          is — a fixed layer cannot be clipped by the panel it started in — and
+          `pointer-events: none` for the same reason too: the drop is decided by
+          arithmetic here rather than by hit-testing, but a proxy under the
+          cursor would still swallow the pointerup that ends the gesture. */}
+      {rowCarried && createPortal(
+        <div
+          ref={rowGhostRef}
+          className={`scripture-workspace-row-ghost ${materialClasses}`}
+          data-study-row-ghost=""
+          data-study-tab-kind={rowCarried.kind}
+          aria-hidden="true"
+        >
+          <TabMarkForKind kind={rowCarried.kind} />
+          <span>{rowCarried.label}</span>
         </div>,
         document.body,
       )}

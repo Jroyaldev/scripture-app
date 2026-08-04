@@ -154,6 +154,9 @@ export type WorkspaceConfirmation =
       sourceGroupId: string;
       sourceTabIds: string[];
       targetGroupId: string;
+      /** Where in the target study the drop asked for; absent when a menu
+       *  named the study and said nothing about position. */
+      slot?: number;
     }
   | {
       kind: "move-entity-context";
@@ -161,6 +164,9 @@ export type WorkspaceConfirmation =
       sourceGroupId: string;
       nonce: number;
       targetGroupId: string;
+      /** Where in the target study the drop asked for; absent when a menu
+       *  named the study and said nothing about position. */
+      slot?: number;
     }
   | {
       kind: "move-home-passage";
@@ -169,6 +175,9 @@ export type WorkspaceConfirmation =
       sourceTabIds: string[];
       entityNonces: EntityWorkspaceNonceSnapshot[];
       targetGroupId: string;
+      /** Where in the target study the drop asked for; absent when a menu
+       *  named the study and said nothing about position. */
+      slot?: number;
     };
 
 export type WorkspaceDecision =
@@ -686,18 +695,46 @@ export function toggleStudyWorkspaceGroup(
   };
 }
 
+/**
+ * Move tabs between studies, landing them at `slot` when the caller knows where.
+ *
+ * THE SLOT ARRIVED WITH THE DRAG. Every caller before it was a menu item —
+ * "Move to study…" — and a menu naming a study has said nothing about where in
+ * that study, so appending was the whole answer. A reader dragging a row has
+ * said exactly where: they held it between two rows and let go, and watched a
+ * gap open there while they did. Landing it at the end after that would be the
+ * app disagreeing with a preview it had just drawn.
+ *
+ * Clamped against the KEPT tabs, which is what makes the two awkward callers
+ * safe without either of them knowing about it. `move-entity-context` mints an
+ * origin passage into the destination before the move, so a slot chosen against
+ * the old list can be one short — clamping against the list as it stands now
+ * absorbs that. And a slot recorded before a confirmation was answered may be
+ * stale by any amount by the time the reader says yes; `reorderedIndex` clamps
+ * for the same reason a few hundred lines up. Out of range is a landing at the
+ * end, never a refusal: the move is what the reader asked for, the position was
+ * only ever the fine print.
+ */
 function moveTabRecords(
   state: StudyWorkspaceStateV2,
   tabIds: readonly string[],
   sourceGroup: StudyWorkspaceGroup,
   targetGroup: StudyWorkspaceGroup,
+  slot?: number,
 ): StudyWorkspaceStateV2 {
   const moving = new Set(tabIds);
   const frozenTargetGroup = freezeAutomaticGroupLabel(state, targetGroup);
   const sourceTabIds = sourceGroup.tabIds.filter((id) => !moving.has(id));
+  const keptTargetTabIds = frozenTargetGroup.tabIds.filter((id) => !moving.has(id));
+  // `move-branch` sends a block — the tab and the research hanging off it — and
+  // a block lands whole at the slot rather than scattering around it.
+  const landing = slot === undefined
+    ? keptTargetTabIds.length
+    : Math.max(0, Math.min(keptTargetTabIds.length, Math.trunc(slot)));
   const targetTabIds = [
-    ...frozenTargetGroup.tabIds.filter((id) => !moving.has(id)),
+    ...keptTargetTabIds.slice(0, landing),
     ...tabIds,
+    ...keptTargetTabIds.slice(landing),
   ];
   const tabsById = { ...state.tabsById };
   for (const tabId of tabIds) {
@@ -733,7 +770,7 @@ function moveTabRecords(
 
 export function moveStudyWorkspaceTab(
   state: StudyWorkspaceStateV2,
-  input: { tabId: string; targetGroupId: string },
+  input: { tabId: string; targetGroupId: string; slot?: number },
 ): WorkspaceMutationResult {
   const tab = state.tabsById[input.tabId];
   const sourceGroup = tab
@@ -764,6 +801,11 @@ export function moveStudyWorkspaceTab(
       outcome: "needs-confirmation",
       confirmation: {
         kind: "move-entity-context",
+        /* Spread rather than written, so a confirmation raised from a MENU has
+           no `slot` key at all rather than one holding undefined. The menu named
+           a study and said nothing about position; the shape should say that
+           too. */
+        ...(input.slot === undefined ? {} : { slot: input.slot }),
         tabId: tab.id,
         sourceGroupId: sourceGroup.id,
         nonce: tab.nonce,
@@ -778,6 +820,11 @@ export function moveStudyWorkspaceTab(
       outcome: "needs-confirmation",
       confirmation: {
         kind: "move-home-passage",
+        /* Spread rather than written, so a confirmation raised from a MENU has
+           no `slot` key at all rather than one holding undefined. The menu named
+           a study and said nothing about position; the shape should say that
+           too. */
+        ...(input.slot === undefined ? {} : { slot: input.slot }),
         tabId: tab.id,
         groupId: sourceGroup.id,
         sourceTabIds: [...sourceGroup.tabIds],
@@ -793,6 +840,11 @@ export function moveStudyWorkspaceTab(
       outcome: "needs-confirmation",
       confirmation: {
         kind: "move-branch",
+        /* Spread rather than written, so a confirmation raised from a MENU has
+           no `slot` key at all rather than one holding undefined. The menu named
+           a study and said nothing about position; the shape should say that
+           too. */
+        ...(input.slot === undefined ? {} : { slot: input.slot }),
         tabId: tab.id,
         dependentEntityIds,
         entityNonces: entityNonceSnapshots(state, dependentEntityIds),
@@ -803,7 +855,7 @@ export function moveStudyWorkspaceTab(
     };
   }
   return {
-    state: moveTabRecords(state, [tab.id], sourceGroup, targetGroup),
+    state: moveTabRecords(state, [tab.id], sourceGroup, targetGroup, input.slot),
     outcome: "applied",
   };
 }
@@ -1348,7 +1400,7 @@ export function resolveStudyWorkspaceDecision(
       return { state, outcome: "unchanged" };
     }
     return {
-      state: moveTabRecords(state, [tab.id, ...dependents], sourceGroup, targetGroup),
+      state: moveTabRecords(state, [tab.id, ...dependents], sourceGroup, targetGroup, confirmation.slot),
       outcome: "applied",
     };
   }
@@ -1399,7 +1451,7 @@ export function resolveStudyWorkspaceDecision(
         tabsById: { ...state.tabsById, [contextTab.id]: contextTab },
       };
     }
-    const moved = moveTabRecords(working, [tab.id], sourceGroup, destination);
+    const moved = moveTabRecords(working, [tab.id], sourceGroup, destination, confirmation.slot);
     const movedEntity = moved.tabsById[tab.id];
     if (movedEntity?.kind !== "entity") return { state, outcome: "unchanged" };
     return {
@@ -1470,6 +1522,7 @@ export function resolveStudyWorkspaceDecision(
           [tab.id, ...dependents],
           updatedSource,
           targetGroup,
+          confirmation.slot,
         ),
         outcome: "applied",
       };

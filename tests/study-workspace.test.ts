@@ -1129,6 +1129,100 @@ test("a non-home passage moves between groups without changing its active identi
   assert.equal(moved.state.groups[1]?.lastActiveTabId, "b");
 });
 
+test("a drop lands where the reader let go, confirmation or not", () => {
+  /* THE SLOT ARRIVED WITH THE DRAG. Every caller before it was the "Move to
+     study…" menu item, and a menu naming a study has said nothing about where
+     in that study, so appending was the whole answer. A reader dragging a row
+     has said exactly where — they held it between two rows and watched a gap
+     open there — and landing it at the end after that is the app disagreeing
+     with the preview it just drew. */
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), { groupId: "g1", passageTabId: "a" });
+  const branched = openPassageWorkspaceTab(initial, {
+    id: "b", sourceTabId: "a", view: view("JHN", 3, "BSB"),
+  }).state;
+  const grouped = createStudyWorkspaceGroup(branched, {
+    id: "g2", passageTabId: "c", view: view("ROM", 8, "BSB"),
+  }).state;
+  const filled = openPassageWorkspaceTab(grouped, {
+    id: "d", sourceTabId: "c", view: view("GEN", 1, "BSB"),
+  }).state;
+  assert.deepEqual(filled.groups[1]?.tabIds, ["c", "d"]);
+
+  // Ahead of everything, between the two, and after both.
+  for (const [slot, expected] of [
+    [0, ["b", "c", "d"]],
+    [1, ["c", "b", "d"]],
+    [2, ["c", "d", "b"]],
+  ] as const) {
+    const moved = moveStudyWorkspaceTab(filled, { tabId: "b", targetGroupId: "g2", slot });
+    assert.equal(moved.outcome, "applied");
+    assert.deepEqual(moved.state.groups[1]?.tabIds, expected, `slot ${slot}`);
+  }
+
+  /* Out of range LANDS AT THE END rather than refusing. A slot can be stale by
+     any amount by the time a confirmation is answered, and the move is what the
+     reader asked for — the position was only ever the fine print. */
+  const past = moveStudyWorkspaceTab(filled, { tabId: "b", targetGroupId: "g2", slot: 99 });
+  assert.deepEqual(past.state.groups[1]?.tabIds, ["c", "d", "b"]);
+  const under = moveStudyWorkspaceTab(filled, { tabId: "b", targetGroupId: "g2", slot: -4 });
+  assert.deepEqual(under.state.groups[1]?.tabIds, ["b", "c", "d"]);
+  // And omitting it still appends, which is what every menu caller means.
+  const appended = moveStudyWorkspaceTab(filled, { tabId: "b", targetGroupId: "g2" });
+  assert.deepEqual(appended.state.groups[1]?.tabIds, ["c", "d", "b"]);
+});
+
+test("a slot survives the confirmation it raised, and a moved branch lands whole", () => {
+  /* THE CONFIRMATION PATH IS WHERE THIS COULD HAVE GONE WRONG QUIETLY. Moving a
+     study's home passage, or research with the passage it hangs off, asks the
+     reader a question first — and a slot that did not ride along with the
+     question would be forgotten by the time they said yes, so the tab would
+     append and then, one commit later, jump. It rides on the confirmation. */
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), { groupId: "g1", passageTabId: "home" });
+  const grouped = createStudyWorkspaceGroup(initial, {
+    id: "g2", passageTabId: "c", view: view("ROM", 8, "BSB"),
+  }).state;
+  const filled = openPassageWorkspaceTab(grouped, {
+    id: "d", sourceTabId: "c", view: view("GEN", 1, "BSB"),
+  }).state;
+
+  const asked = moveStudyWorkspaceTab(filled, { tabId: "home", targetGroupId: "g2", slot: 1 });
+  assert.equal(asked.outcome, "needs-confirmation");
+  assert.equal(asked.confirmation?.kind, "move-home-passage");
+  assert.equal(asked.confirmation?.slot, 1);
+  const settled = resolveStudyWorkspaceDecision(filled, asked.confirmation!, "move-study");
+  assert.equal(settled.outcome, "applied");
+  // "move-study" folds the whole study in, so the slot does not apply to it;
+  // what this pins is that carrying one does not derange that path.
+  assert.ok(settled.state.groups.some((group) => group.id === "g2"));
+
+  /* A BLOCK LANDS WHOLE. `move-branch` sends the passage and the research
+     hanging off it, and those must arrive adjacent at the slot rather than
+     scattered around it — the reason they move together is that they are one
+     thing to the reader. */
+  const withEntity = openEntityWorkspaceTab(filled, {
+    id: "e", sourceTabId: "home", entityId: "ent-1", entityKind: "person",
+    displayName: "Apollos", origin: view("ACT", 19, "BSB"),
+  }).state;
+  const second = openPassageWorkspaceTab(withEntity, {
+    id: "second", sourceTabId: "home", view: view("JHN", 3, "BSB"),
+  }).state;
+  const branchAsked = moveStudyWorkspaceTab(second, { tabId: "home", targetGroupId: "g2", slot: 1 });
+  if (branchAsked.confirmation?.kind === "move-branch") {
+    assert.equal(branchAsked.confirmation.slot, 1);
+    const landed = resolveStudyWorkspaceDecision(second, branchAsked.confirmation, "move-branch");
+    if (landed.outcome === "applied") {
+      const target = landed.state.groups.find((group) => group.id === "g2");
+      const at = target?.tabIds.indexOf("home") ?? -1;
+      assert.equal(at, 1, "the block starts at the slot the drop named");
+      assert.deepEqual(
+        target?.tabIds.slice(at, at + 1 + branchAsked.confirmation.dependentEntityIds.length),
+        ["home", ...branchAsked.confirmation.dependentEntityIds],
+        "the block arrives contiguous rather than scattered",
+      );
+    }
+  }
+});
+
 test("moving a passage into a pristine target freezes the target automatic label", () => {
   const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
     groupId: "g1",

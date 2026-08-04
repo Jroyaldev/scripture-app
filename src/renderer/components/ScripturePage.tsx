@@ -485,7 +485,7 @@ interface Props {
   onWorkspaceTabClose?: (tabId: string) => Promise<boolean>;
   onWorkspaceGroupClose?: (groupId: string) => Promise<boolean>;
   onWorkspaceGroupRename?: (groupId: string, label: string) => Promise<boolean>;
-  onWorkspaceTabMove?: (tabId: string, targetGroupId: string) => Promise<boolean>;
+  onWorkspaceTabMove?: (tabId: string, targetGroupId: string, slot?: number) => Promise<boolean>;
   onWorkspaceTabPromote?: (tabId: string) => Promise<boolean>;
   onWorkspaceTabReorder?: (
     tabId: string,
@@ -496,6 +496,7 @@ interface Props {
     position: WorkspaceReorderPosition,
   ) => Promise<boolean>;
   onWorkspaceRecentReopen?: (index?: number) => Promise<boolean>;
+  onWorkspaceRecentClear?: () => void;
   onWorkspaceTabDuplicate?: () => Promise<boolean>;
   onStartStudy?: () => Promise<boolean>;
   /** A study just created and waiting for the reader to name it on its chip. */
@@ -691,6 +692,7 @@ export function ScripturePage({
   onWorkspaceTabReorder,
   onWorkspaceGroupReorder,
   onWorkspaceRecentReopen,
+  onWorkspaceRecentClear,
   onWorkspaceTabDuplicate,
   onStartStudy,
   studyNamingRequest = null,
@@ -4743,8 +4745,8 @@ export function ScripturePage({
           onRenameGroup={(groupId, label) => (
             onWorkspaceGroupRename?.(groupId, label) ?? Promise.resolve(false)
           )}
-          onMoveTab={(tabId, targetGroupId) => (
-            onWorkspaceTabMove?.(tabId, targetGroupId) ?? Promise.resolve(false)
+          onMoveTab={(tabId, targetGroupId, slot) => (
+            onWorkspaceTabMove?.(tabId, targetGroupId, slot) ?? Promise.resolve(false)
           )}
           onPromoteTab={(tabId) => onWorkspaceTabPromote?.(tabId) ?? Promise.resolve(false)}
           onTabDragOverStudy={setTabDropStudyId}
@@ -4777,6 +4779,7 @@ export function ScripturePage({
           )}
           onReopenRecent={() => onWorkspaceRecentReopen?.() ?? Promise.resolve(false)}
           onReopenRecentItem={(index) => onWorkspaceRecentReopen?.(index) ?? Promise.resolve(false)}
+          onClearRecent={() => onWorkspaceRecentClear?.()}
           onDuplicateTab={() => onWorkspaceTabDuplicate?.() ?? Promise.resolve(false)}
           onNewResearch={() => (onOpenResearchPalette ?? onOpenCommandPalette)?.()}
           persistenceStatus={workspacePersistenceStatus}

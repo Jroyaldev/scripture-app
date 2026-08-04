@@ -43,7 +43,13 @@ function section(source: string, start: string, end: string): string {
 
 test("the workspace exposes approval-returning callbacks for every tab and group mutation", () => {
   assert.match(componentSource, /onRenameGroup: \(groupId: string, label: string\) => Promise<boolean>/);
-  assert.match(componentSource, /onMoveTab: \(tabId: string, targetGroupId: string\) => Promise<boolean>/);
+  /* `slot` joined this signature on 2026-08-03, and only a DRAG ever passes it:
+     a menu naming a study has said nothing about position, so it omits the
+     argument and the model appends exactly as before. */
+  assert.match(
+    componentSource,
+    /onMoveTab: \(tabId: string, targetGroupId: string, slot\?: number\) => Promise<boolean>/,
+  );
   assert.match(componentSource, /onReorderTab: \(tabId: string, position: WorkspaceReorderPosition\) => Promise<boolean>/);
   assert.match(componentSource, /onReorderGroup: \(groupId: string, position: WorkspaceReorderPosition\) => Promise<boolean>/);
   assert.match(componentSource, /onReopenRecent: \(\) => Promise<boolean>/);
@@ -342,6 +348,60 @@ test("All Tabs answers typing by moving, is grouped, and owns tab and group mana
   assert.equal(studyWorkspaceTypeAheadIndex(["Acts 19"], "   "), -1);
 });
 
+test("a row in All Tabs can be carried, and the gap it opens is the whole preview", () => {
+  /* ORDER LIVED ONLY ON THE ROW'S CONTEXT MENU, which is the right answer for a
+     keyboard and a poor one for a pointer: a reader who can see both rows should
+     be able to put one above the other by putting it there. The menu stays — it
+     is the keyboard path, and Menu/Shift+F10 reach it — and the pointer gets the
+     gesture it expected all along. */
+  assert.match(componentSource, /onPointerDown=\{\(event\) => handleRowPointerDown\(event, tab\.id, group\.id\)\}/);
+  assert.match(componentSource, /onPointerCancel=\{endRowDrag\}/);
+  // No grip glyph: a handle is one more mark on every row to buy a gesture the
+  // row can carry itself, and the threshold is what separates press from drag.
+  assert.doesNotMatch(componentSource, /data-study-row-grip|GripGlyph/);
+
+  /* CONTENT SPACE, NOT VIEWPORT SPACE — the one place "reuse the strip's drag"
+     actively misleads. The strip snapshots viewport rects once and never
+     scrolls; this list scrolls WHILE you drag, which is the whole reason a study
+     below the fold is reachable, so a viewport snapshot is stale the first frame
+     auto-scroll moves it. */
+  assert.match(componentSource, /top: rect\.top - listRect\.top \+ list\.scrollTop,/);
+  assert.match(componentSource, /const y = gesture\.pointerY - gesture\.listTop \+ list\.scrollTop;/);
+
+  /* And the step is measured WITHIN a study. Reading the first two rows in the
+     list is only one step when the first study holds at least two of them;
+     otherwise the gap measured spans a section header and its rules, and the
+     neighbours slide 77px to preview a 28px move. The slot stays right either
+     way — that comes from midpoints — so this is the kind of wrong that ships. */
+  assert.match(componentSource, /previous && previous\.groupId === row\.groupId \? row\.top - previous\.top : null/);
+
+  // The gap IS the preview. No insertion line, for the same reason the strip has
+  // none: a line is a new mark drawn to say what moving the rows already says.
+  assert.doesNotMatch(stylesSource, /\.scripture-workspace-overflow-row[^{}]*::(?:before|after)[^{}]*\{[^}]*border-top/);
+  assert.match(stylesSource, /\.scripture-workspace-overflow-row \{\s*transform: translateY\(var\(--row-shift, 0px\)\);/);
+  // The transition belongs to the gesture, so the reset at drop does not animate
+  // back — by then the model has already put the rows where the preview said.
+  assert.match(
+    stylesSource,
+    /\.scripture-workspace-overflow-list\[data-row-drag-live\] \.scripture-workspace-overflow-row \{\s*transition: transform/,
+  );
+  // The carried row keeps its space and gives up its ink; a row that collapsed
+  // as well would open the gap twice.
+  assert.match(stylesSource, /\.scripture-workspace-overflow-row\[data-row-carried\] \{\s*visibility: hidden;/);
+  assert.match(stylesSource, /\.scripture-workspace-row-ghost \{[\s\S]{0,400}pointer-events: none;/);
+
+  /* ONE COMMIT PER DROP, confirmation included. Same study is a reorder at the
+     slot; a different study is a move that carries the slot with it. Composing
+     move-then-reorder would be two commits, two persistence writes, and a
+     visible append followed by a jump. */
+  assert.match(componentSource, /await handleReorderTab\(tabId, \{ slot: target\.slot \}, event\.currentTarget\);/);
+  assert.match(componentSource, /await handleMoveTab\(tabId, target\.groupId, event\.currentTarget, target\.slot\);/);
+  // A tab moved between studies remounts under its new section, so the focus
+  // target has to be re-resolved by id — and lazily, because the callback runs
+  // before React has drawn the section it moved to.
+  assert.match(componentSource, /\(focusTarget\.isConnected \? focusTarget : null\)/);
+});
+
 test("rename, move, reorder, collapse, close, and recovery commit UI state only after approval", () => {
   const approval = section(componentSource, "const runApprovedIntent", "const scheduleCommittedTabFocus");
   assert.match(approval, /if \(pendingWorkspaceIntentCountRef\.current > 0\) return false/);
@@ -350,7 +410,7 @@ test("rename, move, reorder, collapse, close, and recovery commit UI state only 
 
   for (const callback of [
     "onRenameGroup(groupId, trimmed)",
-    "onMoveTab(tabId, targetGroupId)",
+    "onMoveTab(tabId, targetGroupId, slot)",
     "onReorderTab(tabId, position)",
     "onReorderGroup(groupId, position)",
     "onReopenRecent()",
@@ -994,7 +1054,7 @@ test("a derived tab wears the machine hue whether or not you are reading it", ()
   // unmarked in the list. That is the one place forty tabs are told apart, so
   // it is the place the mark matters most; provenance belongs to the tab, not
   // to the surface the tab happens to be drawn on.
-  assert.match(componentSource, /className="scripture-workspace-overflow-row"[\s\S]{0,1800}<TabMark tab=\{tab\} \/>/);
+  assert.match(componentSource, /className="scripture-workspace-overflow-row"[\s\S]{0,3200}<TabMark tab=\{tab\} \/>/);
   const overflowRule = rail.slice(machineIndex, rail.indexOf("}", machineIndex));
   for (const selector of [
     ".scripture-workspace-overflow-row .scripture-workspace-tab-mark.is-person",
