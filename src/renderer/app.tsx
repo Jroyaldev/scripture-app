@@ -1620,7 +1620,32 @@ export function App(): React.JSX.Element {
       const current = studyWorkspaceRef.current;
       if (!current || result.state === current) return;
       applied = true;
-      commitStudyWorkspace((latest) => latest === current ? result.state : latest);
+      const moved = result.state;
+      commitStudyWorkspace((latest) => latest === current ? moved : latest);
+      /* SOME MOVES BRING SOMETHING WITH THEM, and those used to stop and ask —
+         with a dialog that had one button, which asks the reader to confirm a
+         fact rather than decide anything. They happen now, and this is where
+         they say so.
+
+         The Undo is a whole-state step back rather than a move in the opposite
+         direction, and it has to be: moving the passage home would meet the
+         same research on the way and set off the same notice again, and the
+         copied origin passage has no inverse move at all — it needs deleting,
+         which is not a move. Stepping back to the state before is the only
+         answer that is exactly as big as the act.
+
+         Guarded by identity: it applies only if nothing has happened since, in
+         the same shape the recovery list's Undo uses. An Undo that fires after
+         the reader has moved on is not an undo, it is a second surprise. */
+      const notice = result.outcome === "applied" ? result.notice : undefined;
+      if (!notice) return;
+      workspaceShowToastRef.current?.(
+        notice.kind === "moved-with-research"
+          ? `Moved with ${notice.count} research ${notice.count === 1 ? "tab" : "tabs"}`
+          : "Moved, and copied its passage across",
+        "Undo",
+        () => commitStudyWorkspace((latest) => latest === moved ? current : latest),
+      );
     });
     return proceed && applied;
   }, [commitStudyWorkspace, requestWorkspaceDecision, runWorkspaceTransition]);

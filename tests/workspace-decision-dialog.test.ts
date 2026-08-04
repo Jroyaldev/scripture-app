@@ -31,7 +31,17 @@ test("dependent research close names both safe outcomes", () => {
   assert.equal(result.actions[1]?.tone, "danger");
 });
 
-test("study close and every move confirmation expose truthful explicit choices", () => {
+test("every surviving confirmation is a real fork or a real loss", () => {
+  /* THE TABLE USED TO HAVE FIVE ROWS. Two of them — `move-branch` and
+     `move-entity-context` — listed exactly one decision each, which is the shape
+     of a notice, not a choice: a modal whose only button is "yes" asks the
+     reader to confirm a fact. Both acts are reversible, so they apply and say so
+     with an Undo beside them, the way Clear does on the recovery list.
+
+     What is left either forks or destroys. The two closes each offer one way
+     forward because the alternative is backing out, and what they end cannot be
+     un-ended except through the recovery list. The home passage genuinely forks:
+     leave a copy and move a branch, or take the study with it. */
   const cases: Array<{
     confirmation: WorkspaceConfirmation;
     decisions: string[];
@@ -57,28 +67,6 @@ test("study close and every move confirmation expose truthful explicit choices",
     },
     {
       confirmation: {
-        kind: "move-branch",
-        tabId: "romans",
-        dependentEntityIds: ["paul"],
-        entityNonces: [{ tabId: "paul", nonce: 1 }],
-        sourceGroupId: "study-a",
-        sourceTabIds: ["acts", "romans", "paul"],
-        targetGroupId: "study-b",
-      },
-      decisions: ["move-branch"],
-    },
-    {
-      confirmation: {
-        kind: "move-entity-context",
-        tabId: "paul",
-        sourceGroupId: "study-a",
-        nonce: 1,
-        targetGroupId: "study-b",
-      },
-      decisions: ["copy-origin-passage"],
-    },
-    {
-      confirmation: {
         kind: "move-home-passage",
         tabId: "acts",
         groupId: "study-a",
@@ -96,6 +84,12 @@ test("study close and every move confirmation expose truthful explicit choices",
     assert.ok(result.description.length > 0);
     assert.deepEqual(result.actions.map((action) => action.decision), decisions);
   }
+  /* And the rule that keeps it that way: a dialog offering ONE action is only
+     honest when backing out costs something — when the act destroys, or when
+     the reader is choosing between it and keeping what they have. A one-button
+     dialog for a reversible move is a speed bump, and speed bumps are what this
+     change removed. */
+  assert.equal(cases.length, 3, "a fourth confirmation needs a fork or a loss to justify it");
 });
 
 test("every decision dialog leaves Cancel to the common dialog footer", () => {

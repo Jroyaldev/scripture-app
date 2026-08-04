@@ -146,28 +146,13 @@ export type WorkspaceConfirmation =
       tabIds: string[];
       entityNonces: EntityWorkspaceNonceSnapshot[];
     }
-  | {
-      kind: "move-branch";
-      tabId: string;
-      dependentEntityIds: string[];
-      entityNonces: EntityWorkspaceNonceSnapshot[];
-      sourceGroupId: string;
-      sourceTabIds: string[];
-      targetGroupId: string;
-      /** Where in the target study the drop asked for; absent when a menu
-       *  named the study and said nothing about position. */
-      slot?: number;
-    }
-  | {
-      kind: "move-entity-context";
-      tabId: string;
-      sourceGroupId: string;
-      nonce: number;
-      targetGroupId: string;
-      /** Where in the target study the drop asked for; absent when a menu
-       *  named the study and said nothing about position. */
-      slot?: number;
-    }
+  /* `move-branch` and `move-entity-context` stood here until 2026-08-03. Both
+     raised a dialog with ONE button — "Move passage + research", "Copy context
+     + move" — which is a notice wearing the clothes of a question: there was
+     never a second way for the act to go. They apply directly now and report
+     what came along through `notice`, and the toast that says so carries the
+     Undo. What is left in this union are the acts with a real fork or a real
+     loss: two ways to close, and two ways to move a study's home passage. */
   | {
       kind: "move-home-passage";
       tabId: string;
@@ -184,16 +169,30 @@ export type WorkspaceDecision =
   | "close-passage-and-research"
   | "keep-research"
   | "close-study"
-  | "move-branch"
-  | "copy-origin-passage"
   | "move-study"
   | "duplicate-home"
   | "cancel";
+
+/**
+ * What a move did BESIDES what was asked, when that is worth saying out loud.
+ *
+ * Two moves carry something with them. A passage with research opened from it
+ * takes that research along; a research tab needs the passage it was opened
+ * from, so the destination gets a copy. Both used to stop and ask, with a
+ * dialog that had one button — which is a speed bump wearing the clothes of a
+ * question. They do it now and say so, and the caller turns this into a
+ * sentence with an Undo beside it.
+ */
+export type WorkspaceMoveNotice =
+  | { kind: "moved-with-research"; count: number }
+  | { kind: "copied-origin-passage" };
 
 export type WorkspaceMutationResult =
   | {
       state: StudyWorkspaceStateV2;
       outcome: Exclude<WorkspaceMutationOutcome, "needs-confirmation">;
+      /** Present only when the act did something the reader did not name. */
+      notice?: WorkspaceMoveNotice;
     }
   | {
       state: StudyWorkspaceStateV2;
@@ -767,6 +766,83 @@ function moveTabRecords(
   };
 }
 
+/**
+ * Move a research tab into another study, taking the passage it was opened from.
+ *
+ * A research tab is not free-standing: it remembers the passage it came out of,
+ * and that memory is what the "back to the passage" path in the margin reads.
+ * Moved on its own into a study that has never seen that chapter, it would
+ * point at a tab in a study the reader has left. So the destination gets a copy
+ * of the origin passage — unless it already holds one, in which case it adopts
+ * that.
+ *
+ * This used to be the resolution half of a confirmation whose dialog had one
+ * button. It is a mutation now, and the copy it makes is reported through
+ * `notice` so the caller can say what happened and offer it back.
+ */
+function moveEntityWithOriginPassage(
+  state: StudyWorkspaceStateV2,
+  tab: EntityWorkspaceTab,
+  sourceGroup: StudyWorkspaceGroup,
+  targetGroup: StudyWorkspaceGroup,
+  slot?: number,
+): WorkspaceMutationResult {
+  let contextTabId = targetGroup.tabIds.find((id) => {
+    const candidate = state.tabsById[id];
+    return candidate?.kind === "passage"
+      && candidate.session.current.book === tab.origin.book
+      && candidate.session.current.chapter === tab.origin.chapter
+      && candidate.session.current.packageId === tab.origin.packageId;
+  });
+  const adopted = contextTabId !== undefined;
+  let working = state;
+  let destination = targetGroup;
+  if (!contextTabId) {
+    // The cap is a refusal, not a question — reported in its own unit so the
+    // caller can say which limit was met.
+    if (Object.keys(state.tabsById).length >= STUDY_WORKSPACE_TAB_LIMIT) {
+      return { state, outcome: "tab-limit" };
+    }
+    contextTabId = availableDerivedTabId(working, `${tab.id}-origin`);
+    const contextTab: PassageWorkspaceTab = {
+      kind: "passage",
+      id: contextTabId,
+      groupId: targetGroup.id,
+      session: {
+        current: clonePassageViewState(tab.origin),
+        history: createNavigationHistory<PassageViewState>(),
+      },
+    };
+    destination = {
+      ...freezeAutomaticGroupLabel(state, targetGroup),
+      tabIds: [...targetGroup.tabIds, contextTab.id],
+    };
+    working = {
+      ...state,
+      groups: state.groups.map((candidate) => candidate.id === targetGroup.id
+        ? destination
+        : candidate),
+      tabsById: { ...state.tabsById, [contextTab.id]: contextTab },
+    };
+  }
+  const moved = moveTabRecords(working, [tab.id], sourceGroup, destination, slot);
+  const movedEntity = moved.tabsById[tab.id];
+  if (movedEntity?.kind !== "entity") return { state, outcome: "unchanged" };
+  return {
+    state: {
+      ...moved,
+      tabsById: {
+        ...moved.tabsById,
+        [tab.id]: { ...movedEntity, returnPassageTabId: contextTabId },
+      },
+    },
+    outcome: "applied",
+    // Nothing was copied when the destination already had the chapter open, so
+    // there is nothing to tell the reader about.
+    ...(adopted ? {} : { notice: { kind: "copied-origin-passage" as const } }),
+  };
+}
+
 export function moveStudyWorkspaceTab(
   state: StudyWorkspaceStateV2,
   input: { tabId: string; targetGroupId: string; slot?: number },
@@ -795,22 +871,7 @@ export function moveStudyWorkspaceTab(
       && Object.keys(state.tabsById).length >= STUDY_WORKSPACE_TAB_LIMIT) {
       return { state, outcome: "tab-limit" };
     }
-    return {
-      state,
-      outcome: "needs-confirmation",
-      confirmation: {
-        kind: "move-entity-context",
-        /* Spread rather than written, so a confirmation raised from a MENU has
-           no `slot` key at all rather than one holding undefined. The menu named
-           a study and said nothing about position; the shape should say that
-           too. */
-        ...(input.slot === undefined ? {} : { slot: input.slot }),
-        tabId: tab.id,
-        sourceGroupId: sourceGroup.id,
-        nonce: tab.nonce,
-        targetGroupId: targetGroup.id,
-      },
-    };
+    return moveEntityWithOriginPassage(state, tab, sourceGroup, targetGroup, input.slot);
   }
   if (sourceGroup.homePassageTabId === tab.id
     || sourceGroup.tabIds.length === 1) {
@@ -832,25 +893,24 @@ export function moveStudyWorkspaceTab(
       },
     };
   }
+  /* A PASSAGE BRINGS ITS RESEARCH, and does not stop to ask whether it may.
+     This raised a dialog whose only button was "Move passage + research" —
+     which is not a question, it is a notice with an OK on it. The research was
+     opened FROM this passage and belongs with it; splitting them was never on
+     offer. So the move happens and the toast says how many came along, with an
+     Undo for the reader who did not want any of it. */
   const dependentEntityIds = dependentEntityTabIds(state, sourceGroup, tab.id);
   if (dependentEntityIds.length > 0) {
     return {
-      state,
-      outcome: "needs-confirmation",
-      confirmation: {
-        kind: "move-branch",
-        /* Spread rather than written, so a confirmation raised from a MENU has
-           no `slot` key at all rather than one holding undefined. The menu named
-           a study and said nothing about position; the shape should say that
-           too. */
-        ...(input.slot === undefined ? {} : { slot: input.slot }),
-        tabId: tab.id,
-        dependentEntityIds,
-        entityNonces: entityNonceSnapshots(state, dependentEntityIds),
-        sourceGroupId: sourceGroup.id,
-        sourceTabIds: [...sourceGroup.tabIds],
-        targetGroupId: targetGroup.id,
-      },
+      state: moveTabRecords(
+        state,
+        [tab.id, ...dependentEntityIds],
+        sourceGroup,
+        targetGroup,
+        input.slot,
+      ),
+      outcome: "applied",
+      notice: { kind: "moved-with-research", count: dependentEntityIds.length },
     };
   }
   return {
@@ -1380,94 +1440,6 @@ export function resolveStudyWorkspaceDecision(
       return { state, outcome: "unchanged" };
     }
     return { state: removeStudyGroup(state, group), outcome: "applied" };
-  }
-  if (confirmation.kind === "move-branch") {
-    if (decision !== "move-branch") return { state, outcome: "unchanged" };
-    const tab = state.tabsById[confirmation.tabId];
-    const sourceGroup = tab?.kind === "passage"
-      ? state.groups.find((candidate) => candidate.id === tab.groupId
-        && candidate.tabIds.includes(tab.id))
-      : undefined;
-    const targetGroup = state.groups.find((candidate) => candidate.id === confirmation.targetGroupId);
-    if (!tab || !sourceGroup || sourceGroup.id !== confirmation.sourceGroupId
-      || sourceGroup.tabIds.length !== confirmation.sourceTabIds.length
-      || sourceGroup.tabIds.some((id, index) => id !== confirmation.sourceTabIds[index])
-      || !targetGroup || sourceGroup.id === targetGroup.id
-      || sourceGroup.homePassageTabId === tab.id) {
-      return { state, outcome: "unchanged" };
-    }
-    const dependents = dependentEntityTabIds(state, sourceGroup, tab.id);
-    if (dependents.length === 0
-      || dependents.length !== confirmation.dependentEntityIds.length
-      || dependents.some((id, index) => id !== confirmation.dependentEntityIds[index])
-      || !matchesEntityNonceSnapshots(state, dependents, confirmation.entityNonces)) {
-      return { state, outcome: "unchanged" };
-    }
-    return {
-      state: moveTabRecords(state, [tab.id, ...dependents], sourceGroup, targetGroup, confirmation.slot),
-      outcome: "applied",
-    };
-  }
-  if (confirmation.kind === "move-entity-context") {
-    if (decision !== "copy-origin-passage") return { state, outcome: "unchanged" };
-    const tab = state.tabsById[confirmation.tabId];
-    if (tab?.kind !== "entity") return { state, outcome: "unchanged" };
-    const sourceGroup = state.groups.find((candidate) => candidate.id === tab.groupId
-      && candidate.tabIds.includes(tab.id));
-    const targetGroup = state.groups.find((candidate) => candidate.id === confirmation.targetGroupId);
-    if (!sourceGroup || sourceGroup.id !== confirmation.sourceGroupId
-      || tab.nonce !== confirmation.nonce
-      || !targetGroup || sourceGroup.id === targetGroup.id) {
-      return { state, outcome: "unchanged" };
-    }
-    let contextTabId = targetGroup.tabIds.find((id) => {
-      const candidate = state.tabsById[id];
-      return candidate?.kind === "passage"
-        && candidate.session.current.book === tab.origin.book
-        && candidate.session.current.chapter === tab.origin.chapter
-        && candidate.session.current.packageId === tab.origin.packageId;
-    });
-    let working = state;
-    let destination = targetGroup;
-    if (!contextTabId) {
-      if (Object.keys(state.tabsById).length >= STUDY_WORKSPACE_TAB_LIMIT) {
-        return { state, outcome: "tab-limit" };
-      }
-      contextTabId = availableDerivedTabId(working, `${tab.id}-origin`);
-      const contextTab: PassageWorkspaceTab = {
-        kind: "passage",
-        id: contextTabId,
-        groupId: targetGroup.id,
-        session: {
-          current: clonePassageViewState(tab.origin),
-          history: createNavigationHistory<PassageViewState>(),
-        },
-      };
-      destination = {
-        ...freezeAutomaticGroupLabel(state, targetGroup),
-        tabIds: [...targetGroup.tabIds, contextTab.id],
-      };
-      working = {
-        ...state,
-        groups: state.groups.map((candidate) => candidate.id === targetGroup.id
-          ? destination
-          : candidate),
-        tabsById: { ...state.tabsById, [contextTab.id]: contextTab },
-      };
-    }
-    const moved = moveTabRecords(working, [tab.id], sourceGroup, destination, confirmation.slot);
-    const movedEntity = moved.tabsById[tab.id];
-    if (movedEntity?.kind !== "entity") return { state, outcome: "unchanged" };
-    return {
-      state: {
-        ...moved,
-        tabsById: {
-          ...moved.tabsById,
-          [tab.id]: { ...movedEntity, returnPassageTabId: contextTabId },
-        },
-      },
-      outcome: "applied",
-    };
   }
   if (confirmation.kind === "move-home-passage") {
     const tab = state.tabsById[confirmation.tabId];

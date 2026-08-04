@@ -1401,12 +1401,11 @@ test("a stale passage-dependencies confirmation cannot close a branch after it m
     view: view("ROM", 8, "BSB"),
   }).state;
   const closeRequest = closeStudyWorkspaceTab(grouped, "branch");
-  const moveRequest = moveStudyWorkspaceTab(grouped, { tabId: "branch", targetGroupId: "g2" });
   assert.equal(closeRequest.outcome, "needs-confirmation");
-  assert.equal(moveRequest.outcome, "needs-confirmation");
-  if (closeRequest.outcome !== "needs-confirmation"
-    || moveRequest.outcome !== "needs-confirmation") return;
-  const moved = resolveStudyWorkspaceDecision(grouped, moveRequest.confirmation, "move-branch");
+  if (closeRequest.outcome !== "needs-confirmation") return;
+  // The drift: the branch moves study while the close question is still open.
+  // The move no longer asks anything itself, so it is one call.
+  const moved = moveStudyWorkspaceTab(grouped, { tabId: "branch", targetGroupId: "g2" });
   assert.equal(moved.outcome, "applied");
   const stale = resolveStudyWorkspaceDecision(
     moved.state,
@@ -1564,7 +1563,48 @@ test("closing a multi-tab study requires one close-study confirmation", () => {
   assert.equal(closed.state.tabsById["paul"], undefined);
 });
 
-test("moving a passage branch requires and applies an atomic move-branch decision", () => {
+test("the two moves that carry something have no confirmation left to go stale", () => {
+  /* FIVE TESTS STOOD HERE, and every one of them guarded the same window: a
+     confirmation is raised against one state and answered against another, so
+     each arm re-checked that the world had not moved underneath it — the source
+     group unchanged, the dependents the same, the entity's nonce still what it
+     was when the question was asked.
+
+     The window is gone. `move-branch` and `move-entity-context` do not ask any
+     more; they read the state in front of them and apply to it in the same
+     breath, so there is no interval in which the answer can be about a workspace
+     that no longer exists. Guards against drift are not "still correct" here —
+     they are unreachable, and unreachable guards rot.
+
+     What replaces them is the claim that made them necessary in the first place:
+     these moves are decided and applied against ONE state. */
+  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), { groupId: "g1", passageTabId: "a" });
+  const branched = openPassageWorkspaceTab(initial, {
+    id: "b", sourceTabId: "a", view: view("JHN", 3, "BSB"),
+  }).state;
+  const researched = openEntityWorkspaceTab(branched, {
+    id: "nicodemus", sourceTabId: "b", entityId: "person:nicodemus", entityKind: "person",
+    nonce: 1, origin: view("JHN", 3, "BSB"), returnPassageTabId: "b",
+  }).state;
+  const grouped = createStudyWorkspaceGroup(researched, {
+    id: "g2", passageTabId: "c", view: view("ROM", 8, "BSB"),
+  }).state;
+
+  for (const tabId of ["b", "nicodemus"]) {
+    const result = moveStudyWorkspaceTab(grouped, { tabId, targetGroupId: "g2" });
+    assert.notEqual(result.outcome, "needs-confirmation", `${tabId} still stops to ask`);
+  }
+
+  // And a move applied twice from the same starting state is refused the second
+  // time by the model's own reading of where the tab is — not by a snapshot the
+  // caller had to carry.
+  const moved = moveStudyWorkspaceTab(grouped, { tabId: "b", targetGroupId: "g2" });
+  assert.equal(moved.outcome, "applied");
+  const again = moveStudyWorkspaceTab(moved.state, { tabId: "b", targetGroupId: "g2" });
+  assert.equal(again.outcome, "unchanged");
+});
+
+test("a passage takes its research with it, and says how much came along", () => {
   const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
     groupId: "g1",
     passageTabId: "a",
@@ -1589,21 +1629,17 @@ test("moving a passage branch requires and applies an atomic move-branch decisio
     view: view("ROM", 8, "BSB"),
   }).state;
   const selected = selectStudyWorkspaceTab(grouped, "nicodemus");
-  const requested = moveStudyWorkspaceTab(selected, { tabId: "b", targetGroupId: "g2" });
-  assert.equal(requested.outcome, "needs-confirmation");
-  if (requested.outcome !== "needs-confirmation") return;
-  assert.deepEqual(requested.confirmation, {
-    kind: "move-branch",
-    tabId: "b",
-    dependentEntityIds: ["nicodemus"],
-    entityNonces: [{ tabId: "nicodemus", nonce: 1 }],
-    sourceGroupId: "g1",
-    sourceTabIds: ["a", "b", "nicodemus"],
-    targetGroupId: "g2",
-  });
-  assert.equal(resolveStudyWorkspaceDecision(selected, requested.confirmation, "cancel").state, selected);
-  const moved = resolveStudyWorkspaceDecision(selected, requested.confirmation, "move-branch");
+  /* THIS USED TO STOP AND ASK, with a dialog whose only button read "Move
+     passage + research". That is not a question — the research was opened FROM
+     this passage and splitting them was never on offer — so it was a speed bump
+     asking the reader to confirm a fact. It applies, and reports what came with
+     it so the caller can say so and offer an Undo. */
+  const moved = moveStudyWorkspaceTab(selected, { tabId: "b", targetGroupId: "g2" });
   assert.equal(moved.outcome, "applied");
+  assert.deepEqual(
+    moved.outcome === "applied" ? moved.notice : null,
+    { kind: "moved-with-research", count: 1 },
+  );
   assert.deepEqual(moved.state.groups[0]?.tabIds, ["a"]);
   assert.deepEqual(moved.state.groups[1]?.tabIds, ["c", "b", "nicodemus"]);
   assert.equal(moved.state.tabsById["b"]?.groupId, "g2");
@@ -1611,58 +1647,6 @@ test("moving a passage branch requires and applies an atomic move-branch decisio
   assert.equal(entity?.groupId, "g2");
   assert.equal(entity?.kind === "entity" ? entity.returnPassageTabId : null, "b");
   assert.equal(moved.state.activeTabId, "nicodemus");
-});
-
-test("a stale move-branch confirmation cannot move a branch again from a new source group", () => {
-  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
-    groupId: "g1",
-    passageTabId: "home",
-  });
-  const branched = openPassageWorkspaceTab(initial, {
-    id: "branch",
-    sourceTabId: "home",
-    view: view("JHN", 3, "BSB"),
-  }).state;
-  const researched = openEntityWorkspaceTab(branched, {
-    id: "entity",
-    sourceTabId: "branch",
-    entityId: "person:nicodemus",
-    entityKind: "person",
-    nonce: 1,
-    origin: view("JHN", 3, "BSB"),
-    returnPassageTabId: "branch",
-  }).state;
-  const second = createStudyWorkspaceGroup(researched, {
-    id: "g2",
-    passageTabId: "p2",
-    view: view("ROM", 8, "BSB"),
-  }).state;
-  const grouped = createStudyWorkspaceGroup(second, {
-    id: "g3",
-    passageTabId: "p3",
-    view: view("GEN", 1, "BSB"),
-  }).state;
-  const oldRequest = moveStudyWorkspaceTab(grouped, { tabId: "branch", targetGroupId: "g2" });
-  const currentRequest = moveStudyWorkspaceTab(grouped, { tabId: "branch", targetGroupId: "g3" });
-  assert.equal(oldRequest.outcome, "needs-confirmation");
-  assert.equal(currentRequest.outcome, "needs-confirmation");
-  if (oldRequest.outcome !== "needs-confirmation"
-    || currentRequest.outcome !== "needs-confirmation") return;
-  const moved = resolveStudyWorkspaceDecision(
-    grouped,
-    currentRequest.confirmation,
-    "move-branch",
-  );
-  assert.equal(moved.outcome, "applied");
-  const stale = resolveStudyWorkspaceDecision(
-    moved.state,
-    oldRequest.confirmation,
-    "move-branch",
-  );
-  assert.equal(stale.outcome, "unchanged");
-  assert.equal(stale.state, moved.state);
-  assert.equal(stale.state.tabsById["branch"]?.groupId, "g3");
-  assert.equal(stale.state.tabsById["entity"]?.groupId, "g3");
 });
 
 test("moving an entity copies its immutable origin context before changing groups", () => {
@@ -1687,22 +1671,18 @@ test("moving an entity copies its immutable origin context before changing group
     view: view("JHN", 3, "BSB"),
   }).state;
   const selected = selectStudyWorkspaceTab(grouped, "paul");
-  const requested = moveStudyWorkspaceTab(selected, { tabId: "paul", targetGroupId: "g2" });
-  assert.equal(requested.outcome, "needs-confirmation");
-  if (requested.outcome !== "needs-confirmation") return;
-  assert.deepEqual(requested.confirmation, {
-    kind: "move-entity-context",
-    tabId: "paul",
-    sourceGroupId: "g1",
-    nonce: 1,
-    targetGroupId: "g2",
-  });
-  const moved = resolveStudyWorkspaceDecision(
-    selected,
-    requested.confirmation,
-    "copy-origin-passage",
-  );
+  /* A RESEARCH TAB REMEMBERS THE PASSAGE IT CAME OUT OF, and moved on its own
+     into a study that has never held that chapter it would point at a tab in a
+     study the reader has left. So the destination gets a copy. That used to be
+     a dialog with one button reading "Copy context + move"; it applies now and
+     reports the copy, because a tab appearing that the reader did not ask for
+     is worth a sentence — and an Undo. */
+  const moved = moveStudyWorkspaceTab(selected, { tabId: "paul", targetGroupId: "g2" });
   assert.equal(moved.outcome, "applied");
+  assert.deepEqual(
+    moved.outcome === "applied" ? moved.notice : null,
+    { kind: "copied-origin-passage" },
+  );
   const target = moved.state.groups.find((group) => group.id === "g2")!;
   const copied = target.tabIds
     .map((id) => moved.state.tabsById[id])
@@ -1716,93 +1696,6 @@ test("moving an entity copies its immutable origin context before changing group
   assert.deepEqual(entity.origin, origin);
   assert.deepEqual(entity.originRange, { start: 2, end: 6 });
   assert.deepEqual(moved.state.groups.find((group) => group.id === "g1")?.tabIds, ["acts"]);
-});
-
-test("a stale entity-move confirmation cannot move an entity again from a new source group", () => {
-  const origin = view("ACT", 19, "BSB");
-  const initial = createStudyWorkspace(origin, {
-    groupId: "g1",
-    passageTabId: "p1",
-  });
-  const researched = openEntityWorkspaceTab(initial, {
-    id: "paul",
-    sourceTabId: "p1",
-    entityId: "person:paul",
-    entityKind: "person",
-    nonce: 1,
-    origin,
-    returnPassageTabId: "p1",
-  }).state;
-  const second = createStudyWorkspaceGroup(researched, {
-    id: "g2",
-    passageTabId: "p2",
-    view: origin,
-  }).state;
-  const grouped = createStudyWorkspaceGroup(second, {
-    id: "g3",
-    passageTabId: "p3",
-    view: origin,
-  }).state;
-  const oldRequest = moveStudyWorkspaceTab(grouped, { tabId: "paul", targetGroupId: "g2" });
-  const currentRequest = moveStudyWorkspaceTab(grouped, { tabId: "paul", targetGroupId: "g3" });
-  assert.equal(oldRequest.outcome, "needs-confirmation");
-  assert.equal(currentRequest.outcome, "needs-confirmation");
-  if (oldRequest.outcome !== "needs-confirmation"
-    || currentRequest.outcome !== "needs-confirmation") return;
-  const moved = resolveStudyWorkspaceDecision(
-    grouped,
-    currentRequest.confirmation,
-    "copy-origin-passage",
-  );
-  assert.equal(moved.outcome, "applied");
-  const stale = resolveStudyWorkspaceDecision(
-    moved.state,
-    oldRequest.confirmation,
-    "copy-origin-passage",
-  );
-  assert.equal(stale.outcome, "unchanged");
-  assert.equal(stale.state, moved.state);
-  assert.equal(stale.state.tabsById["paul"]?.groupId, "g3");
-});
-
-test("a stale entity-move confirmation cannot move a later in-place entity session", () => {
-  const origin = view("ACT", 19, "BSB");
-  const initial = createStudyWorkspace(origin, {
-    groupId: "g1",
-    passageTabId: "p1",
-  });
-  const researched = openEntityWorkspaceTab(initial, {
-    id: "research",
-    sourceTabId: "p1",
-    entityId: "person:paul",
-    entityKind: "person",
-    nonce: 1,
-    origin,
-    returnPassageTabId: "p1",
-  }).state;
-  const grouped = createStudyWorkspaceGroup(researched, {
-    id: "g2",
-    passageTabId: "p2",
-    view: origin,
-  }).state;
-  const requested = moveStudyWorkspaceTab(grouped, { tabId: "research", targetGroupId: "g2" });
-  assert.equal(requested.outcome, "needs-confirmation");
-  if (requested.outcome !== "needs-confirmation") return;
-  const navigated = navigateEntityWorkspaceTab(grouped, "research", {
-    id: "person:barnabas",
-    displayName: "Barnabas",
-    kind: "person",
-  }, 2);
-  const stale = resolveStudyWorkspaceDecision(
-    navigated,
-    requested.confirmation,
-    "copy-origin-passage",
-  );
-  assert.equal(stale.outcome, "unchanged");
-  assert.equal(stale.state, navigated);
-  const entity = stale.state.tabsById["research"];
-  assert.equal(entity?.kind === "entity" ? entity.entityId : null, "person:barnabas");
-  assert.equal(entity?.groupId, "g1");
 });
 
 test("an entity move reuses an existing origin passage and freezes the pristine target label", () => {
@@ -1826,17 +1719,14 @@ test("an entity move reuses an existing origin passage and freezes the pristine 
     passageTabId: "existing-origin",
     view: { ...origin, scrollTop: 810 },
   }).state;
-  const requested = moveStudyWorkspaceTab(grouped, { tabId: "paul", targetGroupId: "g2" });
-  assert.equal(requested.outcome, "needs-confirmation");
-  if (requested.outcome !== "needs-confirmation") return;
   const beforeCount = Object.keys(grouped.tabsById).length;
-  const moved = resolveStudyWorkspaceDecision(
-    grouped,
-    requested.confirmation,
-    "copy-origin-passage",
-  );
+  const moved = moveStudyWorkspaceTab(grouped, { tabId: "paul", targetGroupId: "g2" });
   assert.equal(moved.outcome, "applied");
   assert.equal(Object.keys(moved.state.tabsById).length, beforeCount);
+  /* AND NOTHING IS SAID, because nothing was copied. The destination already
+     held the chapter and the research adopts it, so a toast announcing a copy
+     would be describing an event that did not happen. */
+  assert.equal(moved.outcome === "applied" ? moved.notice : "missing", undefined);
   const target = moved.state.groups.find((group) => group.id === "g2")!;
   assert.deepEqual(target.tabIds, ["existing-origin", "paul"]);
   assert.deepEqual(target.label, {
@@ -2338,36 +2228,6 @@ test("an exact one-tab close-study confirmation is rejected as unissued", () => 
   assert.equal(forged.state, grouped);
 });
 
-test("an exact zero-dependent move-branch confirmation is rejected as unissued", () => {
-  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
-    groupId: "g1",
-    passageTabId: "home",
-  });
-  const branched = openPassageWorkspaceTab(initial, {
-    id: "branch",
-    sourceTabId: "home",
-    view: view("JHN", 3, "BSB"),
-  }).state;
-  const grouped = createStudyWorkspaceGroup(branched, {
-    id: "g2",
-    passageTabId: "other-home",
-    view: view("ROM", 8, "BSB"),
-  }).state;
-
-  const forged = resolveStudyWorkspaceDecision(grouped, {
-    kind: "move-branch",
-    tabId: "branch",
-    dependentEntityIds: [],
-    entityNonces: [],
-    sourceGroupId: "g1",
-    sourceTabIds: ["home", "branch"],
-    targetGroupId: "g2",
-  }, "move-branch");
-
-  assert.equal(forged.outcome, "unchanged");
-  assert.equal(forged.state, grouped);
-});
-
 test("an exact zero-dependent passage-dependencies confirmation is rejected as unissued", () => {
   const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
     groupId: "g1",
@@ -2475,50 +2335,6 @@ test("a passage-dependencies confirmation expires when dependent research naviga
   assert.equal(closed.state, navigated);
   assert.equal(kept.outcome, "unchanged");
   assert.equal(kept.state, navigated);
-});
-
-test("a move-branch confirmation expires when dependent research navigates", () => {
-  const initial = createStudyWorkspace(view("ACT", 19, "BSB"), {
-    groupId: "g1",
-    passageTabId: "home",
-  });
-  const branched = openPassageWorkspaceTab(initial, {
-    id: "branch",
-    sourceTabId: "home",
-    view: view("JHN", 3, "BSB"),
-  }).state;
-  const researched = openEntityWorkspaceTab(branched, {
-    id: "entity",
-    sourceTabId: "branch",
-    entityId: "person:nicodemus",
-    entityKind: "person",
-    nonce: 1,
-    origin: view("JHN", 3, "BSB"),
-    returnPassageTabId: "branch",
-  }).state;
-  const grouped = createStudyWorkspaceGroup(researched, {
-    id: "g2",
-    passageTabId: "other-home",
-    view: view("ROM", 8, "BSB"),
-  }).state;
-  const requested = moveStudyWorkspaceTab(grouped, { tabId: "branch", targetGroupId: "g2" });
-  assert.equal(requested.outcome, "needs-confirmation");
-  if (requested.outcome !== "needs-confirmation") return;
-  const navigated = navigateEntityWorkspaceTab(
-    grouped,
-    "entity",
-    { id: "person:joseph", displayName: "Joseph", kind: "person" },
-    2,
-  );
-
-  const moved = resolveStudyWorkspaceDecision(
-    navigated,
-    requested.confirmation,
-    "move-branch",
-  );
-
-  assert.equal(moved.outcome, "unchanged");
-  assert.equal(moved.state, navigated);
 });
 
 test("a move-home confirmation expires when research in the study navigates", () => {
@@ -2797,19 +2613,10 @@ test("copied origin IDs reserve every live and group-recovery tab ID", () => {
   }).state;
   const buried = closeStudyWorkspaceTab(withFiller, "filler");
   assert.equal(buried.outcome, "applied");
-  const requested = moveStudyWorkspaceTab(
+  const moved = moveStudyWorkspaceTab(
     buried.state,
     { tabId: "research", targetGroupId: "g2" },
   );
-  assert.equal(requested.outcome, "needs-confirmation");
-  if (requested.outcome !== "needs-confirmation") return;
-
-  const moved = resolveStudyWorkspaceDecision(
-    buried.state,
-    requested.confirmation,
-    "copy-origin-passage",
-  );
-
   assert.equal(moved.outcome, "applied");
   const entity = moved.state.tabsById["research"];
   assert.equal(

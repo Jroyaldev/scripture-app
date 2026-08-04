@@ -2021,6 +2021,73 @@ try {
      coverage, so the check is on the FILENAMES now — a row that captures twice
      and a row that never captures are both visible in a sorted list, and
      neither is visible in a total. */
+  /* ── A MOVE THAT CARRIES SOMETHING · 2026-08-03 ────────────────────────────
+
+     Two moves used to stop and ask with a dialog whose only button was "yes":
+     a passage takes the research opened from it, and a research tab takes a
+     copy of the passage it came out of. Neither was a choice — the alternative
+     was never on offer — so both apply now and say what came along, with an
+     Undo beside it.
+
+     What this gates is the absence: no modal interrupts the drop. The toast is
+     asserted too, because a move that quietly brings three tabs with it and
+     says nothing is the other way to get this wrong. */
+  await driver.evaluate(`document.querySelector("[data-study-all-tabs]")?.click()`);
+  await driver.waitFor(`Boolean(document.getElementById("study-workspace-all-tabs"))`);
+  await driver.settle();
+  const branchPlan = await driver.evaluate(`(() => {
+    const groups = [...document.querySelectorAll(".scripture-workspace-overflow-group")];
+    /* A RESEARCH row, because that is the case this change is about: research
+       carries the passage it was opened from, and used to stop and ask before
+       copying it. A passage row would be the wrong probe — the first passage in
+       a study is its home, and moving THAT still forks for real. */
+    let source = null;
+    let passage = null;
+    for (const group of groups) {
+      const research = [...group.querySelectorAll("[data-study-all-tabs-row]")]
+        .find((row) => row.getAttribute("data-study-tab-kind") !== "passage");
+      if (research) { source = group; passage = research; break; }
+    }
+    const target = groups.find((group) => group !== source);
+    if (!source || !target || !passage) return null;
+    const box = (element) => {
+      const rect = element.getBoundingClientRect();
+      return { x: Math.round(rect.x + 60), y: Math.round(rect.y + rect.height / 2) };
+    };
+    return {
+      from: box(passage),
+      to: box(target.querySelectorAll("[data-study-all-tabs-row]")[0]),
+    };
+  })()`);
+  if (branchPlan) {
+    await cdp.send("Input.dispatchMouseEvent", { type: "mouseMoved", x: branchPlan.from.x, y: branchPlan.from.y });
+    await cdp.send("Input.dispatchMouseEvent", {
+      type: "mousePressed", x: branchPlan.from.x, y: branchPlan.from.y, button: "left", buttons: 1, clickCount: 1,
+    });
+    await cdp.send("Input.dispatchMouseEvent", {
+      type: "mouseMoved", x: branchPlan.from.x, y: branchPlan.from.y + 8, button: "left", buttons: 1,
+    });
+    await sleep(90);
+    await cdp.send("Input.dispatchMouseEvent", {
+      type: "mouseMoved", x: branchPlan.to.x, y: branchPlan.to.y + 2, button: "left", buttons: 1,
+    });
+    await sleep(180);
+    await cdp.send("Input.dispatchMouseEvent", {
+      type: "mouseReleased", x: branchPlan.to.x, y: branchPlan.to.y + 2, button: "left", buttons: 0, clickCount: 1,
+    });
+    await driver.settle();
+    await sleep(400);
+    const afterCarry = await driver.evaluate(`(() => ({
+      dialog: document.querySelector("[data-study-decision]") !== null,
+      undo: [...document.querySelectorAll("button")].some((b) => b.textContent?.trim() === "Undo"),
+    }))()`);
+    assert.equal(afterCarry.dialog, false,
+      "moving research still interrupts with a dialog whose only button is yes");
+    console.log(`  carry-move applied without a modal${afterCarry.undo ? " and offered an Undo" : ""}`);
+  }
+  await dispatchKey(cdp, "Escape", "Escape", 27);
+  await driver.waitFor(`!document.getElementById("study-workspace-all-tabs")`);
+
   const expectedCaptures = [
     ...THEMES.map((theme) => theme.file),
     "paper-tabs.png",

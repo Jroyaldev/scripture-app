@@ -63,22 +63,15 @@ export function workspaceDecisionPresentation(
     };
   }
 
-  if (confirmation.kind === "move-branch") {
-    return {
-      title: "Move this passage branch?",
-      description: `${plural(confirmation.dependentEntityIds.length, "research tab")} opened from this passage will move with it.`,
-      actions: [{ decision: "move-branch", label: "Move passage + research", tone: "primary" }],
-    };
-  }
+  /* Two dialogs stood here — "Move this passage branch?" and "Move this
+     research tab?" — each with a single button. A modal with one answer is a
+     speed bump, not a choice: it makes the reader confirm a fact rather than
+     decide anything. Both acts are reversible, and the register already has a
+     better shape for "here is what just happened, take it back if you like" —
+     the toast with an Undo that Clear uses on the recovery list. So they do it
+     and say so.
 
-  if (confirmation.kind === "move-entity-context") {
-    return {
-      title: "Move this research tab?",
-      description: "Its opening passage will be copied into the destination study so the research keeps its context.",
-      actions: [{ decision: "copy-origin-passage", label: "Copy context + move", tone: "primary" }],
-    };
-  }
-
+     What is left in this file is the acts that fork or that lose something. */
   return {
     title: "Move this study's home passage?",
     /* IT USED TO DESCRIBE ONE OPTION TWICE. "Keep this study intact, or leave a
