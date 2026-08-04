@@ -334,10 +334,13 @@ test("middle-click closes the tab under the pointer, and every tab is one tab", 
 });
 
 test("pointer drag is thresholded, and the run itself opens the slot", () => {
-  const onMoveHandler = section("const handleTabPointerMove", "const finishTabDrag");
+  const onMoveHandler = section("const trackTabDrag", "const finishTabDrag");
   assert.match(source, /const DRAG_THRESHOLD_PX = 4/);
   assert.match(source, /onPointerDown=\{\(event\) => handleTabPointerDown/);
-  assert.match(source, /onPointerMove=\{\(event\) => handleTabPointerMove/);
+  /* The press is the only pointer handler the tab carries now; the threshold,
+     every frame and the release are followed on the window from the moment the
+     button goes down. */
+  assert.match(source, /onPointerDown=\{\(event\) => handleTabPointerDown/);
   /* THE RELEASE IS HEARD ON THE WINDOW, not on the tab · 2026-08-03. It was
      bound here, which works only while the pointer is still over the button —
      true when capture holds and false the moment it does not, and capture was
@@ -345,8 +348,21 @@ test("pointer drag is thresholded, and the run itself opens the slot", () => {
      the study control, which is where this gesture is invited to end, then went
      to no one. */
   assert.doesNotMatch(source, /onPointerUp=\{\(event\) => handleTabPointerUp/);
+  assert.doesNotMatch(source, /onPointerMove=\{\(event\) => handleTabPointerMove/);
   assert.match(source, /window\.addEventListener\("pointerup", onUp\)/);
-  assert.match(source, /Math\.hypot\(event\.clientX - origin\.x, event\.clientY - origin\.y\) < DRAG_THRESHOLD_PX/);
+
+  /* AND THEY GO ON AT THE PRESS, not at the threshold — a bug this had for
+     exactly one commit. Attaching only once a drag had started meant a press
+     that never became one left the gesture record standing with nothing to
+     clear it; the next time the pointer crossed that tab WITH NO BUTTON HELD,
+     the threshold was measured against a press the reader had finished with and
+     a phantom drag began — a tab lifted, the grabbing cursor over the whole
+     document, nothing held. Owning it from the press means the release always
+     has somewhere to land. */
+  const down = section("const handleTabPointerDown", "const trackTabDrag");
+  assert.match(down, /window\.addEventListener\("pointermove", onMove\);/);
+  assert.match(down, /window\.addEventListener\("pointerup", onUp\);/);
+  assert.match(source, /Math\.hypot\(clientX - origin\.x, clientY - origin\.y\) < DRAG_THRESHOLD_PX/);
   assert.match(source, /studyWorkspaceDragReorderPosition\(orderedIds, tabId, origin\.insertionIndex\)/);
   assert.match(source, /dragging \? " is-dragging" : ""/);
 
@@ -524,8 +540,48 @@ test("a drag is followed on the window, because pointer capture is not a promise
   /* The React handler still notices the threshold, because until it is crossed
      the pointer is over the tab by definition — and it stands down once the
      gesture is running, so a frame is not worked twice. */
-  const move = section("const handleTabPointerMove", "const advanceTabDrag");
-  assert.match(move, /if \(origin\.started\) return;/);
+  const move = section("const trackTabDrag", "const advanceTabDrag");
+  assert.match(move, /if \(!origin\.started\) \{/);
+});
+
+test("a press on a tab you are not on is a switch, whatever the hand does next", () => {
+  /* SELECTION USED TO WAIT FOR `onClick`, WHICH A DRAG SUPPRESSES — so the
+     four-pixel threshold sat between the reader and the only thing most presses
+     on a tab are for. Three gestures, measured live, and two of them were
+     broken:
+
+       · a precise click switched;
+       · a click that SLIPPED six pixels — which is most of them — started a
+         drag, reordered the tab into the slot it already held, ate the click,
+         and switched to nothing. Press a background tab, get nothing at all;
+       · a deliberate drag rearranged a run the reader was not looking at and
+         left them on the tab they started from.
+
+     Both failures are the same mistake: treating the drag as the primary
+     reading of a press on a tab, when it is the secondary one.
+
+     It is settled at the DROP rather than at the press, which is where the
+     platform does it and where this was tried first. The active tab carries its
+     own metrics, so switching at the press re-lays the run out underneath the
+     snapshot the drag takes a frame later — the neighbours stopped stepping
+     aside, and the workspace-bar tour caught it within one run. At the drop
+     there is nothing left to invalidate. */
+  const finish = section("const finishTabDrag", "const handleTabPointerCancel");
+  assert.match(finish, /if \(workspace\.activeTabId !== tabId\) await handleSelectTab\(tabId\);/);
+  // After the reorder, so the two settle together rather than the switch
+  // resizing the tab mid-glide.
+  assert.ok(
+    finish.indexOf("handleReorderTab") < finish.indexOf("handleSelectTab"),
+    "the switch follows the reorder it belongs to",
+  );
+  /* And only for a drop that stayed in this study: a tab dropped onto another
+     study has its own answer, and one that founded a study is activated by the
+     model that founded it. Neither wants a reader yanked somewhere they were
+     not looking, so both return before this line. */
+  assert.ok(
+    finish.indexOf("await handleMoveTab") < finish.indexOf("handleSelectTab"),
+    "the cross-study drop returns before the switch",
+  );
 });
 
 test("a drag that reaches a study is asking for a study, not for a slot", () => {
@@ -560,7 +616,7 @@ test("a drag that reaches a study is asking for a study, not for a slot", () => 
      it is the study the tab is already in — which the function above excludes by
      design. So the strip announces the drag itself, at the THRESHOLD and not at
      pointerdown, or a plain click on a tab would open a list. */
-  const onMove = section("const handleTabPointerMove", "const finishTabDrag");
+  const onMove = section("const trackTabDrag", "const finishTabDrag");
   assert.match(onMove, /origin\.started = true;/);
   assert.ok(
     onMove.indexOf('onTabDragPhase("reorder", origin.tabId)') > onMove.indexOf("origin.started = true"),
@@ -633,7 +689,7 @@ test("a drag that reaches a study is asking for a study, not for a slot", () => 
 
   // The mark is strictly transient: cleared on drop and on cancel, so it can
   // never be mistaken for state by a reader or by a screenshot.
-  const move = section("const handleTabPointerMove", "const finishTabDrag");
+  const move = section("const trackTabDrag", "const finishTabDrag");
   assert.match(move, /if \(studyId !== settledStudyId\) onTabDragOverStudy\(studyId\);/);
   assert.match(up, /if \(origin\?\.studyId\) onTabDragOverStudy\(null\);/);
   const cancel = section("const handleTabPointerCancel", "const handleTabAuxClick");
