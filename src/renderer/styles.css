@@ -3356,19 +3356,15 @@ html, body, #root {
   grid-template-rows: auto minmax(0, 1fr);
 }
 
+/* One line, since the Reopen button left: the title and how much is behind it,
+   sharing a baseline instead of stacking. That returns twenty pixels to the
+   list, which is the thing anyone opened this for. */
 .scripture-workspace-overflow-head {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 1px 2px 10px;
+  align-items: baseline;
+  gap: 8px;
+  padding: 1px 2px 9px;
   border-bottom: 1px solid var(--border-subtle);
-}
-
-.scripture-workspace-overflow-head > div {
-  min-width: 0;
-  display: grid;
-  gap: 3px;
 }
 
 .scripture-workspace-overflow-head strong {
@@ -3448,7 +3444,13 @@ html, body, #root {
   color: var(--text-primary);
 }
 
-.scripture-workspace-group-tools .is-danger { color: var(--error); }
+/* THE DESTRUCTIVE VERB IS NOT THE LOUDEST THING ON THE ROW. Close carried the
+   error ink at rest, so hovering a study header lit three tools in three
+   treatments and the one you were least likely to want shouted. It wears the
+   same quiet tertiary as its neighbours until you reach for it, and then it
+   says what it is. */
+.scripture-workspace-group-tools .is-danger:hover,
+.scripture-workspace-group-tools .is-danger:focus-visible { color: var(--error); }
 
 /* ── THE FIELD'S FOUR RULES, RETIRED · 2026-08-03 ─────────────────────────
  *
@@ -3503,19 +3505,32 @@ html, body, #root {
   gap: 4px;
 }
 
+/* The tools OVERLAY the header's right end, the same way the row's × overlays
+   the row's. Laid out in flow they held ~150px whether or not they were painted,
+   so the count could never reach the panel's rail — it stopped where an
+   invisible toolbar began, which is the third right edge this panel used to
+   have. The 8px right padding is the row button's own inset, so the count and
+   the ordinals below it land on ONE rail rather than two that nearly agree. */
 .scripture-workspace-overflow-group > header {
+  position: relative;
   min-width: 0;
   min-height: 28px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   gap: 6px;
-  padding: 0 2px 4px;
-  border-bottom: 1px solid color-mix(in srgb, var(--border-subtle) 72%, transparent);
+  padding: 0 8px 4px 2px;
+  /* Thinner again. Five full-width rules in a 440px panel is a form, not a
+     list; the bold name and the 14px between sections already say where one
+     study ends. What is left is a hairline that separates without dividing. */
+  border-bottom: 1px solid color-mix(in srgb, var(--border-subtle) 42%, transparent);
 }
 
 .scripture-workspace-group-title {
   min-width: 0;
+  /* It has to SPAN the header for the count's `margin-left: auto` to have any
+     free space to eat; a shrink-to-fit title leaves the count exactly where it
+     was, tucked against the name. */
+  flex: 1;
   display: flex;
   align-items: center;
   gap: 5px;
@@ -3530,17 +3545,28 @@ html, body, #root {
   white-space: nowrap;
 }
 
+/* THE COUNT GOES TO THE FAR RIGHT, out of the name's reading path. Beside the
+   name it collided with it — a study derived from its passage is called "Rev 1",
+   and "Rev 1  1" is a name that appears to end in two numbers. On the right it
+   is a column of counts down the panel, and the tools fade in over it on hover,
+   which is the trade: a count is worth reading when you are choosing a study
+   and worth nothing when you have chosen one and reached for its verbs. */
 .scripture-workspace-group-title > span {
   min-width: 16px;
+  margin-left: auto;
   color: var(--text-tertiary);
   font: 500 8px/1 var(--font-ui);
   font-variant-numeric: tabular-nums;
-  text-align: center;
+  text-align: right;
+  transition: opacity var(--transition-fast);
 }
 
-.scripture-workspace-group-title > button,
-.scripture-workspace-group-tools button,
-.scripture-workspace-group-tools select {
+.scripture-workspace-overflow-group > header:hover .scripture-workspace-group-title > span,
+.scripture-workspace-overflow-group > header:focus-within .scripture-workspace-group-title > span {
+  opacity: 0;
+}
+
+.scripture-workspace-group-tools button {
   min-width: 24px;
   min-height: 24px;
   padding: 0 6px;
@@ -3564,34 +3590,29 @@ html, body, #root {
    else is here — `:focus-within` rather than `:focus-visible` for exactly that
    reason. Nothing is hidden from the accessibility tree or from the tab order:
    `opacity: 0` is a paint, and every one of these stays hit-testable. */
-.scripture-workspace-group-title > button,
-.scripture-workspace-group-tools button,
-.scripture-workspace-group-tools select {
+/* `select` used to be named beside these. The Order control was a `<select>`
+   once and has been a menu-trigger button since 2026-07-30; the sheet kept
+   dressing an element the panel stopped rendering. `.group-title > button` went
+   the same way when Rename joined the other two verbs in the tools. */
+.scripture-workspace-group-tools button {
   opacity: 0;
   transition: opacity var(--transition-fast), background-color var(--transition-fast);
 }
 
-.scripture-workspace-overflow-group > header:hover :is(
-  .scripture-workspace-group-title > button,
-  .scripture-workspace-group-tools button,
-  .scripture-workspace-group-tools select
-),
-.scripture-workspace-overflow-group > header:focus-within :is(
-  .scripture-workspace-group-title > button,
-  .scripture-workspace-group-tools button,
-  .scripture-workspace-group-tools select
-) { opacity: 1; }
+.scripture-workspace-overflow-group > header:hover .scripture-workspace-group-tools button,
+.scripture-workspace-overflow-group > header:focus-within .scripture-workspace-group-tools button { opacity: 1; }
 
 .scripture-workspace-group-tools {
-  flex: 0 0 auto;
+  position: absolute;
+  top: 50%;
+  right: 2px;
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
   gap: 2px;
 }
 
-.scripture-workspace-group-tools button:hover,
-.scripture-workspace-group-tools select:hover,
-.scripture-workspace-group-title > button:hover {
+.scripture-workspace-group-tools button:hover {
   background: color-mix(in srgb, var(--text-primary) 5%, transparent);
   color: var(--text-primary);
 }
@@ -3606,13 +3627,23 @@ html, body, #root {
 
 .scripture-workspace-group-rows { display: grid; gap: 2px; }
 
+/* ONE COLUMN, AND THE TOOLS SIT ON THE ROW RATHER THAN BESIDE IT. This was
+   `minmax(100px, 1fr) auto`, so the × lived in a second column outside the
+   button: on hover the tinted pill ended, and then the × floated on in the
+   gutter beyond it. It read as an × NEAR the row rather than as this row's
+   close, and it gave the panel a third right edge — the ordinals ended where
+   the invisible tools column began, the recents ended at the true edge, and the
+   hover × ended past both.
+
+   Now the button is the whole row and the tools are laid over its right end.
+   One rail for everything meta: ordinals, kind labels, Clear, and the × that
+   appears where the ordinal was. */
 .scripture-workspace-overflow-row {
+  position: relative;
   min-width: 0;
   min-height: 30px;
   display: grid;
-  grid-template-columns: minmax(100px, 1fr) auto;
   align-items: center;
-  gap: 4px;
   border-radius: var(--radius-sm);
 }
 
@@ -3655,11 +3686,23 @@ html, body, #root {
 }
 
 .scripture-workspace-row-tools {
+  position: absolute;
+  top: 50%;
+  right: 3px;
+  transform: translateY(-50%);
   display: flex;
   align-items: center;
   gap: 2px;
   opacity: 0;
   transition: opacity var(--transition-fast);
+}
+
+/* The ordinal steps aside for the × rather than sharing the rail with it. Two
+   marks at one end, one of them a shortcut you cannot press with the mouse you
+   are holding, is the row talking over itself. */
+.scripture-workspace-overflow-row:hover .scripture-workspace-overflow-shortcut,
+.scripture-workspace-overflow-row:focus-within .scripture-workspace-overflow-shortcut {
+  opacity: 0;
 }
 
 .scripture-workspace-overflow-row:hover .scripture-workspace-row-tools,
@@ -3669,7 +3712,6 @@ html, body, #root {
    and were 28 and 26, so the × rode two pixels shy of the label it belongs to
    and the hover fills ended a hair apart — the kind of difference nobody names
    and everybody feels. */
-.scripture-workspace-row-tools select,
 .scripture-workspace-row-tools button {
   min-width: 24px;
   min-height: 28px;
@@ -3684,7 +3726,6 @@ html, body, #root {
 
 .scripture-workspace-row-tools .scripture-workspace-menu-trigger { padding: 0 6px; font-size: 9.5px; }
 .scripture-workspace-row-tools button:not(.scripture-workspace-menu-trigger) { display: grid; padding: 0; place-items: center; }
-.scripture-workspace-row-tools select:hover,
 .scripture-workspace-row-tools button:hover {
   background: color-mix(in srgb, var(--text-primary) 6%, transparent);
   color: var(--text-primary);
@@ -4128,17 +4169,32 @@ html[data-tab-drag] * {
 
 /* The heading, the shortcut nobody was told about, and the sweep — one row, so
    the sweep sits with the list it empties rather than floating above it. */
+/* ONE RAIL, and these two are the last to reach it. The recents sit OUTSIDE the
+   scrolling list, which carries 2px of its own right padding, so matching the
+   rows meant matching that too: 8px of button inset plus the list's 2px. Clear
+   and the kind labels below it now end where the ordinals and the study counts
+   end, and the panel has one right edge instead of three that nearly agree. */
 .scripture-workspace-recent-head {
   display: flex;
   align-items: center;
   gap: 8px;
-  padding: 0 4px 2px;
+  padding: 0 10px 2px 4px;
 }
 
 .scripture-workspace-recent-heading {
   color: var(--text-tertiary);
   font: 500 10px/1 var(--font-ui);
   letter-spacing: 0.02em;
+}
+
+/* THE SHORTCUT BELONGS TO THE HEADING IT NAMES. `--overflow-shortcut` carries
+   `margin-left: auto` for the rows, where it is a right-rail mark; inherited
+   here it pushed ⌘⇧T into the middle of the row, nearer Clear than "Recently
+   closed" — so it read as Clear's shortcut, which would be a keystroke that
+   throws the list away. Reset the push and let Clear do the pushing. */
+.scripture-workspace-recent-head .scripture-workspace-overflow-shortcut {
+  margin-left: 0;
+  margin-right: auto;
 }
 
 /* Pushed to the far end, and quiet: it is a sweep of a safety net, so it should
@@ -4166,7 +4222,7 @@ html[data-tab-drag] * {
   appearance: none;
   border: 0;
   border-radius: var(--radius-sm);
-  padding: 0 8px;
+  padding: 0 10px 0 8px;
   background: transparent;
   color: var(--text-secondary);
   font: var(--fw-medium) 10.5px/1.2 var(--font-ui);
@@ -4201,7 +4257,7 @@ html[data-tab-drag] * {
   .scripture-workspace-tab-wrap,
   .scripture-workspace-tab,
   .scripture-workspace-tab-close,
-  .scripture-workspace-group-title > button,
+  .scripture-workspace-group-tools button,
   .scripture-workspace-row-tools {
     animation: none;
     transition: none;
@@ -4297,7 +4353,7 @@ html[data-tab-drag] * {
   /* Slate is a hue, and forced colours have none: the kicker's mark is redrawn
      in the system's own ink so the group still has a mark, and the receded
      state stops being a 72% wash that this mode cannot render. */
-  .scripture-workspace-group-title > button,
+  .scripture-workspace-group-tools button,
   .scripture-workspace-row-tools { opacity: 1; }
 
   /* THE RECENTS LIST WAS NEVER IN THIS BLOCK, and neither was the row standing

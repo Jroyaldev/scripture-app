@@ -93,7 +93,6 @@ test("desktop control covers the bounded V2 pastoral workflow and active-only st
     '[data-study-context-menu="tab"]',
     "[data-study-context-move]",
     "[data-study-group-collapse]",
-    "[data-study-reopen-recent]",
     // A3: the recovery list can be emptied, and the tour proves the undo puts
     // the same entries back rather than merely raising a toast that says so.
     "[data-study-recent-item]",

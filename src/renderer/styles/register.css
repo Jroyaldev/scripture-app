@@ -191,6 +191,9 @@
    find when you look for it and never read by accident. */
 .scripture-workspace-overflow-shortcut {
   margin-left: auto;
+  /* It fades for the × that takes its place on hover — see the rail note in
+     styles.css. Stated here because this is where the mark is drawn. */
+  transition: opacity var(--transition-fast);
   flex: 0 0 auto;
   color: var(--text-tertiary);
   font: 500 9px/1 var(--font-mono);

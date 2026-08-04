@@ -25,7 +25,7 @@ const STUDY_SELECTORS = Object.freeze({
   renameGroup: "[data-study-group-rename]",
   moveTab: "[data-study-tab-move]",
   collapseGroup: "[data-study-group-collapse]",
-  reopenRecent: "[data-study-reopen-recent]",
+  recentItem: "[data-study-recent-item]",
   passageFallback: "[data-study-passage-fallback]",
   entityUnavailable: "[data-study-entity-unavailable]",
   persistence: "[data-study-persistence-status]",
@@ -734,8 +734,13 @@ try {
      went away — a tour that reopens what it is testing cannot tell you the
      difference. */
   await driver.waitFor(`Boolean(document.getElementById("study-workspace-all-tabs"))`);
-  await driver.waitFor(`Boolean(document.querySelector("[data-study-reopen-recent]"))`);
-  await clickStudyControl(driver, "[data-study-reopen-recent]");
+  /* THROUGH THE RECOVERY LIST, not the head · 2026-08-03. A "Reopen <name>"
+     button stood in the panel's head and named the same entry the Recently
+     closed section names below it — two doors to one act in one small panel,
+     and the head's had to restate the entry's name to say what it did. The
+     section is the door now, and the tour presses what a reader presses. */
+  await driver.waitFor(`Boolean(document.querySelector("[data-study-recent-item]"))`);
+  await clickStudyControl(driver, "[data-study-recent-item]");
   await driver.waitFor(`Boolean(document.querySelector('[data-study-tab-id="ephesus-entity"]'))`);
   await clickStudyControl(driver, "[data-study-all-tabs]");
   await clickStudyControl(
@@ -752,8 +757,13 @@ try {
     }
     return true;
   })()`);
-  await driver.waitFor(`Boolean(document.querySelector("[data-study-reopen-recent]"))`);
-  await clickStudyControl(driver, "[data-study-reopen-recent]");
+  /* THROUGH THE RECOVERY LIST, not the head · 2026-08-03. A "Reopen <name>"
+     button stood in the panel's head and named the same entry the Recently
+     closed section names below it — two doors to one act in one small panel,
+     and the head's had to restate the entry's name to say what it did. The
+     section is the door now, and the tour presses what a reader presses. */
+  await driver.waitFor(`Boolean(document.querySelector("[data-study-recent-item]"))`);
+  await clickStudyControl(driver, "[data-study-recent-item]");
   await driver.waitFor(`Boolean(document.querySelector('[data-study-group-id="pastoral-romans-study"]'))
     && Boolean(document.querySelector('[data-study-tab-id="ephesus-entity"]'))`);
 

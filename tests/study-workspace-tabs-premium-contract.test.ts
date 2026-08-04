@@ -348,6 +348,73 @@ test("All Tabs answers typing by moving, is grouped, and owns tab and group mana
   assert.equal(studyWorkspaceTypeAheadIndex(["Acts 19"], "   "), -1);
 });
 
+test("All Tabs holds one right rail, one reveal, and one door to recovery", () => {
+  const allTabs = section(componentSource, "{overflowOpen && overflowAnchor", "</nav>");
+
+  /* ONE DOOR TO RECOVERY. `data-study-reopen-recent` sat in the head naming the
+     same entry the Recently-closed section names forty pixels below it, and had
+     to restate that entry's name to say what it did. The section keeps the act,
+     with ⌘⇧T beside its heading. */
+  assert.doesNotMatch(allTabs, /data-study-reopen-recent/);
+  // The head is one line now: the title and how much is behind it.
+  assert.match(
+    stylesSource,
+    /\.scripture-workspace-overflow-head \{[\s\S]{0,240}align-items: baseline;/,
+  );
+
+  /* ONE RIGHT RAIL. The row was `minmax(100px, 1fr) auto`, so the × lived in a
+     second column OUTSIDE the button: on hover the tinted pill ended and the ×
+     floated on in the gutter beyond it, reading as an × near the row rather than
+     as this row's close — and giving the panel a third right edge. The tools lie
+     over the button's right end now, and the ordinal steps aside for them. */
+  assert.doesNotMatch(
+    stylesSource,
+    /\.scripture-workspace-overflow-row \{[^}]*grid-template-columns/,
+  );
+  assert.match(stylesSource, /\.scripture-workspace-row-tools \{[\s\S]{0,120}position: absolute;/);
+  assert.match(
+    stylesSource,
+    /\.scripture-workspace-overflow-row:hover \.scripture-workspace-overflow-shortcut[\s\S]{0,140}opacity: 0;/,
+  );
+
+  /* THE COUNT LEAVES THE NAME'S READING PATH. A study derived from its passage
+     is called "Rev 1", and "Rev 1  1" is a name that appears to end in two
+     numbers. It goes to the header's right edge, where the tools fade in over
+     it — a count is worth reading while you are choosing a study and worth
+     nothing once you have reached for its verbs. */
+  assert.match(
+    stylesSource,
+    /\.scripture-workspace-group-title > span \{[\s\S]{0,200}margin-left: auto;/,
+  );
+
+  /* AND THE DESTRUCTIVE VERB IS NOT THE LOUDEST THING ON THE ROW. Close carried
+     the error ink at rest, so hovering a header lit three tools in three
+     treatments and the one you were least likely to want shouted. */
+  assert.match(
+    stylesSource,
+    /\.scripture-workspace-group-tools \.is-danger:hover,\s*\n\.scripture-workspace-group-tools \.is-danger:focus-visible \{ color: var\(--error\); \}/,
+  );
+
+  /* `Current` was a FOURTH signal on one row, beside a seal edge-bar, a tint and
+     an ordinal. The bar and the tint are the register's own vocabulary for "this
+     one"; `aria-current` carries it to the one reader the word still served. */
+  assert.doesNotMatch(allTabs, /<small>Current<\/small>/);
+  assert.match(allTabs, /aria-current=\{workspace\.activeTabId === tab\.id \? "true" : undefined\}/);
+
+  /* ⌘⇧T BELONGS TO ITS HEADING. The shortcut class carries `margin-left: auto`
+     for the rows, where it is a right-rail mark; inherited in the recents head
+     it landed mid-row, nearer Clear than "Recently closed" — reading as Clear's
+     shortcut, which would be a keystroke that throws the list away. */
+  assert.match(
+    stylesSource,
+    /\.scripture-workspace-recent-head \.scripture-workspace-overflow-shortcut \{\s*margin-left: 0;\s*margin-right: auto;/,
+  );
+
+  // No `<select>` is rendered in this panel — the Order control has been a menu
+  // trigger since 2026-07-30 — so the sheet stops dressing one.
+  assert.doesNotMatch(stylesSource, /\.scripture-workspace-(?:group|row)-tools select/);
+});
+
 test("a row in All Tabs can be carried, and the gap it opens is the whole preview", () => {
   /* ORDER LIVED ONLY ON THE ROW'S CONTEXT MENU, which is the right answer for a
      keyboard and a poor one for a pointer: a reader who can see both rows should
@@ -1054,7 +1121,7 @@ test("a derived tab wears the machine hue whether or not you are reading it", ()
   // unmarked in the list. That is the one place forty tabs are told apart, so
   // it is the place the mark matters most; provenance belongs to the tab, not
   // to the surface the tab happens to be drawn on.
-  assert.match(componentSource, /className="scripture-workspace-overflow-row"[\s\S]{0,3200}<TabMark tab=\{tab\} \/>/);
+  assert.match(componentSource, /className="scripture-workspace-overflow-row"[\s\S]{0,4200}<TabMark tab=\{tab\} \/>/);
   const overflowRule = rail.slice(machineIndex, rail.indexOf("}", machineIndex));
   for (const selector of [
     ".scripture-workspace-overflow-row .scripture-workspace-tab-mark.is-person",

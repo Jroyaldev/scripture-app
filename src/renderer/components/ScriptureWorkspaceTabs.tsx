@@ -747,17 +747,6 @@ export function ScriptureWorkspaceTabs({
      learning and makes it a different list each character. Typing now moves
      focus instead — `handleOverflowTypeAhead` — and every row stays put. */
   const recentlyClosed = workspace.recentlyClosed.at(-1);
-  const recentlyClosedLabel = useMemo(() => {
-    if (!recentlyClosed) return null;
-    if (recentlyClosed.kind === "tab") {
-      return studyWorkspaceTabLabel(workspace, recentlyClosed.tab, bookNames);
-    }
-    const reopenedContext: StudyWorkspaceStateV2 = {
-      ...workspace,
-      tabsById: { ...workspace.tabsById, ...recentlyClosed.tabsById },
-    };
-    return studyWorkspaceGroupLabel(reopenedContext, recentlyClosed.group, bookNames);
-  }, [bookNames, recentlyClosed, workspace]);
   // Newest first for the recovery list; each entry keeps its true index for reopen.
   const recentlyClosedList = useMemo(
     () => workspace.recentlyClosed
@@ -1565,6 +1554,11 @@ export function ScriptureWorkspaceTabs({
     () => scheduleControlFocus(focusTarget, overflowPanelFallback),
   ), [onReorderGroup, runApprovedIntent, overflowPanelFallback, scheduleControlFocus]);
 
+
+  /* Still here for the STRIP's context menu, which offers "Reopen closed tab"
+     to a reader who never opened All Tabs. The head's button that also called
+     this is gone: naming the same entry the recovery list names, forty pixels
+     above it, was two doors to one act in one small panel. */
   const handleReopenRecent = useCallback(async (): Promise<boolean> => await runApprovedIntent(
     () => onReopenRecent(),
     () => {
@@ -2431,16 +2425,17 @@ export function ScriptureWorkspaceTabs({
              looking at rather than to the top of a list. */
           initialFocusRef={activeOverflowRowRef}
         >
+          {/* ONE LINE, AND ONE DOOR TO RECOVERY. A "Reopen Genesis 2" button
+              stood at the right of this head, naming the same entry the
+              Recently-closed section names forty pixels below it — two doors to
+              one act in a panel four hundred and forty pixels wide, and the one
+              up here had to restate the entry's name to say what it did. The
+              section keeps it, with ⌘⇧T beside its heading, and the head goes
+              back to being what a head is: the title, and how much is behind
+              it, on one line. */}
           <div className="scripture-workspace-overflow-head">
-            <div><strong>All Tabs</strong><span>{totalTabs} open in {allGroups.length} {allGroups.length === 1 ? "study" : "studies"}</span></div>
-            {recentlyClosed && (
-              <button
-                type="button"
-                data-study-reopen-recent=""
-                onMouseDown={deferMouseFocus}
-                onClick={async () => { await handleReopenRecent(); }}
-              >Reopen {recentlyClosedLabel ?? "recent"}</button>
-            )}
+            <strong>All Tabs</strong>
+            <span>{totalTabs} open in {allGroups.length} {allGroups.length === 1 ? "study" : "studies"}</span>
           </div>
           <div className="scripture-workspace-overflow-list">
             {allGroups.map(({ group, label, tabs }) => {
@@ -2472,8 +2467,19 @@ export function ScriptureWorkspaceTabs({
                         <button type="button" onClick={() => setRenameGroupId(null)}>Cancel</button>
                       </form>
                     ) : (
+                      /* The name and its count, and nothing else. Rename used
+                         to stand between them, so the count could never reach
+                         the panel's right rail — it stopped against a verb. */
                       <div className="scripture-workspace-group-title">
                         <strong>{label}</strong><span>{tabs.length}</span>
+                      </div>
+                    )}
+                    {/* All three verbs in one place, in one treatment. Rename sat
+                        in the title as bare text while Order and Close sat out
+                        here; three tools in a row answering to two rules reads as
+                        an accident, because it was one. */}
+                    <div className="scripture-workspace-group-tools">
+                      {!renaming && (
                         <button
                           type="button"
                           onClick={() => {
@@ -2482,9 +2488,7 @@ export function ScriptureWorkspaceTabs({
                             window.setTimeout(() => groupRenameInputRef.current?.focus({ preventScroll: true }), 0);
                           }}
                         >Rename</button>
-                      </div>
-                    )}
-                    <div className="scripture-workspace-group-tools">
+                      )}
                       <button
                         type="button"
                         className="scripture-workspace-menu-trigger"
@@ -2598,9 +2602,16 @@ export function ScriptureWorkspaceTabs({
                               }
                               await handleSelectTab(tab.id, { closeOverflow: true, moveFocus: true });
                             }}
+                            /* `Current` was a FOURTH signal on one row — a seal
+                               edge-bar, a tint, the word, and the ordinal. The
+                               bar and the tint are the register's own vocabulary
+                               for "this one" and are stated everywhere else
+                               without help; `aria-current` says the same thing
+                               to a screen reader, which is the only reader the
+                               word was still working for. */
+                            aria-current={workspace.activeTabId === tab.id ? "true" : undefined}
                           >
                             <TabMark tab={tab} /><span>{tabLabel}</span>
-                            {workspace.activeTabId === tab.id && <small>Current</small>}
                             {ordinal !== null && (
                               <kbd
                                 className="scripture-workspace-overflow-shortcut"
