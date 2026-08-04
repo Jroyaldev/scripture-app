@@ -614,6 +614,11 @@ export function ScriptureWorkspaceTabs({
       started: boolean;
       insertionIndex: number;
       studyId: string | null;
+      /** The button the gesture began on. Kept because the drop still wants a
+       *  focus target and a capture to release, and by then the pointer may be
+       *  anywhere — including over nothing this component owns. */
+      node: HTMLButtonElement | null;
+      pointerId: number;
       /** The run as it stood when the gesture became a drag. See the shuffle. */
       slots: TabSlot[];
       draggedIndex: number;
@@ -628,6 +633,7 @@ export function ScriptureWorkspaceTabs({
      moment in the gesture where the app knows exactly where the reader is
      looking and says nothing. This holds the visual left across the commit so
      the layout effect below can play the difference back. */
+  const tabDragListenersRef = useRef<(() => void) | null>(null);
   const settleRef = useRef<{ tabId: string; left: number } | null>(null);
   const suppressTabClickRef = useRef(false);
 
@@ -1626,6 +1632,8 @@ export function ScriptureWorkspaceTabs({
          zero would never paint at all. -1 is the honest "not yet asked". */
       insertionIndex: -1,
       studyId: null,
+      node: null,
+      pointerId: event.pointerId,
       slots: [],
       draggedIndex: -1,
       phase: "reorder",
@@ -1703,16 +1711,59 @@ export function ScriptureWorkspaceTabs({
     };
   };
 
+  /* ── WHO OWNS THE GESTURE ONCE IT HAS STARTED ──────────────────────────────
+
+     THE WINDOW DOES, and it has to. This drag used to run entirely on the React
+     handlers bound to the tab's own button, with `setPointerCapture` swallowed
+     in a try/catch and called "best-effort" — which is fine right up until the
+     effort fails. Then every pointermove goes to whatever is under the cursor
+     instead of to the captured button, and the difference is invisible while
+     the pointer is still over the strip, because the sibling tabs carry the
+     same handler and answer in its place. Leave the strip — for the study
+     control, which is the one place the drag is INVITED to go — and there is
+     nothing under the pointer that listens, so the handler simply stops running
+     and the phase freezes on whatever it last was. A reader dragging a tab onto
+     a face that says "drag here to change study" watched it do nothing, and the
+     tour caught it as an intermittent failure two runs in three.
+
+     So capture is an optimisation now, not a requirement: the gesture is
+     followed on the window from the moment it starts, and the listeners come
+     off at the drop. `handleTabPointerMove` is still what notices the threshold,
+     because until then the pointer is over the tab by definition. */
+  const detachTabDragListeners = (): void => {
+    const detach = tabDragListenersRef.current;
+    tabDragListenersRef.current = null;
+    detach?.();
+  };
+
   const handleTabPointerMove = (
     event: React.PointerEvent<HTMLButtonElement>,
     groupId: string,
   ): void => {
     const origin = dragPointerRef.current;
     if (!origin || origin.groupId !== groupId) return;
-    if (!origin.started) {
+    // Once it is running the window owns it, and a second delivery of the same
+    // frame would only do the same work twice.
+    if (origin.started) return;
+    {
       if (Math.hypot(event.clientX - origin.x, event.clientY - origin.y) < DRAG_THRESHOLD_PX) return;
       origin.started = true;
+      origin.node = event.currentTarget;
+      /* Still asked for, because when it works it is the cheapest way to keep a
+         gesture whole; no longer relied upon, because the listeners below hold
+         whether or not it does. */
       try { event.currentTarget.setPointerCapture(event.pointerId); } catch { /* capture is best-effort */ }
+      const onMove = (raw: PointerEvent): void => advanceTabDrag(raw.clientX, raw.clientY, groupId);
+      const onUp = (): void => { void finishTabDrag(origin.tabId, groupId); };
+      const onCancel = (): void => { detachTabDragListeners(); handleTabPointerCancel(); };
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onCancel);
+      tabDragListenersRef.current = (): void => {
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("pointercancel", onCancel);
+      };
       /* THE RUN IS MEASURED ONCE, HERE, and every question the drag asks is
          asked of this snapshot. Measuring live would mean measuring the
          consequence of the previous frame — a sibling that has stepped aside is
@@ -1744,6 +1795,12 @@ export function ScriptureWorkspaceTabs({
       // already the line this code draws between a press and a drag.
       onTabDragPhase("reorder", origin.tabId);
     }
+    advanceTabDrag(event.clientX, event.clientY, groupId);
+  };
+
+  const advanceTabDrag = (clientX: number, clientY: number, groupId: string): void => {
+    const origin = dragPointerRef.current;
+    if (!origin || !origin.started || origin.groupId !== groupId) return;
     /* THE TAB TRAVELS WITH THE POINTER, and it is written straight onto the
        node rather than put in `dragState`.
 
@@ -1758,12 +1815,12 @@ export function ScriptureWorkspaceTabs({
        reaches a study, and the reduced-motion answer are all one declaration in
        one place, and this line contributes a number to it and nothing else. */
     const dragged = tabRefs.current.get(origin.tabId)?.parentElement;
-    if (dragged) dragged.style.setProperty("--tab-drag-x", `${event.clientX - origin.x}px`);
+    if (dragged) dragged.style.setProperty("--tab-drag-x", `${clientX - origin.x}px`);
     // A drag that reaches a study target is asking for a study rather than a
     // slot. It outranks the insertion index because the two answers cannot both
     // be shown without the row claiming to do both.
     const studyId = studyDropTargetId(
-      document.elementFromPoint(event.clientX, event.clientY),
+      document.elementFromPoint(clientX, clientY),
       groupId,
     );
     const settledStudyId = origin.studyId;
@@ -1777,9 +1834,9 @@ export function ScriptureWorkspaceTabs({
        moves under a drag exactly never and asking it every frame would be a
        layout read per frame for an answer that cannot change. */
     const phase: "reorder" | "carry" = studyId !== null
-      || event.clientY < origin.band.top
-      || event.clientY > origin.band.bottom
-      || overStudySurface(event.clientX, event.clientY)
+      || clientY < origin.band.top
+      || clientY > origin.band.bottom
+      || overStudySurface(clientX, clientY)
       ? "carry"
       : "reorder";
     const settledPhase = origin.phase;
@@ -1797,9 +1854,9 @@ export function ScriptureWorkspaceTabs({
        The offset puts the card below and right of the cursor, which is where a
        hand holding something leaves it — over it would hide the very rows the
        drop is aimed at. */
-    carriedAtRef.current = { x: event.clientX, y: event.clientY };
+    carriedAtRef.current = { x: clientX, y: clientY };
     if (phase === "carry" && carriedRef.current) {
-      carriedRef.current.style.transform = carriedTransform(event.clientX, event.clientY);
+      carriedRef.current.style.transform = carriedTransform(clientX, clientY);
     }
     /* THE SLOT, FROM THE SNAPSHOT. The dragged tab's centre is where it started
        plus how far the pointer has travelled — never its live rect, which is the
@@ -1809,7 +1866,7 @@ export function ScriptureWorkspaceTabs({
     const { insertionIndex, shifts } = studyWorkspaceDragShuffle(
       origin.slots,
       origin.draggedIndex,
-      held.left + (event.clientX - origin.x) + held.width / 2,
+      held.left + (clientX - origin.x) + held.width / 2,
     );
     /* AND STATE IS SET ONLY WHEN SOMETHING DISCRETE CHANGED.
        This used to build a fresh object every pointermove, so every frame of
@@ -1828,11 +1885,17 @@ export function ScriptureWorkspaceTabs({
     setDragState({ tabId: origin.tabId, groupId, insertionIndex, studyId, shifts, phase });
   };
 
-  const handleTabPointerUp = async (
-    event: React.PointerEvent<HTMLButtonElement>,
+  /* The drop takes no coordinates. Everything it commits — the study under the
+     pointer, the slot the run opened — was decided by the last move and is
+     already on `origin`; re-deriving it from the release point would let one
+     stray final pixel disagree with the preview the reader was just shown. */
+  const finishTabDrag = async (
     tabId: string,
     groupId: string,
   ): Promise<void> => {
+    // First, so a pointerup delivered twice — once by the window, once by the
+    // element that still has capture — cannot commit the same drop twice.
+    detachTabDragListeners();
     const origin = dragPointerRef.current;
     dragPointerRef.current = null;
     /* WHERE THE READER LAST SAW IT, recorded before anything is torn down.
@@ -1857,7 +1920,7 @@ export function ScriptureWorkspaceTabs({
     if (origin?.started) onTabDragPhase(null, null);
     if (!origin || !origin.started) return;
     suppressTabClickRef.current = true;
-    try { event.currentTarget.releasePointerCapture(event.pointerId); } catch { /* release is best-effort */ }
+    try { origin.node?.releasePointerCapture(origin.pointerId); } catch { /* release is best-effort */ }
     /* A DROP ON A STUDY IS THE MOVE THE MENUS ALREADY MAKE — same mutation, same
        confirmations, same refusals. The gesture is a second door onto
        `onMoveTab`, never a second set of rules for changing a tab's study.
@@ -1871,14 +1934,14 @@ export function ScriptureWorkspaceTabs({
       return;
     }
     if (origin.studyId) {
-      await handleMoveTab(tabId, origin.studyId, event.currentTarget);
+      await handleMoveTab(tabId, origin.studyId, origin.node ?? document.body);
       return;
     }
     const entry = groups.find((candidate) => candidate.group.id === groupId);
     if (!entry) return;
     const orderedIds = entry.tabs.map((tab) => tab.id);
     const position = studyWorkspaceDragReorderPosition(orderedIds, tabId, origin.insertionIndex);
-    if (position) await handleReorderTab(tabId, position, event.currentTarget);
+    if (position) await handleReorderTab(tabId, position, origin.node ?? document.body);
   };
 
   const handleTabPointerCancel = (): void => {
@@ -2170,7 +2233,10 @@ export function ScriptureWorkspaceTabs({
                 onMouseDown={deferMouseFocus}
                 onPointerDown={(event) => handleTabPointerDown(event, tab.id, group.id, true)}
                 onPointerMove={(event) => handleTabPointerMove(event, group.id)}
-                onPointerUp={(event) => handleTabPointerUp(event, tab.id, group.id)}
+                /* No `onPointerUp` here any more: a press that never became a
+                   drag has nothing to finish, and one that did is followed on
+                   the window, which hears the release wherever it happens —
+                   including over a surface this component does not own. */
                 onPointerCancel={handleTabPointerCancel}
                 onClick={async (event) => {
                   // A pointer press must not draw a focus ring, and this one did.

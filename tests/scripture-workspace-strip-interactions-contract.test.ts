@@ -334,11 +334,18 @@ test("middle-click closes the tab under the pointer, and every tab is one tab", 
 });
 
 test("pointer drag is thresholded, and the run itself opens the slot", () => {
-  const onMoveHandler = section("const handleTabPointerMove", "const handleTabPointerUp");
+  const onMoveHandler = section("const handleTabPointerMove", "const finishTabDrag");
   assert.match(source, /const DRAG_THRESHOLD_PX = 4/);
   assert.match(source, /onPointerDown=\{\(event\) => handleTabPointerDown/);
   assert.match(source, /onPointerMove=\{\(event\) => handleTabPointerMove/);
-  assert.match(source, /onPointerUp=\{\(event\) => handleTabPointerUp/);
+  /* THE RELEASE IS HEARD ON THE WINDOW, not on the tab · 2026-08-03. It was
+     bound here, which works only while the pointer is still over the button —
+     true when capture holds and false the moment it does not, and capture was
+     asked for inside a try/catch that called it "best-effort". A release over
+     the study control, which is where this gesture is invited to end, then went
+     to no one. */
+  assert.doesNotMatch(source, /onPointerUp=\{\(event\) => handleTabPointerUp/);
+  assert.match(source, /window\.addEventListener\("pointerup", onUp\)/);
   assert.match(source, /Math\.hypot\(event\.clientX - origin\.x, event\.clientY - origin\.y\) < DRAG_THRESHOLD_PX/);
   assert.match(source, /studyWorkspaceDragReorderPosition\(orderedIds, tabId, origin\.insertionIndex\)/);
   assert.match(source, /dragging \? " is-dragging" : ""/);
@@ -369,7 +376,10 @@ test("pointer drag is thresholded, and the run itself opens the slot", () => {
      answer that cannot change. */
   assert.match(onMoveHandler, /origin\.band = \{ top: rect\.top - CARRY_SLACK_PX, bottom: rect\.bottom \+ CARRY_SLACK_PX \};/);
   assert.match(onMoveHandler, /origin\.draggedIndex = origin\.slots\.findIndex/);
-  assert.match(onMoveHandler, /held\.left \+ \(event\.clientX - origin\.x\) \+ held\.width \/ 2/,
+  // The per-frame work is `advanceTabDrag` now, and it takes plain coordinates
+  // because the window hands it raw pointer events rather than React ones.
+  const advance = section("const advanceTabDrag", "const finishTabDrag");
+  assert.match(advance, /held\.left \+ \(clientX - origin\.x\) \+ held\.width \/ 2/,
     "the dragged centre comes from the snapshot plus pointer travel, never its live rect");
 
   /* AND THE STRIP RENDERS ONLY WHEN THE SLOT CHANGES. It used to build a fresh
@@ -392,7 +402,7 @@ test("pointer drag is thresholded, and the run itself opens the slot", () => {
      "drag here to change study" answered a drag by looking like nothing at all,
      the phase fell back to a reorder, and the list closed under the very hand it
      had invited — found by taking the invitation literally. */
-  assert.match(onMoveHandler, /\|\| overStudySurface\(event\.clientX, event\.clientY\)/);
+  assert.match(onMoveHandler, /\|\| overStudySurface\(clientX, clientY\)/);
   assert.match(source, /querySelectorAll\("\[data-study-control\], \.scripture-workspace-context-popover"\)/);
   assert.match(onMoveHandler, /if \(phase !== settledPhase\) \{/);
   assert.match(source, /onTabDragPhase\("reorder", origin\.tabId\);/,
@@ -464,10 +474,58 @@ test("pointer drag is thresholded, and the run itself opens the slot", () => {
      does is not being dragged. The offset is written straight onto the node
      because a pointer move fires every frame and a state update per frame
      re-renders every tab in the strip to move one of them. */
-  assert.match(source, /dragged\.style\.setProperty\("--tab-drag-x", `\$\{event\.clientX - origin\.x\}px`\)/);
+  assert.match(source, /dragged\.style\.setProperty\("--tab-drag-x", `\$\{clientX - origin\.x\}px`\)/);
   assert.match(source, /data-drag-away=\{\(dragging && overStudy\) \|\| undefined\}/);
   // A plain click below the threshold is never swallowed as a drag.
   assert.match(source, /suppressTabClickRef/);
+});
+
+test("a drag is followed on the window, because pointer capture is not a promise", () => {
+  /* THE BUG THIS PINS was invisible in exactly the place it mattered. The drag
+     ran on the React handlers bound to the tab's own button, and `setPointerCapture`
+     was asked for inside a try/catch and called "best-effort". When the effort
+     failed, every pointermove went to whatever was under the cursor instead —
+     and while the pointer is still over the strip that is another TAB, which
+     carries the same handler and answers in its place, so a reorder looked
+     perfect. Leave the strip for the study control, which is the one surface
+     this gesture is invited to cross, and nothing under the pointer listens:
+     the handler stops running and the phase freezes at "reorder". The face said
+     "drag here to change study" and then did nothing with what you dragged
+     there.
+
+     It presented as a QA flake — two runs in three — because capture usually
+     succeeds. A diagnostic settled it: at the moment of failure the document
+     saw the pointermove at the face, with the invite span as its target, while
+     the component's own handler had last seen the pointer 636px away at the
+     previous step. Not a race, not a missing event: an event delivered
+     somewhere nobody was listening.
+
+     So the window owns the gesture from the moment it starts. Capture is still
+     requested — when it works it is the cheapest way to keep a gesture whole —
+     but nothing depends on it. */
+  assert.match(source, /window\.addEventListener\("pointermove", onMove\);/);
+  assert.match(source, /window\.addEventListener\("pointerup", onUp\);/);
+  assert.match(source, /window\.addEventListener\("pointercancel", onCancel\);/);
+  assert.match(source, /capture is best-effort/,
+    "capture stays requested — it is an optimisation now, not a requirement");
+
+  // The listeners come off at the drop, and FIRST, so a release delivered twice
+  // — once by the window, once by an element that did hold capture — cannot
+  // commit the same drop twice.
+  const finish = section("const finishTabDrag", "const handleTabPointerCancel");
+  assert.match(finish, /^\s*detachTabDragListeners\(\);/m);
+  assert.ok(
+    finish.indexOf("detachTabDragListeners()") < finish.indexOf("dragPointerRef.current = null"),
+    "the listeners come off before the gesture record is cleared",
+  );
+  // And a cancel takes them off too — the one path where nothing else runs.
+  assert.match(source, /const onCancel = \(\): void => \{ detachTabDragListeners\(\); handleTabPointerCancel\(\); \};/);
+
+  /* The React handler still notices the threshold, because until it is crossed
+     the pointer is over the tab by definition — and it stands down once the
+     gesture is running, so a frame is not worked twice. */
+  const move = section("const handleTabPointerMove", "const advanceTabDrag");
+  assert.match(move, /if \(origin\.started\) return;/);
 });
 
 test("a drag that reaches a study is asking for a study, not for a slot", () => {
@@ -502,7 +560,7 @@ test("a drag that reaches a study is asking for a study, not for a slot", () => 
      it is the study the tab is already in — which the function above excludes by
      design. So the strip announces the drag itself, at the THRESHOLD and not at
      pointerdown, or a plain click on a tab would open a list. */
-  const onMove = section("const handleTabPointerMove", "const handleTabPointerUp");
+  const onMove = section("const handleTabPointerMove", "const finishTabDrag");
   assert.match(onMove, /origin\.started = true;/);
   assert.ok(
     onMove.indexOf('onTabDragPhase("reorder", origin.tabId)') > onMove.indexOf("origin.started = true"),
@@ -512,8 +570,8 @@ test("a drag that reaches a study is asking for a study, not for a slot", () => 
   // The drop is `onMoveTab` — the same mutation the "Move to study…" menus
   // make, with the same confirmations and the same refusals. A second gesture
   // for changing a tab's study may never be a second set of rules for it.
-  const up = section("const handleTabPointerUp", "const handleTabPointerCancel");
-  assert.match(up, /if \(origin\.studyId\) \{\s*await handleMoveTab\(tabId, origin\.studyId, event\.currentTarget\);/);
+  const up = section("const finishTabDrag", "const handleTabPointerCancel");
+  assert.match(up, /if \(origin\.studyId\) \{\s*await handleMoveTab\(tabId, origin\.studyId, origin\.node \?\? document\.body\);/);
   assert.match(up, /studyWorkspaceDragReorderPosition\(orderedIds, tabId, origin\.insertionIndex\)/);
   assert.ok(
     up.indexOf("handleMoveTab") < up.indexOf("studyWorkspaceDragReorderPosition"),
@@ -575,7 +633,7 @@ test("a drag that reaches a study is asking for a study, not for a slot", () => 
 
   // The mark is strictly transient: cleared on drop and on cancel, so it can
   // never be mistaken for state by a reader or by a screenshot.
-  const move = section("const handleTabPointerMove", "const handleTabPointerUp");
+  const move = section("const handleTabPointerMove", "const finishTabDrag");
   assert.match(move, /if \(studyId !== settledStudyId\) onTabDragOverStudy\(studyId\);/);
   assert.match(up, /if \(origin\?\.studyId\) onTabDragOverStudy\(null\);/);
   const cancel = section("const handleTabPointerCancel", "const handleTabAuxClick");
