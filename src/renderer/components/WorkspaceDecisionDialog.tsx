@@ -1,5 +1,6 @@
 import type React from "react";
 import { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { isTopLayer, useLayer } from "../layerStack.js";
 import type {
   WorkspaceConfirmation,
@@ -146,9 +147,29 @@ export function WorkspaceDecisionDialog({
     onDecide(decision);
   };
 
-  return (
+  /* PORTALLED TO THE BODY, and this is a correctness fix rather than a
+     preference. `.app-shell` carries `isolation: isolate`, so it opens a
+     stacking context and every z-index inside it — including this dialog's
+     1360 — is scoped to that context. The app-shell itself participates in the
+     root context at `z-index: auto`, i.e. level zero. Popovers portal to the
+     body and put their hit shield at 900, which is above zero, so while ANY
+     popover was open this dialog painted underneath its scrim: the question was
+     visible, dimmed, and unclickable, and the reader had to dismiss the menu by
+     clicking outside it before they could answer the question that menu had
+     asked them. A modal that a click cannot reach is not a modal.
+
+     Portalling puts it in the root context beside the scrims it must outrank,
+     where 1360 means what it says. The material classes come with it for the
+     same reason Popover and Tooltip copy them: design tokens are declared on
+     the shell, and a portalled node leaves that subtree behind. */
+  const shell = document.querySelector(".app-shell");
+  const materialClasses = shell
+    ? [...shell.classList].filter((name) => name === "dark" || name.startsWith("theme-")).join(" ")
+    : "";
+
+  return createPortal(
     <div
-      className="workspace-decision-root"
+      className={`workspace-decision-root ${materialClasses}`}
       role="dialog"
       aria-modal="true"
       aria-labelledby="workspace-decision-title"
@@ -188,6 +209,7 @@ export function WorkspaceDecisionDialog({
           ))}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

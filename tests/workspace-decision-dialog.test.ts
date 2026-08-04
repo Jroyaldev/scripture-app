@@ -1,4 +1,6 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { test } from "node:test";
 import {
   workspaceDecisionPresentation,
@@ -105,4 +107,37 @@ test("every decision dialog leaves Cancel to the common dialog footer", () => {
   });
 
   assert.equal(result.actions.some((action) => action.decision === "cancel"), false);
+});
+
+test("the question is asked in the top layer, where a click can reach it", () => {
+  /* `.app-shell` carries `isolation: isolate`, which opens a stacking context —
+     so every z-index inside it, including this dialog's 1360, is scoped to that
+     context, and the shell itself sits in the root context at `z-index: auto`.
+     Popovers portal to the body and lay a hit shield at 900. Nine hundred beats
+     zero, so while ANY popover was open this dialog painted underneath its
+     scrim: the question was visible, dimmed and unclickable, and the reader had
+     to dismiss the menu by clicking outside it before they could answer the
+     question that menu had just asked them.
+
+     Reported from All Tabs — drop a study's only tab into another study and the
+     move confirmation is unreachable — but it was never about All Tabs. Any
+     decision raised while any popover stood was behind it, from the strip's
+     context menu as much as from the overview.
+
+     So the dialog portals to the body, beside the scrims it must outrank, where
+     its z-index means what it says. The material classes travel with it because
+     design tokens are declared on the shell and a portalled node leaves that
+     subtree behind — the same reason Popover and Tooltip copy them. */
+  const source = readFileSync(
+    resolve(import.meta.dirname, "../src/renderer/components/WorkspaceDecisionDialog.tsx"),
+    "utf8",
+  );
+  assert.match(source, /import \{ createPortal \} from "react-dom";/);
+  assert.match(source, /return createPortal\(/);
+  assert.match(source, /\s+document\.body,\s*\);/);
+  assert.match(source, /className=\{`workspace-decision-root \$\{materialClasses\}`\}/);
+  assert.match(
+    source,
+    /\[\.\.\.shell\.classList\]\.filter\(\(name\) => name === "dark" \|\| name\.startsWith\("theme-"\)\)/,
+  );
 });
