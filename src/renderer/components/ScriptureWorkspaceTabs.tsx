@@ -36,6 +36,15 @@ export type { WorkspaceReorderPosition };
 /** Pointer travel (px) before a press on a tab becomes a reorder drag. */
 const DRAG_THRESHOLD_PX = 4;
 
+/** The All Tabs panel's id — the trigger's `aria-controls`, and the anchor the
+ *  keyboard walk asks the document for. Named once so the two cannot drift. */
+const OVERFLOW_PANEL_ID = "study-workspace-all-tabs";
+
+/** How long a typed word stays in progress inside the open menu. The platform
+ *  idiom: long enough to spell a name at a human pace, short enough that coming
+ *  back a moment later starts a fresh one. */
+const TYPE_AHEAD_RESET_MS = 700;
+
 export interface ScriptureWorkspaceTabsProps {
   workspace: StudyWorkspaceStateV2;
   bookNames: BookNameData;
@@ -322,11 +331,40 @@ export function studyWorkspaceRovingTabId(
   return visibleTabIds[0] ?? null;
 }
 
-export function studyWorkspaceSearchMatches(query: string, ...terms: string[]): boolean {
-  const tokens = query.trim().toLocaleLowerCase().split(/\s+/u).filter(Boolean);
-  if (tokens.length === 0) return true;
-  const haystack = terms.join(" ").toLocaleLowerCase();
-  return tokens.every((token) => haystack.includes(token));
+/**
+ * Which row a reader means when they type into an open menu.
+ *
+ * THIS REPLACES A SEARCH FIELD, and the difference is the whole point. A field
+ * asks the reader to aim at it, spends the tallest element in the panel saying
+ * so, and answers by HIDING things — which is a fine bargain over a thousand
+ * results and a poor one over four rows the reader can already see. A menu
+ * answers the same intent by moving: every row stays where it was, and the one
+ * you named takes focus. That is what every native menu on this platform does
+ * with a keystroke, and readers arrive already knowing it.
+ *
+ * Prefix beats word-boundary, and it beats it by RETURNING FIRST rather than by
+ * scoring: typing "j" should land on "John 2" before "1 John 2", because a
+ * reader spelling a name starts at its start. The boundary pass is what makes
+ * "john" reach "1 John 2" at all, and what lets a bare "3" reach "Matthew 3" —
+ * chapter numbers are the other half of how these rows are named.
+ */
+export function studyWorkspaceTypeAheadIndex(
+  labels: readonly string[],
+  buffer: string,
+): number {
+  const needle = buffer.trim().toLocaleLowerCase();
+  if (needle.length === 0) return -1;
+  let wordBoundary = -1;
+  for (let index = 0; index < labels.length; index += 1) {
+    const label = (labels[index] ?? "").toLocaleLowerCase();
+    if (label.startsWith(needle)) return index;
+    if (wordBoundary < 0 && label
+      .split(/[^\p{L}\p{N}]+/u)
+      .some((word) => word.length > 0 && word.startsWith(needle))) {
+      wordBoundary = index;
+    }
+  }
+  return wordBoundary;
 }
 
 /**
@@ -442,10 +480,6 @@ function OverflowGlyph(): React.JSX.Element {
   return <svg className="scripture-workspace-glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 8h.01M8 8h.01M12 8h.01" /></svg>;
 }
 
-function SearchGlyph(): React.JSX.Element {
-  return <svg className="scripture-workspace-glyph" viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4" /><path d="m10.2 10.2 3.3 3.3" /></svg>;
-}
-
 function ReopenGlyph(): React.JSX.Element {
   return <svg className="scripture-workspace-glyph" viewBox="0 0 16 16" aria-hidden="true"><path d="M6 4.5 3.2 7.3 6 10.1" /><path d="M3.2 7.3h6.3a3.4 3.4 0 0 1 0 6.8H6.6" /></svg>;
 }
@@ -534,7 +568,6 @@ export function ScriptureWorkspaceTabs({
 }: ScriptureWorkspaceTabsProps): React.JSX.Element {
   const [overflowOpen, setOverflowOpen] = useState(false);
   const [overflowAnchor, setOverflowAnchor] = useState<DOMRect | null>(null);
-  const [overflowQuery, setOverflowQuery] = useState("");
   const [renameGroupId, setRenameGroupId] = useState<string | null>(null);
   const [renameDraft, setRenameDraft] = useState("");
   const [hasMeasuredOverflow, setHasMeasuredOverflow] = useState(false);
@@ -560,7 +593,11 @@ export function ScriptureWorkspaceTabs({
   const carriedAtRef = useRef({ x: 0, y: 0 });
   const viewportRef = useRef<HTMLDivElement>(null);
   const overflowButtonRef = useRef<HTMLButtonElement>(null);
-  const overflowSearchRef = useRef<HTMLInputElement>(null);
+  /* Where the caret lands when All Tabs opens. Assigned during the row loop, so
+     it is committed before Popover's focus task runs — the panel does not exist
+     until the pass that measures it, and the children mount on that same
+     pass. */
+  const activeOverflowRowRef = useRef<HTMLButtonElement>(null);
   const groupRenameInputRef = useRef<HTMLInputElement>(null);
   const contextTriggerRef = useRef<HTMLElement | null>(null);
   const tabRefs = useRef<Map<string, HTMLButtonElement>>(new Map());
@@ -651,17 +688,12 @@ export function ScriptureWorkspaceTabs({
     () => (focusedTabId && stripTabIdSet.has(focusedTabId) ? focusedTabId : rovingTabId),
     [focusedTabId, rovingTabId, stripTabIdSet],
   );
-  const filteredGroups = useMemo(() => allGroups.flatMap((entry) => {
-    const groupMatches = studyWorkspaceSearchMatches(overflowQuery, entry.label);
-    const tabs = groupMatches
-      ? entry.tabs
-      : entry.tabs.filter((tab) => studyWorkspaceSearchMatches(
-          overflowQuery,
-          entry.label,
-          studyWorkspaceTabLabel(workspace, tab, bookNames),
-        ));
-    return tabs.length > 0 ? [{ ...entry, tabs }] : [];
-  }), [allGroups, bookNames, overflowQuery, workspace]);
+  /* NOTHING IS FILTERED ANY MORE. `filteredGroups` stood here and rebuilt the
+     whole list on every keystroke, hiding rows that did not match. That is the
+     right trade over a thousand results and the wrong one over a list a reader
+     can see all of: it takes a stable set of rows whose positions they were
+     learning and makes it a different list each character. Typing now moves
+     focus instead — `handleOverflowTypeAhead` — and every row stays put. */
   const recentlyClosed = workspace.recentlyClosed.at(-1);
   const recentlyClosedLabel = useMemo(() => {
     if (!recentlyClosed) return null;
@@ -729,15 +761,29 @@ export function ScriptureWorkspaceTabs({
     }, 0);
   }, []);
 
+  /* The fallback may be a ref or a lookup. Four of these sites used to name the
+     search field, not because the field was the right place to land but because
+     it was the only thing in the panel guaranteed to still be there — the header
+     rebuilds under its new name after a rename, the row remounts in its new
+     study after a move. With the field gone the honest answer is the PANEL
+     itself, which is focusable for exactly this reason and keeps the reader
+     inside the dialog they opened; and a panel that only exists while open has
+     to be looked up when the timer fires, not captured when it is scheduled. */
   const scheduleControlFocus = useCallback((
     requested: HTMLElement | null,
-    fallback: React.RefObject<HTMLElement | null>,
+    fallback: React.RefObject<HTMLElement | null> | (() => HTMLElement | null),
   ): void => {
     window.setTimeout(() => {
-      const target = requested?.isConnected ? requested : fallback.current;
+      const spare = typeof fallback === "function" ? fallback() : fallback.current;
+      const target = requested?.isConnected ? requested : spare;
       if (target?.isConnected) target.focus({ preventScroll: true });
     }, 0);
   }, []);
+
+  const overflowPanelFallback = useCallback(
+    (): HTMLElement | null => document.getElementById(OVERFLOW_PANEL_ID),
+    [],
+  );
 
   const dismissOverflow = useCallback((): void => {
     setOverflowOpen(false);
@@ -797,48 +843,131 @@ export function ScriptureWorkspaceTabs({
      reason to make the arrow keys stop in the middle.
 
      Read from the DOM rather than assembled from state, and deliberately: what
-     the arrows should travel is what is ON SCREEN, already filtered by the
-     search and already in the order the sections put it. A parallel model of
-     that ordering is a second thing to keep in step with the render. */
+     the arrows should travel is what is ON SCREEN, in the order the sections put
+     it. A parallel model of that ordering is a second thing to keep in step with
+     the render.
+
+     ANCHORED ON THE PANEL, not on the list. This used to climb from the search
+     input to `.popover-panel`, which was convenient and wrong in a way that only
+     showed when the field left: the recents are a SIBLING of the list, so an
+     anchor inside the list quietly drops half the sequence. The panel carries an
+     id already — it is what the trigger's `aria-controls` names — so ask for it
+     by the name the markup publishes. */
   const overflowStops = useCallback((): HTMLButtonElement[] => {
-    const panel = overflowSearchRef.current?.closest(".popover-panel");
+    const panel = document.getElementById(OVERFLOW_PANEL_ID);
     if (!panel) return [];
     return [...panel.querySelectorAll<HTMLButtonElement>(
       "[data-study-all-tabs-row] > button, [data-study-recent-item]",
     )];
   }, []);
 
-  /* `from` is where the reader is; `delta` is the step. Above the first stop is
-     the search field — not a wrap to the last one, because this list has a text
-     home at the top and ArrowUp out of the first row is a reader going back to
-     typing, which is the only thing above it. */
+  /* `from` is where the reader is; `delta` is the step. There is nothing above
+     the first stop any more — the field that used to sit there is gone, and a
+     wrap to the bottom would be a reader asking to go up and being sent to the
+     end. ArrowUp at the top stops, which is what a menu does. */
   const moveOverflowFocus = useCallback((from: number, delta: number): void => {
     const stops = overflowStops();
     if (stops.length === 0) return;
-    const next = from + delta;
-    if (next < 0) {
-      overflowSearchRef.current?.focus({ preventScroll: true });
-      return;
-    }
-    const target = stops[Math.min(stops.length - 1, next)];
+    const target = stops[Math.max(0, Math.min(stops.length - 1, from + delta))];
     if (!target) return;
     target.focus({ preventScroll: true });
     target.scrollIntoView({ block: "nearest" });
   }, [overflowStops]);
 
-  const handleOverflowListKeyDown = useCallback((
-    event: React.KeyboardEvent<HTMLButtonElement>,
-  ): void => {
+  /* ── TYPING, WITHOUT A FIELD ───────────────────────────────────────────────
+
+     The buffer is a ref rather than state on purpose: nothing renders from it.
+     A menu that echoed what you were typing back at you would be a search field
+     again, drawn worse — what a reader wants to see is the row they named taking
+     focus, and they see that already. Seven hundred milliseconds is the platform
+     idiom: long enough to spell "matt" at a human pace, short enough that coming
+     back to the menu a moment later starts a fresh word.
+
+     Bound on the PANEL, not the list, for two reasons that pull the same way:
+     the recents live outside the list, and the group rename form lives INSIDE it
+     with a text field a reader must be able to type into. Hence the guards — a
+     keystroke aimed at a text field belongs to that field, a chord belongs to
+     whatever owns the chord, and a bare Space is a button being pressed until
+     there is a word in progress for it to extend. */
+  const typeAheadRef = useRef<{ buffer: string; at: number }>({ buffer: "", at: 0 });
+
+  const handleOverflowTypeAhead = useCallback((event: KeyboardEvent): boolean => {
+    if (event.metaKey || event.ctrlKey || event.altKey) return false;
+    if (event.key.length !== 1) return false;
+    const target = event.target as HTMLElement | null;
+    if (target?.closest("input, textarea, [contenteditable]")) return false;
+    const record = typeAheadRef.current;
+    const fresh = event.timeStamp - record.at > TYPE_AHEAD_RESET_MS;
+    if (event.key === " " && (fresh || record.buffer.length === 0)) return false;
+    const buffer = (fresh ? "" : record.buffer) + event.key;
+    typeAheadRef.current = { buffer, at: event.timeStamp };
     const stops = overflowStops();
-    const index = stops.indexOf(event.currentTarget);
-    if (index < 0) return;
-    if (event.key === "ArrowDown") moveOverflowFocus(index, 1);
-    else if (event.key === "ArrowUp") moveOverflowFocus(index, -1);
-    else if (event.key === "Home") moveOverflowFocus(0, 0);
-    else if (event.key === "End") moveOverflowFocus(stops.length - 1, 0);
-    else return;
-    event.preventDefault();
+    const index = studyWorkspaceTypeAheadIndex(
+      stops.map((stop) => stop.textContent ?? ""),
+      buffer,
+    );
+    if (index < 0) return true;
+    moveOverflowFocus(index, 0);
+    return true;
   }, [moveOverflowFocus, overflowStops]);
+
+  const handleOverflowKeyDown = useCallback((event: KeyboardEvent): void => {
+    const stops = overflowStops();
+    const index = stops.indexOf(event.target as HTMLButtonElement);
+    if (index >= 0) {
+      if (event.key === "ArrowDown") moveOverflowFocus(index, 1);
+      else if (event.key === "ArrowUp") moveOverflowFocus(index, -1);
+      else if (event.key === "Home") moveOverflowFocus(0, 0);
+      else if (event.key === "End") moveOverflowFocus(stops.length - 1, 0);
+      else if (handleOverflowTypeAhead(event)) { /* focus moved or no match */ }
+      else return;
+      event.preventDefault();
+      return;
+    }
+    // Off a row — the head, a section header, the gaps. Typing still aims at the
+    // list, so a reader who opened the menu and typed does not have to find a
+    // row first to be understood.
+    if (handleOverflowTypeAhead(event)) event.preventDefault();
+  }, [handleOverflowTypeAhead, moveOverflowFocus, overflowStops]);
+
+  /* Bound on the PANEL rather than on the rows, which is the shape the surface
+     actually has: the recents sit outside the list, the head sits above it, and
+     a reader who opens the menu and starts typing should be understood wherever
+     focus happens to be. One listener on the element that contains all of it
+     says that once. It is native rather than a React prop because the panel is
+     Popover's element, not this component's — and because the same lookup that
+     anchors the walk can hand it over. */
+  useEffect(() => {
+    if (!overflowOpen) return;
+    typeAheadRef.current = { buffer: "", at: 0 };
+    /* Bound on the DOCUMENT, then filtered to the panel — not bound on the
+       panel, which is the version that looked right and did nothing. Popover
+       measures before it renders, so the element this listener wants does not
+       exist on the pass where `overflowOpen` becomes true; an effect that
+       reaches for it by id finds null, returns, and never runs again, because
+       nothing it depends on changes when the panel finally mounts. The document
+       is always there, and the containment check is the same question the
+       narrower binding was asking implicitly. */
+    const onKeyDown = (event: KeyboardEvent): void => {
+      const target = event.target as HTMLElement | null;
+      if (!target?.closest(`#${OVERFLOW_PANEL_ID}`)) return;
+      handleOverflowKeyDown(event);
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [handleOverflowKeyDown, overflowOpen]);
+
+  /* Popover focuses with `preventScroll: true`, which is right for a field at
+     the top of a panel and wrong for a row that may be forty tabs down: the
+     menu would open on its first study with the caret somewhere below the fold
+     and nothing to show for it. */
+  useEffect(() => {
+    if (!overflowOpen) return;
+    const timer = window.setTimeout(() => {
+      activeOverflowRowRef.current?.scrollIntoView({ block: "nearest" });
+    }, 0);
+    return () => window.clearTimeout(timer);
+  }, [overflowOpen, overflowAnchor]);
 
   useLayoutEffect(() => {
     const viewport = viewportRef.current;
@@ -1057,12 +1186,12 @@ export function ScriptureWorkspaceTabs({
     if (!trimmed) return false;
     const approved = await runApprovedIntent(
       () => onRenameGroup(groupId, trimmed),
-      () => scheduleControlFocus(groupRenameInputRef.current, overflowSearchRef),
+      () => scheduleControlFocus(groupRenameInputRef.current, overflowPanelFallback),
     );
     if (approved) setRenameGroupId(null);
     if (approved) setRenameDraft("");
     return approved;
-  }, [onRenameGroup, renameDraft, runApprovedIntent, scheduleControlFocus]);
+  }, [onRenameGroup, renameDraft, runApprovedIntent, overflowPanelFallback, scheduleControlFocus]);
 
   const handleMoveTab = useCallback(async (
     tabId: string,
@@ -1070,8 +1199,8 @@ export function ScriptureWorkspaceTabs({
     focusTarget: HTMLElement,
   ): Promise<boolean> => await runApprovedIntent(
     () => onMoveTab(tabId, targetGroupId),
-    () => scheduleControlFocus(focusTarget, overflowSearchRef),
-  ), [onMoveTab, runApprovedIntent, scheduleControlFocus]);
+    () => scheduleControlFocus(focusTarget, overflowPanelFallback),
+  ), [onMoveTab, runApprovedIntent, overflowPanelFallback, scheduleControlFocus]);
 
   const handlePromoteTab = useCallback(async (tabId: string): Promise<boolean> => await runApprovedIntent(
     () => onPromoteTab(tabId),
@@ -1087,8 +1216,8 @@ export function ScriptureWorkspaceTabs({
     focusTarget: HTMLElement,
   ): Promise<boolean> => await runApprovedIntent(
     () => onReorderTab(tabId, position),
-    () => scheduleControlFocus(focusTarget, overflowSearchRef),
-  ), [onReorderTab, runApprovedIntent, scheduleControlFocus]);
+    () => scheduleControlFocus(focusTarget, overflowPanelFallback),
+  ), [onReorderTab, runApprovedIntent, overflowPanelFallback, scheduleControlFocus]);
 
   const handleReorderGroup = useCallback(async (
     groupId: string,
@@ -1096,8 +1225,8 @@ export function ScriptureWorkspaceTabs({
     focusTarget: HTMLElement,
   ): Promise<boolean> => await runApprovedIntent(
     () => onReorderGroup(groupId, position),
-    () => scheduleControlFocus(focusTarget, overflowSearchRef),
-  ), [onReorderGroup, runApprovedIntent, scheduleControlFocus]);
+    () => scheduleControlFocus(focusTarget, overflowPanelFallback),
+  ), [onReorderGroup, runApprovedIntent, overflowPanelFallback, scheduleControlFocus]);
 
   const handleReopenRecent = useCallback(async (): Promise<boolean> => await runApprovedIntent(
     () => onReopenRecent(),
@@ -1118,7 +1247,6 @@ export function ScriptureWorkspaceTabs({
   const beginRenameFromContext = useCallback((groupId: string): void => {
     const entry = allGroups.find((candidate) => candidate.group.id === groupId);
     setContextMenu(null);
-    setOverflowQuery("");
     setRenameGroupId(groupId);
     setRenameDraft(entry?.label ?? "");
     setOverflowAnchor(overflowButtonRef.current?.getBoundingClientRect() ?? null);
@@ -1894,7 +2022,7 @@ export function ScriptureWorkspaceTabs({
             still worth publishing: `data-study-overflowing` stays, because the
             sheet fades the run's edges by it. */}
         {allGroups.length > 0 && (
-          <Tooltip label="All tabs — search, switch, reopen">
+          <Tooltip label="All tabs — switch, reopen">
             <button
               ref={overflowButtonRef}
               type="button"
@@ -1905,7 +2033,6 @@ export function ScriptureWorkspaceTabs({
               onClick={() => {
                 setMenu(null);
                 setRenameGroupId(null);
-                setOverflowQuery("");
                 setOverflowAnchor(overflowButtonRef.current?.getBoundingClientRect() ?? null);
                 setOverflowOpen(true);
               }}
@@ -1914,19 +2041,22 @@ export function ScriptureWorkspaceTabs({
                  since moved out: reaching another study went to the study line,
                  tabs past the edge of the row went to wheel-pan and the edge
                  fades, and jumping by ordinal went to ⌘1–9. What is left is
-                 management — search across studies, recover something closed,
-                 rename or order or close a study you are not in — so the name
-                 leads with those three verbs and keeps the count after them,
-                 which is where a count belongs on a control that opens a list. */
+                 management — switch to a tab in any study, recover something
+                 closed, rename or order or close a study you are not in — so
+                 the name leads with those verbs and keeps the count after them,
+                 which is where a count belongs on a control that opens a list.
+                 "search" left the name on 2026-08-03 with the field it named:
+                 typing still finds a row, but it moves to it rather than hiding
+                 the others, and that is a menu's behaviour, not a search's. */
               aria-label={
-                `All tabs — search, switch, reopen; ${totalTabs} open in `
+                `All tabs — switch, reopen; ${totalTabs} open in `
                 + `${allGroups.length} ${allGroups.length === 1 ? "study" : "studies"}`
               }
               aria-haspopup="dialog"
               aria-expanded={overflowOpen}
               // Only while the panel exists: an aria-controls pointing at an id
               // that is not in the document names nothing.
-              aria-controls={overflowOpen ? "study-workspace-all-tabs" : undefined}
+              aria-controls={overflowOpen ? OVERFLOW_PANEL_ID : undefined}
             >
               {/* THE QUIET DOOR, and one glyph in every state as of 2026-07-30.
                   It wore a `+n` count whenever the strip was not showing
@@ -1947,14 +2077,22 @@ export function ScriptureWorkspaceTabs({
 
       {overflowOpen && overflowAnchor && (
         <Popover
-          id="study-workspace-all-tabs"
+          id={OVERFLOW_PANEL_ID}
           anchorRect={overflowAnchor}
           onClose={dismissOverflow}
           width={440}
           maxHeight={560}
           className="scripture-workspace-overflow-popover"
           ariaLabel="All study tabs"
-          initialFocusRef={overflowSearchRef}
+          /* THE CARET LANDS ON THE TAB YOU ARE READING. It used to land in the
+             search field, which was the only text in the panel and so the only
+             sane answer while there was one. With the field gone, Popover's own
+             fallback would take the first focusable descendant — the head's
+             button, or a header tool sitting at opacity 0 — so the panel says
+             where instead. The active row is where a reader's attention already
+             is, and it makes every arrow key relative to the thing they are
+             looking at rather than to the top of a list. */
+          initialFocusRef={activeOverflowRowRef}
         >
           <div className="scripture-workspace-overflow-head">
             <div><strong>All Tabs</strong><span>{totalTabs} open in {allGroups.length} {allGroups.length === 1 ? "study" : "studies"}</span></div>
@@ -1967,38 +2105,8 @@ export function ScriptureWorkspaceTabs({
               >Reopen {recentlyClosedLabel ?? "recent"}</button>
             )}
           </div>
-          <label className="scripture-workspace-search">
-            <span className="sr-only">Search open study tabs</span>
-            <span className="scripture-workspace-search-icon" aria-hidden="true"><SearchGlyph /></span>
-            <input
-              ref={overflowSearchRef}
-              type="search"
-              value={overflowQuery}
-              data-study-all-tabs-search=""
-              onChange={(event) => setOverflowQuery(event.currentTarget.value)}
-              /* THE FIELD IS THE TEXT HOME AND THE DOOR TO THE LIST. Down goes
-                 into the rows without giving up the caret's place, and Enter
-                 commits the first thing the search has left standing — which is
-                 what a reader typing three letters and pressing return means,
-                 and what this field did nothing about until now. */
-              onKeyDown={(event) => {
-                if (event.key === "ArrowDown") {
-                  event.preventDefault();
-                  moveOverflowFocus(-1, 1);
-                  return;
-                }
-                if (event.key !== "Enter") return;
-                const first = overflowStops()[0];
-                if (!first) return;
-                event.preventDefault();
-                first.click();
-              }}
-              placeholder="Find a chapter, person, place, or study…"
-              autoComplete="off"
-            />
-          </label>
           <div className="scripture-workspace-overflow-list">
-            {filteredGroups.map(({ group, label, tabs }) => {
+            {allGroups.map(({ group, label, tabs }) => {
               const groupCloseAvailability = studyWorkspaceGroupCloseAvailability(workspace, group.id);
               const canCloseGroup = groupCloseAvailability !== "unavailable";
               const groupCloseCopy = studyWorkspaceCloseActionCopy(`study ${label}`, groupCloseAvailability);
@@ -2110,8 +2218,8 @@ export function ScriptureWorkspaceTabs({
                         <div className="scripture-workspace-overflow-row" data-study-all-tabs-row="" data-study-tab-id={tab.id} key={tab.id}>
                           <button
                             type="button"
+                            ref={workspace.activeTabId === tab.id ? activeOverflowRowRef : undefined}
                             className={workspace.activeTabId === tab.id ? "is-active" : undefined}
-                            onKeyDown={handleOverflowListKeyDown}
                             /* THE ROW'S VERBS ARE ON ITS MENU, not beside it.
                                Order and Move stood here as two more buttons per
                                row, which made a twenty-tab list eighty tab stops
@@ -2151,9 +2259,24 @@ export function ScriptureWorkspaceTabs({
                                    a list you can only act on once is not a list.
                                    Selecting still closes, because that one takes
                                    the reader somewhere. */
-                                onClick={async () => {
+                                onClick={async (event) => {
+                                  /* Focus goes to the NEIGHBOUR, which is what
+                                     a reader closing several in a row wants and
+                                     what the field used to stand in for: the
+                                     stop that slides up into this one's place,
+                                     or the one above when this was the last. */
+                                  const before = overflowStops();
+                                  const at = before.indexOf(
+                                    event.currentTarget.closest("[data-study-all-tabs-row]")
+                                      ?.querySelector("button") as HTMLButtonElement,
+                                  );
                                   await handleCloseTab(tab.id, { moveFocus: false });
-                                  overflowSearchRef.current?.focus({ preventScroll: true });
+                                  window.setTimeout(() => {
+                                    const after = overflowStops();
+                                    if (after.length === 0) return;
+                                    const next = at < 0 ? 0 : Math.min(at, after.length - 1);
+                                    after[next]?.focus({ preventScroll: true });
+                                  }, 0);
                                 }}
                               ><CloseGlyph /></button>
                             )}
@@ -2165,11 +2288,6 @@ export function ScriptureWorkspaceTabs({
                 </section>
               );
             })}
-            {filteredGroups.length === 0 && (
-              <div className="scripture-workspace-empty" data-study-empty-search="">
-                <strong>No open tab matches</strong><span>Try a chapter, person, place, or study name.</span>
-              </div>
-            )}
           </div>
           {recentlyClosedList.length > 0 && (
             <div className="scripture-workspace-recent-list" data-study-recent-list="">
@@ -2202,7 +2320,6 @@ export function ScriptureWorkspaceTabs({
                   // Same walk as the rows above: to a reader looking for a
                   // chapter these are one list, and the arrows do not stop at
                   // the seam between what is open and what is recoverable.
-                  onKeyDown={handleOverflowListKeyDown}
                   onClick={async () => { await handleReopenRecentItem(index); }}
                 >
                   <span aria-hidden="true"><ReopenGlyph /></span>

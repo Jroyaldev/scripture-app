@@ -948,7 +948,7 @@ try {
       await captureBand("study-control.png");
     }
     await driver.evaluate(`document.querySelector("[data-study-all-tabs]")?.click()`);
-    await driver.waitFor(`Boolean(document.querySelector("[data-study-all-tabs-search]"))
+    await driver.waitFor(`Boolean(document.getElementById("study-workspace-all-tabs"))
       && document.querySelectorAll("[data-study-all-tabs-row]").length === ${Object.keys(fixture.tabsById).length}`);
     await driver.settle();
     await driver.waitFor(`getComputedStyle(document.querySelector(".scripture-workspace-overflow-popover")).opacity === "1"`);
@@ -993,7 +993,7 @@ try {
      listens. Fronted first, because a key goes to the focused window. */
   await driver.settle();
   await dispatchKey(cdp, "Escape", "Escape", 27);
-  await driver.waitFor(`!document.querySelector("[data-study-all-tabs-search]")`);
+  await driver.waitFor(`!document.getElementById("study-workspace-all-tabs")`);
 
   /* SWITCHING STUDIES, from the control's own list · restated 2026-08-03.
      This drove a row of chips in the band above the strip and asserted that
@@ -1124,7 +1124,7 @@ try {
     && window.innerHeight === ${ZOOM_VIEWPORT.height}
     && getComputedStyle(document.querySelector("[data-study-workspace-bar]")).display !== "none"`);
   await driver.evaluate(`document.querySelector("[data-study-all-tabs]")?.click()`);
-  await driver.waitFor(`Boolean(document.querySelector("[data-study-all-tabs-search]"))
+  await driver.waitFor(`Boolean(document.getElementById("study-workspace-all-tabs"))
     && document.querySelectorAll("[data-study-all-tabs-row]").length === ${Object.keys(fixture.tabsById).length}`);
   await sleep(200);
   const zoomMetrics = await driver.evaluate(`(async () => {
@@ -1177,7 +1177,7 @@ try {
     `All Tabs hides its scrollbar thumb at rest (${zoomMetrics.restingThumb}) on the one surface that scrolls at 200% zoom`,
   );
   await driver.evaluate(`window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`);
-  await driver.waitFor(`!document.querySelector("[data-study-all-tabs-search]")`);
+  await driver.waitFor(`!document.getElementById("study-workspace-all-tabs")`);
   await cdp.send("Emulation.setDeviceMetricsOverride", VIEWPORT);
   await driver.waitFor(`window.innerWidth === ${VIEWPORT.width} && window.innerHeight === ${VIEWPORT.height}`);
 
@@ -1239,7 +1239,15 @@ try {
   await driver.waitFor(`document.querySelector('[data-study-workspace-bar] [role="tab"][aria-selected="true"]')?.getAttribute("data-study-tab-id") !== ${JSON.stringify(rovingBefore.activeId)}`);
 
   await driver.evaluate(`document.querySelector("[data-study-all-tabs]")?.click()`);
-  await driver.waitFor(`document.activeElement?.matches("[data-study-all-tabs-search]") === true`);
+  /* THE CARET LANDS ON THE TAB YOU ARE READING · 2026-08-03. This waited on the
+     search field, which was the only text in the panel and so the only sane
+     autofocus target while there was one. The field is gone — All Tabs answers
+     typing by moving focus rather than by filtering — so the panel names its own
+     landing spot, and it is the active row: where the reader's attention already
+     is, and what makes every arrow key relative to the thing they are looking
+     at rather than to the top of a list. */
+  await driver.waitFor(`document.activeElement?.closest("[data-study-all-tabs-row]") !== null
+    && document.activeElement?.classList.contains("is-active") === true`);
 
   /* THE CARET ARRIVES; THE RING DOES NOT · 2026-08-03. The autofocus above is a
      courtesy — it puts the caret where a reader who opened a find-and-switch
@@ -1284,7 +1292,7 @@ try {
   assert.equal(afterTabRings.onFocused, true, "the ring is not on the control the keyboard reached");
 
   await driver.evaluate(`document.activeElement?.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }))`);
-  await driver.waitFor(`!document.querySelector("[data-study-all-tabs-search]")
+  await driver.waitFor(`!document.getElementById("study-workspace-all-tabs")
     && document.activeElement?.matches("[data-study-all-tabs]") === true`);
 
   const forcedMetrics = await driver.evaluate(`(() => {

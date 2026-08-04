@@ -77,7 +77,12 @@ test("desktop control covers the bounded V2 pastoral workflow and active-only st
     "[data-study-tab-kind]",
     "[data-study-collapsed-proxy]",
     "[data-study-all-tabs]",
-    "[data-study-all-tabs-search]",
+    /* `[data-study-all-tabs-search]` stood here and was the tour's "is the panel
+       open" oracle in fourteen places as well as its find leg. The field left on
+       2026-08-03 — All Tabs answers typing by moving focus rather than filtering
+       — so the oracle is the panel's own id, which the trigger's aria-controls
+       already names, and the find leg types at the panel instead. */
+    'document.getElementById("study-workspace-all-tabs")',
     "[data-study-all-tabs-row]",
     "[data-study-group-rename]",
     /* `[data-study-tab-move]` stood here until 2026-08-03, when the row's verbs
@@ -205,7 +210,9 @@ test("workspace-bar QA captures one identical fixture across four atmospheres an
     "place",
     "patient teacher, fellow worker",
     "active-entity",
-    "data-study-all-tabs-search",
+    // Same swap on the bar tour: the panel id is the open/closed oracle, and the
+    // arrival-ring gate now lands on the active row rather than on a text field.
+    'document.getElementById("study-workspace-all-tabs")',
     "document.fonts.ready",
     /* `requestAnimationFrame(() => requestAnimationFrame` was here, five times
        over in the tour, as the way a capture waited for the page to settle. It

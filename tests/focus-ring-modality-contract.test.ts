@@ -41,7 +41,7 @@ const stylesheets = (): Array<[string, string]> => [
  *
  *   ".note-capture-title-input:focus",
  *   ".note-capture-textarea:focus",
- *   ".scripture-workspace-search:focus-within",
+ *   ".scripture-workspace-search:focus-within",   (retired with its field, 2026-08-03)
  *
  * — each carrying the reason "a field's ring is what tells you where your
  * typing will go, so it must appear on a click". The designer reversed that:
@@ -166,42 +166,47 @@ test("text entry answers a click with the wash and a seal caret, not a ring", ()
     /\.note-capture-title-input:focus-visible,\s*\n\.note-capture-textarea:focus-visible \{\s*outline: 2px solid var\(--study-gold\);\s*outline-offset: 2px;/,
   );
 
-  // The workspace search frame is the third surface the old allowlist named.
-  // Its input takes `outline: 0`, so the frame rings on its behalf — and it
-  // asks :focus-visible's question in container form rather than ringing for
-  // every click, which is what `:focus-within` was doing.
-  const searchFocus = css.slice(css.indexOf(".scripture-workspace-search:focus-within"));
-  assert.match(searchFocus.slice(0, searchFocus.indexOf("}") + 1), SEAL_WASH);
-  assert.doesNotMatch(searchFocus.slice(0, searchFocus.indexOf("}") + 1), /box-shadow|outline/);
-  // The caret is stated once, where the register's three text fields are
-  // declared together, rather than three times at three focus rules.
+  /* THE WORKSPACE SEARCH FRAME was the third surface the old allowlist named,
+     and it is gone as of 2026-08-03 along with the field inside it. All Tabs
+     answers typing by moving focus to the row you named rather than by hiding
+     the rows you did not, so the panel holds no text input except the group
+     rename — which wants the register's ordinary ring and takes it from the
+     panel-wide rule below.
+
+     What the frame taught survives in two places and both are still asserted
+     here: the caret declaration under it, now two fields rather than three, and
+     the arrival gate, which was the real fix and never was about search. */
+  assert.doesNotMatch(
+    rulesOf(css).map((rule) => rule.selector).join("\n"),
+    /\.scripture-workspace-search/,
+  );
+  // The caret is stated once, where the register's text fields are declared
+  // together, rather than at each focus rule.
   //
-  // The first of the three was `.scripture-workspace-rename input` — the group
-  // popover's field — and both that popover and the control that opened it left
-  // the strip on 2026-07-30. Renaming a study happens on its own chip in the
-  // study line now, in place and at the size the name is read, so
-  // `.scripture-study-rename input` takes the slot. Three fields, one
-  // declaration, and the claim is unchanged: a text field in the register
+  // This read three selectors until the search field left. The first of the
+  // three had already gone on 2026-07-30 — `.scripture-workspace-rename input`,
+  // the group popover's field — when renaming moved onto the study chip. The
+  // claim is unchanged by either departure: a text field in the register
   // answers a click with a caret, wherever the field stands.
   assert.match(
     css,
-    /\.scripture-study-rename input,\s*\n\.scripture-workspace-inline-rename input,\s*\n\.scripture-workspace-search input \{[^}]*caret-color: var\(--accent-seal\);/,
-  );
-  assert.match(
-    css,
-    /\.scripture-workspace-search:has\(:focus-visible\) \{\s*outline: 2px solid var\(--study-gold\);\s*outline-offset: 2px;/,
+    /\.scripture-study-rename input,\s*\n\.scripture-workspace-inline-rename input \{[^}]*caret-color: var\(--accent-seal\);/,
   );
 
-  /* AND THE FIELD IS EXCLUDED FROM THE PANEL-WIDE RULE, which is the half of
-     this that was only ever true in prose. The reset above is one class and one
-     element deep; `.scripture-workspace-overflow-popover input:focus-visible`
-     is two and one — so it won the cascade and the field painted BOTH rings,
-     concentric, two pixels apart, on every open of All Tabs. The sheet said the
-     frame rings on the input's behalf and then ringed the input as well. */
-  assert.match(
-    css,
-    /\.scripture-workspace-overflow-popover input:not\(\[data-study-all-tabs-search\]\):focus-visible,/,
+  /* AND THE PANEL-WIDE RULE NO LONGER EXCLUDES ANYTHING. It carried
+     `:not([data-study-all-tabs-search])` for one reason: the field's own
+     `outline: 0` was one class and one element deep, this list is two and one,
+     so the broader rule won the cascade and the field painted BOTH its frame's
+     ring and its own, concentric, two pixels apart, on every open of All Tabs.
+     With the field gone the exclusion excluded nothing, and what still matches
+     is the rename input, which wants this ring. */
+  // Rules only — the note at that rule quotes the selector it replaced, which
+  // is the whole point of leaving a note there.
+  assert.doesNotMatch(
+    rulesOf(css).map((rule) => rule.selector).join("\n"),
+    /data-study-all-tabs-search/,
   );
+  assert.match(css, /\.scripture-workspace-overflow-popover input:focus-visible,/);
 });
 
 test("a focus the reader did not ask for is not a focus they see ringed", () => {
@@ -247,19 +252,13 @@ test("a focus the reader did not ask for is not a focus they see ringed", () => 
   // out of the document with it.
   assert.match(popover, /if \(event\.target === target\) return;/);
 
-  /* And the field's own reset has to hold IN THE FOCUSED STATE.
-     `.scripture-workspace-search input` and the app-wide `input:focus-visible`
-     tie at one class and one element; source order breaks the tie 13,000 lines
-     later, so the field drew its frame's ring and its own, concentric. */
-  assert.match(css, /\.scripture-workspace-search input:focus-visible \{\s*outline: 0;\s*\}/);
-
   /* Stated once over the whole panel rather than repeated on each ringed
      selector: the claim is about the PANEL's state, not about any control in
      it — and the next surface to autofocus something gets this for free rather
      than rediscovering it. */
   assert.match(
     css,
-    /\.popover-panel\[data-focus-arrival\] :focus-visible,\s*\n\.popover-panel\[data-focus-arrival\] \.scripture-workspace-search:has\(:focus-visible\) \{\s*outline: none;\s*\}/,
+    /\.popover-panel\[data-focus-arrival\] :focus-visible \{\s*outline: none;\s*\}/,
   );
 });
 

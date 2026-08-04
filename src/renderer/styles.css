@@ -3301,13 +3301,11 @@ html, body, #root {
 .scripture-workspace-persistence button:focus-visible,
 .scripture-workspace-context-menu button:focus-visible,
 .scripture-workspace-overflow-popover button:focus-visible,
-/* NOT the search field. It draws its ring on the FRAME around it — see
-   `.scripture-workspace-search:has(:focus-visible)` — and takes `outline: 0`
-   itself to stay out of the way. That reset is one class and one element deep;
-   this list is two and one, so for a year it won the cascade and the field
-   painted BOTH rings, concentric, two pixels apart. The sheet said one thing
-   over there and did another over here. */
-.scripture-workspace-overflow-popover input:not([data-study-all-tabs-search]):focus-visible,
+/* The exclusion that stood here — `input:not([data-study-all-tabs-search])` —
+   kept the search field out of this list so its FRAME could draw the ring
+   instead. The field left on 2026-08-03 and took the whole argument with it.
+   What still matches is the group rename field, which wants this ring. */
+.scripture-workspace-overflow-popover input:focus-visible,
 .scripture-workspace-overflow-popover select:focus-visible {
   outline: 2px solid var(--study-gold);
   outline-offset: 2px;
@@ -3352,7 +3350,10 @@ html, body, #root {
 .scripture-workspace-overflow-popover {
   min-height: 0;
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  /* Head, then list. The middle track was the search field's; the recents
+     block below is a fourth child that has always sized itself off the last
+     track's remainder rather than claiming one. */
+  grid-template-rows: auto minmax(0, 1fr);
 }
 
 .scripture-workspace-overflow-head {
@@ -3400,8 +3401,7 @@ html, body, #root {
    place in this family, because a field that renames a study should answer a
    click the same way wherever it stands. */
 .scripture-study-rename input,
-.scripture-workspace-inline-rename input,
-.scripture-workspace-search input {
+.scripture-workspace-inline-rename input {
   min-width: 0;
   min-height: 28px;
   padding: 0 8px;
@@ -3450,88 +3450,21 @@ html, body, #root {
 
 .scripture-workspace-group-tools .is-danger { color: var(--error); }
 
-.scripture-workspace-search {
-  min-height: 32px;
-  display: grid;
-  grid-template-columns: 20px minmax(0, 1fr);
-  align-items: center;
-  margin-top: 10px;
-  padding: 0 6px;
-  border: 1px solid var(--border-subtle);
-  border-radius: var(--radius-sm);
-  background: color-mix(in srgb, var(--bg-input) 76%, transparent);
-  color: var(--text-tertiary);
-}
-
-.scripture-workspace-search-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-tertiary);
-}
-
-.scripture-workspace-search input {
-  height: 30px;
-  padding: 0 2px;
-  border: 0;
-  background: transparent;
-  outline: 0;
-}
-
-/* Rev 04 §4 reverses what stood here. This frame used to answer a click with a
-   seal border and a 1px seal halo, on the reasoning that a field should ring on
-   click because the ring tells you where typing will go. The drawing says
-   otherwise: "a field focused *for* the reader gets no ring", and the overflow
-   popover focuses this field the moment it opens, so the ring was drawn for a
-   reader who only ever clicked a count and could not dismiss it by clicking
-   away. What is left is the wash and the caret.
-
-   The wash is `background: rgba(150,104,74,.06)` laid OVER the field's own
-   fill rather than instead of it — background-image paints above
-   background-color, so the field keeps the 76% bg-input it rests on and gains
-   exactly the .06 the drawing asks for. Stated as a color-mix on --study-gold
-   so the two dark atmospheres wash in their own seal instead of the light
-   one's. */
-.scripture-workspace-search:focus-within {
-  background-image: linear-gradient(
-    color-mix(in srgb, var(--study-gold) 6%, transparent),
-    color-mix(in srgb, var(--study-gold) 6%, transparent));
-}
-
-/* The caret is the other half of the treatment and is stated once, on every
-   text field in the register, where the fields are declared. The ring the
-   keyboard is owed is drawn by the frame rather than the input, because the
-   input takes `outline: 0` — `:has(:focus-visible)` is the container form of
-   the same question `:focus-visible` asks, and it keeps the ring outside the
-   shape at the offset §4 sets. */
-.scripture-workspace-search:has(:focus-visible) {
-  outline: 2px solid var(--study-gold);
-  outline-offset: 2px;
-}
-
-/* And the input keeps its `outline: 0` WHILE FOCUSED, which is the only state
-   that reset was ever for. Two rules claim this field at focus and they tie at
-   one class and one element: the reset above, and the app-wide
-   `input:focus-visible` at the foot of the sheet. A tie goes to source order,
-   the app-wide rule is 13,000 lines later, and so the field drew the concentric
-   pair the note above says it must not — the popover-scoped exclusion added in
-   the same breath fixed the narrower of the two rules and left the broader one
-   standing. Restating the reset in the focused state makes it one class and TWO
-   elements, which wins on its own merits from wherever either rule sits. */
-.scripture-workspace-search input:focus-visible {
-  outline: 0;
-}
-
-/* The field is `type="search"` for what that buys at the platform layer — the
-   right keyboard, the right announcement — and not for the ✕ Chromium draws
-   inside it, which is a second, undesigned clear button sitting a few pixels
-   from a Clear the sheet drew itself, wearing none of its type or spacing. The
-   note workspace and the command palette both suppress it; this is the third. */
-.scripture-workspace-search input::-webkit-search-cancel-button,
-.scripture-workspace-search input::-webkit-search-decoration {
-  display: none;
-  appearance: none;
-}
+/* ── THE FIELD'S FOUR RULES, RETIRED · 2026-08-03 ─────────────────────────
+ *
+ * A focus-within wash, a `:has(:focus-visible)` frame ring, an `outline: 0`
+ * reset restated in the focused state to outrank an app-wide rule 13,000 lines
+ * away, and a suppression for the ✕ Chromium draws inside `type="search"`.
+ * Four rules, three of them about a ring the field was not supposed to draw,
+ * and every one of them earned — the cascade really did paint two concentric
+ * rings until the last of them landed.
+ *
+ * All four are gone with the field. Typing in All Tabs moves focus to the row
+ * you named rather than filtering the list, so there is no text input in this
+ * panel except the group rename, which wants the ordinary register ring and
+ * now gets it from the list above. The lesson worth keeping is recorded where
+ * it still applies: the arrival gate below, which was the real fix and is not
+ * about search fields at all. */
 
 /* ── AND NOT ON ARRIVAL · 2026-08-03 ──────────────────────────────────────
  *
@@ -3550,8 +3483,7 @@ html, body, #root {
  * ringed selector, because the claim is about the PANEL's state and not about
  * any control in it — and because the next surface to autofocus something gets
  * this for free rather than rediscovering it. */
-.popover-panel[data-focus-arrival] :focus-visible,
-.popover-panel[data-focus-arrival] .scripture-workspace-search:has(:focus-visible) {
+.popover-panel[data-focus-arrival] :focus-visible {
   outline: none;
 }
 
@@ -3758,18 +3690,10 @@ html, body, #root {
   color: var(--text-primary);
 }
 
-.scripture-workspace-empty {
-  min-height: 104px;
-  display: grid;
-  align-content: center;
-  justify-items: center;
-  gap: 5px;
-  color: var(--text-tertiary);
-  text-align: center;
-}
-
-.scripture-workspace-empty strong { color: var(--text-secondary); font-size: 11px; font-weight: var(--fw-medium); }
-.scripture-workspace-empty span { font-size: 9.5px; }
+/* `.scripture-workspace-empty` stood here — "No open tab matches", drawn when
+   a search left nothing standing. Nothing filters the list any more, and a menu
+   that always shows every row has no empty state to draw: the panel does not
+   render at all without a study, and the model refuses to close the last one. */
 
 /* ── The group: a kicker in the strip, not a bracket over it ──────────────
 

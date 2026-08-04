@@ -4,7 +4,7 @@ import { resolve } from "node:path";
 import { test } from "node:test";
 import {
   studyWorkspacePersistenceReason,
-  studyWorkspaceSearchMatches,
+  studyWorkspaceTypeAheadIndex,
   studyWorkspaceRovingTabId,
 } from "../src/renderer/components/ScriptureWorkspaceTabs.js";
 
@@ -229,7 +229,10 @@ test("the strip and its popovers use custom menus and shared tooltips, never nat
   assert.match(componentSource, /import \{ Tooltip \} from "\.\/Tooltip\.js"/);
   assert.match(componentSource, /<Tooltip label=\{openTooltip\}>/);
   // One glyph system: inline stroke-SVG components, no unicode control glyphs.
-  for (const glyph of ["CaretGlyph", "PlusGlyph", "OverflowGlyph", "SearchGlyph", "ReopenGlyph"]) {
+  // `SearchGlyph` was on this list and left with the field it sat inside on
+  // 2026-08-03 — All Tabs answers typing by moving focus, not by filtering, so
+  // there is no field for a magnifier to label.
+  for (const glyph of ["CaretGlyph", "PlusGlyph", "OverflowGlyph", "ReopenGlyph"]) {
     assert.match(componentSource, new RegExp(`function ${glyph}\\(`));
   }
   assert.doesNotMatch(componentSource, /⌄|↶|•••|⌕/);
@@ -249,11 +252,18 @@ test("the Open control gauges the 64-tab capacity", () => {
   assert.doesNotMatch(componentStatements, /\$\{STUDY_WORKSPACE_TAB_LIMIT\} studies/);
 });
 
-test("All Tabs is searchable, grouped, and owns tab and group management", () => {
+test("All Tabs answers typing by moving, is grouped, and owns tab and group management", () => {
   const allTabs = section(componentSource, "{overflowOpen && overflowAnchor", "</nav>");
-  assert.match(allTabs, /type="search"/);
-  assert.match(allTabs, /data-study-all-tabs-search/);
-  assert.match(allTabs, /filteredGroups\.map/);
+  /* THE FIELD LEFT ON 2026-08-03. It was the tallest element in a panel whose
+     list a reader can usually see all of, and it answered "find me John" by
+     HIDING every row that was not John — which takes a stable set of positions
+     someone was learning and makes it a different list each character. A menu
+     answers the same intent by moving: every row stays, the one you named takes
+     focus. That is what the platform's own menus do, and readers arrive already
+     knowing it. So: no field, no query state, and nothing filtered. */
+  assert.doesNotMatch(allTabs, /type="search"|data-study-all-tabs-search/);
+  assert.doesNotMatch(componentSource, /overflowQuery|filteredGroups\.map/);
+  assert.match(allTabs, /\{allGroups\.map/);
   assert.match(allTabs, /data-study-group-rename/);
   /* `data-study-group-collapse` was here, per study. A toggle whose only effect
      is a field nobody reads is worse than a missing control — a reader presses
@@ -279,7 +289,10 @@ test("All Tabs is searchable, grouped, and owns tab and group management", () =>
   assert.match(componentSource, /if \(!options\.keepOverflow\) setOverflowOpen\(false\);/,
     "a menu raised from a row must not dismiss the list the reader is working in");
   assert.match(allTabs, /data-study-all-tabs-row/);
-  assert.match(allTabs, /data-study-empty-search/);
+  // `data-study-empty-search` went with the field: a menu that always shows
+  // every row has no empty state to draw, and the panel does not render at all
+  // without a study because the model refuses to close the last one.
+  assert.doesNotMatch(allTabs, /data-study-empty-search/);
 
   /* AND THE LIST IS WALKABLE. It had no arrows, no roving and an inert Enter:
      twenty tabs was a Tab-only surface. The stops are the tab rows in study
@@ -289,18 +302,44 @@ test("All Tabs is searchable, grouped, and owns tab and group management", () =>
   assert.match(componentSource, /"\[data-study-all-tabs-row\] > button, \[data-study-recent-item\]"/);
   assert.match(componentSource, /if \(event\.key === "ArrowDown"\) moveOverflowFocus\(index, 1\);/);
   assert.match(componentSource, /else if \(event\.key === "Home"\) moveOverflowFocus\(0, 0\);/);
-  // Above the first stop is the field, not a wrap to the last: this list has a
-  // text home at the top, and ArrowUp out of the first row is a reader going
-  // back to typing.
-  assert.match(componentSource, /if \(next < 0\) \{\s*overflowSearchRef\.current\?\.focus/);
-  // Enter in the field commits what the search left standing, which is what
-  // typing three letters and pressing return means.
-  assert.match(allTabs, /const first = overflowStops\(\)\[0\];/);
+  /* Nothing sits above the first stop any more, so ArrowUp there stops rather
+     than wrapping to the bottom — a reader asking to go up and being sent to the
+     end is a menu arguing with them. The clamp says it at both ends at once. */
+  assert.match(
+    componentSource,
+    /stops\[Math\.max\(0, Math\.min\(stops\.length - 1, from \+ delta\)\)\]/,
+  );
 
-  assert.equal(studyWorkspaceSearchMatches("spirit", "Acts study", "Holy Spirit"), true);
-  assert.equal(studyWorkspaceSearchMatches("holy acts", "Acts study", "Holy Spirit"), true);
-  assert.equal(studyWorkspaceSearchMatches("paul rome", "Acts study", "Paul"), false);
-  assert.equal(studyWorkspaceSearchMatches("  ", "Acts study", "Paul"), true);
+  /* THE WALK AND THE TYPING BOTH HANG OFF THE PANEL. The stops used to be found
+     by climbing from the search input to `.popover-panel`, which was convenient
+     and wrong in a way only the field's departure exposed: the recents are a
+     SIBLING of the list, so anchoring anywhere inside the list silently drops
+     half the sequence. And the listener is on the document, filtered to the
+     panel, because Popover measures before it renders — an effect that reaches
+     for the panel by id on the pass that opens it finds null and never runs
+     again. */
+  assert.match(componentSource, /document\.getElementById\(OVERFLOW_PANEL_ID\)/);
+  assert.match(componentSource, /if \(!target\?\.closest\(`#\$\{OVERFLOW_PANEL_ID\}`\)\) return;/);
+
+  /* And typing aimed at a text field belongs to that field. The group rename
+     form lives INSIDE the list, so a panel-level handler that swallowed
+     printable keys would make renaming from All Tabs impossible; a chord belongs
+     to whatever owns the chord; and a bare Space is a button being pressed until
+     there is a word in progress for it to extend. */
+  assert.match(componentSource, /if \(event\.metaKey \|\| event\.ctrlKey \|\| event\.altKey\) return false;/);
+  assert.match(componentSource, /target\?\.closest\("input, textarea, \[contenteditable\]"\)/);
+  assert.match(componentSource, /if \(event\.key === " " && \(fresh \|\| record\.buffer\.length === 0\)\) return false;/);
+
+  // Prefix beats word-boundary, and it beats it by returning first: a reader
+  // spelling a name starts at its start, so "j" is John 2 before it is 1 John 2.
+  assert.equal(studyWorkspaceTypeAheadIndex(["1 John 2", "John 2"], "j"), 1);
+  // The boundary pass is what reaches a name that is not first in its label,
+  // and what lets a bare chapter number reach its chapter.
+  assert.equal(studyWorkspaceTypeAheadIndex(["Matthew 3", "1 John 2"], "john"), 1);
+  assert.equal(studyWorkspaceTypeAheadIndex(["Acts 19", "Matthew 3"], "3"), 1);
+  assert.equal(studyWorkspaceTypeAheadIndex(["Acts 19", "Matthew 3"], "zz"), -1);
+  // An empty buffer names nothing, so it must never move focus to row zero.
+  assert.equal(studyWorkspaceTypeAheadIndex(["Acts 19"], "   "), -1);
 });
 
 test("rename, move, reorder, collapse, close, and recovery commit UI state only after approval", () => {
@@ -457,7 +496,10 @@ test("the register is a strip of canvas the active page is pulled up through", (
     rail,
     /\.popover-panel\.scripture-workspace-overflow-popover \{[\s\S]{0,180}background: rgb\(from var\(--bg-float\) r g b \/ 1\);/,
   );
-  assert.match(rail, /\.scripture-workspace-overflow-popover \{[\s\S]{0,220}display: grid;[\s\S]{0,180}grid-template-rows: auto auto minmax\(0, 1fr\)/);
+  // Two tracks since 2026-08-03: head, then list. The middle one was the search
+  // field's. The recents below have always sized off the last track's remainder
+  // rather than claiming one of their own.
+  assert.match(rail, /\.scripture-workspace-overflow-popover \{[\s\S]{0,320}display: grid;[\s\S]{0,280}grid-template-rows: auto minmax\(0, 1fr\)/);
   assert.match(rail, /\.scripture-workspace-overflow-list \{[\s\S]{0,220}min-height: 0;[\s\S]{0,120}overflow-y: auto;[\s\S]{0,120}overscroll-behavior: contain;/);
   // Scroll-edge indicators are clean mask fades, never a blurred inset shadow.
   assert.match(rail, /\.scripture-workspace-viewport\.is-scrollable-left \{[\s\S]{0,160}mask-image: linear-gradient/);
@@ -1090,13 +1132,18 @@ test("the overview is a door, not a readout, and the ordinals live inside it", (
   assert.doesNotMatch(componentStatements, /hiddenTabCount|tabsInStrip|scripture-workspace-overflow-count/);
   assert.doesNotMatch(declarationsOnly(registerSource), /scripture-workspace-overflow-count/,
     "styling a badge the strip does not render describes a product that does not exist");
-  assert.match(componentSource, /`All tabs — search, switch, reopen; \$\{totalTabs\} open in `/);
-  assert.match(componentSource, /<Tooltip label="All tabs — search, switch, reopen">/);
+  // "search" left the name with the field that justified it: typing still finds
+  // a row, but it moves to that row rather than hiding the others, which is a
+  // menu's behaviour and not a search's.
+  assert.match(componentSource, /`All tabs — switch, reopen; \$\{totalTabs\} open in `/);
+  assert.match(componentSource, /<Tooltip label="All tabs — switch, reopen">/);
   // Named while it names something: an aria-controls pointing at an id that is
   // not in the document names nothing.
   assert.match(
     componentSource,
-    /aria-controls=\{overflowOpen \? "study-workspace-all-tabs" : undefined\}/,
+    // Named once as a constant now, so the trigger's aria-controls and the
+    // lookup the keyboard walk performs cannot drift apart.
+    /aria-controls=\{overflowOpen \? OVERFLOW_PANEL_ID : undefined\}/,
   );
   /* And the gate is one claim, not the same one twice. `allGroups.length > 0 ||
      hasMeasuredOverflow` had a left side that is always true — the model refuses

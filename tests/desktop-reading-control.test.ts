@@ -314,9 +314,10 @@ test("desktop integration owns one draft rail, exit controller, attention scroll
      writing a field nobody reads. `collapsed` stays in the model and stays
      persisted. */
   assert.doesNotMatch(workspaceTabs, /aria-expanded=\{!group\.collapsed\}/);
-  // Renamed 2026-08-03 for the three jobs the surface kept once overflow,
-  // study-switching and ordinal jumps all moved out from under it.
-  assert.match(workspaceTabs, /All tabs — search, switch, reopen; \$\{totalTabs\} open in /);
+  // Renamed 2026-08-03 for the jobs the surface kept once overflow,
+  // study-switching and ordinal jumps moved out from under it — and shortened
+  // again the same day when the search field left and typing became a jump.
+  assert.match(workspaceTabs, /All tabs — switch, reopen; \$\{totalTabs\} open in /);
   assert.match(workspaceTabs, /event\.key === "Delete"/);
   assert.doesNotMatch(margin, /margin-workspace-tabs/);
   assert.doesNotMatch(margin, /workspaceScrollPositionsRef|tabScrollPositionsRef/);
